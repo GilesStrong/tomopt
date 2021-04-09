@@ -4,5 +4,6 @@ target-version = ['py38']
 include = '\.pyi?$'
 extend-exclude = '''
 /(
+    | dev
 )/
 '''
