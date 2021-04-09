@@ -4,6 +4,13 @@
 
 ## Installation
 
+Minimum python version is 3.8. Recommend creating a virtual environment, e.g.:
+
+```
+conda env create -f environment.yml
+conda activate tomopt
+```
+
 Install requirements, e.g.:
 
 ```
