@@ -1,7 +1,20 @@
 # TomOpt: Differential Muon Tomography Optimization
 
+## Installation
 
-# Description
+Install requirements, e.g.:
+
+```
+pip install -r requirements.txt
+```
+
+Install git-hooks:
+
+```
+pre-commit install
+```
+
+## Description
 
 This document summarizes the proposed functionalities of the building blocks of an optimization pipeline for a muon tomography scanner. A graphical overview of the pipeline is shown below.
 
@@ -26,7 +39,7 @@ A simplification of the above scheme can be implemented by substituting modules 
 
 We may simply formalize the functionalities of these modules by specifying what inputs they receive, from which module, what operations they are capable of performing, and what outputs they yield, and to which other module in the chain.
 
-## Generator module
+### Generator module
 
 The generator module is tasked with generating muons impinging in the experimental apparatus. The generator may be a simple sampler of a two-dimensional p, theta prior, or a more elaborate simulation of cosmic rays. For development, this should be however as simple as possible.
 
@@ -54,7 +67,7 @@ The Generator module should have the following functionalities:
 
 The Generator module may output to Module 2 (GAN) or Module 3 (Detector)
 
-## GAN model
+### GAN model
 
 The GAN model is tasked with producing a model of the generator output, to be used for differentiable applications. 
 
@@ -83,7 +96,7 @@ The GAN should have the following functionalities:
 
 The GAN module may output to module 3 (Detector) or to the user (evaluation metrics) 
 
-## Detector model
+### Detector model
 
 The detector module contains a specification of the geometry and layout of the active detection elements, their material map, and the intrinsic resolution of each detection element. The task of the detector model is to produce a digitized hit representation of the detector response to traversing muons, as well as to perform the propagation of muons inside its volume.
 
@@ -111,7 +124,7 @@ The detector model should have the following functionalities:
 
 The detector model outputs to Module 4, Module 5, and Module 6.
 
-## Scanned volume module
+### Scanned volume module
 
 The scanned volume module provides a description of the investigated material. The module allows for the propagation of muons accounting for the material distribution.
 
