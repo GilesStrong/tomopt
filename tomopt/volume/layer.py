@@ -5,8 +5,8 @@ from abc import abstractmethod
 import torch
 from torch import nn, Tensor
 
-from ..muon import MuonBatch
 from ..core import DEVICE, SCATTER_COEF_A
+from ..muon import MuonBatch
 
 __all__ = ["PassiveLayer", "DetectorLayer"]
 

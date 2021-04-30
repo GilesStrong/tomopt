@@ -7,6 +7,8 @@ from . import ScatterBatch
 from ..muon import MuonBatch
 from ..core import X0, SCATTER_COEF_A
 
+__all__ = ["X0Inferer"]
+
 
 class X0Inferer:
     def __init__(self, scatters: ScatterBatch, mu: MuonBatch, default_pred: float = X0["beryllium"]):

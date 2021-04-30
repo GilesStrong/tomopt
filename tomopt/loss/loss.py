@@ -2,6 +2,8 @@ from torch import nn, Tensor
 
 from ..volume import Volume
 
+__all__ = ["DetectorLoss"]
+
 
 class DetectorLoss(nn.MSELoss):
     def __init__(self, cost_coef: float):

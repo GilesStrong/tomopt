@@ -3,8 +3,10 @@ from typing import Tuple, List
 import torch
 from torch import nn, Tensor
 
-from ..muon import MuonBatch
 from . import DetectorLayer, PassiveLayer
+from ..muon import MuonBatch
+
+__all__ = ["Volume"]
 
 
 class Volume(nn.Module):
