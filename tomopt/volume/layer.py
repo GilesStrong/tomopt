@@ -15,7 +15,7 @@ class Layer(nn.Module):
     def __init__(self, lw: Tensor, z: float, size: float, device: torch.device = DEVICE):
         super().__init__()
         self.lw, self.z, self.size, self.device = lw, Tensor([z]), size, device
-        self.rad_length = None
+        self.rad_length: Optional[Tensor] = None
 
     def scatter_and_propagate(self, mu: MuonBatch, deltaz: float) -> None:
         """
@@ -27,7 +27,7 @@ class Layer(nn.Module):
 
         if self.rad_length is not None:
             mask = mu.get_xy_mask(self.lw)  # Only scatter muons inside volume
-            n = mask.sum()
+            n = mask.sum().cpu().numpy()[0]
             xy_idx = self.mu_abs2idx(mu, mask)
 
             x0 = self.rad_length[xy_idx[:, 0], xy_idx[:, 1]] * deltaz / torch.cos(mu.theta[mask])
@@ -69,9 +69,9 @@ class Layer(nn.Module):
 
 
 class PassiveLayer(Layer):
-    def __init__(self, rad_length_func: Callable[[float, Tensor, float], float], lw: Tensor, z: float, size: float, device: torch.device = DEVICE):
+    def __init__(self, rad_length_func: Callable[..., Tensor], lw: Tensor, z: float, size: float, device: torch.device = DEVICE):
         super().__init__(lw=lw, z=z, size=size, device=device)
-        self.rad_length = rad_length_func(self.z, self.lw, size=self.size).to(self.device)
+        self.rad_length = rad_length_func(z=self.z, lw=self.lw, size=self.size).to(self.device)
 
     def forward(self, mu: MuonBatch) -> None:
         n = 2

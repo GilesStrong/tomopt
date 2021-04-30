@@ -1,4 +1,5 @@
-from typing import Dict
+from __future__ import annotations
+from typing import Dict, List, Union
 from collections import defaultdict, OrderedDict
 
 import torch
@@ -10,16 +11,18 @@ __all__ = ["MuonBatch"]
 
 
 class MuonBatch:
-    def __init__(self, muons: Tensor, init_z: float, device: torch.device = DEVICE):
+    def __init__(self, muons: Tensor, init_z: Union[Tensor, float], device: torch.device = DEVICE):
         r"""
         coords = (0:x~Uniform[0,1], 1:y~Uniform[0,1], 2:p=100GeV, 3:theta_x~cos2(a) a~Uniform[0,0.5pi], 4:theta_y~cos2(a) a~Uniform[0,0.5pi]
         """
 
         self.device = device
         self.muons = muons.to(self.device)
-        self.z = Tensor([init_z]).to(self.device)
-        self.hits = defaultdict(lambda: defaultdict(list))
-        self.xy_hist = OrderedDict({})
+        if not isinstance(init_z, Tensor):
+            init_z = Tensor(init_z)
+        self.z = init_z.to(self.device)
+        self.hits: Dict[str, Dict[str, List[Tensor]]] = defaultdict(lambda: defaultdict(list))
+        self.xy_hist: Dict[Tensor, Tensor] = OrderedDict({})
 
     def __repr__(self) -> str:
         return f"Batch of {len(self)} muons"
@@ -114,18 +117,18 @@ class MuonBatch:
         for k in hits:
             self.hits[pos][k].append(hits[k])
 
-    def get_hits(self, lw: Tensor) -> Tensor:
+    def get_hits(self, lw: Tensor) -> Dict[str, Dict[str, Tensor]]:
         m = self.get_xy_mask(lw)
         return {p: {c: torch.stack(self.hits[p][c], dim=1)[m] for c in self.hits[p]} for p in self.hits}
 
-    def dtheta_x(self, mu: "MuonBatch") -> Tensor:
+    def dtheta_x(self, mu: MuonBatch) -> Tensor:
         return torch.abs(self.theta_x - mu.theta_x)
 
-    def dtheta_y(self, mu: "MuonBatch") -> Tensor:
+    def dtheta_y(self, mu: MuonBatch) -> Tensor:
         return torch.abs(self.theta_y - mu.theta_y)
 
-    def dr(self, mu: "MuonBatch") -> Tensor:
+    def dr(self, mu: MuonBatch) -> Tensor:
         return torch.sqrt((self.dtheta_x(mu) ** 2) + (self.dtheta_y(mu) ** 2))
 
-    def copy(self) -> "MuonBatch":
+    def copy(self) -> MuonBatch:
         return MuonBatch(self._muons.detach().clone(), init_z=self.z, device=self.device)

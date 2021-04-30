@@ -53,7 +53,7 @@ class X0Inferer:
 
         return pred, pred_unc
 
-    def x0_from_dxy(self) -> Tuple[Tensor, Tensor]:
+    def x0_from_dxy(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
         # TODO: FIX this
         # dxy = torch.sqrt(scatters['dxy'][mask].pow(2).sum(1))
         # dh = dxy/((math.sqrt(2)*torch.cos(scatters['theta_in'][mask].pow(2).sum(1)))+1e-17)
@@ -70,11 +70,13 @@ class X0Inferer:
                 eff = e
             else:
                 eff = eff * e
+        if eff is None:
+            eff = torch.zeros(0)
         return eff
 
     def average_preds(
         self, x0_dtheta: Optional[Tensor], x0_dtheta_unc: Optional[Tensor], x0_dxy: Optional[Tensor], x0_dxy_unc: Optional[Tensor], efficiency: Tensor
-    ) -> Tensor:
+    ) -> Tuple[Tensor, Tensor]:
         r"""
         TODO: Use location uncertainty to spread muon inferrence over neighbouring voxels around central location
         """
@@ -83,9 +85,9 @@ class X0Inferer:
         loc_idx = self.volume.lookup_coords(loc, passive_only=True)
         idxs = torch.arange(len(loc)).long(), loc_idx[:, 2], loc_idx[:, 0], loc_idx[:, 1]
 
-        pred, weight = [], []
+        preds, weights = [], []
         for x0, unc in ((x0_dtheta, x0_dtheta_unc), (x0_dxy, x0_dxy_unc)):
-            if x0 is None:
+            if x0 is None or unc is None:
                 continue
             w = nn.init.zeros_(self.volume.get_rad_cube())
             w = torch.repeat_interleave(w[None, :], len(loc), dim=0)
@@ -93,10 +95,10 @@ class X0Inferer:
 
             p = w.clone()
             p[idxs] = x0 * p[idxs]
-            pred.append(p)
-            weight.append(w)
+            preds.append(p)
+            weights.append(w)
 
-        pred, weight = torch.cat(pred, dim=0), torch.cat(weight, dim=0)
+        pred, weight = torch.cat(preds, dim=0), torch.cat(weights, dim=0)
         pred, weight = pred.sum(0), weight.sum(0)
         pred = pred / weight
         return pred, weight

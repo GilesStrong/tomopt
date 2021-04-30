@@ -17,12 +17,14 @@ class Volume(nn.Module):
     def get_detectors(self) -> List[DetectorLayer]:
         return [l for l in self.layers if isinstance(l, DetectorLayer)]
 
-    def get_passives(self) -> List[DetectorLayer]:
+    def get_passives(self) -> List[PassiveLayer]:
         return [l for l in self.layers if isinstance(l, PassiveLayer)]
 
     def get_rad_cube(self) -> Tensor:
-        vols = reversed(self.get_passives())
-        return torch.stack([v.rad_length for v in vols], dim=0)
+        vols = list(reversed(self.get_passives()))
+        if len(vols) == 0:
+            raise ValueError("self.layers contains no passive layers")
+        return torch.stack([v.rad_length for v in vols if v.rad_length is not None], dim=0)
 
     def lookup_coords(self, xyz: Tensor, passive_only: bool) -> Tensor:
         r"""Assume same size for all layers for now and no intermedeate detector layers"""
@@ -46,7 +48,9 @@ class Volume(nn.Module):
                     cost = l.get_cost()
                 else:
                     cost = cost + l.get_cost()
-                return cost
+        if cost is None:
+            cost = torch.zeros((1))
+        return cost
 
     @property
     def lw(self) -> Tensor:
