@@ -12,7 +12,7 @@ def jacobian(y: Tensor, x: Tensor, create_graph=False, allow_unused=True):
     flat_y = y.reshape(-1)
     grad_y = torch.zeros_like(flat_y)
     for i in range(len(flat_y)):
-        grad_y[i] = 1.0  # may need to use value of flat_y?
+        grad_y[i] = 1.0
         (grad_x,) = torch.autograd.grad(flat_y, x, grad_y, retain_graph=True, create_graph=create_graph, allow_unused=allow_unused)
         jac.append(grad_x.reshape(x.shape))
         grad_y[i] = 0.0
