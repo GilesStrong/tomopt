@@ -1,9 +1,10 @@
 # User requirements
 torch>=1.8.1
+seaborn ~= 0.10
+matplotlib >= 3.4.1
+numpy >=1.20.2
 
 # Dev requirements
 pre-commit
 black
-seaborn ~= 0.10
-matplotlib >= 3.4.1
-numpy >=1.20.2
+flake8

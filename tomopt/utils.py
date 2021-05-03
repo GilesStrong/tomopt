@@ -4,7 +4,7 @@ from torch import Tensor
 __all__ = ["jacobian"]
 
 
-def jacobian(y: Tensor, x: Tensor, create_graph=False, allow_unused=True):
+def jacobian(y: Tensor, x: Tensor, create_graph: bool = False, allow_unused: bool = True) -> Tensor:
     r"""Compute full jacobian matrix for single tensor. Call twice for hessian.
     Copied from https://gist.github.com/apaszke/226abdf867c4e9d6698bd198f3b45fb7 credits: Adam Paszke
     TODO: Fix this to work batch-wise (maybe https://gist.github.com/sbarratt/37356c46ad1350d4c30aefbd488a4faa)"""
