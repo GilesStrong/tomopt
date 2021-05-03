@@ -8,3 +8,5 @@ numpy >=1.20.2
 pre-commit
 black
 flake8
+pytest
+mypy

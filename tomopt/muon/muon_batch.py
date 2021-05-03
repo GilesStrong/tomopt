@@ -19,7 +19,7 @@ class MuonBatch:
         self.device = device
         self.muons = muons.to(self.device)
         if not isinstance(init_z, Tensor):
-            init_z = Tensor(init_z)
+            init_z = Tensor([init_z])
         self.z = init_z.to(self.device)
         self.hits: Dict[str, Dict[str, List[Tensor]]] = defaultdict(lambda: defaultdict(list))
         self.xy_hist: Dict[Tensor, Tensor] = OrderedDict({})
@@ -111,7 +111,7 @@ class MuonBatch:
         return (self.x >= 0) * (self.x < lw[0]) * (self.y >= 0) * (self.y < lw[1])
 
     def snapshot_xyz(self) -> None:
-        self.xy_hist[self.z] = self.xy.cpu().detach().clone().numpy()
+        self.xy_hist[self.z.detach().cpu().clone().numpy()[0]] = self.xy.detach().cpu().clone().numpy()
 
     def append_hits(self, hits: Dict[str, Tensor], pos: str) -> None:
         for k in hits:
@@ -131,4 +131,4 @@ class MuonBatch:
         return torch.sqrt((self.dtheta_x(mu) ** 2) + (self.dtheta_y(mu) ** 2))
 
     def copy(self) -> MuonBatch:
-        return MuonBatch(self._muons.detach().clone(), init_z=self.z, device=self.device)
+        return MuonBatch(self._muons.detach().clone(), init_z=self.z.detach().clone(), device=self.device)
