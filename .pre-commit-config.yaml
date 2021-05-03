@@ -12,5 +12,5 @@ repos:
     rev: v0.812
     hooks:
       - id: mypy
-        exclude: setup.py
+        exclude: setup.py, tests/
         args: [--disallow-untyped-calls, --disallow-untyped-defs, --check-untyped-defs, --ignore-missing-imports, --no-strict-optional]
