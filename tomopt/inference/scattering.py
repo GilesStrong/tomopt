@@ -6,7 +6,7 @@ from torch import Tensor
 
 from ..muon import MuonBatch
 from ..volume import Volume
-from ..utlis import jacobian
+from ..utils import jacobian
 
 __all__ = ["ScatterBatch"]
 

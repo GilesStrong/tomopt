@@ -2,8 +2,14 @@
 line-length = 160
 target-version = ['py38']
 include = '\.pyi?$'
-extend-exclude = '''
+exclude = '''
 /(
-    | dev
+    \.git
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | build
+  | dist
 )/
 '''
