@@ -13,7 +13,6 @@ class Volume(nn.Module):
     def __init__(self, layers: nn.ModuleList):
         super().__init__()
         self.layers = layers
-        qwsqwsd
 
     def get_detectors(self) -> List[DetectorLayer]:
         return [l for l in self.layers if isinstance(l, DetectorLayer)]
