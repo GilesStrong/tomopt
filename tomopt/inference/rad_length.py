@@ -16,7 +16,7 @@ class X0Inferer:
         self.volume, self.hits = self.scatters.volume, self.scatters.hits
         self.size, self.lw = self.volume.size, self.volume.lw
 
-    def x0_from_dtheta(self):  # -> Tuple[Tensor, Tensor]:
+    def x0_from_dtheta(self) -> Tuple[Tensor, Tensor]:
         r"""
         TODO: Debias by considering each voxel on muon paths
         """
