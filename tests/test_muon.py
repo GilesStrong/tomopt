@@ -16,8 +16,9 @@ def batch():
 
 
 def test_generate_batch():
-    x = generate_batch(N)
-    assert x.shape == torch.Size([N, 5])
+    n = 1e5
+    x = generate_batch(n)
+    assert x.shape == torch.Size([n, 5])
     assert torch.all(x[:, 2] > 0)  # Momentum
 
 
