@@ -1,18 +1,21 @@
 import pytest
-from pytest_mock import mocker
+from pytest_mock import mocker  # noqa F401
 
 import torch
 from torch import Tensor
+import torch.nn.functional as F
 
 from tomopt.volume.layer import Layer
-from tomopt.volume import PassiveLayer
+from tomopt.volume import PassiveLayer, DetectorLayer
 from tomopt.muon import MuonBatch, generate_batch
 from tomopt.core import X0
+from tomopt.utils import jacobian
 
 
 LW = Tensor([1, 1])
 SZ = 0.1
 N = 1000
+Z = 1
 
 
 @pytest.fixture
@@ -37,18 +40,18 @@ def test_layer(batch):
 
 def test_passive_layer_forwards(batch):
     # Normal scattering
-    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=1, size=SZ)
+    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=Z, size=SZ)
     start = batch.copy()
     pl(batch)
-    assert batch.z - Tensor([0.9]) < 1e-5
+    assert batch.z - Tensor([Z - SZ]) < 1e-5
     assert torch.all(batch.dr(start) > 0)
     assert torch.all(batch.xy != start.xy)
 
     # Small scattering
-    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=1, size=1e-4)
+    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=Z, size=1e-4)
     batch = start.copy()
     pl(batch, 1)
-    assert batch.z - Tensor([1]) <= 1e-4
+    assert batch.z - Tensor([Z]) <= 1e-4
     assert torch.all(batch.dr(start) < 1e-5)
     assert torch.all(batch.xy - start.xy < 1e-3)
 
@@ -62,8 +65,7 @@ def test_passive_layer_scattering(mocker, batch, n):  # noqa: F811
         mock_getters[m] = mocker.PropertyMock(return_value=getattr(batch, m))
         mocker.patch.object(MuonBatch, m, mock_getters[m])
 
-    # batch = MuonBatch(generate_batch(100), init_z=1)
-    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, size=SZ, z=1)
+    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, size=SZ, z=Z)
     pl(batch, n)
     assert batch.propagate.call_count == n
     assert batch.propagate.called_with(SZ / n)
@@ -73,3 +75,31 @@ def test_passive_layer_scattering(mocker, batch, n):  # noqa: F811
         assert mock_getters[m].call_count == 2 * n
     for m in ["theta_x", "theta_y"]:
         assert mock_getters[m].call_count == 4 * n
+
+
+def eff_cost(x: Tensor) -> Tensor:
+    return torch.expm1(3 * F.relu(x))
+
+
+def res_cost(x: Tensor) -> Tensor:
+    return F.relu(x / 100) ** 2
+
+
+def test_detector_layer_forwards(batch):
+    dl = DetectorLayer(pos="above", init_eff=1, init_res=1e3, lw=LW, z=Z, size=SZ, eff_cost_func=eff_cost, res_cost_func=res_cost)
+    assert dl.resolution.mean() == Tensor([1e3])
+    assert dl.efficiency.mean() == Tensor([1])
+
+    start = batch.copy()
+    dl(batch)
+    assert batch.z - Tensor([Z - SZ]) < 1e-5
+    assert torch.all(batch.dr(start) == 0)  # Detector layers don't scatter
+    assert torch.all(batch.xy != start.xy)
+
+    hits = batch.get_hits(LW)
+    assert len(hits) == 1
+    assert hits["above"]["xy"].shape == torch.Size([batch.get_xy_mask(LW).sum(), 1, 2])
+    assert hits["above"]["z"][0, 0, 0] == Z - (SZ / 2)  # Hits located at z-centre of layer
+
+    grad = jacobian(hits["above"]["xy"][:, 0], dl.resolution).sum((-1, -2))
+    assert ((grad == grad) * (grad != 0)).sum() == 2 * len(grad)  # every reco hit (x,y) is function of resolution
