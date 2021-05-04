@@ -1,12 +1,13 @@
 import pytest
 from pytest_mock import mocker  # noqa F401
+import numpy as np
 
 import torch
-from torch import Tensor
+from torch import Tensor, nn
 import torch.nn.functional as F
 
 from tomopt.volume.layer import Layer
-from tomopt.volume import PassiveLayer, DetectorLayer
+from tomopt.volume import PassiveLayer, DetectorLayer, Volume
 from tomopt.muon import MuonBatch, generate_batch
 from tomopt.core import X0
 from tomopt.utils import jacobian
@@ -85,7 +86,7 @@ def res_cost(x: Tensor) -> Tensor:
     return F.relu(x / 100) ** 2
 
 
-def test_detector_layer_forwards(batch):
+def test_detector_layer(batch):
     dl = DetectorLayer(pos="above", init_eff=1, init_res=1e3, lw=LW, z=Z, size=SZ, eff_cost_func=eff_cost, res_cost_func=res_cost)
     assert dl.resolution.mean() == Tensor([1e3])
     assert dl.efficiency.mean() == Tensor([1])
@@ -103,3 +104,36 @@ def test_detector_layer_forwards(batch):
 
     grad = jacobian(hits["above"]["xy"][:, 0], dl.resolution).sum((-1, -2))
     assert ((grad == grad) * (grad != 0)).sum() == 2 * len(grad)  # every reco hit (x,y) is function of resolution
+
+
+def get_layers():
+    layers = []
+    init_eff = 0.5
+    init_res = 10000
+    pos = "above"
+    for z, d in zip(np.arange(Z, 0, -SZ), [1, 1, 0, 0, 0, 0, 0, 0, 1, 1]):
+        if d:
+            layers.append(DetectorLayer(pos=pos, init_eff=init_eff, init_res=init_res, lw=LW, z=z, size=SZ, eff_cost_func=eff_cost, res_cost_func=res_cost))
+        else:
+            pos = "below"
+            layers.append(PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=z, size=SZ))
+
+    return nn.ModuleList(layers)
+
+
+def test_volume(batch):
+    layers = get_layers()
+    volume = Volume(layers=layers)
+    assert volume.get_detectors()[-1] == layers[-1]
+    assert volume.get_passives()[-1] == layers[-3]
+    assert torch.all(volume.lw == LW)
+    assert volume.size == Tensor([SZ])
+    assert volume.h == 10 * SZ
+    with pytest.raises(AttributeError):
+        volume.lw = 0
+        volume.size = 0
+        volume.h = 0
+    zr = volume.get_passive_z_range()
+    assert zr[0] - 0.2 < 1e-5
+    assert zr[1] - 0.8 < 1e-5
+    assert volume.get_cost() == 4001392.7500
