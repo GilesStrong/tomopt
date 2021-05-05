@@ -82,7 +82,7 @@ class X0Inferer:
         """
 
         loc, loc_unc = self.scatters.location[self.mask], self.scatters.location_unc[self.mask]  # noqa F841 will use loc_unc to infer around central voxel
-        loc_idx = self.volume.lookup_coords(loc, passive_only=True)
+        loc_idx = self.volume.lookup_xyz_coords(loc, passive_only=True)
         idxs = torch.arange(len(loc)).long(), loc_idx[:, 2], loc_idx[:, 0], loc_idx[:, 1]
 
         preds, weights = [], []

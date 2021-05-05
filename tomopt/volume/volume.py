@@ -21,19 +21,25 @@ class Volume(nn.Module):
         return [l for l in self.layers if isinstance(l, PassiveLayer)]
 
     def get_rad_cube(self) -> Tensor:
-        vols = list(reversed(self.get_passives()))
+        vols = list(reversed(self.get_passives()))  # reversed to match lookup_xyz_coords: layer zero = bottom layer
         if len(vols) == 0:
             raise ValueError("self.layers contains no passive layers")
         return torch.stack([v.rad_length for v in vols if v.rad_length is not None], dim=0)
 
-    def lookup_coords(self, xyz: Tensor, passive_only: bool) -> Tensor:
+    def lookup_xyz_coords(self, xyz: Tensor, passive_only: bool) -> Tensor:
         r"""Assume same size for all layers for now and no intermedeate detector layers"""
         if len(xyz.shape) == 1:
             xyz = xyz[None, :]
-        sz = self.layers[0].size
         if passive_only:
-            xyz[:, 2] = xyz[:, 2] - self.get_passives()[-1].z + sz
-        return torch.floor(xyz / sz).long()
+            if n := (
+                (xyz[:, :2] > self.lw) + (xyz[:, :2] < 0) + (xyz[:, 2] < self.get_passive_z_range()[0]) + ((xyz[:, 2] > self.get_passive_z_range()[1]))
+            ).sum():
+                raise ValueError(f"{n} Coordinates outside passive volume")
+            xyz[:, 2] = xyz[:, 2] - self.get_passive_z_range()[0]
+        else:
+            if n := ((xyz[:, :2] > self.lw) + (xyz[:, :2] < 0) + (xyz[:, 2] < 0) + ((xyz[:, 2] > self.h))).sum():
+                raise ValueError(f"{n} Coordinates outside volume")
+        return torch.floor(xyz / self.size).long()
 
     def forward(self, mu: MuonBatch) -> None:  # Expand to take volume as input, too
         for l in self.layers:

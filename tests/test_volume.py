@@ -25,9 +25,8 @@ def batch():
 
 
 def arb_rad_length(*, z: float, lw: Tensor, size: float) -> float:
-    r"""Test"""
     rad_length = torch.ones(list((lw / size).long())) * X0["aluminium"]
-    if z >= 0.3 and z <= 0.6:
+    if z >= 0.5:
         rad_length[3:7, 3:7] = X0["lead"]
     return rad_length
 
@@ -44,7 +43,7 @@ def test_passive_layer_forwards(batch):
     pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=Z, size=SZ)
     start = batch.copy()
     pl(batch)
-    assert batch.z - Tensor([Z - SZ]) < 1e-5
+    assert torch.abs(batch.z - Tensor([Z - SZ])) < 1e-5
     assert torch.all(batch.dr(start) > 0)
     assert torch.all(batch.xy != start.xy)
 
@@ -52,9 +51,9 @@ def test_passive_layer_forwards(batch):
     pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=Z, size=1e-4)
     batch = start.copy()
     pl(batch, 1)
-    assert batch.z - Tensor([Z]) <= 1e-4
+    assert torch.abs(batch.z - Tensor([Z])) <= 1e-3
     assert torch.all(batch.dr(start) < 1e-5)
-    assert torch.all(batch.xy - start.xy < 1e-3)
+    assert torch.all(torch.abs(batch.xy - start.xy) < 1e-3)
 
 
 @pytest.mark.parametrize("n", [(1), (2), (5)])
@@ -93,14 +92,14 @@ def test_detector_layer(batch):
 
     start = batch.copy()
     dl(batch)
-    assert batch.z - Tensor([Z - SZ]) < 1e-5
+    assert torch.abs(batch.z - Tensor([Z - SZ])) < 1e-5
     assert torch.all(batch.dr(start) == 0)  # Detector layers don't scatter
     assert torch.all(batch.xy != start.xy)
 
     hits = batch.get_hits(LW)
     assert len(hits) == 1
     assert hits["above"]["xy"].shape == torch.Size([batch.get_xy_mask(LW).sum(), 1, 2])
-    assert hits["above"]["z"][0, 0, 0] == Z - (SZ / 2)  # Hits located at z-centre of layer
+    assert torch.abs(hits["above"]["z"][0, 0, 0] - Z + (SZ / 2)) < 1e-5  # Hits located at z-centre of layer
 
     grad = jacobian(hits["above"]["xy"][:, 0], dl.resolution).sum((-1, -2))
     assert ((grad == grad) * (grad != 0)).sum() == 2 * len(grad)  # every reco hit (x,y) is function of resolution
@@ -121,7 +120,7 @@ def get_layers():
     return nn.ModuleList(layers)
 
 
-def test_volume(batch):
+def test_volume_methods():
     layers = get_layers()
     volume = Volume(layers=layers)
     assert volume.get_detectors()[-1] == layers[-1]
@@ -133,7 +132,50 @@ def test_volume(batch):
         volume.lw = 0
         volume.size = 0
         volume.h = 0
+
     zr = volume.get_passive_z_range()
-    assert zr[0] - 0.2 < 1e-5
-    assert zr[1] - 0.8 < 1e-5
+    assert torch.abs(zr[0] - 0.2) < 1e-5
+    assert torch.abs(zr[1] - 0.8) < 1e-5
     assert volume.get_cost() == 4001392.7500
+
+    cube = volume.get_rad_cube()
+    assert cube.shape == torch.Size([6] + list((LW / SZ).long()))
+    assert torch.all(cube[0] == arb_rad_length(z=SZ, lw=LW, size=SZ))  # cube reversed to match lookup_xyz_coords: layer zero = bottom layer
+    assert torch.all(cube[-1] == arb_rad_length(z=Z, lw=LW, size=SZ))
+
+    assert torch.all(volume.lookup_xyz_coords(Tensor([0.55, 0.63, 0.31]), passive_only=False) == Tensor([[5, 6, 3]]))
+    assert torch.all(volume.lookup_xyz_coords(Tensor([[0.55, 0.63, 0.31], [0.12, 0.86, 0.45]]), passive_only=False) == Tensor([[5, 6, 3], [1, 8, 4]]))
+    assert torch.all(volume.lookup_xyz_coords(Tensor([0.55, 0.63, 0.31]), passive_only=True) == Tensor([[5, 6, 1]]))
+    assert torch.all(volume.lookup_xyz_coords(Tensor([[0.55, 0.63, 0.31], [0.12, 0.86, 0.45]]), passive_only=True) == Tensor([[5, 6, 1], [1, 8, 2]]))
+    with pytest.raises(ValueError):
+        volume.lookup_xyz_coords(Tensor([1, 0.63, 0.31]), passive_only=False)
+        volume.lookup_xyz_coords(Tensor([0.55, 1.2, 0.31]), passive_only=False)
+        volume.lookup_xyz_coords(Tensor([0.55, 0.63, 13]), passive_only=False)
+        volume.lookup_xyz_coords(Tensor([-1, 0.63, 0.31]), passive_only=False)
+        volume.lookup_xyz_coords(Tensor([0.55, -1.2, 0.31]), passive_only=False)
+        volume.lookup_xyz_coords(Tensor([0.55, 0.63, -13]), passive_only=False)
+
+        volume.lookup_xyz_coords(Tensor([0.55, 0.63, 0]), passive_only=True)
+        volume.lookup_xyz_coords(Tensor([0.55, 0.63, 1]), passive_only=True)
+
+
+def test_volume_fowrad(batch):
+    layers = get_layers()
+    volume = Volume(layers=layers)
+    start = batch.copy()
+    volume(batch)
+
+    assert torch.abs(batch.z) <= 1e-5  # Muons traverse whole volume
+    mask = batch.get_xy_mask(LW)
+    assert mask.sum() > N / 2  # At least half the muons stay inside the volume
+    assert torch.all(batch.dr(start)[mask] > 0)  # All masked muons scatter
+
+    hits = batch.get_hits(LW)
+    assert "above" in hits and "below" in hits
+    assert hits["above"]["xy"].shape[1] == 2
+    assert hits["below"]["xy"].shape[1] == 2
+    assert torch.abs(hits["below"]["z"][0, 1, 0] - (SZ / 2)) < 1e-5  # Last Hit located at z-centre of last layer
+
+    for i, l in enumerate(volume.get_detectors()):
+        grad = jacobian(hits["above" if l.z > 0.5 else "below"]["xy"][:, i % 2], l.resolution).sum((-1, -2))
+        assert ((grad == grad) * (grad != 0)).sum() == 2 * len(grad)  # every reco hit (x,y) is function of resolution
