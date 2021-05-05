@@ -59,8 +59,8 @@ class ScatterBatch:
         self._loc = q1 + (coefs[:, 2:3] * v3 / 2)  # Move halfway along v3 from q1
 
         # Theta deviations
-        self._theta_in = v1[:, 2:3] * torch.arctan(v1[:, :2])
-        self._theta_out = v2[:, 2:3] * torch.arctan(v2[:, :2])
+        self._theta_in = torch.arctan(v1[:, :2] / v1[:, 2:3])
+        self._theta_out = torch.arctan(v2[:, :2] / v2[:, 2:3])
         self._dtheta = torch.abs(self._theta_in - self._theta_out)
 
         # xy deviations

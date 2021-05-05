@@ -108,7 +108,7 @@ def test_detector_layer(batch):
 def get_layers():
     layers = []
     init_eff = 0.5
-    init_res = 10000
+    init_res = 1000
     pos = "above"
     for z, d in zip(np.arange(Z, 0, -SZ), [1, 1, 0, 0, 0, 0, 0, 0, 1, 1]):
         if d:
@@ -159,7 +159,7 @@ def test_volume_methods():
         volume.lookup_xyz_coords(Tensor([0.55, 0.63, 1]), passive_only=True)
 
 
-def test_volume_fowrad(batch):
+def test_volume_forward(batch):
     layers = get_layers()
     volume = Volume(layers=layers)
     start = batch.copy()

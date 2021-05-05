@@ -118,6 +118,8 @@ class MuonBatch:
             self.hits[pos][k].append(hits[k])
 
     def get_hits(self, lw: Tensor) -> Dict[str, Dict[str, Tensor]]:
+        if len(self.hits) == 0:
+            raise ValueError("MuonBatch has no recorded hits")
         m = self.get_xy_mask(lw)
         return {p: {c: torch.stack(self.hits[p][c], dim=1)[m] for c in self.hits[p]} for p in self.hits}
 
