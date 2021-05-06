@@ -87,7 +87,7 @@ def test_muon_batch_methods(batch):
     assert torch.all(hits["above"]["xy"][:, 0] == above_hits["xy"])
 
     # deltas
-    assert torch.all(batch.dr(start) == 0)
+    assert torch.all(batch.dtheta(start) == 0)
     batch.theta_x = batch.theta_x + 2
     batch.theta_y = batch.theta_y + 3
-    assert batch.dr(start)[0] == Tensor([np.sqrt(13)])
+    assert batch.dtheta(start)[0] == Tensor([np.sqrt(13)])

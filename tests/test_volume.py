@@ -25,9 +25,9 @@ def batch():
 
 
 def arb_rad_length(*, z: float, lw: Tensor, size: float) -> float:
-    rad_length = torch.ones(list((lw / size).long())) * X0["aluminium"]
-    if z >= 0.5:
-        rad_length[3:7, 3:7] = X0["lead"]
+    rad_length = torch.ones(list((lw / size).long())) * X0["lead"]
+    if z < 0.5:
+        rad_length[...] = X0["beryllium"]
     return rad_length
 
 
@@ -44,15 +44,21 @@ def test_passive_layer_forwards(batch):
     start = batch.copy()
     pl(batch)
     assert torch.abs(batch.z - Tensor([Z - SZ])) < 1e-5
-    assert torch.all(batch.dr(start) > 0)
+    assert torch.all(batch.dtheta(start) > 0)
     assert torch.all(batch.xy != start.xy)
+
+    # X0 affects scattering
+    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=0, size=SZ)
+    batch2 = start.copy()
+    pl(batch2)
+    assert batch2.dtheta(start).mean() > batch.dtheta(start).mean()
 
     # Small scattering
     pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=Z, size=1e-4)
     batch = start.copy()
     pl(batch, 1)
     assert torch.abs(batch.z - Tensor([Z])) <= 1e-3
-    assert torch.all(batch.dr(start) < 1e-5)
+    assert torch.all(batch.dtheta(start) < 1e-5)
     assert torch.all(torch.abs(batch.xy - start.xy) < 1e-3)
 
 
@@ -93,7 +99,7 @@ def test_detector_layer(batch):
     start = batch.copy()
     dl(batch)
     assert torch.abs(batch.z - Tensor([Z - SZ])) < 1e-5
-    assert torch.all(batch.dr(start) == 0)  # Detector layers don't scatter
+    assert torch.all(batch.dtheta(start) == 0)  # Detector layers don't scatter
     assert torch.all(batch.xy != start.xy)
 
     hits = batch.get_hits(LW)
@@ -136,7 +142,7 @@ def test_volume_methods():
     zr = volume.get_passive_z_range()
     assert torch.abs(zr[0] - 0.2) < 1e-5
     assert torch.abs(zr[1] - 0.8) < 1e-5
-    assert volume.get_cost() == 4001392.7500
+    assert volume.get_cost() == 41392.6758
 
     cube = volume.get_rad_cube()
     assert cube.shape == torch.Size([6] + list((LW / SZ).long()))
@@ -168,7 +174,7 @@ def test_volume_forward(batch):
     assert torch.abs(batch.z) <= 1e-5  # Muons traverse whole volume
     mask = batch.get_xy_mask(LW)
     assert mask.sum() > N / 2  # At least half the muons stay inside the volume
-    assert torch.all(batch.dr(start)[mask] > 0)  # All masked muons scatter
+    assert torch.all(batch.dtheta(start)[mask] > 0)  # All masked muons scatter
 
     hits = batch.get_hits(LW)
     assert "above" in hits and "below" in hits

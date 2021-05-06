@@ -4,17 +4,17 @@ import torch
 from torch import Tensor, nn
 
 from . import ScatterBatch
-from ..muon import MuonBatch
 from ..core import X0, SCATTER_COEF_A
 
 __all__ = ["X0Inferer"]
 
 
 class X0Inferer:
-    def __init__(self, scatters: ScatterBatch, mu: MuonBatch, default_pred: float = X0["beryllium"]):
-        self.scatters, self.mu, self.default_pred = scatters, mu, default_pred
-        self.volume, self.hits = self.scatters.volume, self.scatters.hits
+    def __init__(self, scatters: ScatterBatch, default_pred: float = X0["beryllium"]):
+        self.scatters, self.default_pred = scatters, default_pred
+        self.mu, self.volume, self.hits = self.scatters.mu, self.scatters.volume, self.scatters.hits
         self.size, self.lw = self.volume.size, self.volume.lw
+        self.mask = self.scatters.get_scatter_mask()
 
     def x0_from_dtheta(self) -> Tuple[Tensor, Tensor]:
         r"""
@@ -29,6 +29,14 @@ class X0Inferer:
         theta_xy_in_unc = self.scatters.theta_in_unc[self.mask]
         theta_xy_out_unc = self.scatters.theta_out_unc[self.mask]
 
+        # Debias dtheta
+        # dtheta_unc2 = dtheta_unc.pow(2)
+        # dtheta_dbias = dtheta.pow(2)-dtheta_unc2
+        # m = [dtheta_dbias < dtheta_unc2]
+        # dtheta_dbias[m] = dtheta_unc2[m]
+        # dtheta_dbias = dtheta_dbias.sqrt()
+        # dtheta = dtheta_dbias
+
         # Prediction
         theta2 = dtheta.pow(2).sum(1)
         n_x0 = 0.5 * theta2 * ((p / SCATTER_COEF_A) ** 2)
@@ -36,10 +44,10 @@ class X0Inferer:
         theta_out = theta_xy_out.pow(2).sum(1).sqrt()
         cos_theta_in = torch.cos(theta_in)
         cos_theta_out = torch.cos(theta_out)
-        cos_sum = cos_theta_in + cos_theta_out
-        pred = n_x0 * cos_sum / (0.5 * self.size)
+        cos_mean = (cos_theta_in + cos_theta_out) / 2
+        pred = self.size / (n_x0 * cos_mean)
 
-        # Uncertainty
+        # Uncertainty TODO probably best check this
         theta2_unc = (2 * dtheta * dtheta_unc).pow(2).sum(1).sqrt()
         n_x0_unc = 0.5 * theta2_unc * ((p / SCATTER_COEF_A) ** 2)
         theta_in2_unc = (2 * theta_xy_in * theta_xy_in_unc).pow(2).sum(1).sqrt()
@@ -48,8 +56,10 @@ class X0Inferer:
         theta_out_unc = 0.5 * theta_out2_unc / theta_out
         cos_theta_in_unc = torch.sin(theta_in) * theta_in_unc
         cos_theta_out_unc = torch.sin(theta_out) * theta_out_unc
-        cos_sum_unc = torch.sqrt(cos_theta_in_unc.pow(2) + cos_theta_out_unc.pow(2))
-        pred_unc = pred * torch.sqrt((n_x0_unc / n_x0).pow(2) + (cos_sum_unc / cos_sum).pow(2))
+        cos_mean_unc = torch.sqrt(cos_theta_in_unc.pow(2) + cos_theta_out_unc.pow(2)) / 2
+        inv_cos_mean_unc = cos_mean_unc / cos_mean.pow(2)
+        inv_n_x0_unc = n_x0_unc / n_x0.pow(2)
+        pred_unc = pred * torch.sqrt((inv_n_x0_unc * n_x0).pow(2) + (inv_cos_mean_unc * cos_mean).pow(2))
 
         return pred, pred_unc
 
@@ -104,12 +114,11 @@ class X0Inferer:
         return pred, weight
 
     def add_default_pred(self, pred: Tensor, weight: Tensor) -> None:
-        m = pred != pred
+        m = pred != pred  # mask NaNs
         pred[m] = self.default_pred
         weight[m] = 1 / (self.default_pred ** 2)
 
     def pred_x0(self) -> Tuple[Tensor, Tensor]:
-        self.mask = self.scatters.get_scatter_mask()
         x0_dtheta, x0_dtheta_unc = self.x0_from_dtheta()
         x0_dxy, x0_dxy_unc = self.x0_from_dxy()
         eff = self.compute_efficiency()

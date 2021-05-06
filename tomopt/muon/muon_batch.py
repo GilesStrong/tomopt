@@ -129,7 +129,7 @@ class MuonBatch:
     def dtheta_y(self, mu: MuonBatch) -> Tensor:
         return torch.abs(self.theta_y - mu.theta_y)
 
-    def dr(self, mu: MuonBatch) -> Tensor:
+    def dtheta(self, mu: MuonBatch) -> Tensor:
         return torch.sqrt((self.dtheta_x(mu) ** 2) + (self.dtheta_y(mu) ** 2))
 
     def copy(self) -> MuonBatch:

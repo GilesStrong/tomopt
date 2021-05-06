@@ -30,7 +30,7 @@ class Layer(nn.Module):
             n = mask.sum().cpu().numpy()
             xy_idx = self.mu_abs2idx(mu, mask)
 
-            x0 = self.rad_length[xy_idx[:, 0], xy_idx[:, 1]] * deltaz / torch.cos(mu.theta[mask])
+            x0 = deltaz / (self.rad_length[xy_idx[:, 0], xy_idx[:, 1]] * torch.cos(mu.theta[mask]))
             z1 = torch.randn(n, device=self.device)
             z2 = torch.randn(n, device=self.device)
 

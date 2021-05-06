@@ -30,14 +30,15 @@ class Volume(nn.Module):
         r"""Assume same size for all layers for now and no intermedeate detector layers"""
         if len(xyz.shape) == 1:
             xyz = xyz[None, :]
+
         if passive_only:
             if n := (
-                (xyz[:, :2] > self.lw) + (xyz[:, :2] < 0) + (xyz[:, 2] < self.get_passive_z_range()[0]) + ((xyz[:, 2] > self.get_passive_z_range()[1]))
+                ((xyz[:, :2] > self.lw) + (xyz[:, :2] < 0)).sum(1) + (xyz[:, 2] < self.get_passive_z_range()[0]) + ((xyz[:, 2] > self.get_passive_z_range()[1]))
             ).sum():
                 raise ValueError(f"{n} Coordinates outside passive volume")
             xyz[:, 2] = xyz[:, 2] - self.get_passive_z_range()[0]
         else:
-            if n := ((xyz[:, :2] > self.lw) + (xyz[:, :2] < 0) + (xyz[:, 2] < 0) + ((xyz[:, 2] > self.h))).sum():
+            if n := (((xyz[:, :2] > self.lw) + (xyz[:, :2] < 0)).sum(1) + (xyz[:, 2] < 0) + ((xyz[:, 2] > self.h))).sum():
                 raise ValueError(f"{n} Coordinates outside volume")
         return torch.floor(xyz / self.size).long()
 

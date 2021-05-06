@@ -10,8 +10,7 @@ import torch.nn.functional as F
 from tomopt.volume import PassiveLayer, DetectorLayer, Volume
 from tomopt.muon import MuonBatch, generate_batch
 from tomopt.core import X0
-from tomopt.utils import jacobian
-from tomopt.inference.scattering import ScatterBatch
+from tomopt.inference import ScatterBatch, X0Inferer
 
 LW = Tensor([1, 1])
 SZ = 0.1
@@ -34,7 +33,7 @@ def res_cost(x: Tensor) -> Tensor:
     return F.relu(x / 100) ** 2
 
 
-def get_layers(init_res: float = 1e3):
+def get_layers(init_res: float = 1e4):
     layers = []
     init_eff = 0.5
     pos = "above"
@@ -49,22 +48,22 @@ def get_layers(init_res: float = 1e3):
 
 
 @pytest.fixture
-def config():
+def scatter_batch():
     mu = MuonBatch(generate_batch(N), init_z=1)
     volume = Volume(get_layers())
     volume(mu)
-    return mu, volume
-
-
-def test_scatter_batch_properties(config):
-    mu, volume = config[0], config[1]
     sb = ScatterBatch(mu=mu, volume=volume)
+    return mu, volume, sb
+
+
+def test_scatter_batch_properties(scatter_batch):
+    mu, volume, sb = scatter_batch
 
     assert sb.hits["above"]["z"].shape == mu.get_hits(LW)["above"]["z"].shape
 
     assert (loc_unc := sb.location_unc.mean() / sb.location.abs().mean()) < 10
-    assert (dxy_unc := sb.dxy_unc.mean() / sb.dxy.abs().mean()) < 10
-    assert (dtheta_unc := sb.dtheta_unc.mean() / sb.dtheta.abs().mean()) < 10
+    assert (dxy_unc := (sb.dxy_unc / sb.dxy).abs().mean()) < 10
+    assert (dtheta_unc := (sb.dtheta_unc / sb.dtheta).mean()) < 10
     assert (theta_out_unc := sb.theta_out_unc.mean() / sb.theta_out.abs().mean()) < 10
     assert (theta_in_unc := sb.theta_in_unc.mean() / sb.theta_in.abs().mean()) < 10
 
@@ -77,7 +76,7 @@ def test_scatter_batch_properties(config):
 
     # Resolution increase improves location uncertainty
     mu = MuonBatch(generate_batch(N), init_z=1)
-    volume = Volume(get_layers(init_res=1e6))
+    volume = Volume(get_layers(init_res=1e7))
     volume(mu)
     sb = ScatterBatch(mu=mu, volume=volume)
     assert sb.location_unc.mean() / sb.location.abs().mean() < loc_unc
@@ -87,14 +86,14 @@ def test_scatter_batch_properties(config):
     assert sb.theta_in_unc.mean() / sb.theta_in.abs().mean() < theta_in_unc
 
 
-def test_scatter_batch_compute(mocker, config):  # noqa F811
-    mu, volume = config[0], config[1]
+def test_scatter_batch_compute(mocker, scatter_batch):  # noqa F811
+    mu, volume = scatter_batch[0], scatter_batch[1]
     hits = {
         "above": {
             "xy": Tensor([[[0.0, 0.0], [0.1, 0.1]]]),
             "z": Tensor(
                 [
-                    [[0.0], [0.1]],
+                    [[1.0], [0.9]],
                 ]
             ),
         },
@@ -106,7 +105,7 @@ def test_scatter_batch_compute(mocker, config):  # noqa F811
             ),
             "z": Tensor(
                 [
-                    [[0.9], [1.0]],
+                    [[0.1], [0.0]],
                 ]
             ),
         },
@@ -122,6 +121,45 @@ def test_scatter_batch_compute(mocker, config):  # noqa F811
     sb = ScatterBatch(mu=mu, volume=volume)
     assert (sb.location - Tensor([[0.5, 0.5, 0.5]])).sum().abs() < 1e-5
     assert (sb.dxy - Tensor([[0.0, 0.0]])).sum().abs() < 1e-5
-    assert (sb.theta_in - Tensor([[math.pi / 4, math.pi / 4]])).sum().abs() < 1e-5
-    assert (sb.theta_out - Tensor([[-math.pi / 4, -math.pi / 4]])).sum().abs() < 1e-5
+    assert (sb.theta_in - Tensor([[-math.pi / 4, -math.pi / 4]])).sum().abs() < 1e-3
+    assert (sb.theta_out - Tensor([[math.pi / 4, math.pi / 4]])).sum().abs() < 1e-3
     assert (sb.dtheta - Tensor([[math.pi / 2, math.pi / 2]])).sum().abs() < 1e-5
+
+
+def test_x0_inferer_properties(scatter_batch):
+    mu, volume, sb = scatter_batch
+    inferer = X0Inferer(scatters=sb, default_pred=X0["beryllium"])
+
+    assert inferer.mu == mu
+    assert inferer.volume == volume
+    assert len(inferer.hits["above"]["z"]) == len(mu.get_hits(LW)["above"]["z"])
+    assert torch.all(inferer.lw == LW)
+    assert inferer.size == SZ
+
+
+def test_x0_inferer_methods(scatter_batch):
+    mu, volume, sb = scatter_batch
+    inferer = X0Inferer(scatters=sb, default_pred=X0["beryllium"])
+
+    pt, pt_unc = inferer.x0_from_dtheta()
+    assert len(pt) == len(sb.location[sb.get_scatter_mask()])
+    assert pt.shape == pt_unc.shape
+    assert (pt_unc / pt).mean() < 10
+
+    pxy, pxy_unc = inferer.x0_from_dxy()
+    assert pxy is None and pxy_unc is None  # modify tests when  dxy predictions implemented
+
+    eff = inferer.compute_efficiency()
+    assert (eff - 0.0625).abs().mean() < 1e-5
+
+    p, w = inferer.average_preds(x0_dtheta=pt, x0_dtheta_unc=pt_unc, x0_dxy=pxy, x0_dxy_unc=pxy_unc, efficiency=eff)
+    true = volume.get_rad_cube()
+    assert p.shape == true.shape
+    assert w.shape == true.shape
+    assert (((p - true)[p == p]).abs() / true[p == p]).mean() < 100
+
+    p2, w2 = inferer.pred_x0()
+    assert p2.shape == true.shape
+    assert w2.shape == true.shape
+    assert (p2 != p2).sum() == 0  # No NaNs
+    assert (((p2 - true)).abs() / true).mean() < 100
