@@ -21,7 +21,7 @@ class X0Inferer:
         TODO: Debias by considering each voxel on muon paths
         """
 
-        p = self.mu.reco_p[self.mu.get_xy_mask(self.lw)][self.mask]
+        p = self.mu.reco_mom[self.mu.get_xy_mask(self.lw)][self.mask]
         dtheta = self.scatters.dtheta[self.mask]
         dtheta_unc = self.scatters.dtheta_unc[self.mask]
         theta_xy_in = self.scatters.theta_in[self.mask]

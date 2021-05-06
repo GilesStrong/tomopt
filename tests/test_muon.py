@@ -16,7 +16,7 @@ def batch():
 
 
 def test_generate_batch():
-    n = 1e5
+    n = int(1e5)
     x = generate_batch(n)
     assert x.shape == torch.Size([n, 5])
     assert torch.all(x[:, 2] > 0)  # Momentum
@@ -31,7 +31,7 @@ def test_muon_batch_properties(batch):
     assert batch.x[0] == Tensor([0])
     assert batch.y[0] == Tensor([1])
     assert torch.all(batch.xy[0] == Tensor([0, 1]))
-    assert batch.p[0] == Tensor([2])
+    assert batch.mom[0] == Tensor([2])
     assert batch.theta_x[0] == Tensor([3])
     assert batch.theta_y[0] == Tensor([4])
     assert batch.theta[0] == Tensor([5])
@@ -43,8 +43,8 @@ def test_muon_batch_properties(batch):
     assert torch.all(batch.x == new_coords[:, 0])
     batch.y = new_coords[:, 1]
     assert torch.all(batch.y == new_coords[:, 1])
-    batch.p = new_coords[:, 2]
-    assert torch.all(batch.p == new_coords[:, 2])
+    batch.mom = new_coords[:, 2]
+    assert torch.all(batch.mom == new_coords[:, 2])
     batch.theta_x = new_coords[:, 3]
     assert torch.all(batch.theta_x == new_coords[:, 3])
     batch.theta_y = new_coords[:, 4]

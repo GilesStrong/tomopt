@@ -63,19 +63,19 @@ class MuonBatch:
         self._muons[:, :2] = xy
 
     @property
-    def p(self) -> Tensor:
+    def mom(self) -> Tensor:
         return self._muons[:, 2]
 
-    @p.setter
-    def p(self, p: Tensor) -> None:
-        self._muons[:, 2] = p
+    @mom.setter
+    def mom(self, mom: Tensor) -> None:
+        self._muons[:, 2] = mom
 
     @property
-    def reco_p(self) -> Tensor:
-        return self.p
+    def reco_mom(self) -> Tensor:
+        return self.mom
 
-    @reco_p.setter
-    def reco_p(self, p: Tensor) -> None:
+    @reco_mom.setter
+    def reco_mom(self, mom: Tensor) -> None:
         raise NotImplementedError()
 
     @property

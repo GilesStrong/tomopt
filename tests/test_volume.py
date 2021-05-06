@@ -51,14 +51,14 @@ def test_passive_layer_forwards(batch):
     pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=0, size=SZ)
     batch2 = start.copy()
     pl(batch2)
-    assert batch2.dtheta(start).mean() > batch.dtheta(start).mean()
+    assert batch2.dtheta(start).mean() < batch.dtheta(start).mean()
 
     # Small scattering
     pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=Z, size=1e-4)
     batch = start.copy()
     pl(batch, 1)
     assert torch.abs(batch.z - Tensor([Z])) <= 1e-3
-    assert torch.all(batch.dtheta(start) < 1e-5)
+    assert torch.all(batch.dtheta(start) < 1e-2)
     assert torch.all(torch.abs(batch.xy - start.xy) < 1e-3)
 
 
@@ -67,7 +67,7 @@ def test_passive_layer_scattering(mocker, batch, n):  # noqa: F811
     for m in ["propagate", "get_xy_mask"]:
         mocker.patch.object(MuonBatch, m)
     mock_getters = {}
-    for m in ["theta_x", "theta_y", "x", "y", "p"]:
+    for m in ["theta_x", "theta_y", "x", "y", "mom"]:
         mock_getters[m] = mocker.PropertyMock(return_value=getattr(batch, m))
         mocker.patch.object(MuonBatch, m, mock_getters[m])
 
@@ -76,7 +76,7 @@ def test_passive_layer_scattering(mocker, batch, n):  # noqa: F811
     assert batch.propagate.call_count == n
     assert batch.propagate.called_with(SZ / n)
     assert batch.get_xy_mask.call_count == n
-    assert mock_getters["p"].call_count == n
+    assert mock_getters["mom"].call_count == n
     for m in ["x", "y"]:
         assert mock_getters[m].call_count == 2 * n
     for m in ["theta_x", "theta_y"]:
