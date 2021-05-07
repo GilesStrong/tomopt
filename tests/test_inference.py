@@ -176,7 +176,7 @@ def test_x0_inferer_methods(scatter_batch):
 
     for l in volume.get_detectors():
         assert torch.autograd.grad(p2.abs().sum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-        assert torch.autograd.grad(pt.abs().sum(), l.efficiency, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+        assert torch.autograd.grad(p2.abs().sum(), l.efficiency, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
         assert torch.autograd.grad(w2.abs().sum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
         assert torch.autograd.grad(w2.abs().sum(), l.efficiency, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
 
