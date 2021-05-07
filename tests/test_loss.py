@@ -25,6 +25,7 @@ def test_detector_loss(mocker):  # noqa F811
     loss_val = loss_func(pred, Volume(nn.ModuleList([])))
     assert loss_val.shape == torch.Size([1])
     assert loss_val == (pred - true).pow(2).mean() + cost
+    assert loss_val > 0
 
     assert torch.autograd.grad(loss_val, pred)[0].abs().sum() > 0
     assert torch.autograd.grad(loss_val, cost)[0].abs().sum() > 0

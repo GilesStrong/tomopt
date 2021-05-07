@@ -1,3 +1,4 @@
+from tomopt import volume
 from typing import Tuple, Optional
 
 import torch
@@ -99,12 +100,11 @@ class X0Inferer:
         for x0, unc in ((x0_dtheta, x0_dtheta_unc), (x0_dxy, x0_dxy_unc)):
             if x0 is None or unc is None:
                 continue
-            w = nn.init.zeros_(self.volume.get_rad_cube())
-            w = torch.repeat_interleave(w[None, :], len(loc), dim=0)
-            w[idxs] = efficiency / ((1e-17) + (unc ** 2))
+            p = torch.zeros(len(loc), len(self.volume.get_passives()), *(self.volume.lw / self.volume.size).long())
+            w = torch.zeros(len(loc), len(self.volume.get_passives()), *(self.volume.lw / self.volume.size).long())
+            p[idxs] = p[idxs] + (efficiency * x0 / ((1e-17) + (unc ** 2)))
+            w[idxs] = w[idxs] + (efficiency / ((1e-17) + (unc ** 2)))
 
-            p = w.clone()
-            p[idxs] = x0 * p[idxs]
             preds.append(p)
             weights.append(w)
 

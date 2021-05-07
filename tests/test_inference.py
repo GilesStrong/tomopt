@@ -75,6 +75,9 @@ def test_scatter_batch_properties(scatter_batch):
     assert sb.location[mask][:, 2].min() > 0.2
     assert mask.sum() > N / 4  # At least a quarter of the muons stay inside volume and scatter loc inside passive volume
 
+    for l in volume.get_detectors():
+        assert torch.autograd.grad(sb.dtheta.sum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+
     # Resolution increase improves location uncertainty
     mu = MuonBatch(generate_batch(N), init_z=1)
     volume = Volume(get_layers(init_res=1e7))
@@ -147,6 +150,10 @@ def test_x0_inferer_methods(scatter_batch):
     assert pt.shape == pt_unc.shape
     assert (pt_unc / pt).mean() < 10
 
+    for l in volume.get_detectors():
+        assert torch.autograd.grad(pt.abs().sum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+        assert torch.autograd.grad(pt_unc.abs().sum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+
     pxy, pxy_unc = inferer.x0_from_dxy()
     assert pxy is None and pxy_unc is None  # modify tests when dxy predictions implemented
 
@@ -157,13 +164,21 @@ def test_x0_inferer_methods(scatter_batch):
     true = volume.get_rad_cube()
     assert p.shape == true.shape
     assert w.shape == true.shape
-    assert (((p - true)[p == p]).abs() / true[p == p]).mean() < 100
+    mask = p == p
+    print(p)
+    assert (((p - true)[mask]).abs() / true[mask]).mean() < 100
 
     p2, w2 = inferer.pred_x0()
     assert p2.shape == true.shape
     assert w2.shape == true.shape
     assert (p2 != p2).sum() == 0  # NaNs replaced with default prediction
     assert (((p2 - true)).abs() / true).mean() < 100
+
+    for l in volume.get_detectors():
+        assert torch.autograd.grad(p2.abs().sum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+        assert torch.autograd.grad(pt.abs().sum(), l.efficiency, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+        assert torch.autograd.grad(w2.abs().sum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+        assert torch.autograd.grad(w2.abs().sum(), l.efficiency, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
 
 
 def test_x0_inferer_scatter_inversion(mocker, scatter_batch):  # noqa F811
