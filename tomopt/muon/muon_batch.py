@@ -19,7 +19,7 @@ class MuonBatch:
         self.device = device
         self.muons = muons.to(self.device)
         if not isinstance(init_z, Tensor):
-            init_z = Tensor(init_z)
+            init_z = Tensor([init_z])
         self.z = init_z.to(self.device)
         self.hits: Dict[str, Dict[str, List[Tensor]]] = defaultdict(lambda: defaultdict(list))
         self.xy_hist: Dict[Tensor, Tensor] = OrderedDict({})
@@ -63,19 +63,19 @@ class MuonBatch:
         self._muons[:, :2] = xy
 
     @property
-    def p(self) -> Tensor:
+    def mom(self) -> Tensor:
         return self._muons[:, 2]
 
-    @p.setter
-    def p(self, p: Tensor) -> None:
-        self._muons[:, 2] = p
+    @mom.setter
+    def mom(self, mom: Tensor) -> None:
+        self._muons[:, 2] = mom
 
     @property
-    def reco_p(self) -> Tensor:
-        return self.p
+    def reco_mom(self) -> Tensor:
+        return self.mom
 
-    @reco_p.setter
-    def reco_p(self, p: Tensor) -> None:
+    @reco_mom.setter
+    def reco_mom(self, mom: Tensor) -> None:
         raise NotImplementedError()
 
     @property
@@ -95,6 +95,14 @@ class MuonBatch:
         self._muons[:, 4] = theta_y
 
     @property
+    def theta_xy(self) -> Tensor:
+        return self._muons[:, 3:5]
+
+    @theta_xy.setter
+    def theta_xy(self, theta_xy: Tensor) -> None:
+        self._muons[:, 3:5] = theta_xy
+
+    @property
     def theta(self) -> Tensor:
         return torch.sqrt(((self.theta_x) ** 2) + ((self.theta_y) ** 2))
 
@@ -111,13 +119,15 @@ class MuonBatch:
         return (self.x >= 0) * (self.x < lw[0]) * (self.y >= 0) * (self.y < lw[1])
 
     def snapshot_xyz(self) -> None:
-        self.xy_hist[self.z] = self.xy.cpu().detach().clone().numpy()
+        self.xy_hist[self.z.detach().cpu().clone().numpy()[0]] = self.xy.detach().cpu().clone().numpy()
 
     def append_hits(self, hits: Dict[str, Tensor], pos: str) -> None:
         for k in hits:
             self.hits[pos][k].append(hits[k])
 
     def get_hits(self, lw: Tensor) -> Dict[str, Dict[str, Tensor]]:
+        if len(self.hits) == 0:
+            raise ValueError("MuonBatch has no recorded hits")
         m = self.get_xy_mask(lw)
         return {p: {c: torch.stack(self.hits[p][c], dim=1)[m] for c in self.hits[p]} for p in self.hits}
 
@@ -127,8 +137,8 @@ class MuonBatch:
     def dtheta_y(self, mu: MuonBatch) -> Tensor:
         return torch.abs(self.theta_y - mu.theta_y)
 
-    def dr(self, mu: MuonBatch) -> Tensor:
+    def dtheta(self, mu: MuonBatch) -> Tensor:
         return torch.sqrt((self.dtheta_x(mu) ** 2) + (self.dtheta_y(mu) ** 2))
 
     def copy(self) -> MuonBatch:
-        return MuonBatch(self._muons.detach().clone(), init_z=self.z, device=self.device)
+        return MuonBatch(self._muons.detach().clone(), init_z=self.z.detach().clone(), device=self.device)

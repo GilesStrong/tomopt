@@ -59,8 +59,8 @@ class ScatterBatch:
         self._loc = q1 + (coefs[:, 2:3] * v3 / 2)  # Move halfway along v3 from q1
 
         # Theta deviations
-        self._theta_in = v1[:, 2:3] * torch.arctan(v1[:, :2])
-        self._theta_out = v2[:, 2:3] * torch.arctan(v2[:, :2])
+        self._theta_in = torch.arctan(v1[:, :2] / v1[:, 2:3])
+        self._theta_out = torch.arctan(v2[:, :2] / v2[:, 2:3])
         self._dtheta = torch.abs(self._theta_in - self._theta_out)
 
         # xy deviations
@@ -133,15 +133,17 @@ class ScatterBatch:
         scatter = self.location[idx].detach().cpu().numpy()
         fig, axs = plt.subplots(1, 2, figsize=(8, 4))
         axs[0].scatter(x, z)
-        axs[0].scatter(scatter[0], scatter[2])
+        axs[0].scatter(scatter[0], scatter[2], label=r"$\Delta\theta=" + f"{self.dtheta[idx,0]:.1e}$")
         axs[0].set_xlim(0, 1)
         axs[0].set_xlabel("x")
         axs[0].set_ylabel("z")
+        axs[0].legend()
         axs[1].scatter(y, z)
-        axs[1].scatter(scatter[1], scatter[2])
+        axs[1].scatter(scatter[1], scatter[2], label=r"$\Delta\theta=" + f"{self.dtheta[idx,1]:.1e}$")
         axs[1].set_xlim(0, 1)
         axs[1].set_xlabel("y")
         axs[1].set_ylabel("z")
+        axs[1].legend()
         plt.show
 
     def get_scatter_mask(self) -> Tensor:

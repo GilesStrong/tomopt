@@ -1,4 +1,4 @@
-from typing import Optional, Callable, Dict
+from typing import Optional, Callable, Dict, Tuple
 import math
 from abc import abstractmethod
 
@@ -17,6 +17,30 @@ class Layer(nn.Module):
         self.lw, self.z, self.size, self.device = lw, Tensor([z]), size, device
         self.rad_length: Optional[Tensor] = None
 
+    @staticmethod
+    def _compute_n_x0(*, x0: Tensor, deltaz: Tensor, theta: Tensor) -> Tensor:
+        return deltaz / (x0 * torch.cos(theta))
+
+    def _compute_displacements(self, *, n_x0: Tensor, deltaz: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+        n = len(n_x0)
+        z1 = torch.randn(n, device=self.device)
+        z2 = torch.randn(n, device=self.device)
+
+        theta0 = (SCATTER_COEF_A / mom) * torch.sqrt(n_x0)  # Ignore due to inversion problems * (1+(SCATTER_COEF_B*torch.log(x0)))
+        theta_msc = math.sqrt(2) * z2 * theta0
+        phi_msc = torch.rand(n, device=self.device) * 2 * math.pi
+        dh_msc = deltaz * torch.sin(theta0) * ((z1 / math.sqrt(12)) + (z2 / 2))
+
+        # Note that if a track incides on a layer
+        # with angle theta_mu, the dx and dy displacements are relative to zero angle
+        # (generation of MSC formulas are oblivious of angle of incidence) so we need
+        # to rescale them by cos of thetax and thetay.
+        dx = math.sqrt(2) * dh_msc * torch.cos(phi_msc) * torch.cos(theta_x)  # we need to account for direction of incident particle!
+        dy = math.sqrt(2) * dh_msc * torch.sin(phi_msc) * torch.cos(theta_y)  # ... so we project onto the surface of the layer
+        dtheta_x = theta_msc * torch.cos(phi_msc)
+        dtheta_y = theta_msc * torch.sin(phi_msc)
+        return dx, dy, dtheta_x, dtheta_y
+
     def scatter_and_propagate(self, mu: MuonBatch, deltaz: float) -> None:
         """
         This function produces a model of multiple scattering through a layer of material
@@ -27,30 +51,20 @@ class Layer(nn.Module):
 
         if self.rad_length is not None:
             mask = mu.get_xy_mask(self.lw)  # Only scatter muons inside volume
-            n = mask.sum().cpu().numpy()[0]
             xy_idx = self.mu_abs2idx(mu, mask)
 
-            x0 = self.rad_length[xy_idx[:, 0], xy_idx[:, 1]] * deltaz / torch.cos(mu.theta[mask])
-            z1 = torch.randn(n, device=self.device)
-            z2 = torch.randn(n, device=self.device)
+            x0 = self.rad_length[xy_idx[:, 0], xy_idx[:, 1]]
+            n_x0 = self._compute_n_x0(x0=x0, deltaz=deltaz, theta=mu.theta[mask])
+            dx, dy, dtheta_x, dtheta_y = self._compute_displacements(
+                n_x0=n_x0, deltaz=deltaz, theta_x=mu.theta_x[mask], theta_y=mu.theta_y[mask], mom=mu.mom[mask]
+            )
 
-            theta0 = (SCATTER_COEF_A / mu.p[mask]) * torch.sqrt(x0)  # Ignore due to inversion problems * (1+(SCATTER_COEF_B*torch.log(x0)))
-            theta_msc = math.sqrt(2) * z2 * theta0
-            phi_msc = torch.rand(n, device=self.device) * 2 * math.pi
-            dh_msc = deltaz * torch.sin(theta0) * ((z1 / math.sqrt(12)) + (z2 / 2))
-            dx_msc = math.sqrt(2) * dh_msc * torch.cos(phi_msc) * torch.cos(mu.theta_x[mask])  # we need to account for direction of incident particle!
-            dy_msc = math.sqrt(2) * dh_msc * torch.sin(phi_msc) * torch.cos(mu.theta_y[mask])  # ... so we project onto the surface of the layer
-
-            # Update to position at scattering. Note that if a track incides on a layer
-            # with angle theta_mu, the dx and dy displacements are relative to zero angle
-            # (generation of MSC formulas are oblivious of angle of incidence) so we need
-            # to rescale them by cos of thetax and thetay.
-            # ---------------------------------------------------------------------------
-            mu.x[mask] = mu.x[mask] + dx_msc
-            mu.y[mask] = mu.y[mask] + dy_msc
+            # Update to position at scattering.
+            mu.x[mask] = mu.x[mask] + dx
+            mu.y[mask] = mu.y[mask] + dy
             mu.propagate(deltaz)
-            mu.theta_x[mask] = mu.theta_x[mask] + theta_msc * torch.cos(phi_msc)
-            mu.theta_y[mask] = mu.theta_y[mask] + theta_msc * torch.sin(phi_msc)
+            mu.theta_x[mask] = mu.theta_x[mask] + dtheta_x
+            mu.theta_y[mask] = mu.theta_y[mask] + dtheta_y
         else:
             mu.propagate(deltaz)
 
@@ -73,8 +87,7 @@ class PassiveLayer(Layer):
         super().__init__(lw=lw, z=z, size=size, device=device)
         self.rad_length = rad_length_func(z=self.z, lw=self.lw, size=self.size).to(self.device)
 
-    def forward(self, mu: MuonBatch) -> None:
-        n = 2
+    def forward(self, mu: MuonBatch, n: int = 2) -> None:
         for _ in range(n):
             self.scatter_and_propagate(mu, deltaz=self.size / n)
 
