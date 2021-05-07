@@ -1,4 +1,5 @@
-<!-- [![CI](https://github.com/GilesStrong/mode_muon_tomography/actions/workflows/main.yml/badge.svg)](https://github.com/GilesStrong/mode_muon_tomography/actions) -->
+[![CI-tests](https://github.com/GilesStrong/mode_muon_tomography/actions/workflows/tests.yml/badge.svg)](https://github.com/GilesStrong/mode_muon_tomography/actions)
+[![CI-lints](https://github.com/GilesStrong/mode_muon_tomography/actions/workflows/linting.yml/badge.svg)](https://github.com/GilesStrong/mode_muon_tomography/actions)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 # TomOpt: Differential Muon Tomography Optimization
