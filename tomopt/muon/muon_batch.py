@@ -95,6 +95,14 @@ class MuonBatch:
         self._muons[:, 4] = theta_y
 
     @property
+    def theta_xy(self) -> Tensor:
+        return self._muons[:, 3:5]
+
+    @theta_xy.setter
+    def theta_xy(self, theta_xy: Tensor) -> None:
+        self._muons[:, 3:5] = theta_xy
+
+    @property
     def theta(self) -> Tensor:
         return torch.sqrt(((self.theta_x) ** 2) + ((self.theta_y) ** 2))
 

@@ -17,7 +17,8 @@ class Layer(nn.Module):
         self.lw, self.z, self.size, self.device = lw, Tensor([z]), size, device
         self.rad_length: Optional[Tensor] = None
 
-    def _compute_n_x0(self, *, x0: Tensor, deltaz: Tensor, theta: Tensor) -> Tensor:
+    @staticmethod
+    def _compute_n_x0(*, x0: Tensor, deltaz: Tensor, theta: Tensor) -> Tensor:
         return deltaz / (x0 * torch.cos(theta))
 
     def _compute_displacements(self, *, n_x0: Tensor, deltaz: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor) -> Tuple[Tensor, Tensor, Tensor, Tensor]:

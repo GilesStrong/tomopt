@@ -10,7 +10,7 @@ __all__ = ["X0Inferer"]
 
 
 class X0Inferer:
-    def __init__(self, scatters: ScatterBatch, default_pred: float = X0["beryllium"]):
+    def __init__(self, scatters: ScatterBatch, default_pred: Optional[float] = X0["beryllium"]):
         self.scatters, self.default_pred = scatters, default_pred
         self.mu, self.volume, self.hits = self.scatters.mu, self.scatters.volume, self.scatters.hits
         self.size, self.lw = self.volume.size, self.volume.lw
@@ -19,9 +19,17 @@ class X0Inferer:
     def x0_from_dtheta(self) -> Tuple[Tensor, Tensor]:
         r"""
         TODO: Debias by considering each voxel on muon paths
+        Maybe like:
+        Debias dtheta
+        dtheta_unc2 = dtheta_unc.pow(2)
+        dtheta_dbias = dtheta.pow(2)-dtheta_unc2
+        m = [dtheta_dbias < dtheta_unc2]
+        dtheta_dbias[m] = dtheta_unc2[m]
+        dtheta_dbias = dtheta_dbias.sqrt()
+        dtheta = dtheta_dbias
         """
 
-        p = self.mu.reco_mom[self.mu.get_xy_mask(self.lw)][self.mask]
+        mom = self.mu.reco_mom[self.mu.get_xy_mask(self.lw)][self.mask]
         dtheta = self.scatters.dtheta[self.mask]
         dtheta_unc = self.scatters.dtheta_unc[self.mask]
         theta_xy_in = self.scatters.theta_in[self.mask]
@@ -29,17 +37,9 @@ class X0Inferer:
         theta_xy_in_unc = self.scatters.theta_in_unc[self.mask]
         theta_xy_out_unc = self.scatters.theta_out_unc[self.mask]
 
-        # Debias dtheta
-        # dtheta_unc2 = dtheta_unc.pow(2)
-        # dtheta_dbias = dtheta.pow(2)-dtheta_unc2
-        # m = [dtheta_dbias < dtheta_unc2]
-        # dtheta_dbias[m] = dtheta_unc2[m]
-        # dtheta_dbias = dtheta_dbias.sqrt()
-        # dtheta = dtheta_dbias
-
         # Prediction
         theta2 = dtheta.pow(2).sum(1)
-        n_x0 = 0.5 * theta2 * ((p / SCATTER_COEF_A) ** 2)
+        n_x0 = 0.5 * theta2 * ((mom / SCATTER_COEF_A) ** 2)
         theta_in = theta_xy_in.pow(2).sum(1).sqrt()
         theta_out = theta_xy_out.pow(2).sum(1).sqrt()
         cos_theta_in = torch.cos(theta_in)
@@ -49,7 +49,7 @@ class X0Inferer:
 
         # Uncertainty TODO probably best check this
         theta2_unc = (2 * dtheta * dtheta_unc).pow(2).sum(1).sqrt()
-        n_x0_unc = 0.5 * theta2_unc * ((p / SCATTER_COEF_A) ** 2)
+        n_x0_unc = 0.5 * theta2_unc * ((mom / SCATTER_COEF_A) ** 2)
         theta_in2_unc = (2 * theta_xy_in * theta_xy_in_unc).pow(2).sum(1).sqrt()
         theta_in_unc = 0.5 * theta_in2_unc / theta_in
         theta_out2_unc = (2 * theta_xy_out * theta_xy_out_unc).pow(2).sum(1).sqrt()
@@ -114,6 +114,8 @@ class X0Inferer:
         return pred, weight
 
     def add_default_pred(self, pred: Tensor, weight: Tensor) -> None:
+        if self.default_pred is None:
+            return
         m = pred != pred  # mask NaNs
         pred[m] = self.default_pred
         weight[m] = 1 / (self.default_pred ** 2)

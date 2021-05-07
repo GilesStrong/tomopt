@@ -11,6 +11,7 @@ from tomopt.volume import PassiveLayer, DetectorLayer, Volume
 from tomopt.muon import MuonBatch, generate_batch
 from tomopt.core import X0
 from tomopt.inference import ScatterBatch, X0Inferer
+from tomopt.volume.layer import Layer
 
 LW = Tensor([1, 1])
 SZ = 0.1
@@ -147,7 +148,7 @@ def test_x0_inferer_methods(scatter_batch):
     assert (pt_unc / pt).mean() < 10
 
     pxy, pxy_unc = inferer.x0_from_dxy()
-    assert pxy is None and pxy_unc is None  # modify tests when  dxy predictions implemented
+    assert pxy is None and pxy_unc is None  # modify tests when dxy predictions implemented
 
     eff = inferer.compute_efficiency()
     assert (eff - 0.0625).abs().mean() < 1e-5
@@ -161,5 +162,29 @@ def test_x0_inferer_methods(scatter_batch):
     p2, w2 = inferer.pred_x0()
     assert p2.shape == true.shape
     assert w2.shape == true.shape
-    assert (p2 != p2).sum() == 0  # No NaNs
+    assert (p2 != p2).sum() == 0  # NaNs replaced with default prediction
     assert (((p2 - true)).abs() / true).mean() < 100
+
+
+def test_x0_inferer_scatter_inversion(mocker, scatter_batch):  # noqa F811
+    layer = Layer(LW, Z, SZ)
+    mu, volume, sb = scatter_batch
+    inferer = X0Inferer(scatters=sb, default_pred=X0["beryllium"])
+    x0 = X0["lead"]
+    n_x0 = layer._compute_n_x0(x0=x0, deltaz=SZ, theta=mu.theta)
+    mocker.patch("tomopt.volume.layer.torch.randn", lambda n, device: torch.ones(n, device=device))  # remove randomness
+    dx, dy, dtheta_x, dtheta_y = layer._compute_displacements(n_x0=n_x0, deltaz=SZ, theta_x=mu.theta_x, theta_y=mu.theta_y, mom=mu.mom)
+    dtheta = torch.stack([dtheta_x, dtheta_y], dim=1)
+
+    sb._dtheta = dtheta
+    sb._dtheta_unc = torch.ones_like(dtheta)
+    sb._theta_in = mu.theta_xy
+    sb._theta_in_unc = torch.ones_like(dtheta)
+    sb._theta_out = mu.theta_xy + dtheta
+    sb._theta_out_unc = torch.ones_like(dtheta)
+    mask = torch.ones_like(n_x0) > 0
+    inferer.mask = mask
+    mocker.patch.object(mu, "get_xy_mask", return_value=mask)
+
+    pred, weight = inferer.x0_from_dtheta()
+    assert (pred.mean() - x0) < 1e-5
