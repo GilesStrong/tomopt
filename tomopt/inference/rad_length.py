@@ -1,8 +1,7 @@
-from tomopt import volume
 from typing import Tuple, Optional
 
 import torch
-from torch import Tensor, nn
+from torch import Tensor
 
 from . import ScatterBatch
 from ..core import X0, SCATTER_COEF_A
@@ -94,31 +93,28 @@ class X0Inferer:
 
         loc, loc_unc = self.scatters.location[self.mask], self.scatters.location_unc[self.mask]  # noqa F841 will use loc_unc to infer around central voxel
         loc_idx = self.volume.lookup_xyz_coords(loc, passive_only=True)
-        idxs = torch.arange(len(loc)).long(), loc_idx[:, 2], loc_idx[:, 0], loc_idx[:, 1]
+        idxs = torch.stack((torch.arange(len(loc)).long(), loc_idx[:, 2], loc_idx[:, 0], loc_idx[:, 1]), dim=1)
+        shp = (len(loc), len(self.volume.get_passives()), *(self.volume.lw / self.volume.size).long())
 
         preds, weights = [], []
         for x0, unc in ((x0_dtheta, x0_dtheta_unc), (x0_dxy, x0_dxy_unc)):
             if x0 is None or unc is None:
                 continue
-            p = torch.zeros(len(loc), len(self.volume.get_passives()), *(self.volume.lw / self.volume.size).long())
-            w = torch.zeros(len(loc), len(self.volume.get_passives()), *(self.volume.lw / self.volume.size).long())
-            p[idxs] = p[idxs] + (efficiency * x0 / ((1e-17) + (unc ** 2)))
-            w[idxs] = w[idxs] + (efficiency / ((1e-17) + (unc ** 2)))
-
-            preds.append(p)
-            weights.append(w)
+            coef = efficiency * x0 / ((1e-17) + (unc ** 2))
+            p = torch.sparse_coo_tensor(idxs.T, x0 * coef, size=shp)
+            w = torch.sparse_coo_tensor(idxs.T, coef, size=shp)
+            preds.append(p.to_dense())
+            weights.append(w.to_dense())
 
         pred, weight = torch.cat(preds, dim=0), torch.cat(weights, dim=0)
         pred, weight = pred.sum(0), weight.sum(0)
         pred = pred / weight
         return pred, weight
 
-    def add_default_pred(self, pred: Tensor, weight: Tensor) -> None:
-        if self.default_pred is None:
-            return
-        m = pred != pred  # mask NaNs
-        pred[m] = self.default_pred
-        weight[m] = 1 / (self.default_pred ** 2)
+    def add_default_pred(self, pred: Tensor, weight: Tensor) -> Tuple[Tensor, Tensor]:
+        pred = torch.nan_to_num(pred, self.default_pred)
+        weight = torch.nan_to_num(weight, 1 / (self.default_pred ** 2))
+        return pred, weight
 
     def pred_x0(self) -> Tuple[Tensor, Tensor]:
         x0_dtheta, x0_dtheta_unc = self.x0_from_dtheta()
@@ -126,5 +122,8 @@ class X0Inferer:
         eff = self.compute_efficiency()
 
         pred, weight = self.average_preds(x0_dtheta=x0_dtheta, x0_dtheta_unc=x0_dtheta_unc, x0_dxy=x0_dxy, x0_dxy_unc=x0_dxy_unc, efficiency=eff)
-        self.add_default_pred(pred, weight)
+        if self.default_pred is not None:
+            pred, weight = self.add_default_pred(pred, weight)
+        torch.autograd.grad(pred.sum(), self.volume.get_detectors()[0].resolution, allow_unused=True, retain_graph=True)
+
         return pred, weight
