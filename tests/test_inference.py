@@ -34,9 +34,8 @@ def res_cost(x: Tensor) -> Tensor:
     return F.relu(x / 100) ** 2
 
 
-def get_layers(init_res: float = 1e4):
+def get_layers(init_res: float = 1e4, init_eff: float = 0.5):
     layers = []
-    init_eff = 0.5
     pos = "above"
     for z, d in zip(np.arange(Z, 0, -SZ), [1, 1, 0, 0, 0, 0, 0, 0, 1, 1]):
         if d:
@@ -172,13 +171,22 @@ def test_x0_inferer_methods(scatter_batch):
     assert p2.shape == true.shape
     assert w2.shape == true.shape
     assert (p2 != p2).sum() == 0  # NaNs replaced with default prediction
-    assert (((p2 - true)).abs() / true).mean() < 100
+    assert (p2_mse := (((p2 - true)).abs() / true).mean()) < 100  # noqa F841
 
     for l in volume.get_detectors():
         assert torch.autograd.grad(p2.abs().sum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
         assert torch.autograd.grad(p2.abs().sum(), l.efficiency, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
         assert torch.autograd.grad(w2.abs().sum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
         assert torch.autograd.grad(w2.abs().sum(), l.efficiency, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+
+    # # Higher efficiency improves prediction  # Need to rethink efficiency
+    # mu = MuonBatch(generate_batch(N), init_z=1)
+    # volume = Volume(get_layers(init_eff=1))
+    # volume(mu)
+    # sb = ScatterBatch(mu=mu, volume=volume)
+    # inferer = X0Inferer(scatters=sb, default_pred=X0["beryllium"])
+    # p_eff, w_eff = inferer.pred_x0()
+    # assert (((p_eff - true)).abs() / true).mean() < p2_mse
 
 
 def test_x0_inferer_scatter_inversion(mocker, scatter_batch):  # noqa F811
