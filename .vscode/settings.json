@@ -27,4 +27,5 @@
         "plaintext"
     ],
     "python.linting.flake8Enabled": true,
+    "python.pythonPath": "/Users/giles/anaconda3/envs/tomopt/bin/python",
 }

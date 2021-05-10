@@ -9,7 +9,7 @@ except ImportError:
 with open("README.md", encoding="utf-8") as fin:
     long_description = fin.read()
 
-dev_only = ["pre-commit, black"]
+dev_only = ["pre-commit", "black", "flake8", "mypy", "pytest", "pytest-mock"]
 with open("requirements.txt", encoding="utf-8") as f:
     requirements = [r for r in f.read().strip().split("\n") if r not in dev_only]
 
@@ -28,7 +28,7 @@ setup(
     keywords="deep learning, differential programming, physics, science, statistics, tomography, detector",
     packages=find_packages(),
     include_package_data=True,
-    python_requires=">=3.9",
+    python_requires=">=3.8",
     install_requires=requirements,
     license="GNU Affero General Public License v3.0",
     classifiers=[
