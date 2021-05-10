@@ -18,6 +18,7 @@ Checkout and install package:
 ```
 git clone git@github.com:GilesStrong/mode_muon_tomography.git
 cd mode_muon_tomography
+pip install -r requirements.txt
 pip install -e .
 ```
 
