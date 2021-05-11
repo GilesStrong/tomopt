@@ -107,8 +107,10 @@ def test_detector_layer(batch):
     assert hits["above"]["xy"].shape == torch.Size([batch.get_xy_mask(LW).sum(), 1, 2])
     assert torch.abs(hits["above"]["z"][0, 0, 0] - Z + (SZ / 2)) < 1e-5  # Hits located at z-centre of layer
 
+    # every reco hit (x,y) is function of resolution
     grad = jacobian(hits["above"]["xy"][:, 0], dl.resolution).sum((-1, -2))
-    assert ((grad == grad) * (grad != 0)).sum() == 2 * len(grad)  # every reco hit (x,y) is function of resolution
+    assert (grad == grad).sum() == 2 * len(grad)
+    assert ((grad == grad) * (grad != 0)).sum() > 0  # every reco hit (x,y) is function of resolution
 
 
 def get_layers():
@@ -184,4 +186,5 @@ def test_volume_forward(batch):
 
     for i, l in enumerate(volume.get_detectors()):
         grad = jacobian(hits["above" if l.z > 0.5 else "below"]["xy"][:, i % 2], l.resolution).sum((-1, -2))
-        assert ((grad == grad) * (grad != 0)).sum() == 2 * len(grad)  # every reco hit (x,y) is function of resolution
+        assert (grad == grad).sum() == 2 * len(grad)
+        assert ((grad == grad) * (grad != 0)).sum() > 0  # every reco hit (x,y) is function of resolution
