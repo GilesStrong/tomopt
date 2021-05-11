@@ -179,15 +179,6 @@ def test_x0_inferer_methods(scatter_batch):
         assert torch.autograd.grad(w2.abs().sum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
         assert torch.autograd.grad(w2.abs().sum(), l.efficiency, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
 
-    # # Higher efficiency improves prediction  # Need to rethink efficiency
-    # mu = MuonBatch(generate_batch(N), init_z=1)
-    # volume = Volume(get_layers(init_eff=1))
-    # volume(mu)
-    # sb = ScatterBatch(mu=mu, volume=volume)
-    # inferer = X0Inferer(scatters=sb, default_pred=X0["beryllium"])
-    # p_eff, w_eff = inferer.pred_x0()
-    # assert (((p_eff - true)).abs() / true).mean() < p2_mse
-
 
 def test_x0_inferer_scatter_inversion(mocker, scatter_batch):  # noqa F811
     layer = Layer(LW, Z, SZ)

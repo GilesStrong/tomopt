@@ -100,7 +100,7 @@ class X0Inferer:
         for x0, unc in ((x0_dtheta, x0_dtheta_unc), (x0_dxy, x0_dxy_unc)):
             if x0 is None or unc is None:
                 continue
-            coef = efficiency * x0 / ((1e-17) + (unc ** 2))
+            coef = efficiency / ((1e-17) + (unc ** 2))
             p = torch.sparse_coo_tensor(idxs.T, x0 * coef, size=shp)
             w = torch.sparse_coo_tensor(idxs.T, coef, size=shp)
             preds.append(p.to_dense())
@@ -124,6 +124,5 @@ class X0Inferer:
         pred, weight = self.average_preds(x0_dtheta=x0_dtheta, x0_dtheta_unc=x0_dtheta_unc, x0_dxy=x0_dxy, x0_dxy_unc=x0_dxy_unc, efficiency=eff)
         if self.default_pred is not None:
             pred, weight = self.add_default_pred(pred, weight)
-        torch.autograd.grad(pred.sum(), self.volume.get_detectors()[0].resolution, allow_unused=True, retain_graph=True)
 
         return pred, weight
