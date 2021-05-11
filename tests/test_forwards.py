@@ -58,7 +58,7 @@ def inferer():
 def test_forwards(inferer):
     pred, weight = inferer.pred_x0()
     loss_func = DetectorLoss(1e-5)
-    loss_val = loss_func(pred, inferer.volume)
+    loss_val = loss_func(pred, weight, inferer.volume)
 
     for l in inferer.volume.get_detectors():
         assert torch.autograd.grad(loss_val, l.resolution, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
