@@ -61,7 +61,8 @@ def test_scatter_batch_properties(scatter_batch):
 
     assert sb.hits["above"]["z"].shape == mu.get_hits(LW)["above"]["z"].shape
 
-    assert (loc_unc := sb.location_unc.mean() / sb.location.abs().mean()) < 10
+    assert (loc_unc := sb.location_unc[:, :2].mean()) < 0.5
+    assert (loc_unc := sb.location_unc[:, 2].mean()) < 0.5
     assert (dxy_unc := (sb.dxy_unc / sb.dxy).abs().mean()) < 10
     assert (dtheta_unc := (sb.dtheta_unc / sb.dtheta).mean()) < 10
     assert (theta_out_unc := sb.theta_out_unc.mean() / sb.theta_out.abs().mean()) < 10
@@ -164,7 +165,6 @@ def test_x0_inferer_methods(scatter_batch):
     assert p.shape == true.shape
     assert w.shape == true.shape
     mask = p == p
-    print(p)
     assert (((p - true)[mask]).abs() / true[mask]).mean() < 100
 
     p2, w2 = inferer.pred_x0()

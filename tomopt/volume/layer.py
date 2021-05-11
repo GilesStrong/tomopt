@@ -4,6 +4,7 @@ from abc import abstractmethod
 
 import torch
 from torch import nn, Tensor
+import torch.nn.functional as F
 
 from ..core import DEVICE, SCATTER_COEF_A
 from ..muon import MuonBatch
@@ -113,20 +114,20 @@ class DetectorLayer(Layer):
 
     def get_hits(self, mu: MuonBatch) -> Dict[str, Tensor]:  # to dense and add precision
         mask = mu.get_xy_mask(self.lw)
-        res, eff = torch.zeros(len(mu), device=self.device), torch.zeros(len(mu), device=self.device)  # Zero detection outside detector
+        res = torch.zeros(len(mu), device=self.device)  # Zero detection outside detector
         xy_idxs = self.mu_abs2idx(mu, mask)
         res[mask] = self.resolution[xy_idxs[:, 0], xy_idxs[:, 1]]
-        eff[mask] = self.efficiency[xy_idxs[:, 0], xy_idxs[:, 1]]
+        res = F.relu(res[:, None]) + 1e-17
 
-        # TODO clamp deviation so that reco hit is always inside gen hit's detector element
+        xy0 = torch.zeros((len(mu), 2), device=self.device)
+        xy0[mask] = xy_idxs.float() * self.size  # Low-left of voxel
+        rel_xy = mu.xy - xy0
+        reco_rel_xy = rel_xy + (torch.randn((len(mu), 2), device=self.device) / res)
+        reco_rel_xy = torch.clamp(reco_rel_xy, 0, self.size)  # Prevent reco hit from exiting triggering voxel
+        reco_xy = xy0 + reco_rel_xy
+
         hits = {
-            "xy": torch.stack(
-                [
-                    mu.x + (torch.randn(len(mu), device=self.device) / (torch.abs(res) + 1e-17)),  # Inverse resolution
-                    mu.y + (torch.randn(len(mu), device=self.device) / (torch.abs(res) + 1e-17)),
-                ],
-                dim=1,
-            ),
+            "xy": reco_xy,
             "z": self.z.expand_as(mu.x)[:, None] - (self.size / 2),
         }
         return hits
