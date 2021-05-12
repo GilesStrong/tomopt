@@ -84,8 +84,12 @@ class Layer(nn.Module):
 
 
 class PassiveLayer(Layer):
-    def __init__(self, rad_length_func: Callable[..., Tensor], lw: Tensor, z: float, size: float, device: torch.device = DEVICE):
+    def __init__(self, lw: Tensor, z: float, size: float, rad_length_func: Optional[Callable[..., Tensor]] = None, device: torch.device = DEVICE):
         super().__init__(lw=lw, z=z, size=size, device=device)
+        if rad_length_func is not None:
+            self.load_rad_length(rad_length_func)
+
+    def load_rad_length(self, rad_length_func: Callable[..., Tensor]) -> None:
         self.rad_length = rad_length_func(z=self.z, lw=self.lw, size=self.size).to(self.device)
 
     def forward(self, mu: MuonBatch, n: int = 2) -> None:

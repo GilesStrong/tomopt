@@ -38,6 +38,14 @@ def test_layer(batch):
     assert torch.all(l.mu_abs2idx(batch)[0] == Tensor([5, 7]))
 
 
+def test_passive_layer_methods():
+    pl = PassiveLayer(lw=LW, z=Z, size=SZ)
+    assert pl.rad_length is None
+
+    pl.load_rad_length(arb_rad_length)
+    assert torch.all(pl.rad_length == arb_rad_length(z=Z, lw=LW, size=SZ))
+
+
 def test_passive_layer_forwards(batch):
     # Normal scattering
     pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=Z, size=SZ)
@@ -165,6 +173,18 @@ def test_volume_methods():
 
         volume.lookup_xyz_coords(Tensor([0.55, 0.63, 0]), passive_only=True)
         volume.lookup_xyz_coords(Tensor([0.55, 0.63, 1]), passive_only=True)
+
+    def arb_rad_length2(*, z: float, lw: Tensor, size: float) -> float:
+        rad_length = torch.ones(list((lw / size).long())) * X0["aluminium"]
+        if z < 0.5:
+            rad_length[...] = X0["lead"]
+        return rad_length
+
+    volume.load_rad_length(arb_rad_length2)
+    cube = volume.get_rad_cube()
+    assert cube.shape == torch.Size([6] + list((LW / SZ).long()))
+    assert torch.all(cube[0] == arb_rad_length2(z=SZ, lw=LW, size=SZ))  # cube reversed to match lookup_xyz_coords: layer zero = bottom layer
+    assert torch.all(cube[-1] == arb_rad_length2(z=Z, lw=LW, size=SZ))
 
 
 def test_volume_forward(batch):

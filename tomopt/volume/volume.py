@@ -1,4 +1,4 @@
-from typing import Tuple, List
+from typing import Tuple, List, Callable
 
 import torch
 from torch import nn, Tensor
@@ -41,6 +41,10 @@ class Volume(nn.Module):
             if n := (((xyz[:, :2] > self.lw) + (xyz[:, :2] < 0)).sum(1) + (xyz[:, 2] < 0) + ((xyz[:, 2] > self.h))).sum():
                 raise ValueError(f"{n} Coordinates outside volume")
         return torch.floor(xyz / self.size).long()
+
+    def load_rad_length(self, rad_length_func: Callable[..., Tensor]) -> None:
+        for p in self.get_passives():
+            p.load_rad_length(rad_length_func)
 
     def forward(self, mu: MuonBatch) -> None:  # Expand to take volume as input, too
         for l in self.layers:
