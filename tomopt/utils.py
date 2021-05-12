@@ -7,10 +7,10 @@ from torch._vmap_internals import _vmap as vmap
 __all__ = ["jacobian"]
 
 
-if LooseVersion(torch.__version__) not in [LooseVersion("1.8.1")]:
+if (ver := LooseVersion(torch.__version__).vstring.split("+")[0]) not in ["1.8.1"]:
     raise ImportError(
         f"jacobian function relies on PyTorch vmap, which is experimental and has only been tested for use in this repo using torch==1.8.1, \
-          your current version is {LooseVersion(torch.__version__)}, please install 1.8.1 or test in your version and update this error message."
+          your current version is {ver}, please install 1.8.1 or test in your version and update this error message."
     )
 
 
