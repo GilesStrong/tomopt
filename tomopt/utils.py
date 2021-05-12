@@ -1,19 +1,23 @@
+from distutils.version import LooseVersion
+
 import torch
 from torch import Tensor
+from torch._vmap_internals import _vmap as vmap
 
 __all__ = ["jacobian"]
 
 
+if LooseVersion(torch.__version__) not in [LooseVersion("1.8.1")]:
+    raise ImportError(
+        f"jacobian function relies on PyTorch vmap, which is experimental and has only been tested for use in this repo using torch==1.8.1, \
+          your current version is {LooseVersion(torch.__version__)}, please install 1.8.1 or test in your version and update this error message."
+    )
+
+
 def jacobian(y: Tensor, x: Tensor, create_graph: bool = False, allow_unused: bool = True) -> Tensor:
-    r"""Compute full jacobian matrix for single tensor. Call twice for hessian.
-    Copied from https://gist.github.com/apaszke/226abdf867c4e9d6698bd198f3b45fb7 credits: Adam Paszke
-    TODO: Fix this to work batch-wise (maybe https://gist.github.com/sbarratt/37356c46ad1350d4c30aefbd488a4faa)"""
-    jac = []
     flat_y = y.reshape(-1)
-    grad_y = torch.zeros_like(flat_y)
-    for i in range(len(flat_y)):
-        grad_y[i] = 1.0
-        (grad_x,) = torch.autograd.grad(flat_y, x, grad_y, retain_graph=True, create_graph=create_graph, allow_unused=allow_unused)
-        jac.append(grad_x.reshape(x.shape))
-        grad_y[i] = 0.0
-    return torch.stack(jac).reshape(y.shape + x.shape)
+
+    def get_vjp(v: Tensor) -> Tensor:
+        return torch.autograd.grad(flat_y, x, v, retain_graph=True, create_graph=create_graph, allow_unused=allow_unused)[0].reshape(x.shape)
+
+    return vmap(get_vjp)(torch.eye(len(flat_y))).reshape(y.shape + x.shape)

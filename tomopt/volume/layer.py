@@ -117,7 +117,7 @@ class DetectorLayer(Layer):
         res = torch.zeros(len(mu), device=self.device)  # Zero detection outside detector
         xy_idxs = self.mu_abs2idx(mu, mask)
         res[mask] = self.resolution[xy_idxs[:, 0], xy_idxs[:, 1]]
-        res = F.relu(res[:, None]) + 1e-17
+        res = F.relu(res[:, None]) + 1e-17  # Negative resolution --> zero+eps due to cost function def
 
         xy0 = torch.zeros((len(mu), 2), device=self.device)
         xy0[mask] = xy_idxs.float() * self.size  # Low-left of voxel
