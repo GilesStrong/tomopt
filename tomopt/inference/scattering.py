@@ -148,4 +148,11 @@ class ScatterBatch:
 
     def get_scatter_mask(self) -> Tensor:
         z = self.volume.get_passive_z_range()
-        return (self.location[:, 2] >= z[0]) * (self.location[:, 2] < z[1])
+        return (
+            (self.location[:, 0] >= 0)
+            * (self.location[:, 0] < self.volume.lw[0])
+            * (self.location[:, 1] >= 0)
+            * (self.location[:, 1] < self.volume.lw[1])
+            * (self.location[:, 2] >= z[0])
+            * (self.location[:, 2] < z[1])
+        )
