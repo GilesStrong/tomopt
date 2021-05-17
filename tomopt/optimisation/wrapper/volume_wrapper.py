@@ -9,9 +9,9 @@ import torch
 from torch import nn, Tensor
 
 from ..data import PassiveYielder
-from ..callback import MetricLogger, PredHandler
-from ..callback.callback import Callback
-from ..callback.cyclic_callbacks import CyclicCallback
+from ..callbacks import MetricLogger, PredHandler
+from ..callbacks.callback import Callback
+from ..callbacks.cyclic_callbacks import CyclicCallback
 from ...loss import DetectorLoss
 from ...volume import Volume, DetectorLayer
 from ...core import X0
