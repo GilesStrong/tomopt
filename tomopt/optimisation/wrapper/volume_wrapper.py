@@ -1,7 +1,7 @@
 from __future__ import annotations
-from fastcore.all import is_listy, Path
+from fastcore.all import Path
 from fastprogress import progress_bar
-from typing import Callable, Iterator, Optional, List, Union, Any
+from typing import Callable, Iterator, Optional, List, Any
 from collections import OrderedDict
 from fastprogress.fastprogress import ProgressBar
 
