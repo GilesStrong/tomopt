@@ -149,6 +149,7 @@ class VolumeWrapper:
                 self.fit_params.loss_val = self.fit_params.loss_val + loss
 
     def _scan_volumes(self, passives: PassiveYielder) -> None:
+        """For now volume batch-size == number of volumes"""
         self.fit_params.loss_val = None
         for i, passive in enumerate(passives):
             self.fit_params.volume_id = i
@@ -160,6 +161,43 @@ class VolumeWrapper:
                 c.on_volume_end()
         if self.fit_params.loss_val is not None:
             self.fit_params.mean_loss = self.fit_params.loss_val / len(passives)
+
+    def _fit_epoch(self) -> None:
+        self.fit_params.epoch += 1
+        comment = ""
+
+        # Training
+        self.volume.train()
+        self.fit_params.state = "train"
+        for c in self.fit_params.cbs:
+            c.on_epoch_begin()
+        self._scan_volumes(self.fit_params.trn_passives)  # Gain losses for all volumes
+        # Compute update step
+        self.res_opt.zero_grad()
+        self.eff_opt.zero_grad()
+        for c in self.fit_params.cbs:
+            c.on_backwards_begin()
+        self.fit_params.loss_val.backward()
+        for c in self.fit_params.cbs:
+            c.on_backwards_end()
+        self.res_opt.step()
+        self.eff_opt.step()
+        for c in self.fit_params.cbs:
+            c.on_epoch_end()
+        comment = f"Trn loss {self.fit_params.mean_loss:.2f}"
+
+        # Validation
+        if self.fit_params.val_passives is not None:
+            self.volume.eval()
+            for c in self.fit_params.cbs:
+                c.on_epoch_begin()
+            self._scan_volumes(self.fit_params.val_passives)
+            for c in self.fit_params.cbs:
+                c.on_epoch_end()
+            comment += f"Val loss {self.fit_params.mean_loss:.2f}"
+
+        if self.fit_params.epoch_bar is not None:
+            self.fit_params.epoch_bar.comment = comment
 
     def fit(
         self,
@@ -199,42 +237,6 @@ class VolumeWrapper:
             val_passives=val_passives,
         )
         self.fit_params.cb_savepath.mkdir(parents=True, exist_ok=True)
-
-        def fit_epoch() -> None:
-            self.fit_params.epoch += 1
-            comment = ""
-
-            # Training
-            self.volume.train()
-            self.fit_params.state = "train"
-            for c in self.fit_params.cbs:
-                c.on_epoch_begin()
-            self._scan_volumes(self.fit_params.trn_passives)  # Gain losses for all volumes
-            # Compute update step
-            self.res_opt.zero_grad()
-            self.eff_opt.zero_grad()
-            for c in self.fit_params.cbs:
-                c.on_backwards_begin()
-            self.fit_params.loss_val.backward()
-            for c in self.fit_params.cbs:
-                c.on_backwards_end()
-            self.res_opt.step()
-            self.eff_opt.step()
-            for c in self.fit_params.cbs:
-                c.on_epoch_end()
-            comment = f"Trn loss {self.fit_params.mean_loss:.2f}"
-
-            # Validation
-            if self.fit_params.val_passives is not None:
-                self.volume.eval()
-                for c in self.fit_params.cbs:
-                    c.on_epoch_begin()
-                self._scan_volumes(self.fit_params.val_passives)
-                for c in self.fit_params.cbs:
-                    c.on_epoch_end()
-                comment += f"Val loss {self.fit_params.mean_loss:.2f}"
-            self.fit_params.epoch_bar.comment = comment
-
         try:
             for c in self.fit_params.cbs:
                 c.set_wrapper(self)
@@ -242,7 +244,7 @@ class VolumeWrapper:
                 c.on_train_begin()
             self.fit_params.epoch_bar = progress_bar(range(self.fit_params.n_epochs))
             for e in self.fit_params.epoch_bar:
-                fit_epoch()
+                self._fit_epoch()
                 if self.fit_params.stop:
                     break
             for c in self.fit_params.cbs:
@@ -288,14 +290,6 @@ class VolumeWrapper:
             cbs.pop()  # Remove pred_cb to avoid mutating cbs
             torch.cuda.empty_cache()
         return pred_cb.get_preds()
-
-    @property
-    def weights(self) -> OrderedDict:
-        return self.volume.state_dict()
-
-    @weights.setter
-    def weights(self, weights: OrderedDict) -> None:
-        self.volume.load_state_dict(weights)
 
     @property
     def eff_lr(self) -> float:

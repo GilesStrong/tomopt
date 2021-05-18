@@ -6,18 +6,23 @@
 
 ## Installation
 
-Minimum python version is 3.8. Recommend creating a virtual environment, e.g.:
 
+
+Checkout package:
+
+```
+git clone git@github.com:GilesStrong/mode_muon_tomography.git
+cd mode_muon_tomography
+```
+
+Minimum python version is 3.8. Recommend creating a virtual environment.
 ```
 conda env create -f environment.yml
 conda activate tomopt
 ```
 
-Checkout and install package:
-
+Install package and dependencies
 ```
-git clone git@github.com:GilesStrong/mode_muon_tomography.git
-cd mode_muon_tomography
 pip install -r requirements.txt
 pip install -e .
 ```
@@ -26,6 +31,20 @@ Install git-hooks:
 
 ```
 pre-commit install
+```
+
+## Testing
+
+Testing is handled by `pytest` and is set up to run during pull requests. Tests can be manually ran locally via:
+
+```
+pytest tests/
+```
+
+to run all tests, or, e.g.:
+
+```
+pytests tests/test_muon.py
 ```
 
 ## Description
