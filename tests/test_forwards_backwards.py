@@ -1,4 +1,3 @@
-from tomopt.loss.loss import DetectorLoss
 import pytest
 import numpy as np
 
@@ -10,6 +9,7 @@ from tomopt.core import X0
 from tomopt.volume import Volume, PassiveLayer, DetectorLayer
 from tomopt.muon import MuonBatch, generate_batch
 from tomopt.inference import ScatterBatch, X0Inferer
+from tomopt.loss.loss import DetectorLoss
 
 LW = Tensor([1, 1])
 SZ = 0.1
@@ -63,3 +63,18 @@ def test_forwards(inferer):
     for l in inferer.volume.get_detectors():
         assert torch.autograd.grad(loss_val, l.resolution, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
         assert torch.autograd.grad(loss_val, l.efficiency, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+
+
+def test_backwards(inferer):
+    pred, weight = inferer.pred_x0()
+    loss_func = DetectorLoss(0.15)
+    loss_val = loss_func(pred, weight, inferer.volume)
+    opt = torch.optim.SGD(inferer.volume.parameters(), lr=1)
+    opt.zero_grad()
+    loss_val.backward()
+    for p in inferer.volume.parameters():
+        assert p.grad is not None
+    opt.step()
+    for l in inferer.volume.get_detectors():
+        assert l.resolution.mean() != 1e4
+        assert l.efficiency.mean() != 0.5

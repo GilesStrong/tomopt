@@ -52,6 +52,7 @@ class VolumeWrapper:
     def __init__(
         self,
         volume: Volume,
+        *,
         res_opt: Callable[[Iterator[nn.Parameter]], torch.optim.Optimizer],
         eff_opt: Callable[[Iterator[nn.Parameter]], torch.optim.Optimizer],
         loss_func: Optional[DetectorLoss],
