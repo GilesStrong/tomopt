@@ -85,6 +85,7 @@ class VolumeWrapper:
     def from_save(
         cls,
         name: str,
+        *,
         volume: Volume,
         res_opt: Callable[[Iterator[nn.Parameter]], torch.optim.Optimizer],
         eff_opt: Callable[[Iterator[nn.Parameter]], torch.optim.Optimizer],
