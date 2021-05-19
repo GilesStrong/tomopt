@@ -1,6 +1,5 @@
 from functools import partial
 from pathlib import Path
-from tomopt.optimisation.data.passives import PassiveYielder
 import pytest
 from pytest_mock import mocker  # noqa F401
 import numpy as np
@@ -13,8 +12,10 @@ from tomopt.core import X0
 from tomopt.volume import Volume, PassiveLayer, DetectorLayer
 from tomopt.optimisation.wrapper.volume_wrapper import VolumeWrapper, FitParams
 from tomopt.optimisation.callbacks.callback import Callback
+from tomopt.optimisation.callbacks.cyclic_callbacks import CyclicCallback
+from tomopt.optimisation.callbacks.metric_logging import MetricLogger
+from tomopt.optimisation.data.passives import PassiveYielder
 from tomopt.loss.loss import DetectorLoss
-from tomopt.muon.generation import generate_batch
 
 LW = Tensor([1, 1])
 SZ = 0.1
@@ -220,3 +221,36 @@ def test_volume_wrapper_fit_epoch(mocker):  # noqa F811
     assert vw.eff_opt.step.call_count == 1
     assert volume.train.call_count == 2  # eval calls train(False)
     assert volume.eval.call_count == 1
+
+
+def test_volume_wrapper_sort_cbs():
+    class LossCallback(Callback):
+        def get_loss():
+            pass
+
+    cbs = [Callback(), CyclicCallback(), LossCallback(), MetricLogger()]
+    cyclic_cbs, loss_cbs, metric_log = VolumeWrapper._sort_cbs(cbs)
+    assert len(cyclic_cbs) == 1
+    assert cyclic_cbs[0] == cbs[1]
+    assert len(loss_cbs) == 1
+    assert loss_cbs[0] == cbs[2]
+    assert metric_log == cbs[3]
+
+
+def test_volume_wrapper_fit(mocker):  # noqa F811
+    volume = Volume(get_layers())
+    vw = VolumeWrapper(volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(0.15))
+    trn_py = PassiveYielder([arb_rad_length, arb_rad_length, arb_rad_length])
+    val_py = PassiveYielder([arb_rad_length, arb_rad_length])
+    cb = Callback()
+    mocker.spy(cb, "set_wrapper")
+    mocker.spy(cb, "on_train_begin")
+    mocker.spy(cb, "on_train_end")
+    mocker.spy(vw, "_fit_epoch")
+
+    vw.fit(n_epochs=2, n_mu_per_volume=100, mu_bs=100, trn_passives=trn_py, val_passives=val_py, cbs=[cb])
+
+    assert cb.set_wrapper.call_count == 1
+    assert cb.on_train_begin.call_count == 1
+    assert cb.on_train_end.call_count == 1
+    assert vw._fit_epoch.call_count == 2

@@ -1,8 +1,7 @@
 from __future__ import annotations
 from fastcore.all import Path
 from fastprogress import progress_bar
-from typing import Callable, Iterator, Optional, List, Any
-from collections import OrderedDict
+from typing import Callable, Iterator, Optional, List, Any, Tuple
 from fastprogress.fastprogress import ProgressBar
 
 import torch
@@ -199,11 +198,22 @@ class VolumeWrapper:
         if self.fit_params.epoch_bar is not None:
             self.fit_params.epoch_bar.comment = comment
 
+    @staticmethod
+    def _sort_cbs(cbs: List[Callback]) -> Tuple[List[CyclicCallback], List[Callback], Optional[MetricLogger]]:
+        cyclic_cbs, loss_cbs, metric_log = [], [], None
+        for c in cbs:
+            if isinstance(c, CyclicCallback):
+                cyclic_cbs.append(c)  # CBs that might prevent a wrapper from stopping training due to a hyper-param cycle
+            if hasattr(c, "get_loss"):
+                loss_cbs.append(c)  # CBs that produce alternative losses that should be considered
+            if isinstance(c, MetricLogger):
+                metric_log = c  # CB that logs losses and eval_metrics
+        return cyclic_cbs, loss_cbs, metric_log
+
     def fit(
         self,
         n_epochs: int,
         n_mu_per_volume: int,
-        passive_bs: int,
         mu_bs: int,
         trn_passives: PassiveYielder,
         val_passives: Optional[PassiveYielder],
@@ -213,14 +223,7 @@ class VolumeWrapper:
 
         if cbs is None:
             cbs = []
-        cyclic_cbs, loss_cbs, metric_log = [], [], None
-        for c in cbs:
-            if isinstance(c, CyclicCallback):
-                cyclic_cbs.append(c)  # CBs that might prevent a wrapper from stopping training due to a hyper-param cycle
-            if hasattr(c, "get_loss"):
-                loss_cbs.append(c)  # CBs that produce alternative losses that should be considered
-            if isinstance(c, MetricLogger):
-                metric_log = c  # CB that logs losses and eval_metrics
+        cyclic_cbs, loss_cbs, metric_log = self._sort_cbs(cbs)
 
         self.fit_params = FitParams(
             cbs=cbs,
@@ -229,7 +232,6 @@ class VolumeWrapper:
             metric_log=metric_log,
             stop=False,
             n_epochs=n_epochs,
-            passive_bs=passive_bs,
             mu_bs=mu_bs,
             n_mu_per_volume=n_mu_per_volume,
             cb_savepath=Path(cb_savepath),
