@@ -127,7 +127,7 @@ class DetectorLayer(Layer):
         xy0[mask] = xy_idxs.float() * self.size  # Low-left of voxel
         rel_xy = mu.xy - xy0
         reco_rel_xy = rel_xy + (torch.randn((len(mu), 2), device=self.device) / res)
-        reco_rel_xy = torch.clamp(reco_rel_xy, 0, self.size)  # Prevent reco hit from exiting triggering voxel
+        reco_rel_xy = torch.clamp(reco_rel_xy, 0, self.size - 1e-7)  # Prevent reco hit from exiting triggering voxel
         reco_xy = xy0 + reco_rel_xy
 
         hits = {

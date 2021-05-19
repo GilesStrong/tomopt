@@ -15,6 +15,10 @@ class X0Inferer:
         self.mu, self.volume, self.hits = self.scatters.mu, self.scatters.volume, self.scatters.hits
         self.size, self.lw = self.volume.size, self.volume.lw
         self.mask = self.scatters.get_scatter_mask()
+        if self.default_pred is not None:
+            self.default_weight = 1 / (self.default_pred ** 2)
+            self.default_weight_t = Tensor([self.default_weight]).to(self.mu.device)
+            self.default_pred_t = Tensor([self.default_pred]).to(self.mu.device)
 
     def x0_from_dtheta(self) -> Tuple[Tensor, Tensor]:
         r"""
@@ -96,33 +100,35 @@ class X0Inferer:
         idxs = torch.stack((torch.arange(len(loc)).long(), loc_idx[:, 2], loc_idx[:, 0], loc_idx[:, 1]), dim=1)
         shp = (len(loc), len(self.volume.get_passives()), *(self.volume.lw / self.volume.size).long())
 
-        preds, weights = [], []
+        wpreds, weights = [], []
         for x0, unc in ((x0_dtheta, x0_dtheta_unc), (x0_dxy, x0_dxy_unc)):
             if x0 is None or unc is None:
                 continue
             coef = efficiency / ((1e-17) + (unc ** 2))
             p = torch.sparse_coo_tensor(idxs.T, x0 * coef, size=shp)
             w = torch.sparse_coo_tensor(idxs.T, coef, size=shp)
-            preds.append(p.to_dense())
+            wpreds.append(p.to_dense())
             weights.append(w.to_dense())
 
-        pred, weight = torch.cat(preds, dim=0), torch.cat(weights, dim=0)
-        pred, weight = pred.sum(0), weight.sum(0)
-        pred = pred / weight
+        wpred, weight = torch.cat(wpreds, dim=0), torch.cat(weights, dim=0)
+        wpred, weight = wpred.sum(0), weight.sum(0)
+        pred = wpred / weight
         return pred, weight
 
     def add_default_pred(self, pred: Tensor, weight: Tensor) -> Tuple[Tensor, Tensor]:
         pred = torch.nan_to_num(pred, self.default_pred)
-        weight = torch.nan_to_num(weight, 1 / (self.default_pred ** 2))
+        pred = torch.where(pred == 0.0, self.default_pred_t, pred)
+        weight = torch.nan_to_num(weight, self.default_weight)
+        weight = torch.where(weight == 0.0, self.default_weight_t, weight)
         return pred, weight
 
-    def pred_x0(self) -> Tuple[Tensor, Tensor]:
+    def pred_x0(self, inc_default: bool = True) -> Tuple[Tensor, Tensor]:
         x0_dtheta, x0_dtheta_unc = self.x0_from_dtheta()
         x0_dxy, x0_dxy_unc = self.x0_from_dxy()
         eff = self.compute_efficiency()
 
         pred, weight = self.average_preds(x0_dtheta=x0_dtheta, x0_dtheta_unc=x0_dtheta_unc, x0_dxy=x0_dxy, x0_dxy_unc=x0_dxy_unc, efficiency=eff)
-        if self.default_pred is not None:
+        if inc_default and self.default_pred is not None:
             pred, weight = self.add_default_pred(pred, weight)
 
         return pred, weight
