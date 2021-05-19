@@ -258,9 +258,9 @@ class VolumeWrapper:
 
     def predict(
         self,
+        passives: PassiveYielder,
         n_mu_per_volume: int,
         mu_bs: int,
-        passives: PassiveYielder,
         pred_cb: PredHandler = PredHandler(),
         cbs: Optional[List[Callback]] = None,
         cb_savepath: Path = Path("train_weights"),

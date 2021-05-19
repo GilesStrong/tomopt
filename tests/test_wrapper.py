@@ -1,5 +1,6 @@
 from functools import partial
 from pathlib import Path
+from tomopt.optimisation.callbacks.pred_callbacks import PredHandler
 import pytest
 from pytest_mock import mocker  # noqa F401
 import numpy as np
@@ -254,3 +255,27 @@ def test_volume_wrapper_fit(mocker):  # noqa F811
     assert cb.on_train_begin.call_count == 1
     assert cb.on_train_end.call_count == 1
     assert vw._fit_epoch.call_count == 2
+
+
+def test_volume_wrapper_predict(mocker):  # noqa F811
+    volume = Volume(get_layers())
+    vw = VolumeWrapper(volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(0.15))
+    py = PassiveYielder([arb_rad_length, arb_rad_length, arb_rad_length])
+    cbs = [Callback()]
+    pred_cb = PredHandler()
+    for c in [cbs[0], pred_cb]:
+        mocker.spy(c, "set_wrapper")
+        mocker.spy(c, "on_pred_begin")
+        mocker.spy(c, "on_pred_end")
+    mocker.spy(c, "get_preds")
+
+    preds = vw.predict(py, n_mu_per_volume=100, mu_bs=100, pred_cb=pred_cb, cbs=cbs)
+
+    for c in [cbs[0], pred_cb]:
+        assert c.set_wrapper.call_count == 1
+        assert c.on_pred_begin.call_count == 1
+        assert c.on_pred_end.call_count == 1
+    assert pred_cb.get_preds.call_count == 1
+    assert len(cbs) == 1
+    assert len(preds) == 3
+    assert preds[0].shape == (6, 10, 10)
