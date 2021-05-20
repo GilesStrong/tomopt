@@ -36,6 +36,12 @@ class Callback:
     def on_volume_end(self) -> None:
         pass
 
+    def on_volume_batch_begin(self) -> None:
+        pass
+
+    def on_volume_batch_end(self) -> None:
+        pass
+
     def on_mu_batch_begin(self) -> None:
         pass
 
