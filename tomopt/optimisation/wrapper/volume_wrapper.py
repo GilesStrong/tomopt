@@ -19,6 +19,27 @@ from ...inference import ScatterBatch, X0Inferer
 
 __all__ = ["VolumeWrapper"]
 
+r"""
+This FitParams and VolumeWrapper are modified versions of the FitParams in LUMIN (https://github.com/GilesStrong/lumin/blob/v0.7.2/lumin/nn/models/abs_model.py#L16)
+and Model in LUMIN (https://github.com/GilesStrong/lumin/blob/master/lumin/nn/models/model.py#L32), distributed under the following lincence:
+    Copyright 2018 onwards Giles Strong
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+Usage is compatible with the AGPL licence underwhich TomOpt is distributed.
+Stated changes: adaption of FitParams to pass type-checking, heavy adaptation of Model to be suitable for task specific training
+"""
+
 
 class FitParams:
     state: Optional[str] = None
@@ -37,6 +58,7 @@ class FitParams:
     trn_passives: Optional[PassiveYielder] = None
     val_passives: Optional[PassiveYielder] = None
     tst_passives: Optional[PassiveYielder] = None
+    passive_bs: Optional[int] = None
     mean_loss: Optional[Tensor] = None
     n_epochs: Optional[int] = None
     epoch_bar: Optional[ProgressBar] = None
@@ -148,55 +170,60 @@ class VolumeWrapper:
                 self.fit_params.loss_val = self.fit_params.loss_val + loss
 
     def _scan_volumes(self, passives: PassiveYielder) -> None:
-        """For now volume batch-size == number of volumes"""
-        self.fit_params.loss_val = None
         for i, passive in enumerate(passives):
             self.fit_params.volume_id = i
+            if self.fit_params.state != "test" and i % self.fit_params.passive_bs == 0:  # Volume batch start
+                self.fit_params.loss_val = None
+                for c in self.fit_params.cbs:
+                    c.on_volume_batch_begin()
+
             self.volume.load_rad_length(passive)
             for c in self.fit_params.cbs:
                 c.on_volume_begin()
             self._scan_volume()
             for c in self.fit_params.cbs:
                 c.on_volume_end()
-        if self.fit_params.loss_val is not None:
-            self.fit_params.mean_loss = self.fit_params.loss_val / len(passives)
+
+            if self.fit_params.state != "test" and (i + 1) % self.fit_params.passive_bs == 0:  # Volume batch end
+                if self.fit_params.loss_val is not None:
+                    self.fit_params.mean_loss = self.fit_params.loss_val / self.fit_params.passive_bs
+                for c in self.fit_params.cbs:
+                    c.on_volume_batch_end()
+
+                if self.fit_params.state == "train":
+                    # Compute update step
+                    self.res_opt.zero_grad()
+                    self.eff_opt.zero_grad()
+                    for c in self.fit_params.cbs:
+                        c.on_backwards_begin()
+                    self.fit_params.mean_loss.backward()
+                    for c in self.fit_params.cbs:
+                        c.on_backwards_end()
+                    self.res_opt.step()
+                    self.eff_opt.step()
+
+                if len(passives) - (i + 1) < self.fit_params.passive_bs:
+                    break
 
     def _fit_epoch(self) -> None:
-        self.fit_params.epoch += 1
-        comment = ""
+        def run_epoch(passives: PassiveYielder) -> None:
+            for c in self.fit_params.cbs:
+                c.on_epoch_begin()
+            self._scan_volumes(passives)
+            for c in self.fit_params.cbs:
+                c.on_epoch_end()
 
+        self.fit_params.epoch += 1
         # Training
         self.volume.train()
         self.fit_params.state = "train"
-        for c in self.fit_params.cbs:
-            c.on_epoch_begin()
-        self._scan_volumes(self.fit_params.trn_passives)  # Gain losses for all volumes
-        # Compute update step
-        self.res_opt.zero_grad()
-        self.eff_opt.zero_grad()
-        for c in self.fit_params.cbs:
-            c.on_backwards_begin()
-        self.fit_params.loss_val.backward()
-        for c in self.fit_params.cbs:
-            c.on_backwards_end()
-        self.res_opt.step()
-        self.eff_opt.step()
-        for c in self.fit_params.cbs:
-            c.on_epoch_end()
-        comment = f"Trn loss {self.fit_params.mean_loss:.2f}"
+        run_epoch(self.fit_params.trn_passives)
 
         # Validation
         if self.fit_params.val_passives is not None:
             self.volume.eval()
-            for c in self.fit_params.cbs:
-                c.on_epoch_begin()
-            self._scan_volumes(self.fit_params.val_passives)
-            for c in self.fit_params.cbs:
-                c.on_epoch_end()
-            comment += f"Val loss {self.fit_params.mean_loss:.2f}"
-
-        if self.fit_params.epoch_bar is not None:
-            self.fit_params.epoch_bar.comment = comment
+            self.fit_params.state = "valid"
+            run_epoch(self.fit_params.val_passives)
 
     @staticmethod
     def _sort_cbs(cbs: List[Callback]) -> Tuple[List[CyclicCallback], List[Callback], Optional[MetricLogger]]:
@@ -213,6 +240,7 @@ class VolumeWrapper:
     def fit(
         self,
         n_epochs: int,
+        passive_bs: int,
         n_mu_per_volume: int,
         mu_bs: int,
         trn_passives: PassiveYielder,
@@ -237,6 +265,7 @@ class VolumeWrapper:
             cb_savepath=Path(cb_savepath),
             trn_passives=trn_passives,
             val_passives=val_passives,
+            passive_bs=passive_bs,
         )
         self.fit_params.cb_savepath.mkdir(parents=True, exist_ok=True)
         try:

@@ -1,4 +1,5 @@
 from functools import partial
+from os import stat
 from pathlib import Path
 from tomopt.optimisation.callbacks.pred_callbacks import PredHandler
 import pytest
@@ -14,7 +15,7 @@ from tomopt.volume import Volume, PassiveLayer, DetectorLayer
 from tomopt.optimisation.wrapper.volume_wrapper import VolumeWrapper, FitParams
 from tomopt.optimisation.callbacks.callback import Callback
 from tomopt.optimisation.callbacks.cyclic_callbacks import CyclicCallback
-from tomopt.optimisation.callbacks.metric_logging import MetricLogger
+from tomopt.optimisation.callbacks.monitors import MetricLogger
 from tomopt.optimisation.data.passives import PassiveYielder
 from tomopt.loss.loss import DetectorLoss
 
@@ -162,29 +163,59 @@ def test_volume_wrapper_scan_volume(state, mocker):  # noqa F811
         assert loss1 < vw.fit_params.loss_val
 
 
-@pytest.mark.parametrize("state", ["train", "test"])
+@pytest.mark.parametrize("state", ["train", "valid", "test"])
 def test_volume_wrapper_scan_volumes(state, mocker):  # noqa F811
     volume = Volume(get_layers())
     vw = VolumeWrapper(volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(0.15))
     cb = Callback()
     cb.set_wrapper(vw)
-    vw.fit_params = FitParams(n_mu_per_volume=100, mu_bs=10, cbs=[cb], state=state)
-    py = PassiveYielder([arb_rad_length, arb_rad_length])
+    vw.fit_params = FitParams(n_mu_per_volume=100, mu_bs=10, cbs=[cb], state=state, passive_bs=2)
+    py = PassiveYielder([arb_rad_length, arb_rad_length, arb_rad_length, arb_rad_length, arb_rad_length])
     mocker.spy(vw, "_scan_volume")
     mocker.spy(cb, "on_volume_begin")
     mocker.spy(cb, "on_volume_end")
-    mocker.patch.object(vw, "loss_func", return_value=3)
+    mocker.spy(cb, "on_volume_batch_begin")
+    mocker.spy(cb, "on_volume_batch_end")
+    mocker.spy(cb, "on_backwards_begin")
+    mocker.spy(cb, "on_backwards_end")
+    mocker.spy(vw.res_opt, "zero_grad")
+    mocker.spy(vw.eff_opt, "zero_grad")
+    mocker.spy(vw.res_opt, "step")
+    mocker.spy(vw.eff_opt, "step")
+    mocker.patch.object(vw, "loss_func", return_value=torch.tensor(3.0, requires_grad=True))
 
     vw._scan_volumes(py)
 
-    assert vw._scan_volume.call_count == 2
-    assert cb.on_volume_begin.call_count == 2
-    assert cb.on_volume_end.call_count == 2
     if state == "test":
-        assert vw.fit_params.mean_loss is None
+        assert vw._scan_volume.call_count == 5
+        assert cb.on_volume_begin.call_count == 5
+        assert cb.on_volume_end.call_count == 5
+        assert cb.on_volume_batch_begin.call_count == 0
+        assert cb.on_volume_batch_end.call_count == 0
+        assert vw.fit_params.loss_val is None
     else:
+        assert vw._scan_volume.call_count == 4
+        assert cb.on_volume_begin.call_count == 4
+        assert cb.on_volume_end.call_count == 4
+        assert cb.on_volume_batch_begin.call_count == 2
+        assert cb.on_volume_batch_end.call_count == 2
         assert vw.fit_params.loss_val == 6
         assert vw.fit_params.mean_loss == 3
+
+    if state == "train":
+        assert cb.on_backwards_begin.call_count == 2
+        assert cb.on_backwards_end.call_count == 2
+        assert vw.res_opt.zero_grad.call_count == 2
+        assert vw.eff_opt.zero_grad.call_count == 2
+        assert vw.res_opt.step.call_count == 2
+        assert vw.eff_opt.step.call_count == 2
+    else:
+        assert cb.on_backwards_begin.call_count == 0
+        assert cb.on_backwards_end.call_count == 0
+        assert vw.res_opt.zero_grad.call_count == 0
+        assert vw.eff_opt.zero_grad.call_count == 0
+        assert vw.res_opt.step.call_count == 0
+        assert vw.eff_opt.step.call_count == 0
 
 
 def test_volume_wrapper_fit_epoch(mocker):  # noqa F811
@@ -194,17 +225,13 @@ def test_volume_wrapper_fit_epoch(mocker):  # noqa F811
     cb.set_wrapper(vw)
     trn_py = PassiveYielder([arb_rad_length, arb_rad_length, arb_rad_length])
     val_py = PassiveYielder([arb_rad_length, arb_rad_length])
-    vw.fit_params = FitParams(n_mu_per_volume=100, mu_bs=10, cbs=[cb], trn_passives=trn_py, val_passives=val_py)
+    vw.fit_params = FitParams(n_mu_per_volume=100, mu_bs=10, cbs=[cb], trn_passives=trn_py, val_passives=val_py, passive_bs=1)
     mocker.spy(cb, "on_epoch_begin")
     mocker.spy(cb, "on_epoch_end")
     mocker.spy(cb, "on_volume_begin")
     mocker.spy(cb, "on_backwards_begin")
     mocker.spy(cb, "on_backwards_end")
     mocker.spy(vw, "_scan_volumes")
-    mocker.spy(vw.res_opt, "zero_grad")
-    mocker.spy(vw.eff_opt, "zero_grad")
-    mocker.spy(vw.res_opt, "step")
-    mocker.spy(vw.eff_opt, "step")
     mocker.spy(volume, "train")
     mocker.spy(volume, "eval")
 
@@ -213,13 +240,9 @@ def test_volume_wrapper_fit_epoch(mocker):  # noqa F811
     assert cb.on_epoch_begin.call_count == 2
     assert cb.on_epoch_end.call_count == 2
     assert cb.on_volume_begin.call_count == 5
-    assert cb.on_backwards_begin.call_count == 1
-    assert cb.on_backwards_end.call_count == 1
+    assert cb.on_backwards_begin.call_count == 3
+    assert cb.on_backwards_end.call_count == 3
     assert vw._scan_volumes.call_count == 2
-    assert vw.res_opt.zero_grad.call_count == 1
-    assert vw.eff_opt.zero_grad.call_count == 1
-    assert vw.res_opt.step.call_count == 1
-    assert vw.eff_opt.step.call_count == 1
     assert volume.train.call_count == 2  # eval calls train(False)
     assert volume.eval.call_count == 1
 
@@ -249,7 +272,7 @@ def test_volume_wrapper_fit(mocker):  # noqa F811
     mocker.spy(cb, "on_train_end")
     mocker.spy(vw, "_fit_epoch")
 
-    vw.fit(n_epochs=2, n_mu_per_volume=100, mu_bs=100, trn_passives=trn_py, val_passives=val_py, cbs=[cb])
+    vw.fit(n_epochs=2, n_mu_per_volume=100, mu_bs=100, passive_bs=1, trn_passives=trn_py, val_passives=val_py, cbs=[cb])
 
     assert cb.set_wrapper.call_count == 1
     assert cb.on_train_begin.call_count == 1
