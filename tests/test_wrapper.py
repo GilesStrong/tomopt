@@ -1,7 +1,6 @@
 from collections import defaultdict
 from functools import partial
 from pathlib import Path
-from tomopt.inference.scattering import ScatterBatch
 from tomopt.muon.generation import generate_batch
 from tomopt.optimisation.callbacks.pred_callbacks import PredHandler
 import pytest
