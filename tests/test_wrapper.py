@@ -1,5 +1,8 @@
+from collections import defaultdict
 from functools import partial
 from pathlib import Path
+from tomopt.inference.scattering import ScatterBatch
+from tomopt.muon.generation import generate_batch
 from tomopt.optimisation.callbacks.pred_callbacks import PredHandler
 import pytest
 from pytest_mock import mocker  # noqa F401
@@ -160,6 +163,58 @@ def test_volume_wrapper_scan_volume(state, mocker):  # noqa F811
         assert (loss1 := vw.fit_params.loss_val) is not None
         vw._scan_volume()
         assert loss1 < vw.fit_params.loss_val
+
+
+def test_volume_wrapper_scan_volume_mu_batch(mocker):  # noqa F811
+    volume = Volume(get_layers())
+    volume.load_rad_length(arb_rad_length)
+    vw = VolumeWrapper(volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(0.15))
+    vw.fit_params = FitParams(n_mu_per_volume=100, mu_bs=100, state="train")
+    mu = generate_batch(100)
+
+    # Fix scattering
+    mocker.patch("tomopt.volume.layer.torch.randn", lambda n, device: torch.ones(n, device=device))
+    mocker.patch("tomopt.volume.layer.torch.rand", lambda n, device: 0.35 * torch.ones(n, device=device))
+
+    class mu_batch_yielder:
+        def __init__(self, mu: Tensor) -> None:
+            self.mu = mu.clone()
+            self.i = 0
+
+        def __call__(self, n: int) -> Tensor:
+            b = self.mu[self.i : self.i + n]
+            self.i += n
+            return b
+
+    class ScatterRecord(Callback):
+        def __init__(self) -> None:
+            self.record_id = 0
+            self.record = defaultdict(list)
+
+        def on_scatter_end(self) -> None:
+            self.record[self.record_id].append(self.wrapper.fit_params.sb.location.detach().clone())
+
+    sr = ScatterRecord()
+    sr.set_wrapper(vw)
+    vw.fit_params.cbs = [sr]
+    vw.mu_generator = mu_batch_yielder(mu)
+    vw._scan_volume()
+    pred_1b, weight_1b = vw.fit_params.pred.detach().clone(), vw.fit_params.weight.detach().clone()
+
+    sr.record_id += 1
+    vw.mu_generator = mu_batch_yielder(mu)
+    vw.fit_params.mu_bs = 10
+    vw._scan_volume()
+
+    scatters_1b = torch.cat(sr.record[0], dim=0)
+    scatters_10b = torch.cat(sr.record[1], dim=0)
+
+    assert scatters_1b.shape == scatters_10b.shape
+    assert torch.all(scatters_1b == scatters_10b)
+
+    pred_10b, weight_10b = vw.fit_params.pred.detach().clone(), vw.fit_params.weight.detach().clone()
+    assert torch.all(pred_1b == pred_10b)
+    assert torch.all(weight_1b == weight_10b)
 
 
 @pytest.mark.parametrize("state", ["train", "valid", "test"])
