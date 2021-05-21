@@ -13,3 +13,4 @@ flake8
 pytest
 mypy
 pytest-mock
+flaky
