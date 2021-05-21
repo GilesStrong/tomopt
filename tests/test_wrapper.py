@@ -213,8 +213,8 @@ def test_volume_wrapper_scan_volume_mu_batch(mocker):  # noqa F811
     assert torch.all(scatters_1b == scatters_10b)
 
     pred_10b, weight_10b = vw.fit_params.pred.detach().clone(), vw.fit_params.weight.detach().clone()
-    assert torch.all(pred_1b == pred_10b)
-    assert torch.all(weight_1b == weight_10b)
+    assert torch.abs(pred_1b - pred_10b).sum() < 1e-7
+    assert torch.abs(weight_1b - weight_10b).sum() < 1e-7
 
 
 @pytest.mark.parametrize("state", ["train", "valid", "test"])
