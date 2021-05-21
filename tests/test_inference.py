@@ -179,6 +179,9 @@ def test_x0_inferer_methods(scatter_batch):
         assert torch.autograd.grad(w2.abs().sum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
         assert torch.autograd.grad(w2.abs().sum(), l.efficiency, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
 
+    p2, w2 = inferer.pred_x0(inc_default=False)
+    assert (p2 != p2).sum() > 0  # NaNs NOT replaced with default prediction
+
 
 def test_x0_inferer_scatter_inversion(mocker, scatter_batch):  # noqa F811
     layer = Layer(LW, Z, SZ)

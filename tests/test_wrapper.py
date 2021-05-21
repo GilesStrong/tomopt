@@ -1,5 +1,4 @@
 from functools import partial
-from os import stat
 from pathlib import Path
 from tomopt.optimisation.callbacks.pred_callbacks import PredHandler
 import pytest
