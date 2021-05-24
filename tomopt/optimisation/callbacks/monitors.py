@@ -53,7 +53,6 @@ class MetricLogger(Callback):
 
     def __init__(self, show_plots: bool = IN_NOTEBOOK):
         self.show_plots = show_plots
-        self._reset()
 
     def _reset(self) -> None:
         self.loss_vals: Dict[str, List[float]] = {"Training": [], "Validation": []}
