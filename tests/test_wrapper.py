@@ -1,7 +1,7 @@
 from collections import defaultdict
 from functools import partial
 from pathlib import Path
-from tomopt.inference.scattering import ScatterBatch
+from tomopt.optimisation.callbacks.eval_metric import EvalMetric
 from tomopt.muon.generation import generate_batch
 from tomopt.optimisation.callbacks.pred_callbacks import PredHandler
 import pytest
@@ -302,17 +302,13 @@ def test_volume_wrapper_fit_epoch(mocker):  # noqa F811
 
 
 def test_volume_wrapper_sort_cbs():
-    class LossCallback(Callback):
-        def get_loss():
-            pass
-
-    cbs = [Callback(), CyclicCallback(), LossCallback(), MetricLogger()]
-    cyclic_cbs, loss_cbs, metric_log = VolumeWrapper._sort_cbs(cbs)
+    cbs = [Callback(), CyclicCallback(), MetricLogger(), EvalMetric(False)]
+    cyclic_cbs, metric_log, metric_cbs = VolumeWrapper._sort_cbs(cbs)
     assert len(cyclic_cbs) == 1
+    assert len(metric_cbs) == 1
     assert cyclic_cbs[0] == cbs[1]
-    assert len(loss_cbs) == 1
-    assert loss_cbs[0] == cbs[2]
-    assert metric_log == cbs[3]
+    assert metric_log == cbs[2]
+    assert metric_cbs[0] == cbs[3]
 
 
 def test_volume_wrapper_fit(mocker):  # noqa F811

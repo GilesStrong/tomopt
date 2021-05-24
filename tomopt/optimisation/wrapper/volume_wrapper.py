@@ -11,6 +11,7 @@ from ..data import PassiveYielder
 from ..callbacks import MetricLogger, PredHandler
 from ..callbacks.callback import Callback
 from ..callbacks.cyclic_callbacks import CyclicCallback
+from ..callbacks.eval_metric import EvalMetric
 from ...loss import DetectorLoss
 from ...volume import Volume, DetectorLayer
 from ...core import X0
@@ -64,6 +65,9 @@ class FitParams:
     epoch_bar: Optional[ProgressBar] = None
     stop: Optional[bool] = None
     epoch: int = 0
+    cyclic_cbs: Optional[List[CyclicCallback]] = None
+    metric_log: Optional[MetricLogger] = None
+    metric_cbs: Optional[List[EvalMetric]] = None
 
     def __init__(self, **kwargs: Any) -> None:
         self.__dict__.update(kwargs)
@@ -226,16 +230,16 @@ class VolumeWrapper:
             run_epoch(self.fit_params.val_passives)
 
     @staticmethod
-    def _sort_cbs(cbs: List[Callback]) -> Tuple[List[CyclicCallback], List[Callback], Optional[MetricLogger]]:
-        cyclic_cbs, loss_cbs, metric_log = [], [], None
+    def _sort_cbs(cbs: List[Callback]) -> Tuple[List[CyclicCallback], Optional[MetricLogger], Optional[List[EvalMetric]]]:
+        cyclic_cbs, metric_log, metric_cbs = [], None, []
         for c in cbs:
             if isinstance(c, CyclicCallback):
                 cyclic_cbs.append(c)  # CBs that might prevent a wrapper from stopping training due to a hyper-param cycle
-            if hasattr(c, "get_loss"):
-                loss_cbs.append(c)  # CBs that produce alternative losses that should be considered
             if isinstance(c, MetricLogger):
                 metric_log = c  # CB that logs losses and eval_metrics
-        return cyclic_cbs, loss_cbs, metric_log
+            if isinstance(c, EvalMetric):
+                metric_cbs.append(c)  # CB that computes additional performance metrics
+        return cyclic_cbs, metric_log, metric_cbs
 
     def fit(
         self,
@@ -251,13 +255,13 @@ class VolumeWrapper:
 
         if cbs is None:
             cbs = []
-        cyclic_cbs, loss_cbs, metric_log = self._sort_cbs(cbs)
+        cyclic_cbs, metric_log, metric_cbs = self._sort_cbs(cbs)
 
         self.fit_params = FitParams(
             cbs=cbs,
             cyclic_cbs=cyclic_cbs,
-            loss_cbs=loss_cbs,
             metric_log=metric_log,
+            metric_cbs=metric_cbs,
             stop=False,
             n_epochs=n_epochs,
             mu_bs=mu_bs,
