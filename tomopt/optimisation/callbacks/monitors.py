@@ -58,9 +58,9 @@ class MetricLogger(Callback):
         self.loss_vals: Dict[str, List[float]] = {"Training": [], "Validation": []}
         self.sub_losses: Dict[str, List[float]] = defaultdict(list)
         self.best_loss: float = math.inf
+        self.val_epoch_results: Optional[Tuple[float, Optional[float]]] = None
         self.n_trn_batches = len(self.wrapper.fit_params.trn_passives) // self.wrapper.fit_params.passive_bs
 
-        self.wrapper.fit_params.metric_cbs = self.wrapper.fit_params.metric_cbs
         self.metric_vals: List[List[float]] = [[] for _ in self.wrapper.fit_params.metric_cbs]
         self.main_metric_idx: Optional[int] = None
         self.lock_to_metric: bool = False
@@ -71,7 +71,9 @@ class MetricLogger(Callback):
                     self.main_metric_idx = i
                     self.lock_to_metric = True
                     break
+        self._prep_plots()
 
+    def _prep_plots(self) -> None:
         if self.show_plots:
             with sns.axes_style(**self.style):
                 self.fig = plt.figure(figsize=(self.w_mid, self.w_mid), constrained_layout=True)
@@ -125,7 +127,7 @@ class MetricLogger(Callback):
         if self.wrapper.fit_params.state == "valid" and self.wrapper.loss_func is not None and hasattr(self.wrapper.loss_func, "sub_losses"):
             for k, v in self.wrapper.loss_func.sub_losses.items():
                 self.tmp_sub_losses[k] += v.data.item()
-        self.volume_cnt += 1
+            self.volume_cnt += 1
 
     def on_backwards_end(self) -> None:
         if self.wrapper.fit_params.state == "train":
@@ -148,20 +150,20 @@ class MetricLogger(Callback):
 
             for i, c in enumerate(self.wrapper.fit_params.metric_cbs):
                 self.metric_vals[i].append(c.get_metric())
+            if self.loss_vals["Validation"][-1] <= self.best_loss:
+                self.best_loss = self.loss_vals["Validation"][-1]
+
             if self.show_plots:
-                if self.loss_vals["Validation"][-1] <= self.best_loss:
-                    self.best_loss = self.loss_vals["Validation"][-1]
                 self.update_plot()
             else:
                 self.print_losses()
 
-            l = np.array(self.loss_vals["Validation"][-1])
             m = None
             if self.lock_to_metric:
                 m = self.metric_vals[self.main_metric_idx][-1]
                 if not self.wrapper.fit_params.metric_cbs[self.main_metric_idx].lower_metric_better:
                     m *= -1
-            self.val_epoch_results = l, m
+            self.val_epoch_results = self.loss_vals["Validation"][-1], m
 
     def print_losses(self) -> None:
         r"""
@@ -252,9 +254,7 @@ class MetricLogger(Callback):
                     self.metric_ax.set_xlim(1 / self.n_trn_batches, x[-1])
                     self.metric_ax.set_xlabel("Epoch", fontsize=0.8 * self.lbl_sz, color=self.lbl_col)
                     self.metric_ax.set_ylabel(self.wrapper.fit_params.metric_cbs[self.main_metric_idx].name, fontsize=0.8 * self.lbl_sz, color=self.lbl_col)
-            self.display.update(self.fig)
-        else:
-            self.display.update(self.loss_ax.figure)
+        self.display.update(self.fig)
 
     def get_loss_history(self) -> Tuple[Dict[str, List[float]], Dict[str, List[float]]]:
         r"""
@@ -271,38 +271,22 @@ class MetricLogger(Callback):
             history[1][c.name] = v
         return history
 
-    def get_results(self, save_best: bool) -> Dict[str, float]:
-        r"""
-        Returns losses and metrics of the (loaded) wrapper
-
-        #TODO: extend this to load at specified index
-
-        Arguments:
-            save_best: if the training used :class:`~lumin.nn.callbacks.monitors.SaveBest` return results at best point else return the latest values
-
-        Returns:
-            dictionary of validation loss and metrics
-        """
-
-        losses = np.array(self.loss_vals["Validation"])
-        metrics = np.array(self.metric_vals)
-        results = {}
-
-        if save_best:
-            if self.main_metric_idx is None or not self.lock_to_metric or len(losses) > 1:  # Tracking SWA only supported for loss
-                idx = np.unravel_index(np.nanargmin(losses), losses.shape)[-1]
-                results["loss"] = np.nanmin(losses)
-            else:
+    def get_results(self, loaded_best: bool) -> Dict[str, float]:
+        if loaded_best:
+            if self.lock_to_metric:
                 idx = (
                     np.nanargmin(self.metric_vals[self.main_metric_idx])
                     if self.wrapper.fit_params.metric_cbs[self.main_metric_idx].lower_metric_better
                     else np.nanargmax(self.metric_vals[self.main_metric_idx])
                 )
-                results["loss"] = losses[0][idx]
+            else:
+                idx = np.nanargmin(self.loss_vals["Validation"])
         else:
-            results["loss"] = np.nanmin(losses[:, -1:])
             idx = -1
+
+        results = {}
+        results["loss"] = self.loss_vals["Validation"][idx]
         if len(self.wrapper.fit_params.metric_cbs) > 0:
-            for c, v in zip(self.wrapper.fit_params.metric_cbs, metrics[:, idx]):
+            for c, v in zip(self.wrapper.fit_params.metric_cbs, np.array(self.metric_vals)[:, idx]):
                 results[c.name] = v
         return results
