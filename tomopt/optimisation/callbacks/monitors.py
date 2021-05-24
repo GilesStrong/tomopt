@@ -3,7 +3,7 @@ import math
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional
 from collections import defaultdict
 
 if IN_NOTEBOOK:
@@ -63,7 +63,7 @@ class MetricLogger(Callback):
 
         self.wrapper.fit_params.metric_cbs = self.wrapper.fit_params.metric_cbs
         self.metric_vals: List[List[float]] = [[] for _ in self.wrapper.fit_params.metric_cbs]
-        self.main_metric_idx = None
+        self.main_metric_idx: Optional[int] = None
         self.lock_to_metric: bool = False
         if len(self.wrapper.fit_params.metric_cbs) > 0:
             self.main_metric_idx = 0
