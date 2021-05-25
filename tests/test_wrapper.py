@@ -19,7 +19,7 @@ from tomopt.optimisation.callbacks.callback import Callback
 from tomopt.optimisation.callbacks.cyclic_callbacks import CyclicCallback
 from tomopt.optimisation.callbacks.monitors import MetricLogger
 from tomopt.optimisation.data.passives import PassiveYielder
-from tomopt.loss.loss import DetectorLoss
+from tomopt.optimisation.loss import DetectorLoss
 
 LW = Tensor([1, 1])
 SZ = 0.1
@@ -80,8 +80,8 @@ def test_volume_wrapper_methods():
         vw.res_lr = 0
         vw.eff_lr = 0
 
-    p = Path("test_save.pt")
-    vw.save("test_save.pt")
+    p = Path("tests/test_save.pt")
+    vw.save("tests/test_save.pt")
     assert p.exists()
     zero_params(volume, vw)
 
@@ -342,7 +342,7 @@ def test_volume_wrapper_predict(mocker):  # noqa F811
         mocker.spy(c, "on_pred_end")
     mocker.spy(c, "get_preds")
 
-    preds = vw.predict(py, n_mu_per_volume=100, mu_bs=100, pred_cb=pred_cb, cbs=cbs)
+    preds = vw.predict(py, n_mu_per_volume=100, mu_bs=100, pred_cb=pred_cb, cbs=cbs, use_default_pred=True)
 
     for c in [cbs[0], pred_cb]:
         assert c.set_wrapper.call_count == 1
@@ -351,4 +351,11 @@ def test_volume_wrapper_predict(mocker):  # noqa F811
     assert pred_cb.get_preds.call_count == 1
     assert len(cbs) == 1
     assert len(preds) == 3
-    assert preds[0].shape == (6, 10, 10)
+    assert len(preds[0]) == 2
+    assert preds[0][0].shape == (6, 10, 10)
+    assert preds[0][1].shape == (6, 10, 10)
+    assert preds[0][0].sum() > 0
+
+    preds = vw.predict(py, n_mu_per_volume=100, mu_bs=100, pred_cb=pred_cb, cbs=cbs, use_default_pred=False)
+    assert np.isnan(preds[0][0].sum())
+    assert preds[0][1].sum() > 0

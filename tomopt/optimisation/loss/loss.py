@@ -2,7 +2,7 @@ from typing import Dict
 import torch
 from torch import nn, Tensor
 
-from ..volume import Volume
+from ...volume import Volume
 
 __all__ = ["DetectorLoss"]
 

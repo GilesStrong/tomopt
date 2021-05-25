@@ -3,7 +3,7 @@ from pytest_mock import mocker  # noqa F401
 import torch
 from torch import nn
 
-from tomopt.loss import DetectorLoss
+from tomopt.optimisation import DetectorLoss
 from tomopt.volume import Volume
 
 SHP = (6, 10, 10)
@@ -12,8 +12,8 @@ SHP = (6, 10, 10)
 def test_detector_loss(mocker):  # noqa F811
     cost = torch.ones((1), requires_grad=True)
     true = torch.ones(SHP)
-    mocker.patch("tomopt.loss.loss.Volume.get_rad_cube", return_value=true)
-    mocker.patch("tomopt.loss.loss.Volume.get_cost", return_value=cost)
+    mocker.patch("tomopt.optimisation.loss.loss.Volume.get_rad_cube", return_value=true)
+    mocker.patch("tomopt.optimisation.loss.loss.Volume.get_cost", return_value=cost)
     pred = torch.ones(SHP, requires_grad=True) / 2
 
     loss_func = DetectorLoss(0)

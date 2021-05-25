@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 import numpy as np
 
 from .callback import Callback
@@ -13,11 +13,11 @@ class PredHandler(Callback):
 
     def on_pred_begin(self) -> None:
         super().__init__()
-        self.preds: List[np.ndarray] = []
+        self.preds: List[Tuple[np.ndarray, np.ndarray]] = []
 
-    def get_preds(self) -> List[np.ndarray]:
+    def get_preds(self) -> List[Tuple[np.ndarray, np.ndarray]]:
         return self.preds
 
     def on_x0_pred_end(self) -> None:
         if self.wrapper.fit_params.state == "test":
-            self.preds.append(self.wrapper.fit_params.pred.detach().cpu().numpy())
+            self.preds.append((self.wrapper.fit_params.pred.detach().cpu().numpy(), self.wrapper.volume.get_rad_cube().detach().cpu().numpy()))
