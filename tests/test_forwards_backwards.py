@@ -9,7 +9,7 @@ from tomopt.core import X0
 from tomopt.volume import Volume, PassiveLayer, DetectorLayer
 from tomopt.muon import MuonBatch, generate_batch
 from tomopt.inference import ScatterBatch, X0Inferer
-from tomopt.loss.loss import DetectorLoss
+from tomopt.optimisation.loss import DetectorLoss
 
 LW = Tensor([1, 1])
 SZ = 0.1

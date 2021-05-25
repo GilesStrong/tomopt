@@ -3,6 +3,7 @@ from fastcore.all import Path
 from fastprogress import progress_bar
 from typing import Callable, Iterator, Optional, List, Any, Tuple
 from fastprogress.fastprogress import ProgressBar
+import numpy as np
 
 import torch
 from torch import nn, Tensor
@@ -12,7 +13,7 @@ from ..callbacks import MetricLogger, PredHandler
 from ..callbacks.callback import Callback
 from ..callbacks.cyclic_callbacks import CyclicCallback
 from ..callbacks.eval_metric import EvalMetric
-from ...loss import DetectorLoss
+from ...optimisation.loss import DetectorLoss
 from ...volume import Volume, DetectorLayer
 from ...core import X0
 from ...muon import generate_batch, MuonBatch
@@ -68,6 +69,7 @@ class FitParams:
     cyclic_cbs: Optional[List[CyclicCallback]] = None
     metric_log: Optional[MetricLogger] = None
     metric_cbs: Optional[List[EvalMetric]] = None
+    use_default_pred: bool = True
 
     def __init__(self, **kwargs: Any) -> None:
         self.__dict__.update(kwargs)
@@ -158,7 +160,8 @@ class VolumeWrapper:
             c.on_x0_pred_begin()
         wgt = torch.stack(self.fit_params.weights, dim=0).sum(0)
         pred = torch.stack(self.fit_params.wpreds, dim=0).sum(0) / wgt
-        pred, wgt = inferer.add_default_pred(pred, wgt)
+        if self.fit_params.use_default_pred:
+            pred, wgt = inferer.add_default_pred(pred, wgt)
         self.fit_params.weight = wgt
         self.fit_params.pred = pred
 
@@ -294,10 +297,11 @@ class VolumeWrapper:
         passives: PassiveYielder,
         n_mu_per_volume: int,
         mu_bs: int,
+        use_default_pred: bool = False,
         pred_cb: PredHandler = PredHandler(),
         cbs: Optional[List[Callback]] = None,
         cb_savepath: Path = Path("train_weights"),
-    ) -> List[Tensor]:
+    ) -> List[Tuple[np.ndarray, np.ndarray]]:
         if cbs is None:
             cbs = []
         cbs.append(pred_cb)
@@ -310,6 +314,7 @@ class VolumeWrapper:
             tst_passives=passives,
             state="test",
             cb_savepath=cb_savepath,
+            use_default_pred=use_default_pred,
         )
         try:
             for c in self.fit_params.cbs:

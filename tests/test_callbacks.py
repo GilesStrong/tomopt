@@ -1,4 +1,3 @@
-from tests.test_wrapper import N
 import pytest
 import numpy as np
 from pytest_mock import mocker  # noqa F401
@@ -10,7 +9,7 @@ from torch import Tensor
 from tomopt.optimisation.callbacks.callback import Callback
 from tomopt.optimisation.callbacks.eval_metric import EvalMetric
 from tomopt.optimisation.callbacks import NoMoreNaNs, PredHandler, MetricLogger
-from tomopt.loss.loss import DetectorLoss
+from tomopt.optimisation.loss import DetectorLoss
 from tomopt.optimisation.wrapper.volume_wrapper import FitParams
 
 
@@ -70,6 +69,8 @@ def test_pred_handler():
     vw = MockWrapper()
     vw.fit_params = FitParams(state="train", pred=Tensor([1]))
     cb.set_wrapper(vw)
+    vw.volume = MockVolume()
+    vw.volume.get_rad_cube = lambda: Tensor([3])
 
     cb.on_x0_pred_end()
     assert len(cb.preds) == 0
@@ -86,8 +87,10 @@ def test_pred_handler():
     assert cb.preds[1][0] == 2
 
     preds = cb.get_preds()
-    assert preds[0][0] == 1
-    assert preds[1][0] == 2
+    assert preds[0][0][0] == 1
+    assert preds[1][0][0] == 2
+    assert preds[0][1][0] == 3
+    assert preds[1][1][0] == 3
 
 
 def test_metric_logger(mocker):  # noqa F811
