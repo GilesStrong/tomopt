@@ -1,4 +1,3 @@
-from collections import defaultdict
 from functools import partial
 from pathlib import Path
 from tomopt.optimisation.callbacks.eval_metric import EvalMetric
@@ -18,6 +17,7 @@ from tomopt.optimisation.wrapper.volume_wrapper import VolumeWrapper, FitParams
 from tomopt.optimisation.callbacks.callback import Callback
 from tomopt.optimisation.callbacks.cyclic_callbacks import CyclicCallback
 from tomopt.optimisation.callbacks.monitors import MetricLogger
+from tomopt.optimisation.callbacks.diagnostic_callbacks import ScatterRecord
 from tomopt.optimisation.data.passives import PassiveYielder
 from tomopt.optimisation.loss import DetectorLoss
 
@@ -186,28 +186,19 @@ def test_volume_wrapper_scan_volume_mu_batch(mocker):  # noqa F811
             self.i += n
             return b
 
-    class ScatterRecord(Callback):
-        def __init__(self) -> None:
-            self.record_id = 0
-            self.record = defaultdict(list)
-
-        def on_scatter_end(self) -> None:
-            self.record[self.record_id].append(self.wrapper.fit_params.sb.location.detach().clone())
-
     sr = ScatterRecord()
     sr.set_wrapper(vw)
     vw.fit_params.cbs = [sr]
     vw.mu_generator = mu_batch_yielder(mu)
     vw._scan_volume()
     pred_1b, weight_1b = vw.fit_params.pred.detach().clone(), vw.fit_params.weight.detach().clone()
+    scatters_1b = sr.get_record()
 
-    sr.record_id += 1
+    sr._reset()
     vw.mu_generator = mu_batch_yielder(mu)
     vw.fit_params.mu_bs = 10
     vw._scan_volume()
-
-    scatters_1b = torch.cat(sr.record[0], dim=0)
-    scatters_10b = torch.cat(sr.record[1], dim=0)
+    scatters_10b = sr.get_record()
 
     assert scatters_1b.shape == scatters_10b.shape
     assert torch.all(scatters_1b == scatters_10b)

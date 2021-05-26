@@ -2,6 +2,7 @@ import pytest
 import numpy as np
 from pytest_mock import mocker  # noqa F401
 import math
+import pandas as pd
 
 import torch
 from torch import Tensor
@@ -9,6 +10,7 @@ from torch import Tensor
 from tomopt.optimisation.callbacks.callback import Callback
 from tomopt.optimisation.callbacks.eval_metric import EvalMetric
 from tomopt.optimisation.callbacks import NoMoreNaNs, PredHandler, MetricLogger
+from tomopt.optimisation.callbacks.diagnostic_callbacks import ScatterRecord, HitRecord
 from tomopt.optimisation.loss import DetectorLoss
 from tomopt.optimisation.wrapper.volume_wrapper import FitParams
 
@@ -33,6 +35,14 @@ class MockVolume:
 
 class MockLayer:
     pass
+
+
+class MockScatterBatch:
+    def __init__(self, n) -> None:
+        self.n = n
+
+    def get_scatter_mask(self):
+        return torch.ones(self.n) > 0
 
 
 def test_no_more_nans():
@@ -174,3 +184,70 @@ def test_metric_logger(mocker):  # noqa F811
     results = logger.get_results(loaded_best=True)
     assert results["loss"] == 5
     assert results["test"] == 7
+
+
+def test_scatter_record():
+    sr = ScatterRecord()
+    vw = MockWrapper()
+    vw.volume = MockVolume()
+    vw.volume.h = 1
+    vw.volume.get_passive_z_range = lambda: (0.2, 0.8)
+    vw.volume.get_passives = lambda: range(6)
+    locs = torch.rand(10, 3)
+    vw.fit_params = FitParams(sb=MockScatterBatch(5))
+    sr.set_wrapper(vw)
+
+    vw.fit_params.sb.location = locs[:5]
+    sr.on_scatter_end()
+    assert len(sr.record) == 1
+    assert len(sr.record[0]) == 5
+    vw.fit_params.sb.location = locs[5:]
+    sr.on_scatter_end()
+    assert len(sr.record) == 2
+    assert len(sr.record[1]) == 5
+    assert torch.all(sr.get_record() == locs)
+
+    sr._reset()
+    assert len(sr.record) == 0
+
+    sr.record = [Tensor([[0.2, 0.2, 0.71], [0.2, 0.2, 0.21]])]
+    df = sr.get_record(True)
+    assert isinstance(df, pd.DataFrame)
+    assert df.values.shape == (2, 4)
+    assert np.all(df.z.values == np.array([0.71, 0.21], dtype="float32"))
+    assert np.all(df.layer.values == np.array([0, 5]))
+
+
+def test_hit_record():
+    hr = HitRecord()
+    vw = MockWrapper()
+    vw.volume = MockVolume()
+    vw.volume.h = 1
+    xa0 = torch.rand(10, 3)
+    xa1 = torch.rand(10, 3)
+    xb0 = torch.rand(10, 3)
+    xb1 = torch.rand(10, 3)
+    vw.fit_params = FitParams(sb=MockScatterBatch(5))
+    hr.set_wrapper(vw)
+
+    vw.fit_params.sb.xa0 = xa0[:5]
+    vw.fit_params.sb.xa1 = xa1[:5]
+    vw.fit_params.sb.xb0 = xb0[:5]
+    vw.fit_params.sb.xb1 = xb1[:5]
+    hr.on_scatter_end()
+    vw.fit_params.sb.xa0 = xa0[5:]
+    vw.fit_params.sb.xa1 = xa1[5:]
+    vw.fit_params.sb.xb0 = xb0[5:]
+    vw.fit_params.sb.xb1 = xb1[5:]
+    hr.on_scatter_end()
+
+    assert len(hr.record) == 2
+    assert hr.record[1].shape == torch.Size([5, 4, 3])
+    assert torch.all(hr.get_record() == torch.stack([xa0, xa1, xb1, xb0], dim=1))
+
+    hr.record = [Tensor([[0.0, 0.0, 0.95], [0.1, 0.1, 0.85], [0.2, 0.2, 0.15], [0.3, 0.3, 0.05]])]
+    df = hr.get_record(True)
+    assert isinstance(df, pd.DataFrame)
+    assert df.values.shape == (4, 4)
+    assert np.all(df[["x", "y", "z"]].values == hr.record[0].numpy().reshape(-1, 3))
+    assert np.all(df.layer.values == np.array([0, 1, 2, 3]))

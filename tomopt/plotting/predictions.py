@@ -3,18 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+from .appearance import H_MID, W_MID, LBL_COL, LBL_SZ
+
 __all__ = ["plot_pred_true_x0"]
-
-
-TK_SZ = 16
-TK_COL = "black"
-LBL_SZ = 24
-LBL_COL = "black"
-LEG_SZ = 16
-CAT_PALETTE = "tab10"
-STYLE = {"style": "whitegrid", "rc": {"patch.edgecolor": "none"}}
-H_MID = 8
-W_MID = H_MID * 16 / 9
 
 
 def plot_pred_true_x0(pred: np.ndarray, true: np.ndarray, savename: Optional[str] = None) -> None:
