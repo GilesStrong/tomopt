@@ -5,7 +5,7 @@ import seaborn as sns
 
 from .appearance import H_MID, LBL_COL, LBL_SZ
 
-__all__ = ["plot_scatter_density"]
+__all__ = ["plot_scatter_density", "plot_hit_density"]
 
 
 def plot_scatter_density(scatter_df: pd.DataFrame, savename: Optional[str] = None) -> None:
@@ -20,3 +20,7 @@ def plot_scatter_density(scatter_df: pd.DataFrame, savename: Optional[str] = Non
         if savename is not None:
             plt.savefig(savename, bbox_inches="tight")
         plt.show()
+
+
+def plot_hit_density(hit_df: pd.DataFrame, savename: Optional[str] = None) -> None:
+    plot_scatter_density(hit_df, savename)

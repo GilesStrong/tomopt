@@ -192,13 +192,13 @@ def test_volume_wrapper_scan_volume_mu_batch(mocker):  # noqa F811
     vw.mu_generator = mu_batch_yielder(mu)
     vw._scan_volume()
     pred_1b, weight_1b = vw.fit_params.pred.detach().clone(), vw.fit_params.weight.detach().clone()
-    scatters_1b = sr.get_scatter_record()
+    scatters_1b = sr.get_record()
 
     sr._reset()
     vw.mu_generator = mu_batch_yielder(mu)
     vw.fit_params.mu_bs = 10
     vw._scan_volume()
-    scatters_10b = sr.get_scatter_record()
+    scatters_10b = sr.get_record()
 
     assert scatters_1b.shape == scatters_10b.shape
     assert torch.all(scatters_1b == scatters_10b)

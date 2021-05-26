@@ -33,10 +33,10 @@ class ScatterBatch:
         """
 
         # self.hits in layers
-        xa0 = torch.cat([self.hits["above"]["xy"][:, 0], self.hits["above"]["z"][:, 0]], dim=-1)  # reco x, reco y, gen z
-        xa1 = torch.cat([self.hits["above"]["xy"][:, 1], self.hits["above"]["z"][:, 1]], dim=-1)
-        xb0 = torch.cat([self.hits["below"]["xy"][:, 1], self.hits["below"]["z"][:, 1]], dim=-1)
-        xb1 = torch.cat([self.hits["below"]["xy"][:, 0], self.hits["below"]["z"][:, 0]], dim=-1)
+        self.xa0 = torch.cat([self.hits["above"]["xy"][:, 0], self.hits["above"]["z"][:, 0]], dim=-1)  # reco x, reco y, gen z
+        self.xa1 = torch.cat([self.hits["above"]["xy"][:, 1], self.hits["above"]["z"][:, 1]], dim=-1)
+        self.xb0 = torch.cat([self.hits["below"]["xy"][:, 1], self.hits["below"]["z"][:, 1]], dim=-1)
+        self.xb1 = torch.cat([self.hits["below"]["xy"][:, 0], self.hits["below"]["z"][:, 0]], dim=-1)
 
         dets = self.volume.get_detectors()
         res = []
@@ -46,16 +46,16 @@ class ScatterBatch:
         res2 = torch.stack(res, dim=1)[:, :, None] ** 2
 
         # Extrapolate muon-path vectors from self.hits
-        v1 = xa1 - xa0
-        v2 = xb1 - xb0
+        v1 = self.xa1 - self.xa0
+        v2 = self.xb1 - self.xb0
 
         # scatter locations
         v3 = torch.cross(v1, v2, dim=1)  # connecting vector perpendicular to both lines
-        rhs = xb0 - xa0
+        rhs = self.xb0 - self.xa0
         lhs = torch.stack([v1, -v2, v3], dim=1).transpose(2, 1)
         coefs = torch.linalg.solve(lhs, rhs)  # solve p1+t1*v1 + t3*v3 = p2+t2*v2 => p2-p1 = t1*v1 - t2*v2 + t3*v3
 
-        q1 = xa0 + (coefs[:, 0:1] * v1)  # closest point on v1
+        q1 = self.xa0 + (coefs[:, 0:1] * v1)  # closest point on v1
         self._loc = q1 + (coefs[:, 2:3] * v3 / 2)  # Move halfway along v3 from q1
 
         # Theta deviations
