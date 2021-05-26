@@ -1,4 +1,5 @@
 from functools import partial
+from tomopt.optimisation.callbacks.diagnostic_callbacks import ScatterRecord
 import numpy as np
 from unittest.mock import patch
 
@@ -10,7 +11,7 @@ from tomopt.optimisation.data.passives import PassiveYielder
 from tomopt.volume import DetectorLayer, PassiveLayer, Volume
 from tomopt.optimisation.wrapper import VolumeWrapper
 from tomopt.optimisation import DetectorLoss
-from tomopt.plotting import plot_pred_true_x0
+from tomopt.plotting import plot_pred_true_x0, plot_scatter_density
 from tomopt.core import X0
 
 LW = Tensor([1, 1])
@@ -52,3 +53,13 @@ def test_plot_pred_true_x0(mock_show):
     vw = VolumeWrapper(volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(0.15))
     preds = vw.predict(PassiveYielder([arb_rad_length]), n_mu_per_volume=100, mu_bs=100)
     plot_pred_true_x0(*preds[0])
+
+
+@patch("matplotlib.pyplot.show")
+def test_plot_scatter_density(mock_show):
+    volume = Volume(get_layers())
+    vw = VolumeWrapper(volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(0.15))
+    sr = ScatterRecord()
+    vw.predict(PassiveYielder([arb_rad_length]), n_mu_per_volume=100, mu_bs=100, cbs=[sr])
+    df = sr.get_scatter_record(True)
+    plot_scatter_density(df)

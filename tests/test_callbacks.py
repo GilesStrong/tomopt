@@ -2,6 +2,7 @@ import pytest
 import numpy as np
 from pytest_mock import mocker  # noqa F401
 import math
+import pandas as pd
 
 import torch
 from torch import Tensor
@@ -37,7 +38,11 @@ class MockLayer:
 
 
 class MockScatterBatch:
-    pass
+    def __init__(self, n) -> None:
+        self.n = n
+
+    def get_scatter_mask(self):
+        return torch.ones(self.n) > 0
 
 
 def test_no_more_nans():
@@ -185,10 +190,14 @@ def test_scatter_record():
     sr = ScatterRecord()
 
     vw = MockWrapper()
-    vw.fit_params = FitParams(sb=MockScatterBatch())
+    vw.volume = MockVolume()
+    vw.volume.h = 1
+    vw.volume.get_passive_z_range = lambda: (0.2, 0.8)
+    vw.volume.get_passives = lambda: range(6)
+    locs = torch.rand(10, 3)
+    vw.fit_params = FitParams(sb=MockScatterBatch(5))
     sr.set_wrapper(vw)
 
-    locs = torch.rand(10, 3)
     vw.fit_params.sb.location = locs[:5]
     sr.on_scatter_end()
     assert len(sr.record) == 1
@@ -198,3 +207,13 @@ def test_scatter_record():
     assert len(sr.record) == 2
     assert len(sr.record[1]) == 5
     assert torch.all(sr.get_scatter_record() == locs)
+
+    sr._reset()
+    assert len(sr.record) == 0
+
+    sr.record = [Tensor([[0.2, 0.2, 0.71], [0.2, 0.2, 0.21]])]
+    df = sr.get_scatter_record(True)
+    assert isinstance(df, pd.DataFrame)
+    assert df.values.shape == (2, 4)
+    assert np.all(df.z.values == np.array([0.71, 0.21], dtype="float32"))
+    assert np.all(df.layer.values == np.array([0, 5]))
