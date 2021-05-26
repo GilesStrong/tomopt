@@ -9,6 +9,7 @@ from torch import Tensor
 from tomopt.optimisation.callbacks.callback import Callback
 from tomopt.optimisation.callbacks.eval_metric import EvalMetric
 from tomopt.optimisation.callbacks import NoMoreNaNs, PredHandler, MetricLogger
+from tomopt.optimisation.callbacks.diagnostic_callbacks import ScatterRecord
 from tomopt.optimisation.loss import DetectorLoss
 from tomopt.optimisation.wrapper.volume_wrapper import FitParams
 
@@ -32,6 +33,10 @@ class MockVolume:
 
 
 class MockLayer:
+    pass
+
+
+class MockScatterBatch:
     pass
 
 
@@ -174,3 +179,22 @@ def test_metric_logger(mocker):  # noqa F811
     results = logger.get_results(loaded_best=True)
     assert results["loss"] == 5
     assert results["test"] == 7
+
+
+def test_scatter_record():
+    sr = ScatterRecord()
+
+    vw = MockWrapper()
+    vw.fit_params = FitParams(sb=MockScatterBatch())
+    sr.set_wrapper(vw)
+
+    locs = torch.rand(10, 3)
+    vw.fit_params.sb.location = locs[:5]
+    sr.on_scatter_end()
+    assert len(sr.record) == 1
+    assert len(sr.record[0]) == 5
+    vw.fit_params.sb.location = locs[5:]
+    sr.on_scatter_end()
+    assert len(sr.record) == 2
+    assert len(sr.record[1]) == 5
+    assert torch.all(sr.get_scatter_record() == locs)
