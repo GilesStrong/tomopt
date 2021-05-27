@@ -1,8 +1,8 @@
 from __future__ import annotations
 from fastcore.all import Path
-from fastprogress import progress_bar
-from typing import Callable, Iterator, Optional, List, Any, Tuple
-from fastprogress.fastprogress import ProgressBar
+from typing import Callable, Iterator, Optional, List, Any, Tuple, Union
+from fastprogress.fastprogress import ConsoleProgressBar, NBProgressBar, ProgressBar
+from fastprogress import master_bar, progress_bar
 import numpy as np
 
 import torch
@@ -69,6 +69,7 @@ class FitParams:
     cyclic_cbs: Optional[List[CyclicCallback]] = None
     metric_log: Optional[MetricLogger] = None
     metric_cbs: Optional[List[EvalMetric]] = None
+    passive_bar: Optional[Union[NBProgressBar, ConsoleProgressBar]] = None
     use_default_pred: bool = True
 
     def __init__(self, **kwargs: Any) -> None:
@@ -139,7 +140,11 @@ class VolumeWrapper:
     def _scan_volume(self) -> None:
         # Scan volume with muon batches
         self.fit_params.wpreds, self.fit_params.weights = [], []
-        for _ in range(self.fit_params.n_mu_per_volume // self.fit_params.mu_bs):
+        if self.fit_params.state != "test":
+            muon_bar = progress_bar(range(self.fit_params.n_mu_per_volume // self.fit_params.mu_bs), display=False, leave=False)
+        else:
+            muon_bar = progress_bar(range(self.fit_params.n_mu_per_volume // self.fit_params.mu_bs), parent=self.fit_params.passive_bar)
+        for _ in muon_bar:
             self.fit_params.mu = MuonBatch(self.mu_generator(self.fit_params.mu_bs), init_z=self.volume.h)
             for c in self.fit_params.cbs:
                 c.on_mu_batch_begin()
@@ -177,7 +182,9 @@ class VolumeWrapper:
                 self.fit_params.loss_val = self.fit_params.loss_val + loss
 
     def _scan_volumes(self, passives: PassiveYielder) -> None:
-        for i, passive in enumerate(passives):
+        if self.fit_params.state == "test":
+            self.fit_params.passive_bar = master_bar(passives)
+        for i, passive in enumerate(self.fit_params.passive_bar if self.fit_params.state == "test" else passives):
             self.fit_params.volume_id = i
             if self.fit_params.state != "test" and i % self.fit_params.passive_bs == 0:  # Volume batch start
                 self.fit_params.loss_val = None
