@@ -79,7 +79,7 @@ class X0Inferer:
         eff = None
         for p, l, i in zip(("above", "above", "below", "below"), self.volume.get_detectors(), (0, 1, 0, 1)):
             x = l.abs2idx(self.hits[p]["xy"][:, i][self.mask])
-            e = l.efficiency[x[:, 0], x[:, 1]]
+            e = torch.clamp(l.efficiency[x[:, 0], x[:, 1]], min=0.0, max=1.0)
             if eff is None:
                 eff = e
             else:
