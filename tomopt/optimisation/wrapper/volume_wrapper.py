@@ -94,8 +94,8 @@ class VolumeWrapper:
     def _build_opt(
         self, res_opt: Callable[[Iterator[nn.Parameter]], torch.optim.Optimizer], eff_opt: Callable[[Iterator[nn.Parameter]], torch.optim.Optimizer]
     ) -> None:
-        self.res_opt = res_opt(((l.resolution for l in self.volume.get_detectors())))
-        self.eff_opt = eff_opt(((l.efficiency for l in self.volume.get_detectors())))
+        self.res_opt = res_opt((l.resolution for l in self.volume.get_detectors()))
+        self.eff_opt = eff_opt((l.efficiency for l in self.volume.get_detectors()))
 
     def get_detectors(self) -> List[DetectorLayer]:
         return self.volume.get_detectors()
