@@ -16,7 +16,7 @@ git clone git@github.com:GilesStrong/mode_muon_tomography.git
 cd mode_muon_tomography
 ```
 
-Minimum python version is 3.8. Recommend creating a virtual environment.
+Minimum python version is 3.8. Recommend creating a virtual environment, e.g. assuming Anaconda/Miniconda:
 ```
 conda env create -f environment.yml
 conda activate tomopt
