@@ -7,6 +7,7 @@
 ## Installation
 
 
+N.B. Whilst the repo is private, you will need to make sure that you have registered the public ssh key of your computer/instance with your [GitHub profile](https://github.com/settings/keys). Follow [these instructions](https://docs.github.com/en/github/authenticating-to-github/connecting-to-github-with-ssh/checking-for-existing-ssh-keys) to check for existing keys or [these](https://docs.github.com/en/github/authenticating-to-github/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent) to generate a new key. After that follow [this](https://docs.github.com/en/github/authenticating-to-github/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account) to associate the key.
 
 Checkout package:
 
