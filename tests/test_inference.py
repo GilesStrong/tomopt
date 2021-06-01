@@ -34,7 +34,7 @@ def res_cost(x: Tensor) -> Tensor:
     return F.relu(x / 100) ** 2
 
 
-def get_layers(init_res: float = 1e4, init_eff: float = 0.5):
+def get_layers(init_res: float = 1e3, init_eff: float = 0.5):
     layers = []
     pos = "above"
     for z, d in zip(np.arange(Z, 0, -SZ), [1, 1, 0, 0, 0, 0, 0, 0, 1, 1]):
@@ -62,9 +62,9 @@ def test_scatter_batch_properties(scatter_batch):
 
     assert sb.hits["above"]["z"].shape == mu.get_hits(LW)["above"]["z"].shape
 
-    assert (loc_unc := sb.location_unc[:, :2].mean()) < 0.5
-    assert (loc_unc := sb.location_unc[:, 2].mean()) < 0.5
-    assert (dxy_unc := (sb.dxy_unc / sb.dxy).abs().mean()) < 10
+    assert (loc_xy_unc := sb.location_unc[:, :2].mean()) < 0.5
+    assert (loc_z_unc := sb.location_unc[:, 2].mean()) < 1.5
+    assert (dxy_unc := sb.dxy_unc.mean()) < 1.5
     assert (dtheta_unc := (sb.dtheta_unc / sb.dtheta).mean()) < 10
     assert (theta_out_unc := sb.theta_out_unc.mean() / sb.theta_out.abs().mean()) < 10
     assert (theta_in_unc := sb.theta_in_unc.mean() / sb.theta_in.abs().mean()) < 10
@@ -84,8 +84,9 @@ def test_scatter_batch_properties(scatter_batch):
     volume = Volume(get_layers(init_res=1e7))
     volume(mu)
     sb = ScatterBatch(mu=mu, volume=volume)
-    assert sb.location_unc.mean() / sb.location.abs().mean() < loc_unc
-    assert sb.dxy_unc.mean() / sb.dxy.abs().mean() < dxy_unc
+    assert sb.location_unc[:, :2].mean() < loc_xy_unc
+    assert sb.location_unc[:, 2].mean() < loc_z_unc
+    assert sb.dxy_unc.mean() < dxy_unc
     assert sb.dtheta_unc.mean() / sb.dtheta.abs().mean() < dtheta_unc
     assert sb.theta_out_unc.mean() / sb.theta_out.abs().mean() < theta_out_unc
     assert sb.theta_in_unc.mean() / sb.theta_in.abs().mean() < theta_in_unc
@@ -173,6 +174,7 @@ def test_x0_inferer_methods(scatter_batch):
     assert w2.shape == true.shape
     assert (p2 != p2).sum() == 0  # NaNs replaced with default prediction
     assert (p2_mse := (((p2 - true)).abs() / true).mean()) < 100  # noqa F841
+    print(p2)
 
     for l in volume.get_detectors():
         assert torch.autograd.grad(p2.abs().sum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
