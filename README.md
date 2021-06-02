@@ -45,7 +45,7 @@ pytest tests/
 to run all tests, or, e.g.:
 
 ```
-pytests tests/test_muon.py
+pytest tests/test_muon.py
 ```
 
 ## Description
