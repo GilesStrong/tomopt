@@ -12,7 +12,7 @@ __all__ = ["X0Inferer"]
 
 
 class X0Inferer:
-    def __init__(self, scatters: ScatterBatch, default_pred: Optional[float] = X0["beryllium"], use_gaussian_spread: bool = False):
+    def __init__(self, scatters: ScatterBatch, default_pred: Optional[float] = X0["beryllium"], use_gaussian_spread: bool = True):
         self.scatters, self.default_pred, self.use_gaussian_spread = scatters, default_pred, use_gaussian_spread
         self.mu, self.volume, self.hits = self.scatters.mu, self.scatters.volume, self.scatters.hits
         self.size, self.lw = self.volume.size, self.volume.lw
