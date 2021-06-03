@@ -144,7 +144,7 @@ class ScatterBatch:
         axs[1].set_xlabel("y")
         axs[1].set_ylabel("z")
         axs[1].legend()
-        plt.show
+        plt.show()
 
     def get_scatter_mask(self) -> Tensor:
         z = self.volume.get_passive_z_range()
