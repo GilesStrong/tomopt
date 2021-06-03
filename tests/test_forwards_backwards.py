@@ -32,7 +32,7 @@ def res_cost(x: Tensor) -> Tensor:
     return F.relu(x / 100) ** 2
 
 
-def get_layers(init_res: float = 1e4):
+def get_layers(init_res: float = 1e3):
     layers = []
     init_eff = 0.5
     pos = "above"
