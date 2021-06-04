@@ -9,6 +9,8 @@ from .callback import Callback
 
 __all__ = ["ScatterRecord", "HitRecord"]
 
+# TODO extend these to create one record per volume
+
 
 class ScatterRecord(Callback):
     def __init__(self) -> None:

@@ -15,6 +15,6 @@ class DetectorLoss(nn.Module):
 
     def forward(self, pred_x0: Tensor, pred_weight: Tensor, volume: Volume) -> Tensor:
         true_x0 = volume.get_rad_cube()
-        self.sub_losses["error"] = torch.mean((pred_x0 - true_x0).pow(2) * pred_weight)  # MSE/variance
+        self.sub_losses["error"] = torch.mean((pred_x0 - true_x0).pow(2) * pred_weight)  # SE/variance
         self.sub_losses["cost"] = self.cost_coef * volume.get_cost()
         return self.sub_losses["error"] + self.sub_losses["cost"]
