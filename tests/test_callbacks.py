@@ -167,6 +167,7 @@ def test_metric_logger(mocker):  # noqa F811
     assert logger.best_loss == val_loss
     assert logger.val_epoch_results == (val_loss, 3)
 
+    logger.on_train_end()
     history = logger.get_loss_history()
     assert history[0]["Training"] == trn_losses
     assert history[0]["Validation"] == [val_loss]

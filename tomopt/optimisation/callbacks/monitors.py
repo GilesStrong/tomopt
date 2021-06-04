@@ -60,7 +60,7 @@ class MetricLogger(Callback):
         self.sub_losses: Dict[str, List[float]] = defaultdict(list)
         self.best_loss: float = math.inf
         self.val_epoch_results: Optional[Tuple[float, Optional[float]]] = None
-        self.metric_cbs: Optional[List[EvalMetric]] = None
+        self.metric_cbs: List[EvalMetric] = []
         self.n_trn_batches = len(self.wrapper.fit_params.trn_passives) // self.wrapper.fit_params.passive_bs
 
         self.metric_vals: List[List[float]] = [[] for _ in self.wrapper.fit_params.metric_cbs]
