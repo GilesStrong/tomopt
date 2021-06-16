@@ -10,6 +10,7 @@ if IN_NOTEBOOK:
     from IPython.display import display
 
 from .callback import Callback
+from .eval_metric import EvalMetric
 
 r"""
 This MetricLogger is a modified version of the MetricLogger in LUMIN (https://github.com/GilesStrong/lumin/blob/v0.7.2/lumin/nn/callbacks/monitors.py#L125), distributed under the following lincence:
@@ -59,6 +60,7 @@ class MetricLogger(Callback):
         self.sub_losses: Dict[str, List[float]] = defaultdict(list)
         self.best_loss: float = math.inf
         self.val_epoch_results: Optional[Tuple[float, Optional[float]]] = None
+        self.metric_cbs: List[EvalMetric] = []
         self.n_trn_batches = len(self.wrapper.fit_params.trn_passives) // self.wrapper.fit_params.passive_bs
 
         self.metric_vals: List[List[float]] = [[] for _ in self.wrapper.fit_params.metric_cbs]
@@ -111,9 +113,6 @@ class MetricLogger(Callback):
 
         super().on_train_begin()
         self._reset()
-
-    def on_train_end(self) -> None:
-        plt.clf()  # prevent plot be shown twice
 
     def on_epoch_begin(self) -> None:
         r"""
@@ -256,6 +255,10 @@ class MetricLogger(Callback):
                     self.metric_ax.set_ylabel(self.wrapper.fit_params.metric_cbs[self.main_metric_idx].name, fontsize=0.8 * self.lbl_sz, color=self.lbl_col)
         self.display.update(self.fig)
 
+    def on_train_end(self) -> None:
+        plt.clf()  # prevent plot be shown twice
+        self.metric_cbs = self.wrapper.fit_params.metric_cbs  # Copy referenece since fit_params gets set to None at end of training
+
     def get_loss_history(self) -> Tuple[Dict[str, List[float]], Dict[str, List[float]]]:
         r"""
         Get the current history of losses and metrics
@@ -267,7 +270,7 @@ class MetricLogger(Callback):
         history: Tuple[Dict[str, List[float]], Dict[str, List[float]]] = ({}, {})
         history[0]["Training"] = self.loss_vals["Training"]
         history[0]["Validation"] = self.loss_vals["Validation"]
-        for v, c in zip(self.metric_vals, self.wrapper.fit_params.metric_cbs):
+        for v, c in zip(self.metric_vals, self.metric_cbs):
             history[1][c.name] = v
         return history
 
@@ -276,7 +279,7 @@ class MetricLogger(Callback):
             if self.lock_to_metric:
                 idx = (
                     np.nanargmin(self.metric_vals[self.main_metric_idx])
-                    if self.wrapper.fit_params.metric_cbs[self.main_metric_idx].lower_metric_better
+                    if self.metric_cbs[self.main_metric_idx].lower_metric_better
                     else np.nanargmax(self.metric_vals[self.main_metric_idx])
                 )
             else:
@@ -286,7 +289,7 @@ class MetricLogger(Callback):
 
         results = {}
         results["loss"] = self.loss_vals["Validation"][idx]
-        if len(self.wrapper.fit_params.metric_cbs) > 0:
-            for c, v in zip(self.wrapper.fit_params.metric_cbs, np.array(self.metric_vals)[:, idx]):
+        if len(self.metric_cbs) > 0:
+            for c, v in zip(self.metric_cbs, np.array(self.metric_vals)[:, idx]):
                 results[c.name] = v
         return results
