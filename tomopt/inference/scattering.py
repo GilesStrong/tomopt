@@ -69,18 +69,26 @@ class ScatterBatch:
         # loc uncertainty
         dloc_dres = torch.stack([jacobian(self._loc, l.resolution).sum((-1, -2)) for l in dets], dim=1)
         self._loc_unc = torch.sqrt((dloc_dres.pow(2) * res2).sum(1))
+        print("scatter dloc/dres", jacobian(self._loc, dets[0].resolution, create_graph=True, allow_unused=True).sum((-1, -2))[:10])
+        print("scatter dlocunc/dres", jacobian(self._loc_unc, dets[0].resolution, create_graph=True, allow_unused=True).sum((-1, -2))[:10])
 
         # dtheta uncertainty
         ddtheta_dres = torch.stack([jacobian(self._dtheta, l.resolution).sum((-1, -2)) for l in dets], dim=1)
         self._dtheta_unc = torch.sqrt((ddtheta_dres.pow(2) * res2).sum(1))
+        print("scatter ddtheta/dres", jacobian(self._dtheta, dets[0].resolution, create_graph=True, allow_unused=True).sum((-1, -2))[:10])
+        print("scatter ddthetaunc/dres", jacobian(self._dtheta_unc, dets[0].resolution, create_graph=True, allow_unused=True).sum((-1, -2))[:10])
 
         # dxy uncertainty
         ddxy_dres = torch.stack([jacobian(self._dxy, l.resolution).sum((-1, -2)) for l in dets], dim=1)
         self._dxy_unc = torch.sqrt((ddxy_dres.pow(2) * res2).sum(1))
+        print("scatter ddxy/dres", jacobian(self._dxy, dets[0].resolution, create_graph=True, allow_unused=True).sum((-1, -2))[:10])
+        print("scatter ddxyunc/dres", jacobian(self._dxy_unc, dets[0].resolution, create_graph=True, allow_unused=True).sum((-1, -2))[:10])
 
         # theta_in uncertainty
         dtheta_in_dres = torch.stack([jacobian(self._theta_in, l.resolution).sum((-1, -2)) for l in dets[:2]], dim=1)
         self._theta_in_unc = torch.sqrt((dtheta_in_dres.pow(2) * res2[:, :2]).sum(1))
+        print("scatter dtheta_in/dres", jacobian(self._theta_in, dets[0].resolution, create_graph=True, allow_unused=True).sum((-1, -2))[:10])
+        print("scatter dtheta_inunc/dres", jacobian(self._theta_in_unc, dets[0].resolution, create_graph=True, allow_unused=True).sum((-1, -2))[:10])
 
         # theta_out uncertainty
         dtheta_out_dres = torch.stack([jacobian(self._theta_out, l.resolution).sum((-1, -2)) for l in dets[2:]], dim=1)

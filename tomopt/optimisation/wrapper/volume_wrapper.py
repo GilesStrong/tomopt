@@ -1,6 +1,7 @@
 from __future__ import annotations
+from collections import defaultdict
 from fastcore.all import Path
-from typing import Callable, Iterator, Optional, List, Any, Tuple, Union
+from typing import Callable, Iterator, Optional, List, Any, Tuple, Union, Dict
 from fastprogress.fastprogress import ConsoleProgressBar, NBProgressBar, ProgressBar
 from fastprogress import master_bar, progress_bar
 import numpy as np
@@ -47,7 +48,7 @@ class FitParams:
     state: Optional[str] = None
     pred: Optional[Tensor] = None
     wpreds: Optional[Tensor] = None
-    weights: Optional[Tensor] = None
+    weight_comps: Optional[Dict[str, List[Tensor]]] = None
     weight: Optional[Tensor] = None
     n_mu_per_volume: Optional[int] = None
     mu_bs: Optional[int] = None
@@ -139,7 +140,7 @@ class VolumeWrapper:
 
     def _scan_volume(self) -> None:
         # Scan volume with muon batches
-        self.fit_params.wpreds, self.fit_params.weights = [], []
+        self.fit_params.wpreds, self.fit_params.weight_comps = [], defaultdict(list)
         if self.fit_params.state != "test":
             muon_bar = progress_bar(range(self.fit_params.n_mu_per_volume // self.fit_params.mu_bs), display=False, leave=False)
         else:
@@ -149,21 +150,26 @@ class VolumeWrapper:
             for c in self.fit_params.cbs:
                 c.on_mu_batch_begin()
             self.volume(self.fit_params.mu)
+
             self.fit_params.sb = ScatterBatch(self.fit_params.mu, self.volume)
             for c in self.fit_params.cbs:
                 c.on_scatter_end()
+
             inferer = X0Inferer(self.fit_params.sb, self.default_pred)
-            pred, wgt = inferer.pred_x0(inc_default=False)
+            pred, comp = inferer.pred_x0(inc_default=False)
             pred = torch.nan_to_num(pred)
-            self.fit_params.wpreds.append(pred * wgt)
-            self.fit_params.weights.append(wgt)
+            self.fit_params.wpreds.append(pred * comp["weight"])
+            for k, v in comp.items():
+                self.fit_params.weight_comps[k].append(v)
+
             for c in self.fit_params.cbs:
                 c.on_mu_batch_end()
 
         # Predict volume based on all muon batches
         for c in self.fit_params.cbs:
             c.on_x0_pred_begin()
-        wgt = torch.stack(self.fit_params.weights, dim=0).sum(0)
+
+        wgt = torch.stack(self.fit_params.weight_comps["weight"], dim=0).sum(0)
         pred = torch.stack(self.fit_params.wpreds, dim=0).sum(0) / wgt
         if self.fit_params.use_default_pred:
             pred, wgt = inferer.add_default_pred(pred, wgt)
@@ -175,7 +181,7 @@ class VolumeWrapper:
 
         # Compute loss for volume
         if self.fit_params.state != "test" and self.loss_func is not None:
-            loss = self.loss_func(pred_x0=self.fit_params.pred, pred_weight=self.fit_params.weight, volume=self.volume)
+            loss = self.loss_func(pred_x0=self.fit_params.pred, weight_comps=self.fit_params.weight_comps, volume=self.volume)
             if self.fit_params.loss_val is None:
                 self.fit_params.loss_val = loss
             else:

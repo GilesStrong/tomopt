@@ -1,5 +1,6 @@
 from typing import Tuple, Optional, Dict
 import numpy as np
+from collections import defaultdict
 
 import torch
 from torch import Tensor
@@ -7,6 +8,7 @@ from torch.distributions import Normal
 
 from . import ScatterBatch
 from ..core import X0, SCATTER_COEF_A
+from ..utils import jacobian
 
 __all__ = ["X0Inferer"]
 
@@ -120,7 +122,7 @@ class X0Inferer:
 
     def average_preds_gaussian(
         self, x0_dtheta: Optional[Tensor], x0_dtheta_unc: Optional[Tensor], x0_dxy: Optional[Tensor], x0_dxy_unc: Optional[Tensor], efficiency: Tensor
-    ) -> Tuple[Tensor, Tensor]:
+    ) -> Tuple[Tensor, Dict[str, Tensor]]:
         r"""
         Assign x0 inference to neighbourhood of voxels according to scatter-location uncertainty
         TODO: Implement differing x0 accoring to location via Gaussian spread
@@ -148,12 +150,11 @@ class X0Inferer:
         int_bounds[2] = np.flip(int_bounds[2])  # z is reversed
         int_bounds = Tensor(int_bounds.reshape(3, -1).transpose(-1, -2))
 
-        wpreds, weights = [], []
+        wpreds, comps = [], defaultdict(list)
         for x0, unc in ((x0_dtheta, x0_dtheta_unc), (x0_dxy, x0_dxy_unc)):
             if x0 is None or unc is None:
                 continue
             x0 = x0[:, None, None, None].expand(shp_zxy).clone()
-            coef = efficiency[:, None, None, None].expand(shp_zxy).clone() / ((1e-17) + (unc[:, None, None, None].expand(shp_zxy).clone() ** 2))
 
             # Gaussian spread
             dists = {}
@@ -166,16 +167,24 @@ class X0Inferer:
             prob = (
                 torch.stack([comp_int(l, l + self.volume.size, dists) for l in int_bounds.unbind()]).transpose(-1, -2).reshape(shp_xyz).permute(0, 3, 1, 2)
             )  # preds are (z,x,y)  TODO: vmap this? Might not be possible since it tries to run Normal.cdf batchwise.
-            coef = coef * prob
 
-            wpreds.append(x0 * coef)
-            weights.append(coef)
+            print("dlocunc/dres", jacobian(loc_unc, self.volume.get_detectors()[0].resolution, create_graph=True, allow_unused=True).sum((-1, -2)))
+            print("dxunc/dres", jacobian(unc, self.volume.get_detectors()[0].resolution, create_graph=True, allow_unused=True).sum((-1, -2)))
+            print("deffp/deff", jacobian(efficiency, self.volume.get_detectors()[0].efficiency, create_graph=True, allow_unused=True).sum((-1, -2)))
+            # print('dprob/dres', jacobian(prob, self.volume.get_detectors()[0].resolution, create_graph=True, allow_unused=True).sum())
 
-        wpred, weight = torch.cat(wpreds, dim=0), torch.cat(weights, dim=0)
-        wpred, weight = wpred.sum(0), weight.sum(0)
-        pred = wpred / weight
+            comps["x0_variance"].append(unc[:, None, None, None].expand(shp_zxy).clone() ** 2)
+            comps["scatter_prob"].append(prob)
+            comps["efficiency"].append(efficiency[:, None, None, None].expand(shp_zxy).clone())
+            comps["weight"].append(comps["efficiency"][-1] * comps["scatter_prob"][-1] / ((1e-17) + comps["x0_variance"][-1]))
+            wpreds.append(x0 * comps["weight"][-1])
 
-        return pred, weight
+        comp = {}
+        for k, v in comps.items():
+            comp[k] = torch.cat(v, dim=0).sum(0)
+        wpred = torch.cat(wpreds, dim=0).sum(0)
+        pred = wpred / comp["weight"]
+        return pred, comp
 
     def add_default_pred(self, pred: Tensor, weight: Tensor) -> Tuple[Tensor, Tensor]:
         pred = torch.nan_to_num(pred, self.default_pred)
