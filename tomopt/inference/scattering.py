@@ -33,10 +33,10 @@ class ScatterBatch:
         """
 
         # self.hits in layers
-        # self.xa0 = nn.Parameter(torch.cat([self.hits["above"]["xy"][:, 0], self.hits["above"]["z"][:, 0]], dim=-1))  # reco x, reco y, gen z
-        # self.xa1 = nn.Parameter(torch.cat([self.hits["above"]["xy"][:, 1], self.hits["above"]["z"][:, 1]], dim=-1))
-        # self.xb0 = nn.Parameter(torch.cat([self.hits["below"]["xy"][:, 1], self.hits["below"]["z"][:, 1]], dim=-1))
-        # self.xb1 = nn.Parameter(torch.cat([self.hits["below"]["xy"][:, 0], self.hits["below"]["z"][:, 0]], dim=-1))
+        # self.xa0 = nn.Parameter(torch.cat([self.hits["above"]["xy"][:, 0], self.hits["above"]["z"][:, 0]], dim=-1), device=self.mu.device)  # reco x, reco y, gen z
+        # self.xa1 = nn.Parameter(torch.cat([self.hits["above"]["xy"][:, 1], self.hits["above"]["z"][:, 1]], dim=-1), device=self.mu.device)
+        # self.xb0 = nn.Parameter(torch.cat([self.hits["below"]["xy"][:, 1], self.hits["below"]["z"][:, 1]], dim=-1), device=self.mu.device)
+        # self.xb1 = nn.Parameter(torch.cat([self.hits["below"]["xy"][:, 0], self.hits["below"]["z"][:, 0]], dim=-1), device=self.mu.device)
 
         self.xa0 = torch.cat([self.hits["above"]["xy"][:, 0], self.hits["above"]["z"][:, 0]], dim=-1)  # reco x, reco y, gen z
         self.xa1 = torch.cat([self.hits["above"]["xy"][:, 1], self.hits["above"]["z"][:, 1]], dim=-1)
@@ -75,6 +75,7 @@ class ScatterBatch:
         dloc_dres = torch.stack([jacobian(self._loc, l.resolution).sum((-1, -2)) for l in dets], dim=1)
         self._loc_unc = torch.sqrt((dloc_dres.pow(2) * res2).sum(1))
         # print("scatter dloc/dxa0", jacobian(self._loc[0], self.xa0[0], create_graph=True, allow_unused=True))
+        print("scatter dloc/dxa0 [0]", torch.autograd.grad(self._loc[0, 0], self.xa0[0, 0], create_graph=True))
         print("theta x", self.mu.theta_x[:10])
         print("theta y", self.mu.theta_y[:10])
         print("x", self.mu.x[:10])
