@@ -23,7 +23,7 @@ conda env create -f environment.yml
 conda activate tomopt
 ```
 
-Otherwise set up a suitable environment using your python distibution of choice using the contents of `environment.yml`. Remember to activate the correct environment each time, via e.g. `conda activate tomopt`.
+Otherwise set up a suitable environment using your python distribution of choice using the contents of `environment.yml`. Remember to activate the correct environment each time, via e.g. `conda activate tomopt`.
 
 Install package and dependencies
 ```
