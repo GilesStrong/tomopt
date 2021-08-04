@@ -94,7 +94,9 @@ class ScatterBatch:
     def location_unc(self) -> Tensor:
         if self._loc_unc is None:
             self._loc_unc = self._compute_unc(
-                self._loc, [self.xa0, self.xa1, self.xb0, self.xb1], [self._hit_unc[:, 0], self._hit_unc[:, 1], self._hit_unc[:, 2], self._hit_unc[:, 3]]
+                var=self._loc,
+                hits=[self.xa0, self.xa1, self.xb0, self.xb1],
+                hit_uncs=[self._hit_unc[:, 0], self._hit_unc[:, 1], self._hit_unc[:, 2], self._hit_unc[:, 3]],
             )
         return self._loc_unc
 
@@ -106,7 +108,9 @@ class ScatterBatch:
     def dtheta_unc(self) -> Tensor:
         if self._dtheta_unc is None:
             self._dtheta_unc = self._compute_unc(
-                self._dtheta, [self.xa0, self.xa1, self.xb0, self.xb1], [self._hit_unc[:, 0], self._hit_unc[:, 1], self._hit_unc[:, 2], self._hit_unc[:, 3]]
+                var=self._dtheta,
+                hits=[self.xa0, self.xa1, self.xb0, self.xb1],
+                hit_uncs=[self._hit_unc[:, 0], self._hit_unc[:, 1], self._hit_unc[:, 2], self._hit_unc[:, 3]],
             )
         return self._dtheta_unc
 
@@ -118,7 +122,9 @@ class ScatterBatch:
     def dxy_unc(self) -> Tensor:
         if self._dxy_unc is None:
             self._dxy_unc = self._compute_unc(
-                self._loc, [self.xa0, self.xa1, self.xb0, self.xb1], [self._hit_unc[:, 0], self._hit_unc[:, 1], self._hit_unc[:, 2], self._hit_unc[:, 3]]
+                var=self._dxy,
+                hits=[self.xa0, self.xa1, self.xb0, self.xb1],
+                hit_uncs=[self._hit_unc[:, 0], self._hit_unc[:, 1], self._hit_unc[:, 2], self._hit_unc[:, 3]],
             )
         return self._dxy_unc
 
@@ -129,7 +135,7 @@ class ScatterBatch:
     @property
     def theta_out_unc(self) -> Tensor:
         if self._theta_out_unc is None:
-            self._theta_out_unc = self._compute_unc(self._loc, [self.xb0, self.xb1], [self._hit_unc[:, 2], self._hit_unc[:, 3]])
+            self._theta_out_unc = self._compute_unc(var=self._theta_out, hits=[self.xb0, self.xb1], hit_uncs=[self._hit_unc[:, 2], self._hit_unc[:, 3]])
         return self._theta_out_unc
 
     @property
@@ -139,7 +145,7 @@ class ScatterBatch:
     @property
     def theta_in_unc(self) -> Tensor:
         if self._theta_in_unc is None:
-            self._theta_in_unc = self._compute_unc(self._loc, [self.xa0, self.xa1], [self._hit_unc[:, 0], self._hit_unc[:, 1]])
+            self._theta_in_unc = self._compute_unc(self.theta_in_unc, hits=[self.xa0, self.xa1], hit_uncs=[self._hit_unc[:, 0], self._hit_unc[:, 1]])
         return self._theta_in_unc
 
     def plot_scatter(self, idx: int) -> None:
