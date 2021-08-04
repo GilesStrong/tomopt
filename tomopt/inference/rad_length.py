@@ -7,6 +7,7 @@ from torch.distributions import Normal
 
 from . import ScatterBatch
 from ..core import X0, SCATTER_COEF_A
+from ..utils import jacobian
 
 __all__ = ["X0Inferer"]
 
@@ -54,19 +55,20 @@ class X0Inferer:
         cos_mean = (cos_theta_in + cos_theta_out) / 2
         pred = self.size / (n_x0 * cos_mean)
 
-        # Uncertainty TODO probably best check this
-        theta2_unc = (2 * dtheta * dtheta_unc).pow(2).sum(1).sqrt()
-        n_x0_unc = 0.5 * theta2_unc * ((mom / SCATTER_COEF_A) ** 2)
-        theta_in2_unc = (2 * theta_xy_in * theta_xy_in_unc).pow(2).sum(1).sqrt()
-        theta_in_unc = 0.5 * theta_in2_unc / theta_in
-        theta_out2_unc = (2 * theta_xy_out * theta_xy_out_unc).pow(2).sum(1).sqrt()
-        theta_out_unc = 0.5 * theta_out2_unc / theta_out
-        cos_theta_in_unc = torch.sin(theta_in) * theta_in_unc
-        cos_theta_out_unc = torch.sin(theta_out) * theta_out_unc
-        cos_mean_unc = torch.sqrt(cos_theta_in_unc.pow(2) + cos_theta_out_unc.pow(2)) / 2
-        inv_cos_mean_unc = cos_mean_unc / cos_mean.pow(2)
-        inv_n_x0_unc = n_x0_unc / n_x0.pow(2)
-        pred_unc = pred * torch.sqrt((inv_n_x0_unc * n_x0).pow(2) + (inv_cos_mean_unc * cos_mean).pow(2))
+        unc2_sum = None
+        vals = [dtheta, theta_xy_in, theta_xy_out]
+        uncs = [dtheta_unc, theta_xy_in_unc, theta_xy_out_unc]
+        for i, (vi, unci) in enumerate(zip(vals, uncs)):
+            for j, (vj, uncj) in enumerate(zip(vals, uncs)):
+                if j < i:
+                    continue
+                dv_dx_2 = jacobian(pred, vi).sum(1) * jacobian(pred, vj).sum(1) if i != j else jacobian(pred, vi).sum(1) ** 2  # Muons, pred, unc_xyz
+                unc_2 = (dv_dx_2 * unci * uncj).sum(1)  # Muons, pred
+                if unc2_sum is None:
+                    unc2_sum = unc_2
+                else:
+                    unc2_sum = unc2_sum + unc_2
+        pred_unc = torch.sqrt(unc2_sum)
 
         return pred, pred_unc
 

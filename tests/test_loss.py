@@ -22,7 +22,7 @@ def test_detector_loss(mocker):  # noqa F811
     assert loss_val == (pred - true).pow(2).mean()
 
     # Decreasing variance improves loss
-    new_loss_val = loss_func(pred, 0.1 * torch.ones_like(pred), Volume(nn.ModuleList([])))
+    new_loss_val = loss_func(pred, 10 * torch.ones_like(pred), Volume(nn.ModuleList([])))
     assert new_loss_val < loss_val
 
     loss_func = DetectorLoss(1)

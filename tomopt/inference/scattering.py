@@ -129,16 +129,6 @@ class ScatterBatch:
         return self._dxy_unc
 
     @property
-    def theta_out(self) -> Tensor:
-        return self._theta_out
-
-    @property
-    def theta_out_unc(self) -> Tensor:
-        if self._theta_out_unc is None:
-            self._theta_out_unc = self._compute_unc(var=self._theta_out, hits=[self.xb0, self.xb1], hit_uncs=[self._hit_unc[:, 2], self._hit_unc[:, 3]])
-        return self._theta_out_unc
-
-    @property
     def theta_in(self) -> Tensor:
         return self._theta_in
 
@@ -147,6 +137,16 @@ class ScatterBatch:
         if self._theta_in_unc is None:
             self._theta_in_unc = self._compute_unc(var=self._theta_in, hits=[self.xa0, self.xa1], hit_uncs=[self._hit_unc[:, 0], self._hit_unc[:, 1]])
         return self._theta_in_unc
+
+    @property
+    def theta_out(self) -> Tensor:
+        return self._theta_out
+
+    @property
+    def theta_out_unc(self) -> Tensor:
+        if self._theta_out_unc is None:
+            self._theta_out_unc = self._compute_unc(var=self._theta_out, hits=[self.xb0, self.xb1], hit_uncs=[self._hit_unc[:, 2], self._hit_unc[:, 3]])
+        return self._theta_out_unc
 
     def plot_scatter(self, idx: int) -> None:
         x = np.hstack([self.hits["above"]["xy"][idx, :, 0].detach().cpu().numpy(), self.hits["below"]["xy"][idx, :, 0].detach().cpu().numpy()])
