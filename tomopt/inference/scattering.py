@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import torch
-from torch import Tensor, nn
+from torch import Tensor
 
 from ..muon import MuonBatch
 from ..volume import Volume
@@ -145,7 +145,7 @@ class ScatterBatch:
     @property
     def theta_in_unc(self) -> Tensor:
         if self._theta_in_unc is None:
-            self._theta_in_unc = self._compute_unc(self.theta_in_unc, hits=[self.xa0, self.xa1], hit_uncs=[self._hit_unc[:, 0], self._hit_unc[:, 1]])
+            self._theta_in_unc = self._compute_unc(var=self._theta_in, hits=[self.xa0, self.xa1], hit_uncs=[self._hit_unc[:, 0], self._hit_unc[:, 1]])
         return self._theta_in_unc
 
     def plot_scatter(self, idx: int) -> None:
