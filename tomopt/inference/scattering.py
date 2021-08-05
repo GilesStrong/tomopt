@@ -1,3 +1,4 @@
+from typing import Optional, List
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -32,7 +33,6 @@ class ScatterBatch:
         }
         """
 
-        # self.hits in layers
         self.xa0 = torch.cat([self.hits["above"]["xy"][:, 0], self.hits["above"]["z"][:, 0]], dim=-1)  # reco x, reco y, gen z
         self.xa1 = torch.cat([self.hits["above"]["xy"][:, 1], self.hits["above"]["z"][:, 1]], dim=-1)
         self.xb0 = torch.cat([self.hits["below"]["xy"][:, 1], self.hits["below"]["z"][:, 1]], dim=-1)
@@ -40,12 +40,13 @@ class ScatterBatch:
 
         dets = self.volume.get_detectors()
         res = []
-        for p, l, i in zip(("above", "above", "below", "below"), dets, (0, 1, 0, 1)):
+        for p, l, i in zip(("above", "above", "below", "below"), dets, (0, 1, 1, 0)):
             x = l.abs2idx(self.hits[p]["xy"][:, i])
-            res.append(l.resolution[x[:, 0], x[:, 1]])
-        res2 = torch.stack(res, dim=1)[:, :, None] ** 2
+            r = 1 / l.resolution[x[:, 0], x[:, 1]]
+            res.append(torch.stack([r, r, torch.zeros_like(r)], dim=-1))
+        self._hit_unc = torch.stack(res, dim=1)
 
-        # Extrapolate muon-path vectors from self.hits
+        # Extrapolate muon-path vectors from hits
         v1 = self.xa1 - self.xa0
         v2 = self.xb1 - self.xb0
 
@@ -57,34 +58,33 @@ class ScatterBatch:
 
         q1 = self.xa0 + (coefs[:, 0:1] * v1)  # closest point on v1
         self._loc = q1 + (coefs[:, 2:3] * v3 / 2)  # Move halfway along v3 from q1
+        self._loc_unc: Optional[Tensor] = None
 
         # Theta deviations
         self._theta_in = torch.arctan(v1[:, :2] / v1[:, 2:3])
         self._theta_out = torch.arctan(v2[:, :2] / v2[:, 2:3])
         self._dtheta = torch.abs(self._theta_in - self._theta_out)
+        self._theta_in_unc: Optional[Tensor] = None
+        self._theta_out_unc: Optional[Tensor] = None
+        self._dtheta_unc: Optional[Tensor] = None
 
         # xy deviations
         self._dxy = coefs[:, 2:3] * v3[:, :2]
+        self._dxy_unc: Optional[Tensor] = None
 
-        # loc uncertainty
-        dloc_dres = torch.stack([jacobian(self._loc, l.resolution).sum((-1, -2)) for l in dets], dim=1)
-        self._loc_unc = torch.sqrt((dloc_dres.pow(2) * res2).sum(1))
-
-        # dtheta uncertainty
-        ddtheta_dres = torch.stack([jacobian(self._dtheta, l.resolution).sum((-1, -2)) for l in dets], dim=1)
-        self._dtheta_unc = torch.sqrt((ddtheta_dres.pow(2) * res2).sum(1))
-
-        # dxy uncertainty
-        ddxy_dres = torch.stack([jacobian(self._dxy, l.resolution).sum((-1, -2)) for l in dets], dim=1)
-        self._dxy_unc = torch.sqrt((ddxy_dres.pow(2) * res2).sum(1))
-
-        # theta_in uncertainty
-        dtheta_in_dres = torch.stack([jacobian(self._theta_in, l.resolution).sum((-1, -2)) for l in dets[:2]], dim=1)
-        self._theta_in_unc = torch.sqrt((dtheta_in_dres.pow(2) * res2[:, :2]).sum(1))
-
-        # theta_out uncertainty
-        dtheta_out_dres = torch.stack([jacobian(self._theta_out, l.resolution).sum((-1, -2)) for l in dets[2:]], dim=1)
-        self._theta_out_unc = torch.sqrt((dtheta_out_dres.pow(2) * res2[:, 2:]).sum(1))
+    def _compute_unc(self, var: Tensor, hits: List[Tensor], hit_uncs: List[Tensor]) -> Tensor:
+        unc2_sum = None
+        for i, (xi, unci) in enumerate(zip(hits, hit_uncs)):
+            for j, (xj, uncj) in enumerate(zip(hits, hit_uncs)):
+                if j < i:
+                    continue
+                dv_dx_2 = jacobian(var, xi).sum((2)) * jacobian(var, xj).sum((2)) if i != j else jacobian(var, xi).sum((2)) ** 2  # Muons, var_xyz, hit_xyz
+                unc_2 = (dv_dx_2 * unci[:, None] * uncj[:, None]).sum(2)  # Muons, (x,y,z)
+                if unc2_sum is None:
+                    unc2_sum = unc_2
+                else:
+                    unc2_sum = unc2_sum + unc_2
+        return torch.sqrt(unc2_sum)
 
     @property
     def location(self) -> Tensor:
@@ -92,6 +92,12 @@ class ScatterBatch:
 
     @property
     def location_unc(self) -> Tensor:
+        if self._loc_unc is None:
+            self._loc_unc = self._compute_unc(
+                var=self._loc,
+                hits=[self.xa0, self.xa1, self.xb0, self.xb1],
+                hit_uncs=[self._hit_unc[:, 0], self._hit_unc[:, 1], self._hit_unc[:, 2], self._hit_unc[:, 3]],
+            )
         return self._loc_unc
 
     @property
@@ -100,6 +106,12 @@ class ScatterBatch:
 
     @property
     def dtheta_unc(self) -> Tensor:
+        if self._dtheta_unc is None:
+            self._dtheta_unc = self._compute_unc(
+                var=self._dtheta,
+                hits=[self.xa0, self.xa1, self.xb0, self.xb1],
+                hit_uncs=[self._hit_unc[:, 0], self._hit_unc[:, 1], self._hit_unc[:, 2], self._hit_unc[:, 3]],
+            )
         return self._dtheta_unc
 
     @property
@@ -108,15 +120,13 @@ class ScatterBatch:
 
     @property
     def dxy_unc(self) -> Tensor:
+        if self._dxy_unc is None:
+            self._dxy_unc = self._compute_unc(
+                var=self._dxy,
+                hits=[self.xa0, self.xa1, self.xb0, self.xb1],
+                hit_uncs=[self._hit_unc[:, 0], self._hit_unc[:, 1], self._hit_unc[:, 2], self._hit_unc[:, 3]],
+            )
         return self._dxy_unc
-
-    @property
-    def theta_out(self) -> Tensor:
-        return self._theta_out
-
-    @property
-    def theta_out_unc(self) -> Tensor:
-        return self._theta_out_unc
 
     @property
     def theta_in(self) -> Tensor:
@@ -124,7 +134,19 @@ class ScatterBatch:
 
     @property
     def theta_in_unc(self) -> Tensor:
+        if self._theta_in_unc is None:
+            self._theta_in_unc = self._compute_unc(var=self._theta_in, hits=[self.xa0, self.xa1], hit_uncs=[self._hit_unc[:, 0], self._hit_unc[:, 1]])
         return self._theta_in_unc
+
+    @property
+    def theta_out(self) -> Tensor:
+        return self._theta_out
+
+    @property
+    def theta_out_unc(self) -> Tensor:
+        if self._theta_out_unc is None:
+            self._theta_out_unc = self._compute_unc(var=self._theta_out, hits=[self.xb0, self.xb1], hit_uncs=[self._hit_unc[:, 2], self._hit_unc[:, 3]])
+        return self._theta_out_unc
 
     def plot_scatter(self, idx: int) -> None:
         x = np.hstack([self.hits["above"]["xy"][idx, :, 0].detach().cpu().numpy(), self.hits["below"]["xy"][idx, :, 0].detach().cpu().numpy()])

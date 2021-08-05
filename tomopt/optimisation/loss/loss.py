@@ -18,7 +18,7 @@ class DetectorLoss(nn.Module):
 
     def forward(self, pred_x0: Tensor, pred_weight: Tensor, volume: Volume) -> Tensor:
         true_x0 = volume.get_rad_cube()
-        inference = torch.mean((pred_x0 - true_x0).pow(2) * pred_weight)  # SE*efficiency/variance TODO fix this
+        inference = torch.mean((pred_x0 - true_x0).pow(2) / pred_weight)
         self.sub_losses["error"] = inference
         cost = volume.get_cost()
         if self.cost_coef is None:
