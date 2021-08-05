@@ -212,5 +212,6 @@ def test_x0_inferer_scatter_inversion(mocker, scatter_batch):  # noqa F811
     inferer.mask = mask
     mocker.patch.object(mu, "get_xy_mask", return_value=mask)
 
-    pred, weight = inferer.x0_from_dtheta()
+    mocker.patch("tomopt.inference.rad_length.jacobian", lambda i, j: torch.ones((len(i), 1, 2), device=i.device))  # remove randomness
+    pred, _ = inferer.x0_from_dtheta()
     assert (pred.mean() - x0) < 1e-5
