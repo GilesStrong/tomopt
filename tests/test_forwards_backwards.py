@@ -61,7 +61,7 @@ def test_forwards(inferer):
     loss_val = loss_func(pred, weight, inferer.volume)
 
     for l in inferer.volume.get_detectors():
-        assert torch.autograd.grad(loss_val, l.resolution, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+        assert torch.nan_to_num(torch.autograd.grad(loss_val, l.resolution, retain_graph=True, allow_unused=True)[0].abs(), 0).sum() > 0
         assert torch.autograd.grad(loss_val, l.efficiency, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
 
 
