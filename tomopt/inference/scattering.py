@@ -18,6 +18,32 @@ class ScatterBatch:
         self.hits = self.mu.get_hits(self.volume.lw)
         self.compute_scatters()
 
+    @staticmethod
+    def get_muon_trajectory(hits: Tensor, uncs: Tensor) -> Tensor:
+        r"""
+        hits = (muons,detector,(x,y,z))
+        uncs = (muons,detector,(unc,unc,0))
+
+        Assume same unceratinty for x and y
+        """
+
+        inv_unc2 = uncs[:, :, 0:1] ** -2
+        sum_inv_unc2 = inv_unc2.sum(dim=1)
+        mean_xyz = torch.sum(hits * inv_unc2, dim=1) / sum_inv_unc2
+        mean_xyz_z = torch.sum(hits * hits[:, :, 2:3] * inv_unc2, dim=1) / sum_inv_unc2
+        mean_xy = mean_xyz[:, :2]
+        mean_z = mean_xyz[:, 2:3]
+        mean_xy_z = mean_xyz_z[:, :2]
+        mean_z2 = mean_xyz_z[:, 2:3]
+
+        xy_star = (mean_xy - ((mean_z * mean_xy_z) / mean_z2)) / (1 - (mean_z.square() / mean_z2))
+        angles = (mean_xy_z - (xy_star * mean_z)) / mean_z2
+
+        def _calc_xyz(z: Tensor) -> Tensor:
+            return torch.cat([xy_star + (angles * z), z], dim=-1)
+
+        return _calc_xyz(hits[:, 1, 2:3]) - _calc_xyz(hits[:, 0, 2:3])
+
     def compute_scatters(self) -> None:
         r"""
         Currently only handles 2 detectors above and below passive volume
@@ -47,8 +73,8 @@ class ScatterBatch:
         self._hit_unc = torch.stack(res, dim=1)
 
         # Extrapolate muon-path vectors from hits
-        v1 = self.xa1 - self.xa0
-        v2 = self.xb1 - self.xb0
+        v1 = self.get_muon_trajectory(torch.stack([self.xa0, self.xa1], dim=1), uncs=self._hit_unc[:, :2])
+        v2 = self.get_muon_trajectory(torch.stack([self.xb0, self.xb1], dim=1), uncs=self._hit_unc[:, 2:])
 
         # scatter locations
         v3 = torch.cross(v1, v2, dim=1)  # connecting vector perpendicular to both lines
