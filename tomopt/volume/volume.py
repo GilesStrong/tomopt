@@ -26,20 +26,16 @@ class Volume(nn.Module):
             raise ValueError("self.layers contains no passive layers")
         return torch.stack([v.rad_length for v in vols if v.rad_length is not None], dim=0)
 
-    def lookup_xyz_coords(self, xyz: Tensor, passive_only: bool) -> Tensor:
+    def lookup_passive_xyz_coords(self, xyz: Tensor) -> Tensor:
         r"""Assume same size for all layers for now and no intermedeate detector layers"""
         if len(xyz.shape) == 1:
             xyz = xyz[None, :]
 
-        if passive_only:
-            if n := (
-                ((xyz[:, :2] > self.lw) + (xyz[:, :2] < 0)).sum(1) + (xyz[:, 2] < self.get_passive_z_range()[0]) + ((xyz[:, 2] > self.get_passive_z_range()[1]))
-            ).sum():
-                raise ValueError(f"{n} Coordinates outside passive volume")
-            xyz[:, 2] = xyz[:, 2] - self.get_passive_z_range()[0]
-        else:
-            if n := (((xyz[:, :2] > self.lw) + (xyz[:, :2] < 0)).sum(1) + (xyz[:, 2] < 0) + ((xyz[:, 2] > self.h))).sum():
-                raise ValueError(f"{n} Coordinates outside volume")
+        if n := (
+            ((xyz[:, :2] > self.lw) + (xyz[:, :2] < 0)).sum(1) + (xyz[:, 2] < self.get_passive_z_range()[0]) + ((xyz[:, 2] > self.get_passive_z_range()[1]))
+        ).sum():
+            raise ValueError(f"{n} Coordinates outside passive volume")
+        xyz[:, 2] = xyz[:, 2] - self.get_passive_z_range()[0]
         return torch.floor(xyz / self.size).long()
 
     def load_rad_length(self, rad_length_func: Callable[..., Tensor]) -> None:
@@ -65,15 +61,15 @@ class Volume(nn.Module):
 
     @property
     def lw(self) -> Tensor:
-        return self.layers[-1].lw
+        return self.get_passives()[-1].lw
 
     @property
-    def size(self) -> float:
-        return self.layers[-1].size  # Same size for each layer
+    def passive_size(self) -> float:
+        return self.get_passives()[-1].size  # Same size for each passive layer
 
     @property
     def h(self) -> float:
-        return len(self.layers) * self.layers[-1].size  # Same size for each layer
+        return self.layers[0].z + self.layers[0].size
 
     def get_passive_z_range(self) -> Tuple[Tensor, Tensor]:
         ps = self.get_passives()

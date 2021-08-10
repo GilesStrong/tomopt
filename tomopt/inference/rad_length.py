@@ -16,7 +16,7 @@ class X0Inferer:
     def __init__(self, scatters: ScatterBatch, default_pred: Optional[float] = X0["beryllium"], use_gaussian_spread: bool = True):
         self.scatters, self.default_pred, self.use_gaussian_spread = scatters, default_pred, use_gaussian_spread
         self.mu, self.volume, self.hits = self.scatters.mu, self.scatters.volume, self.scatters.hits
-        self.size, self.lw = self.volume.size, self.volume.lw
+        self.size, self.lw = self.volume.passive_size, self.volume.lw
         self.mask = self.scatters.get_scatter_mask()
         if self.default_pred is not None:
             self.default_weight = 1 / (self.default_pred ** 2)
@@ -101,9 +101,9 @@ class X0Inferer:
         """
 
         loc, loc_unc = self.scatters.location[self.mask], self.scatters.location_unc[self.mask]  # noqa F841 will use loc_unc to infer around central voxel
-        loc_idx = self.volume.lookup_xyz_coords(loc, passive_only=True)
+        loc_idx = self.volume.lookup_passive_xyz_coords(loc)
         idxs = torch.stack((torch.arange(len(loc)).long(), loc_idx[:, 2], loc_idx[:, 0], loc_idx[:, 1]), dim=1)
-        shp = (len(loc), len(self.volume.get_passives()), *(self.volume.lw / self.volume.size).long())
+        shp = (len(loc), len(self.volume.get_passives()), *(self.volume.lw / self.volume.passive_size).long())
 
         wpreds, weights = [], []
         for x0, unc in ((x0_dtheta, x0_dtheta_unc), (x0_dxy, x0_dxy_unc)):
@@ -132,18 +132,18 @@ class X0Inferer:
         loc, loc_unc = self.scatters.location[self.mask], self.scatters.location_unc[self.mask]  # loc is (x,y,z)
         shp_xyz = (
             len(loc),
-            round(self.volume.lw.numpy()[0] / self.volume.size),
-            round(self.volume.lw.numpy()[1] / self.volume.size),
+            round(self.volume.lw.numpy()[0] / self.volume.passive_size),
+            round(self.volume.lw.numpy()[1] / self.volume.passive_size),
             len(self.volume.get_passives()),
         )
         shp_zxy = shp_xyz[0], shp_xyz[3], shp_xyz[1], shp_xyz[2]
         int_bounds = (
-            self.volume.size
+            self.volume.passive_size
             * np.mgrid[
-                0 : round(self.volume.lw.numpy()[0] / self.volume.size) : 1,
-                0 : round(self.volume.lw.numpy()[1] / self.volume.size) : 1,
-                round(self.volume.get_passive_z_range()[0].numpy()[0] / self.volume.size) : round(
-                    self.volume.get_passive_z_range()[1].numpy()[0] / self.volume.size
+                0 : round(self.volume.lw.numpy()[0] / self.volume.passive_size) : 1,
+                0 : round(self.volume.lw.numpy()[1] / self.volume.passive_size) : 1,
+                round(self.volume.get_passive_z_range()[0].numpy()[0] / self.volume.passive_size) : round(
+                    self.volume.get_passive_z_range()[1].numpy()[0] / self.volume.passive_size
                 ) : 1,
             ]
         )
@@ -166,7 +166,10 @@ class X0Inferer:
                 return torch.prod(torch.stack([dists[d].cdf(high[i]) - dists[d].cdf(low[i]) for i, d in enumerate(dists)]), dim=0)
 
             prob = (
-                torch.stack([comp_int(l, l + self.volume.size, dists) for l in int_bounds.unbind()]).transpose(-1, -2).reshape(shp_xyz).permute(0, 3, 1, 2)
+                torch.stack([comp_int(l, l + self.volume.passive_size, dists) for l in int_bounds.unbind()])
+                .transpose(-1, -2)
+                .reshape(shp_xyz)
+                .permute(0, 3, 1, 2)
             )  # preds are (z,x,y)  TODO: vmap this? Might not be possible since it tries to run Normal.cdf batchwise.
             coef = coef * prob
 
