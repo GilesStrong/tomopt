@@ -94,6 +94,38 @@ def test_scatter_batch_properties(mock_show, scatter_batch):
     assert sb.theta_in_unc.mean() / sb.theta_in.abs().mean() < theta_in_unc
 
 
+def test_scatter_batch_trajectory_fit():
+    # 2 Hits
+    xa0 = Tensor([[0, 0, 1]])
+    xa1 = Tensor([[1, 1, 0]])
+    # Same unc
+    traj = ScatterBatch.get_muon_trajectory([xa0, xa1], [Tensor([[1]]), Tensor([[1]])])
+    assert (traj == Tensor([[1, 1, -1]])).all()
+    # Different unc
+    traj = ScatterBatch.get_muon_trajectory([xa0, xa1], [Tensor([[10]]), Tensor([[1]])])
+    assert (traj == Tensor([[1, 1, -1]])).all()
+
+    # 3 Hits inline
+    xa2 = Tensor([[0.5, 0.5, 0.5]])
+    # Same unc
+    traj = ScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[1]]), Tensor([[1]]), Tensor([[1]])])
+    assert (traj == Tensor([[1, 1, -1]])).all()
+    # Different unc
+    traj = ScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[10]]), Tensor([[1]]), Tensor([[1]])])
+    assert (traj == Tensor([[1, 1, -1]])).all()
+
+    # 3 Hits offline
+    xa0 = Tensor([[0, 0, 1]])
+    xa1 = Tensor([[0, 1, 0.5]])
+    xa2 = Tensor([[1, 0, 0.5]])
+    # Same unc
+    traj = ScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[1]]), Tensor([[1]]), Tensor([[1]])])
+    assert (traj - Tensor([[0.5, 0.5, -0.5]])).sum() < 1e-5
+    # Different unc
+    traj = ScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[1]]), Tensor([[1e9]]), Tensor([[1]])])
+    assert (traj - Tensor([[1, 0, -0.5]])).sum() < 1e-5
+
+
 def test_scatter_batch_compute(mocker, scatter_batch):  # noqa F811
     mu, volume = scatter_batch[0], scatter_batch[1]
     hits = {
