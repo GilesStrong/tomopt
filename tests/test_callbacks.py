@@ -231,20 +231,16 @@ def test_hit_record():
     vw.fit_params = FitParams(sb=MockScatterBatch(5))
     hr.set_wrapper(vw)
 
-    vw.fit_params.sb.xa0 = xa0[:5]
-    vw.fit_params.sb.xa1 = xa1[:5]
-    vw.fit_params.sb.xb0 = xb0[:5]
-    vw.fit_params.sb.xb1 = xb1[:5]
+    vw.fit_params.sb.above_hits = [xa0[:5], xa1[:5]]
+    vw.fit_params.sb.below_hits = [xb0[:5], xb1[:5]]
     hr.on_scatter_end()
-    vw.fit_params.sb.xa0 = xa0[5:]
-    vw.fit_params.sb.xa1 = xa1[5:]
-    vw.fit_params.sb.xb0 = xb0[5:]
-    vw.fit_params.sb.xb1 = xb1[5:]
+    vw.fit_params.sb.above_hits = [xa0[5:], xa1[5:]]
+    vw.fit_params.sb.below_hits = [xb0[5:], xb1[5:]]
     hr.on_scatter_end()
 
     assert len(hr.record) == 2
     assert hr.record[1].shape == torch.Size([5, 4, 3])
-    assert torch.all(hr.get_record() == torch.stack([xa0, xa1, xb1, xb0], dim=1))
+    assert torch.all(hr.get_record() == torch.stack([xa0, xa1, xb0, xb1], dim=1))
 
     hr.record = [Tensor([[0.0, 0.0, 0.95], [0.1, 0.1, 0.85], [0.2, 0.2, 0.15], [0.3, 0.3, 0.05]])]
     df = hr.get_record(True)

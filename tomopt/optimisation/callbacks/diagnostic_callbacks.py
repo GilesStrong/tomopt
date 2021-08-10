@@ -49,14 +49,14 @@ class ScatterRecord(Callback):
 
 class HitRecord(ScatterRecord):
     def on_scatter_end(self) -> None:
-        hits = torch.stack(
-            [
-                self.wrapper.fit_params.sb.xa0.detach().cpu().clone(),
-                self.wrapper.fit_params.sb.xa1.detach().cpu().clone(),
-                self.wrapper.fit_params.sb.xb1.detach().cpu().clone(),
-                self.wrapper.fit_params.sb.xb0.detach().cpu().clone(),
-            ],
-            dim=1,
+        hits = (
+            torch.stack(
+                [*self.wrapper.fit_params.sb.above_hits, *self.wrapper.fit_params.sb.below_hits],
+                dim=1,
+            )
+            .detach()
+            .cpu()
+            .clone()
         )
         self.record.append(hits)
 
