@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Tuple
 from collections import defaultdict, OrderedDict
 
 import torch
@@ -115,8 +115,8 @@ class MuonBatch:
         self.y = self.y + (dz * torch.tan(self.theta_y))
         self.z -= dz
 
-    def get_xy_mask(self, lw: Tensor) -> Tensor:
-        return (self.x >= 0) * (self.x < lw[0]) * (self.y >= 0) * (self.y < lw[1])
+    def get_xy_mask(self, xy_low: Union[Tuple[float, float], Tensor], xy_high: Union[Tuple[float, float], Tensor]) -> Tensor:
+        return (self.x >= xy_low[0]) * (self.x < xy_high[0]) * (self.y >= xy_low[1]) * (self.y < xy_high[1])
 
     def snapshot_xyz(self) -> None:
         self.xy_hist[self.z.detach().cpu().clone().numpy()[0]] = self.xy.detach().cpu().clone().numpy()
@@ -128,7 +128,7 @@ class MuonBatch:
     def get_hits(self, lw: Tensor) -> Dict[str, Dict[str, Tensor]]:
         if len(self.hits) == 0:
             raise ValueError("MuonBatch has no recorded hits")
-        m = self.get_xy_mask(lw)
+        m = self.get_xy_mask((0, 0), lw)
         return {p: {c: torch.stack(self.hits[p][c], dim=1)[m] for c in self.hits[p]} for p in self.hits}
 
     def dtheta_x(self, mu: MuonBatch) -> Tensor:

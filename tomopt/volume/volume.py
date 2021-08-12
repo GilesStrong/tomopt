@@ -1,3 +1,4 @@
+from tomopt.volume.layer import Layer
 from typing import Tuple, List, Callable
 
 import torch
@@ -13,6 +14,9 @@ class Volume(nn.Module):
     def __init__(self, layers: nn.ModuleList):
         super().__init__()
         self.layers = layers
+
+    def __getitem__(self, idx: int) -> Layer:
+        return self.layers[idx]
 
     def get_detectors(self) -> List[DetectorLayer]:
         return [l for l in self.layers if isinstance(l, DetectorLayer)]
@@ -69,8 +73,8 @@ class Volume(nn.Module):
 
     @property
     def h(self) -> float:
-        return self.layers[0].z + self.layers[0].size
+        return self.layers[0].z
 
     def get_passive_z_range(self) -> Tuple[Tensor, Tensor]:
         ps = self.get_passives()
-        return ps[-1].z - self.size, ps[0].z
+        return ps[-1].z - self.passive_size, ps[0].z

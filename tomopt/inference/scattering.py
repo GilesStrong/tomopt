@@ -21,8 +21,8 @@ class ScatterBatch:
     @staticmethod
     def get_muon_trajectory(hit_list: List[Tensor], unc_list: List[Tensor]) -> Tensor:
         r"""
-        hits = [muons,detector,(x,y,z)]
-        uncs = [muons,detector,(unc,unc,0)]
+        hits = [muons,(x,y,z)]
+        uncs = [muons,(unc,unc,0)]
 
         Assume same unceratinty for x and y
         """

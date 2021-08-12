@@ -51,7 +51,7 @@ class Layer(nn.Module):
         """
 
         if self.rad_length is not None:
-            mask = mu.get_xy_mask(self.lw)  # Only scatter muons inside volume
+            mask = mu.get_xy_mask((0, 0), self.lw)  # Only scatter muons inside volume
             xy_idx = self.mu_abs2idx(mu, mask)
 
             x0 = self.rad_length[xy_idx[:, 0], xy_idx[:, 1]]
@@ -117,7 +117,7 @@ class DetectorLayer(Layer):
         self.eff_cost_func, self.res_cost_func = eff_cost_func, res_cost_func
 
     def get_hits(self, mu: MuonBatch) -> Dict[str, Tensor]:  # to dense and add precision
-        mask = mu.get_xy_mask(self.lw)
+        mask = mu.get_xy_mask((0, 0), self.lw)
         res = torch.zeros(len(mu), device=self.device)  # Zero detection outside detector
         xy_idxs = self.mu_abs2idx(mu, mask)
         res[mask] = self.resolution[xy_idxs[:, 0], xy_idxs[:, 1]]

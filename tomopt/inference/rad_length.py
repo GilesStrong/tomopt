@@ -37,7 +37,7 @@ class X0Inferer:
         dtheta = dtheta_dbias
         """
 
-        mom = self.mu.reco_mom[self.mu.get_xy_mask(self.lw)][self.mask]
+        mom = self.mu.reco_mom[self.mu.get_xy_mask((0, 0), self.lw)][self.mask]
         dtheta = self.scatters.dtheta[self.mask]
         dtheta_unc = self.scatters.dtheta_unc[self.mask]
         theta_xy_in = self.scatters.theta_in[self.mask]
