@@ -132,8 +132,8 @@ class X0Inferer:
         loc, loc_unc = self.scatters.location[self.mask], self.scatters.location_unc[self.mask]  # loc is (x,y,z)
         shp_xyz = (
             len(loc),
-            round(self.volume.lw.numpy()[0] / self.volume.passive_size),
-            round(self.volume.lw.numpy()[1] / self.volume.passive_size),
+            round(self.volume.lw.cpu().numpy()[0] / self.volume.passive_size),
+            round(self.volume.lw.cpu().numpy()[1] / self.volume.passive_size),
             len(self.volume.get_passives()),
         )
         shp_zxy = shp_xyz[0], shp_xyz[3], shp_xyz[1], shp_xyz[2]

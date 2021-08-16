@@ -110,10 +110,11 @@ class MuonBatch:
     def theta(self, theta: Tensor) -> None:
         raise NotImplementedError()
 
-    def propagate(self, dz: float) -> None:
-        self.x = self.x + (dz * torch.tan(self.theta_x))
-        self.y = self.y + (dz * torch.tan(self.theta_y))
-        self.z -= dz
+    def propagate(self, dz: Union[Tensor, float]) -> None:
+        with torch.no_grad():
+            self.x = self.x + (dz * torch.tan(self.theta_x))
+            self.y = self.y + (dz * torch.tan(self.theta_y))
+            self.z = self.z - dz
 
     def get_xy_mask(self, xy_low: Union[Tuple[float, float], Tensor], xy_high: Union[Tuple[float, float], Tensor]) -> Tensor:
         return (self.x >= xy_low[0]) * (self.x < xy_high[0]) * (self.y >= xy_low[1]) * (self.y < xy_high[1])

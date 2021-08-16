@@ -18,7 +18,6 @@ from ...volume import Volume, DetectorLayer
 from ...core import X0
 from ...muon import generate_batch, MuonBatch
 from ...inference import ScatterBatch, X0Inferer
-from ...utils import jacobian
 
 __all__ = ["VolumeWrapper"]
 

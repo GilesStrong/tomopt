@@ -46,21 +46,7 @@ class ScatterBatch:
 
         return _calc_xyz(hits[:, 1, 2:3]) - _calc_xyz(hits[:, 0, 2:3])
 
-    def compute_scatters(self) -> None:
-        r"""
-        Currently only handles detectors above and below passive volume
-
-        Scatter locations adapted from:
-        @MISC {3334866,
-            TITLE = {Closest points between two lines},
-            AUTHOR = {Brian (https://math.stackexchange.com/users/72614/brian)},
-            HOWPUBLISHED = {Mathematics Stack Exchange},
-            NOTE = {URL:https://math.stackexchange.com/q/3334866 (version: 2019-08-26)},
-            EPRINT = {https://math.stackexchange.com/q/3334866},
-            URL = {https://math.stackexchange.com/q/3334866}
-        }
-        """
-
+    def compute_tracks(self) -> None:
         # reco x, reco y, gen z, must be a list to allow computation of uncertainty
         self.above_hits = [torch.cat([self.hits["above"]["xy"][:, i], self.hits["above"]["z"][:, i]], dim=-1) for i in range(self.hits["above"]["xy"].shape[1])]
         self.below_hits = [torch.cat([self.hits["below"]["xy"][:, i], self.hits["below"]["z"][:, i]], dim=-1) for i in range(self.hits["below"]["xy"].shape[1])]
@@ -77,29 +63,46 @@ class ScatterBatch:
         self.above_hit_uncs = _get_hit_uncs(self.volume.get_detectors()[: self.n_hits_above], self.above_hits)
         self.below_hit_uncs = _get_hit_uncs(self.volume.get_detectors()[self.n_hits_above :], self.below_hits)
 
-        v1 = self.get_muon_trajectory(self.above_hits, self.above_hit_uncs)
-        v2 = self.get_muon_trajectory(self.below_hits, self.below_hit_uncs)
+        self.track_in = self.get_muon_trajectory(self.above_hits, self.above_hit_uncs)
+        self.track_out = self.get_muon_trajectory(self.below_hits, self.below_hit_uncs)
+
+    def compute_scatters(self) -> None:
+        r"""
+        Currently only handles detectors above and below passive volume
+
+        Scatter locations adapted from:
+        @MISC {3334866,
+            TITLE = {Closest points between two lines},
+            AUTHOR = {Brian (https://math.stackexchange.com/users/72614/brian)},
+            HOWPUBLISHED = {Mathematics Stack Exchange},
+            NOTE = {URL:https://math.stackexchange.com/q/3334866 (version: 2019-08-26)},
+            EPRINT = {https://math.stackexchange.com/q/3334866},
+            URL = {https://math.stackexchange.com/q/3334866}
+        }
+        """
+
+        self.compute_tracks()
 
         # scatter locations
-        v3 = torch.cross(v1, v2, dim=1)  # connecting vector perpendicular to both lines
+        cross = torch.cross(self.track_in, self.track_out, dim=1)  # connecting vector perpendicular to both lines
         rhs = self.below_hits[0] - self.above_hits[0]
-        lhs = torch.stack([v1, -v2, v3], dim=1).transpose(2, 1)
+        lhs = torch.stack([self.track_in, -self.track_out, cross], dim=1).transpose(2, 1)
         coefs = torch.linalg.solve(lhs, rhs)  # solve p1+t1*v1 + t3*v3 = p2+t2*v2 => p2-p1 = t1*v1 - t2*v2 + t3*v3
 
-        q1 = self.above_hits[0] + (coefs[:, 0:1] * v1)  # closest point on v1
-        self._loc = q1 + (coefs[:, 2:3] * v3 / 2)  # Move halfway along v3 from q1
+        q1 = self.above_hits[0] + (coefs[:, 0:1] * self.track_in)  # closest point on v1
+        self._loc = q1 + (coefs[:, 2:3] * cross / 2)  # Move halfway along v3 from q1
         self._loc_unc: Optional[Tensor] = None
 
         # Theta deviations
-        self._theta_in = torch.arctan(v1[:, :2] / v1[:, 2:3])
-        self._theta_out = torch.arctan(v2[:, :2] / v2[:, 2:3])
+        self._theta_in = torch.arctan(self.track_in[:, :2] / self.track_in[:, 2:3])
+        self._theta_out = torch.arctan(self.track_out[:, :2] / self.track_out[:, 2:3])
         self._dtheta = torch.abs(self._theta_in - self._theta_out)
         self._theta_in_unc: Optional[Tensor] = None
         self._theta_out_unc: Optional[Tensor] = None
         self._dtheta_unc: Optional[Tensor] = None
 
         # xy deviations
-        self._dxy = coefs[:, 2:3] * v3[:, :2]
+        self._dxy = coefs[:, 2:3] * cross[:, :2]
         self._dxy_unc: Optional[Tensor] = None
 
     def _compute_unc(self, var: Tensor, hits: List[Tensor], hit_uncs: List[Tensor]) -> Tensor:
