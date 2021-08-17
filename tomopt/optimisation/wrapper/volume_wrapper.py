@@ -70,7 +70,7 @@ class FitParams:
     metric_log: Optional[MetricLogger] = None
     metric_cbs: Optional[List[EvalMetric]] = None
     passive_bar: Optional[Union[NBProgressBar, ConsoleProgressBar]] = None
-    use_default_pred: bool = True
+    use_default_pred: bool = False
 
     def __init__(self, **kwargs: Any) -> None:
         self.__dict__.update(kwargs)

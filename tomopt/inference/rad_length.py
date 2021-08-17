@@ -171,6 +171,7 @@ class X0Inferer:
                 .reshape(shp_xyz)
                 .permute(0, 3, 1, 2)
             )  # preds are (z,x,y)  TODO: vmap this? Might not be possible since it tries to run Normal.cdf batchwise.
+            prob = prob + 1e-15  # Sometimes probability is zero
             coef = coef * prob
 
             wpreds.append(x0 * coef)
@@ -179,7 +180,6 @@ class X0Inferer:
         wpred, weight = torch.cat(wpreds, dim=0), torch.cat(weights, dim=0)
         wpred, weight = wpred.sum(0), weight.sum(0)
         pred = wpred / weight
-
         return pred, weight
 
     def add_default_pred(self, pred: Tensor, weight: Tensor) -> Tuple[Tensor, Tensor]:
