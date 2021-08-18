@@ -3,6 +3,7 @@ import math
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import matplotlib.lines as mlines
+from matplotlib.gridspec import GridSpec
 import seaborn as sns
 import numpy as np
 from typing import List, Dict, Tuple, Optional
@@ -78,7 +79,7 @@ class MetricLogger(Callback):
         self._prep_plots()
         self.display = display(self.fig, display_id=True)
 
-    def _build_grid_spec(self) -> plt.gridspec.GridSpec:
+    def _build_grid_spec(self) -> GridSpec:
         return self.fig.add_gridspec(3 + (self.main_metric_idx is None), 1)
 
     def _prep_plots(self) -> None:
@@ -259,7 +260,7 @@ class MetricLogger(Callback):
 
 
 class VoxelMetricLogger(MetricLogger):
-    def _build_grid_spec(self) -> plt.gridspec.GridSpec:
+    def _build_grid_spec(self) -> GridSpec:
         self.n_dets = len(self.wrapper.get_detectors())
         return self.fig.add_gridspec(5 + (self.main_metric_idx is None), self.n_dets)
 
@@ -314,7 +315,7 @@ class VoxelMetricLogger(MetricLogger):
 
 
 class PanelMetricLogger(MetricLogger):
-    def _build_grid_spec(self) -> plt.gridspec.GridSpec:
+    def _build_grid_spec(self) -> GridSpec:
         self.n_dets = len(self.wrapper.get_detectors())
         return self.fig.add_gridspec(5 + (self.main_metric_idx is None), 3)
 

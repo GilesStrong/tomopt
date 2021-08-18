@@ -6,9 +6,9 @@ from torch import nn, Tensor
 import torch.nn.functional as F
 
 from tomopt.core import X0
-from tomopt.volume import Volume, PassiveLayer, DetectorLayer
+from tomopt.volume import Volume, PassiveLayer, VoxelDetectorLayer
 from tomopt.muon import MuonBatch, generate_batch
-from tomopt.inference import ScatterBatch, X0Inferer
+from tomopt.inference import VoxelScatterBatch, X0Inferer
 from tomopt.optimisation.loss import DetectorLoss
 
 LW = Tensor([1, 1])
@@ -38,7 +38,9 @@ def get_layers(init_res: float = 1e3):
     pos = "above"
     for z, d in zip(np.arange(Z, 0, -SZ), [1, 1, 0, 0, 0, 0, 0, 0, 1, 1]):
         if d:
-            layers.append(DetectorLayer(pos=pos, init_eff=init_eff, init_res=init_res, lw=LW, z=z, size=SZ, eff_cost_func=eff_cost, res_cost_func=res_cost))
+            layers.append(
+                VoxelDetectorLayer(pos=pos, init_eff=init_eff, init_res=init_res, lw=LW, z=z, size=SZ, eff_cost_func=eff_cost, res_cost_func=res_cost)
+            )
         else:
             pos = "below"
             layers.append(PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=z, size=SZ))
@@ -51,7 +53,7 @@ def inferer():
     mu = MuonBatch(generate_batch(N), init_z=1)
     volume = Volume(get_layers())
     volume(mu)
-    sb = ScatterBatch(mu=mu, volume=volume)
+    sb = VoxelScatterBatch(mu=mu, volume=volume)
     return X0Inferer(sb)
 
 

@@ -8,10 +8,10 @@ import torch
 from torch import Tensor, nn
 import torch.nn.functional as F
 
-from tomopt.volume import PassiveLayer, DetectorLayer, Volume
+from tomopt.volume import PassiveLayer, VoxelDetectorLayer, Volume
 from tomopt.muon import MuonBatch, generate_batch
 from tomopt.core import X0
-from tomopt.inference import ScatterBatch, X0Inferer
+from tomopt.inference import VoxelScatterBatch, X0Inferer
 from tomopt.volume.layer import Layer
 
 LW = Tensor([1, 1])
@@ -40,7 +40,9 @@ def get_layers(init_res: float = 1e4, init_eff: float = 0.5):
     pos = "above"
     for z, d in zip(np.arange(Z, 0, -SZ), [1, 1, 0, 0, 0, 0, 0, 0, 1, 1]):
         if d:
-            layers.append(DetectorLayer(pos=pos, init_eff=init_eff, init_res=init_res, lw=LW, z=z, size=SZ, eff_cost_func=eff_cost, res_cost_func=res_cost))
+            layers.append(
+                VoxelDetectorLayer(pos=pos, init_eff=init_eff, init_res=init_res, lw=LW, z=z, size=SZ, eff_cost_func=eff_cost, res_cost_func=res_cost)
+            )
         else:
             pos = "below"
             layers.append(PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=z, size=SZ))
@@ -53,7 +55,7 @@ def scatter_batch():
     mu = MuonBatch(generate_batch(N), init_z=1)
     volume = Volume(get_layers())
     volume(mu)
-    sb = ScatterBatch(mu=mu, volume=volume)
+    sb = VoxelScatterBatch(mu=mu, volume=volume)
     return mu, volume, sb
 
 
@@ -85,7 +87,7 @@ def test_scatter_batch_properties(mock_show, scatter_batch):
     mu = MuonBatch(generate_batch(N), init_z=1)
     volume = Volume(get_layers(init_res=1e7))
     volume(mu)
-    sb = ScatterBatch(mu=mu, volume=volume)
+    sb = VoxelScatterBatch(mu=mu, volume=volume)
     assert sb.location_unc[:, :2].mean() < loc_xy_unc
     assert sb.location_unc[:, 2].mean() < loc_z_unc
     assert sb.dxy_unc.mean() < dxy_unc
@@ -99,19 +101,19 @@ def test_scatter_batch_trajectory_fit():
     xa0 = Tensor([[0, 0, 1]])
     xa1 = Tensor([[1, 1, 0]])
     # Same unc
-    traj = ScatterBatch.get_muon_trajectory([xa0, xa1], [Tensor([[1]]), Tensor([[1]])])
+    traj = VoxelScatterBatch.get_muon_trajectory([xa0, xa1], [Tensor([[1]]), Tensor([[1]])])
     assert (traj == Tensor([[1, 1, -1]])).all()
     # Different unc
-    traj = ScatterBatch.get_muon_trajectory([xa0, xa1], [Tensor([[10]]), Tensor([[1]])])
+    traj = VoxelScatterBatch.get_muon_trajectory([xa0, xa1], [Tensor([[10]]), Tensor([[1]])])
     assert (traj == Tensor([[1, 1, -1]])).all()
 
     # 3 Hits inline
     xa2 = Tensor([[0.5, 0.5, 0.5]])
     # Same unc
-    traj = ScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[1]]), Tensor([[1]]), Tensor([[1]])])
+    traj = VoxelScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[1]]), Tensor([[1]]), Tensor([[1]])])
     assert (traj == Tensor([[1, 1, -1]])).all()
     # Different unc
-    traj = ScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[10]]), Tensor([[1]]), Tensor([[1]])])
+    traj = VoxelScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[10]]), Tensor([[1]]), Tensor([[1]])])
     assert (traj == Tensor([[1, 1, -1]])).all()
 
     # 3 Hits offline
@@ -119,10 +121,10 @@ def test_scatter_batch_trajectory_fit():
     xa1 = Tensor([[0, 1, 0.5]])
     xa2 = Tensor([[1, 0, 0.5]])
     # Same unc
-    traj = ScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[1]]), Tensor([[1]]), Tensor([[1]])])
+    traj = VoxelScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[1]]), Tensor([[1]]), Tensor([[1]])])
     assert (traj - Tensor([[0.5, 0.5, -0.5]])).sum() < 1e-5
     # Different unc
-    traj = ScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[1]]), Tensor([[1e9]]), Tensor([[1]])])
+    traj = VoxelScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[1]]), Tensor([[1e9]]), Tensor([[1]])])
     assert (traj - Tensor([[1, 0, -0.5]])).sum() < 1e-5
 
 
@@ -158,7 +160,7 @@ def test_scatter_batch_compute(mocker, scatter_batch):  # noqa F811
 
     mocker.patch("tomopt.inference.scattering.jacobian", mock_jac)
 
-    sb = ScatterBatch(mu=mu, volume=volume)
+    sb = VoxelScatterBatch(mu=mu, volume=volume)
     assert (sb.location - Tensor([[0.5, 0.5, 0.5]])).sum().abs() < 1e-3
     assert (sb.dxy - Tensor([[0.0, 0.0]])).sum().abs() < 1e-3
     assert (sb.theta_in - Tensor([[-math.pi / 4, -math.pi / 4]])).sum().abs() < 1e-3
@@ -182,7 +184,7 @@ def test_x0_inferer_methods():
     mu = MuonBatch(generate_batch(N), init_z=1)
     volume = Volume(get_layers(init_res=1e3))
     volume(mu)
-    sb = ScatterBatch(mu=mu, volume=volume)
+    sb = VoxelScatterBatch(mu=mu, volume=volume)
     inferer = X0Inferer(scatters=sb, default_pred=X0["beryllium"])
 
     pt, pt_unc = inferer.x0_from_dtheta()

@@ -7,7 +7,7 @@ from torch import Tensor, nn
 import torch.nn.functional as F
 
 from tomopt.volume.layer import Layer
-from tomopt.volume import PassiveLayer, VoxelDetectorLayer, PanelDetectorLayer, Volume
+from tomopt.volume import PassiveLayer, VoxelDetectorLayer, Volume
 from tomopt.muon import MuonBatch, generate_batch
 from tomopt.core import X0
 from tomopt.utils import jacobian
