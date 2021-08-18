@@ -24,7 +24,7 @@ class X0Inferer:
             self.default_pred_t = Tensor([self.default_pred]).to(self.mu.device)
         self.average_preds = self.average_preds_gaussian if self.use_gaussian_spread else self.average_preds_single
 
-    def x0_from_dtheta(self) -> Tuple[Tensor, Tensor]:
+    def x0_from_dtheta(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
         r"""
         TODO: Debias by considering each voxel on muon paths
         Maybe like:
@@ -36,6 +36,9 @@ class X0Inferer:
         dtheta_dbias = dtheta_dbias.sqrt()
         dtheta = dtheta_dbias
         """
+
+        if self.mask.sum() == 0:
+            return None, None
 
         mom = self.mu.reco_mom[self.mu.get_xy_mask((0, 0), self.lw)][self.mask]
         dtheta = self.scatters.dtheta[self.mask]
@@ -122,7 +125,7 @@ class X0Inferer:
 
     def average_preds_gaussian(
         self, x0_dtheta: Optional[Tensor], x0_dtheta_unc: Optional[Tensor], x0_dxy: Optional[Tensor], x0_dxy_unc: Optional[Tensor], efficiency: Tensor
-    ) -> Tuple[Tensor, Tensor]:
+    ) -> Tuple[Optional[Tensor], Optional[Tensor]]:
         r"""
         Assign x0 inference to neighbourhood of voxels according to scatter-location uncertainty
         TODO: Implement differing x0 accoring to location via Gaussian spread
@@ -177,6 +180,8 @@ class X0Inferer:
             wpreds.append(x0 * coef)
             weights.append(coef)
 
+        if len(wpreds) == 0:
+            return None, None
         wpred, weight = torch.cat(wpreds, dim=0), torch.cat(weights, dim=0)
         wpred, weight = wpred.sum(0), weight.sum(0)
         pred = wpred / weight
@@ -189,13 +194,13 @@ class X0Inferer:
         weight = torch.where(weight == 0.0, self.default_weight_t, weight)
         return pred, weight
 
-    def pred_x0(self, inc_default: bool = True) -> Tuple[Tensor, Tensor]:
+    def pred_x0(self, inc_default: bool = True) -> Tuple[Optional[Tensor], Optional[Tensor]]:
         x0_dtheta, x0_dtheta_unc = self.x0_from_dtheta()
         x0_dxy, x0_dxy_unc = self.x0_from_dxy()
         eff = self.compute_efficiency()
 
         pred, weight = self.average_preds(x0_dtheta=x0_dtheta, x0_dtheta_unc=x0_dtheta_unc, x0_dxy=x0_dxy, x0_dxy_unc=x0_dxy_unc, efficiency=eff)
-        if inc_default and self.default_pred is not None:
+        if inc_default and self.default_pred is not None and pred is not None:
             pred, weight = self.add_default_pred(pred, weight)
 
         return pred, weight

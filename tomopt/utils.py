@@ -15,6 +15,8 @@ if (ver := LooseVersion(torch.__version__).vstring.split("+")[0]) not in ["1.8.1
 
 
 def jacobian(y: Tensor, x: Tensor, create_graph: bool = False, allow_unused: bool = True) -> Tensor:
+    if len(y) == 0:
+        return None
     flat_y = y.reshape(-1)
 
     def get_vjp(v: Tensor) -> Tensor:
