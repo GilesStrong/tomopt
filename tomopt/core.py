@@ -1,6 +1,9 @@
-import torch
+from typing import Callable, Iterator
 
-__all__ = ["DEVICE", "SCATTER_COEF_A", "SCATTER_COEF_B", "X0"]
+import torch
+from torch import nn
+
+__all__ = ["DEVICE", "SCATTER_COEF_A", "SCATTER_COEF_B", "X0", "PartialOpt"]
 
 DEVICE = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
@@ -18,3 +21,5 @@ X0 = {
     "lead": 0.005612,
     # 'air':312.22
 }
+
+PartialOpt = Callable[[Iterator[nn.Parameter]], torch.optim.Optimizer]

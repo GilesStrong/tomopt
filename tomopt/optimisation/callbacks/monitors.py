@@ -1,6 +1,8 @@
 from fastprogress.fastprogress import IN_NOTEBOOK
 import math
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import matplotlib.lines as mlines
 import seaborn as sns
 import numpy as np
 from typing import List, Dict, Tuple, Optional
@@ -74,17 +76,20 @@ class MetricLogger(Callback):
                     self.lock_to_metric = True
                     break
         self._prep_plots()
+        self.display = display(self.fig, display_id=True)
+
+    def _build_grid_spec(self) -> plt.gridspec.GridSpec:
+        return self.fig.add_gridspec(3 + (self.main_metric_idx is None), 1)
 
     def _prep_plots(self) -> None:
         if self.show_plots:
             with sns.axes_style(**self.style):
                 self.fig = plt.figure(figsize=(self.w_mid, self.w_mid), constrained_layout=True)
-                self.n_dets = len(self.wrapper.get_detectors())
-                gs = self.fig.add_gridspec(5 + (self.main_metric_idx is None), self.n_dets)
-                self.loss_ax = self.fig.add_subplot(gs[:3, :])
-                self.sub_loss_ax = self.fig.add_subplot(gs[3:4, :])
+                self.grid_spec = self._build_grid_spec()
+                self.loss_ax = self.fig.add_subplot(self.grid_spec[:3, :])
+                self.sub_loss_ax = self.fig.add_subplot(self.grid_spec[3:4, :])
                 if self.main_metric_idx is not None:
-                    self.metric_ax = self.fig.add_subplot(gs[4:5, :])
+                    self.metric_ax = self.fig.add_subplot(self.grid_spec[4:5, :])
                 for ax in [self.loss_ax, self.sub_loss_ax]:
                     ax.tick_params(axis="x", labelsize=0.8 * self.tk_sz, labelcolor=self.tk_col)
                     ax.tick_params(axis="y", labelsize=0.8 * self.tk_sz, labelcolor=self.tk_col)
@@ -96,15 +101,6 @@ class MetricLogger(Callback):
                     self.metric_ax.tick_params(axis="y", labelsize=0.8 * self.tk_sz, labelcolor=self.tk_col)
                     self.metric_ax.set_xlabel("Epoch", fontsize=0.8 * self.lbl_sz, color=self.lbl_col)
                     self.metric_ax.set_ylabel(self.wrapper.fit_params.metric_cbs[self.main_metric_idx].name, fontsize=0.8 * self.lbl_sz, color=self.lbl_col)
-                self.res_axes = [self.fig.add_subplot(gs[-2:-1, i : i + 1]) for i in range(self.n_dets)]
-                self.eff_axes = [self.fig.add_subplot(gs[-1:, i : i + 1]) for i in range(self.n_dets)]
-                self.res_cbar_ax = self.fig.add_axes([1.0, 0.04, 0.03, 0.31])
-                self.eff_cbar_ax = self.fig.add_axes([1.1, 0.04, 0.03, 0.31])
-                for i in range(self.n_dets):
-                    self.eff_axes[i].set_xlabel(f"Det. {i}", fontsize=0.8 * self.lbl_sz, color=self.lbl_col)
-                self.res_axes[0].set_ylabel("Resolution", fontsize=0.8 * self.lbl_sz, color=self.lbl_col)
-                self.eff_axes[0].set_ylabel("Efficiency", fontsize=0.8 * self.lbl_sz, color=self.lbl_col)
-                self.display = display(self.fig, display_id=True)
 
     def on_train_begin(self) -> None:
         r"""
@@ -154,6 +150,7 @@ class MetricLogger(Callback):
 
             if self.show_plots:
                 self.update_plot()
+                self.display.update(self.fig)
             else:
                 self.print_losses()
 
@@ -204,39 +201,6 @@ class MetricLogger(Callback):
             self.sub_loss_ax.set_xlabel("Epoch", fontsize=0.8 * self.lbl_sz, color=self.lbl_col)
             self.loss_ax.set_ylabel("Loss", fontsize=0.8 * self.lbl_sz, color=self.lbl_col)
             self.sub_loss_ax.set_ylabel("Loss Composition", fontsize=0.8 * self.lbl_sz, color=self.lbl_col)
-        with sns.axes_style(**self.style):
-            dets = self.wrapper.get_detectors()
-            res = np.array([l.resolution.data.cpu().numpy() for l in dets])
-            eff = np.array([l.efficiency.data.cpu().numpy() for l in dets])
-            res_min, res_max = res.min(), res.max()
-            eff_min, eff_max = eff.min(), eff.max()
-
-            for i, l in enumerate(dets):
-                self.res_axes[i].clear()
-                self.eff_axes[i].clear()
-                sns.heatmap(
-                    res[i],
-                    ax=self.res_axes[i],
-                    cmap="viridis",
-                    square=True,
-                    cbar=(i == 0),
-                    vmin=res_min,
-                    vmax=res_max,
-                    cbar_ax=self.res_cbar_ax if i == 0 else None,
-                )
-                sns.heatmap(
-                    eff[i],
-                    ax=self.eff_axes[i],
-                    cmap="plasma",
-                    square=True,
-                    cbar=(i == 0),
-                    vmin=eff_min,
-                    vmax=eff_max,
-                    cbar_ax=self.eff_cbar_ax if i == 0 else None,
-                )
-                self.eff_axes[i].set_xlabel(f"Det. {i}", fontsize=0.8 * self.lbl_sz, color=self.lbl_col)
-            self.res_axes[0].set_ylabel("Resolution", fontsize=0.8 * self.lbl_sz, color=self.lbl_col)
-            self.eff_axes[0].set_ylabel("Efficiency", fontsize=0.8 * self.lbl_sz, color=self.lbl_col)
 
         if len(self.loss_vals["Validation"]) > 1:
             # Metrics
@@ -253,7 +217,6 @@ class MetricLogger(Callback):
                     self.metric_ax.set_xlim(1 / self.n_trn_batches, x[-1])
                     self.metric_ax.set_xlabel("Epoch", fontsize=0.8 * self.lbl_sz, color=self.lbl_col)
                     self.metric_ax.set_ylabel(self.wrapper.fit_params.metric_cbs[self.main_metric_idx].name, fontsize=0.8 * self.lbl_sz, color=self.lbl_col)
-        self.display.update(self.fig)
 
     def on_train_end(self) -> None:
         plt.clf()  # prevent plot be shown twice
@@ -293,3 +256,126 @@ class MetricLogger(Callback):
             for c, v in zip(self.metric_cbs, np.array(self.metric_vals)[:, idx]):
                 results[c.name] = v
         return results
+
+
+class VoxelMetricLogger(MetricLogger):
+    def _build_grid_spec(self) -> plt.gridspec.GridSpec:
+        self.n_dets = len(self.wrapper.get_detectors())
+        return self.fig.add_gridspec(5 + (self.main_metric_idx is None), self.n_dets)
+
+    def _set_axes_labels(self) -> None:
+        for i in range(self.n_dets):
+            self.eff_axes[i].set_xlabel(f"Det. {i}", fontsize=0.8 * self.lbl_sz, color=self.lbl_col)
+        self.res_axes[0].set_ylabel("Resolution", fontsize=0.8 * self.lbl_sz, color=self.lbl_col)
+        self.eff_axes[0].set_ylabel("Efficiency", fontsize=0.8 * self.lbl_sz, color=self.lbl_col)
+
+    def _prep_plots(self) -> None:
+        super()._prep_plots()
+        if self.show_plots:
+            with sns.axes_style(**self.style):
+                self.res_axes = [self.fig.add_subplot(self.grid_spec[-2:-1, i : i + 1]) for i in range(self.n_dets)]
+                self.eff_axes = [self.fig.add_subplot(self.grid_spec[-1:, i : i + 1]) for i in range(self.n_dets)]
+                self.res_cbar_ax = self.fig.add_axes([1.0, 0.04, 0.03, 0.31])
+                self.eff_cbar_ax = self.fig.add_axes([1.1, 0.04, 0.03, 0.31])
+
+    def update_plot(self) -> None:
+        super().update_plot()
+        with sns.axes_style(**self.style):
+            dets = self.wrapper.get_detectors()
+            res = np.array([l.resolution.data.cpu().numpy() for l in dets])
+            eff = np.array([l.efficiency.data.cpu().numpy() for l in dets])
+            res_min, res_max = res.min(), res.max()
+            eff_min, eff_max = eff.min(), eff.max()
+
+            for i, l in enumerate(dets):
+                self.res_axes[i].clear()
+                self.eff_axes[i].clear()
+                sns.heatmap(
+                    res[i],
+                    ax=self.res_axes[i],
+                    cmap="viridis",
+                    square=True,
+                    cbar=(i == 0),
+                    vmin=res_min,
+                    vmax=res_max,
+                    cbar_ax=self.res_cbar_ax if i == 0 else None,
+                )
+                sns.heatmap(
+                    eff[i],
+                    ax=self.eff_axes[i],
+                    cmap="plasma",
+                    square=True,
+                    cbar=(i == 0),
+                    vmin=eff_min,
+                    vmax=eff_max,
+                    cbar_ax=self.eff_cbar_ax if i == 0 else None,
+                )
+            self._set_axes_labels()
+
+
+class PanelMetricLogger(MetricLogger):
+    def _build_grid_spec(self) -> plt.gridspec.GridSpec:
+        self.n_dets = len(self.wrapper.get_detectors())
+        return self.fig.add_gridspec(5 + (self.main_metric_idx is None), 3)
+
+    def _set_axes_labels(self) -> None:
+        for ax, x in zip(self.below_det, ["x", "y", "x"]):
+            ax.set_xlabel(x, fontsize=0.8 * self.lbl_sz, color=self.lbl_col)
+        for i, (ax, x) in enumerate(zip(self.above_det, ["z", "z", "y"])):
+            if i == 0:
+                x = "Above, " + x
+            ax.set_ylabel(x, fontsize=0.8 * self.lbl_sz, color=self.lbl_col)
+        for i, (ax, x) in enumerate(zip(self.below_det, ["z", "z", "y"])):
+            if i == 0:
+                x = "Below, " + x
+            ax.set_ylabel(x, fontsize=0.8 * self.lbl_sz, color=self.lbl_col)
+
+        for ax, det in zip((self.above_det, self.below_det), self.wrapper.get_detectors()):
+            lw, z = det.lw.detach().cpu(), det.z.detach().cpu()
+            ax[0].set_xlim(0, lw[0])
+            ax[1].set_xlim(0, lw[1])
+            ax[2].set_xlim(0, lw[0])
+            ax[0].set_ylim(z - det.size, z)
+            ax[1].set_ylim(z - det.size, z)
+            ax[2].set_ylim(0, lw[1])
+            ax[2].set_aspect("equal", "box")
+
+    def _prep_plots(self) -> None:
+        super()._prep_plots()
+        if self.show_plots:
+            with sns.axes_style(**self.style):
+                self.above_det = [self.fig.add_subplot(self.grid_spec[-2:-1, i : i + 1]) for i in range(3)]
+                self.below_det = [self.fig.add_subplot(self.grid_spec[-1:, i : i + 1]) for i in range(3)]
+                self._set_axes_labels()
+
+    def update_plot(self) -> None:
+        super().update_plot()
+        with sns.axes_style(**self.style), sns.color_palette(self.cat_palette) as palette:
+            for axes, det in zip([self.above_det, self.below_det], self.wrapper.get_detectors()):
+                l, s = [], []
+                for p in det.panels:
+                    l.append(np.concatenate((p.xy.detach().cpu().numpy(), p.z.detach().cpu().numpy()[None])))
+                    s.append(p.xy_span.detach().cpu().numpy())
+                loc, span = np.array(l), np.array(s)
+
+                for ax in axes:
+                    ax.clear()
+                for p in range(len(loc)):
+                    axes[0].add_line(
+                        mlines.Line2D((loc[p, 0] - (span[p, 0] / 2), loc[p, 0] + (span[p, 0] / 2)), (loc[p, 2], loc[p, 2]), linewidth=2, color=palette[p])
+                    )  # xz
+                    axes[1].add_line(
+                        mlines.Line2D((loc[p, 1] - (span[p, 1] / 2), loc[p, 1] + (span[p, 1] / 2)), (loc[p, 2], loc[p, 2]), linewidth=2, color=palette[p])
+                    )  # yz
+                    axes[2].add_patch(
+                        patches.Rectangle(
+                            (loc[p, 0] - (span[p, 0] / 2), loc[p, 1] - (span[p, 1] / 2)),
+                            span[p, 0],
+                            span[p, 1],
+                            linewidth=1,
+                            edgecolor=palette[p],
+                            facecolor="none",
+                        )
+                    )  # xy
+
+            self._set_axes_labels()

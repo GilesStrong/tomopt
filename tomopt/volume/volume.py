@@ -4,7 +4,7 @@ from typing import Tuple, List, Callable
 import torch
 from torch import nn, Tensor
 
-from . import DetectorLayer, PassiveLayer
+from .layer import AbsDetectorLayer, PassiveLayer
 from ..muon import MuonBatch
 
 __all__ = ["Volume"]
@@ -18,8 +18,8 @@ class Volume(nn.Module):
     def __getitem__(self, idx: int) -> Layer:
         return self.layers[idx]
 
-    def get_detectors(self) -> List[DetectorLayer]:
-        return [l for l in self.layers if isinstance(l, DetectorLayer)]
+    def get_detectors(self) -> List[AbsDetectorLayer]:
+        return [l for l in self.layers if isinstance(l, AbsDetectorLayer)]
 
     def get_passives(self) -> List[PassiveLayer]:
         return [l for l in self.layers if isinstance(l, PassiveLayer)]

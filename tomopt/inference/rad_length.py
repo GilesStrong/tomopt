@@ -1,3 +1,4 @@
+from abc import ABCMeta, abstractmethod
 from typing import Tuple, Optional, Dict
 import numpy as np
 
@@ -5,15 +6,15 @@ import torch
 from torch import Tensor
 from torch.distributions import Normal
 
-from . import ScatterBatch
+from .scattering import AbsScatterBatch, PanelScatterBatch, VoxelScatterBatch
 from ..core import X0, SCATTER_COEF_A
 from ..utils import jacobian
 
-__all__ = ["X0Inferer"]
+__all__ = ["VoxelX0Inferer", "PanelX0Inferer"]
 
 
-class X0Inferer:
-    def __init__(self, scatters: ScatterBatch, default_pred: Optional[float] = X0["beryllium"], use_gaussian_spread: bool = True):
+class AbsX0Inferer(metaclass=ABCMeta):
+    def __init__(self, scatters: AbsScatterBatch, default_pred: Optional[float] = X0["beryllium"], use_gaussian_spread: bool = True):
         self.scatters, self.default_pred, self.use_gaussian_spread = scatters, default_pred, use_gaussian_spread
         self.mu, self.volume, self.hits = self.scatters.mu, self.scatters.volume, self.scatters.hits
         self.size, self.lw = self.volume.passive_size, self.volume.lw
@@ -83,18 +84,9 @@ class X0Inferer:
         # x0_pred_dxy = (theta0*p/b)**2
         return None, None
 
+    @abstractmethod
     def compute_efficiency(self) -> Tensor:
-        eff = None
-        for p, l, i in zip(("above", "above", "below", "below"), self.volume.get_detectors(), (0, 1, 0, 1)):
-            x = l.abs2idx(self.hits[p]["xy"][:, i][self.mask])
-            e = torch.clamp(l.efficiency[x[:, 0], x[:, 1]], min=0.0, max=1.0)
-            if eff is None:
-                eff = e
-            else:
-                eff = eff * e
-        if eff is None:
-            eff = torch.zeros(0)
-        return eff
+        pass
 
     def average_preds_single(
         self, x0_dtheta: Optional[Tensor], x0_dtheta_unc: Optional[Tensor], x0_dxy: Optional[Tensor], x0_dxy_unc: Optional[Tensor], efficiency: Tensor
@@ -204,3 +196,46 @@ class X0Inferer:
             pred, weight = self.add_default_pred(pred, weight)
 
         return pred, weight
+
+
+class VoxelX0Inferer(AbsX0Inferer):
+    def __init__(self, scatters: VoxelScatterBatch, default_pred: Optional[float] = X0["beryllium"], use_gaussian_spread: bool = True):
+        super().__init__(scatters=scatters, default_pred=default_pred, use_gaussian_spread=use_gaussian_spread)
+
+    def compute_efficiency(self) -> Tensor:
+        eff = None
+        for p, l, i in zip(("above", "above", "below", "below"), self.volume.get_detectors(), (0, 1, 0, 1)):
+            x = l.abs2idx(self.hits[p]["xy"][:, i][self.mask])
+            e = torch.clamp(l.efficiency[x[:, 0], x[:, 1]], min=0.0, max=1.0)
+            if eff is None:
+                eff = e
+            else:
+                eff = eff * e
+        if eff is None:
+            eff = torch.zeros(0)
+        return eff
+
+
+class PanelX0Inferer(AbsX0Inferer):
+    def __init__(self, scatters: PanelScatterBatch, default_pred: Optional[float] = X0["beryllium"], use_gaussian_spread: bool = True):
+        super().__init__(scatters=scatters, default_pred=default_pred, use_gaussian_spread=use_gaussian_spread)
+
+    def compute_efficiency(self) -> Tensor:
+        eff = None
+        for pos, hits in enumerate([self.scatters.above_gen_hits, self.scatters.below_gen_hits]):
+            leff = None
+            layer = self.volume.get_detectors()[pos]
+            panel_idxs = layer.get_panel_zorder()
+            effs = torch.stack([layer.panels[i].get_efficiency(hits[i][self.mask, :2]) for i in panel_idxs], dim=0)
+            for r in range(2, len(effs) + 1):  # Muon goes through any combination of at least 2 panels
+                c = torch.combinations(torch.arange(0, len(effs)), r=r)
+                e = effs[c].prod(1).sum(0)
+                if leff is None:
+                    leff = e
+                else:
+                    leff = leff + e
+            if eff is None:
+                eff = leff
+            else:
+                eff = eff * leff  # Muons detected above & below passive volume
+        return eff

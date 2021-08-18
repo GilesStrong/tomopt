@@ -1,12 +1,14 @@
 from __future__ import annotations
 from fastcore.all import Path
-from typing import Callable, Iterator, Optional, List, Any, Tuple, Union
+from typing import Callable, Optional, List, Any, Tuple, Union, Dict, Type
 from fastprogress.fastprogress import ConsoleProgressBar, NBProgressBar, ProgressBar
 from fastprogress import master_bar, progress_bar
 import numpy as np
+from abc import ABCMeta, abstractmethod
 
 import torch
-from torch import nn, Tensor
+from torch import Tensor
+from torch.optim.optimizer import Optimizer
 
 from ..data import PassiveYielder
 from ..callbacks import MetricLogger, PredHandler
@@ -14,16 +16,18 @@ from ..callbacks.callback import Callback
 from ..callbacks.cyclic_callbacks import CyclicCallback
 from ..callbacks.eval_metric import EvalMetric
 from ...optimisation.loss import DetectorLoss
-from ...volume import Volume, DetectorLayer
-from ...core import X0
+from ...volume import Volume
+from ...volume.layer import AbsDetectorLayer
+from ...core import X0, PartialOpt
 from ...muon import generate_batch, MuonBatch
-from ...inference import ScatterBatch, X0Inferer
+from ...inference.scattering import AbsScatterBatch, VoxelScatterBatch, PanelScatterBatch
+from ...inference.rad_length import AbsX0Inferer, VoxelX0Inferer, PanelX0Inferer
 
-__all__ = ["VolumeWrapper"]
+__all__ = ["VoxelVolumeWrapper", "PanelVolumeWrapper"]
 
 r"""
-This FitParams and VolumeWrapper are modified versions of the FitParams in LUMIN (https://github.com/GilesStrong/lumin/blob/v0.7.2/lumin/nn/models/abs_model.py#L16)
-and Model in LUMIN (https://github.com/GilesStrong/lumin/blob/master/lumin/nn/models/model.py#L32), distributed under the following lincence:
+This FitParams and AbsVolumeWrapper are modified versions of the FitParams in LUMIN (https://github.com/GilesStrong/lumin/blob/v0.7.2/lumin/nn/models/abs_model.py#L16)
+and Model in LUMIN (https://github.com/GilesStrong/lumin/blob/master/lumin/nn/models/model.py#L32), distributed under the following licence:
     Copyright 2018 onwards Giles Strong
 
     Licensed under the Apache License, Version 2.0 (the "License");
@@ -53,7 +57,7 @@ class FitParams:
     mu_bs: Optional[int] = None
     mu: Optional[MuonBatch] = None
     cbs: Optional[List[Callback]] = None
-    sb: Optional[ScatterBatch] = None
+    sb: Optional[AbsScatterBatch] = None
     loss_val: Optional[Tensor] = None
     volume_id: Optional[int] = None
     cb_savepath: Optional[Path] = None
@@ -76,38 +80,45 @@ class FitParams:
         self.__dict__.update(kwargs)
 
 
-class VolumeWrapper:
+class AbsVolumeWrapper(metaclass=ABCMeta):
+    opts: Dict[str, Optimizer]
+
     def __init__(
         self,
         volume: Volume,
         *,
-        res_opt: Callable[[Iterator[nn.Parameter]], torch.optim.Optimizer],
-        eff_opt: Callable[[Iterator[nn.Parameter]], torch.optim.Optimizer],
+        partial_opts: Dict[str, PartialOpt],
         loss_func: Optional[DetectorLoss],
         default_pred: Optional[float] = X0["beryllium"],
         mu_generator: Callable[[int], Tensor] = generate_batch,
+        partial_scatter_inferer: Type[AbsScatterBatch],
+        partial_x0_inferer: Type[AbsX0Inferer],
     ):
         self.volume, self.loss_func, self.default_pred, self.mu_generator = volume, loss_func, default_pred, mu_generator
-        self._build_opt(res_opt, eff_opt)
+        self.partial_scatter_inferer, self.partial_x0_inferer = partial_scatter_inferer, partial_x0_inferer
+        self._build_opt(**partial_opts)
         self.parameters = self.volume.parameters
 
-    def _build_opt(
-        self, res_opt: Callable[[Iterator[nn.Parameter]], torch.optim.Optimizer], eff_opt: Callable[[Iterator[nn.Parameter]], torch.optim.Optimizer]
-    ) -> None:
-        self.res_opt = res_opt((l.resolution for l in self.volume.get_detectors()))
-        self.eff_opt = eff_opt((l.efficiency for l in self.volume.get_detectors()))
+    @abstractmethod
+    def _build_opt(self, **kwargs: PartialOpt) -> None:
+        r"""
+        self.opts = {'res_opt': res_opt((l.resolution for l in self.volume.get_detectors())),
+                     'eff_opt': eff_opt((l.efficiency for l in self.volume.get_detectors()))}
+        """
+        pass
 
-    def get_detectors(self) -> List[DetectorLayer]:
+    def get_detectors(self) -> List[AbsDetectorLayer]:
         return self.volume.get_detectors()
 
     def save(self, name: str) -> None:
-        torch.save({"volume": self.volume.state_dict(), "res_opt": self.res_opt.state_dict(), "eff_opt": self.eff_opt.state_dict()}, str(name))
+        torch.save({"volume": self.volume.state_dict(), **{k: v.state_dict() for k, v in self.opts.items()}}, str(name))
 
     def load(self, name: str) -> None:
         state = torch.load(name, map_location="cuda" if torch.cuda.is_available() else "cpu")
         self.volume.load_state_dict(state["volume"])
-        self.res_opt.load_state_dict(state["res_opt"])
-        self.eff_opt.load_state_dict(state["eff_opt"])
+        for k, v in state.items():
+            if "_opt" in k:
+                self.opts[k].load_state_dict(v)
 
     @classmethod
     def from_save(
@@ -115,12 +126,22 @@ class VolumeWrapper:
         name: str,
         *,
         volume: Volume,
-        res_opt: Callable[[Iterator[nn.Parameter]], torch.optim.Optimizer],
-        eff_opt: Callable[[Iterator[nn.Parameter]], torch.optim.Optimizer],
+        partial_opts: Dict[str, PartialOpt],
         loss_func: Optional[DetectorLoss],
         default_pred: Optional[float] = X0["beryllium"],
-    ) -> VolumeWrapper:
-        vw = cls(volume=volume, res_opt=res_opt, eff_opt=eff_opt, loss_func=loss_func, default_pred=default_pred)
+        mu_generator: Callable[[int], Tensor] = generate_batch,
+        partial_scatter_inferer: Type[AbsScatterBatch],
+        partial_x0_inferer: Type[AbsX0Inferer],
+    ) -> AbsVolumeWrapper:
+        vw = cls(
+            volume=volume,
+            partial_opts=partial_opts,
+            loss_func=loss_func,
+            default_pred=default_pred,
+            mu_generator=mu_generator,
+            partial_scatter_inferer=partial_scatter_inferer,
+            partial_x0_inferer=partial_x0_inferer,
+        )
         vw.load(name)
         return vw
 
@@ -149,32 +170,37 @@ class VolumeWrapper:
             for c in self.fit_params.cbs:
                 c.on_mu_batch_begin()
             self.volume(self.fit_params.mu)
-            self.fit_params.sb = ScatterBatch(self.fit_params.mu, self.volume)
+            self.fit_params.sb = self.partial_scatter_inferer(self.fit_params.mu, self.volume)
             for c in self.fit_params.cbs:
                 c.on_scatter_end()
-            inferer = X0Inferer(self.fit_params.sb, self.default_pred)
+            inferer = self.partial_x0_inferer(self.fit_params.sb, self.default_pred)
             pred, wgt = inferer.pred_x0(inc_default=False)
-            pred = torch.nan_to_num(pred)
-            self.fit_params.wpreds.append(pred * wgt)
-            self.fit_params.weights.append(wgt)
+            if pred is not None:
+                self.fit_params.wpreds.append(pred * wgt)
+                self.fit_params.weights.append(wgt)
             for c in self.fit_params.cbs:
                 c.on_mu_batch_end()
 
         # Predict volume based on all muon batches
         for c in self.fit_params.cbs:
             c.on_x0_pred_begin()
-        wgt = torch.stack(self.fit_params.weights, dim=0).sum(0)
-        pred = torch.stack(self.fit_params.wpreds, dim=0).sum(0) / wgt
-        if self.fit_params.use_default_pred:
-            pred, wgt = inferer.add_default_pred(pred, wgt)
-        self.fit_params.weight = wgt
-        self.fit_params.pred = pred
+        if len(self.fit_params.wpreds) == 0:
+            print("Warning: unable to scan volume with prescribed number of muons.")
+            self.fit_params.weight = None
+            self.fit_params.pred = None
+        else:
+            wgt = torch.stack(self.fit_params.weights, dim=0).sum(0)
+            pred = torch.stack(self.fit_params.wpreds, dim=0).sum(0) / wgt
+            if self.fit_params.use_default_pred:
+                pred, wgt = inferer.add_default_pred(pred, wgt)
+            self.fit_params.weight = wgt
+            self.fit_params.pred = pred
 
         for c in self.fit_params.cbs:
             c.on_x0_pred_end()
 
         # Compute loss for volume
-        if self.fit_params.state != "test" and self.loss_func is not None:
+        if self.fit_params.state != "test" and self.loss_func is not None and self.fit_params.pred is not None:
             loss = self.loss_func(pred_x0=self.fit_params.pred, pred_weight=self.fit_params.weight, volume=self.volume)
             if self.fit_params.loss_val is None:
                 self.fit_params.loss_val = loss
@@ -206,15 +232,17 @@ class VolumeWrapper:
 
                 if self.fit_params.state == "train":
                     # Compute update step
-                    self.res_opt.zero_grad()
-                    self.eff_opt.zero_grad()
+                    for o in self.opts.values():
+                        o.zero_grad()
                     for c in self.fit_params.cbs:
                         c.on_backwards_begin()
                     self.fit_params.mean_loss.backward()
                     for c in self.fit_params.cbs:
                         c.on_backwards_end()
-                    self.res_opt.step()
-                    self.eff_opt.step()
+                    for o in self.opts.values():
+                        o.step()
+                    for d in self.volume.get_detectors():
+                        d.conform_detector()
 
                 if len(passives) - (i + 1) < self.fit_params.passive_bs:
                     break
@@ -338,46 +366,126 @@ class VolumeWrapper:
             torch.cuda.empty_cache()
         return pred_cb.get_preds()
 
-    @property
-    def eff_lr(self) -> float:
-        return self.eff_opt.param_groups[0]["lr"]
+    def get_opt_lr(self, opt: str) -> float:
+        return self.opts[opt].param_groups[0]["lr"]
 
-    @eff_lr.setter
-    def eff_lr(self, lr: float) -> None:
-        self.eff_opt.param_groups[0]["lr"] = lr
+    def set_opt_lr(self, lr: float, opt: str) -> None:
+        self.opts[opt].param_groups[0]["lr"] = lr
 
-    @property
-    def eff_mom(self) -> float:
-        if "betas" in self.eff_opt.param_groups[0]:
-            return self.eff_opt.param_groups[0]["betas"][0]
+    def get_opt_mom(self, opt: str) -> float:
+        if "betas" in self.opts[opt].param_groups[0]:
+            return self.opts[opt].param_groups[0]["betas"][0]
         else:
-            return self.eff_opt.param_groups[0]["momentum"]
+            return self.opts[opt].param_groups[0]["momentum"]
 
-    @eff_mom.setter
-    def eff_mom(self, mom: float) -> None:
-        if "betas" in self.eff_opt.param_groups[0]:
-            self.eff_opt.param_groups[0]["betas"] = (mom, self.eff_opt.param_groups[0]["betas"][1])
+    def set_opt_mom(self, mom: float, opt: str) -> None:
+        if "betas" in self.opts[opt].param_groups[0]:
+            self.opts[opt].param_groups[0]["betas"] = (mom, self.opts[opt].param_groups[0]["betas"][1])
         else:
-            self.eff_opt.param_groups[0]["momentum"] = mom
+            self.opts[opt].param_groups[0]["momentum"] = mom
 
-    @property
-    def res_lr(self) -> float:
-        return self.res_opt.param_groups[0]["lr"]
 
-    @res_lr.setter
-    def res_lr(self, lr: float) -> None:
-        self.res_opt.param_groups[0]["lr"] = lr
+class VoxelVolumeWrapper(AbsVolumeWrapper):
+    def __init__(
+        self,
+        volume: Volume,
+        *,
+        res_opt: PartialOpt,
+        eff_opt: PartialOpt,
+        loss_func: Optional[DetectorLoss],
+        default_pred: Optional[float] = X0["beryllium"],
+        mu_generator: Callable[[int], Tensor] = generate_batch,
+    ):
+        super().__init__(
+            volume=volume,
+            partial_opts={"res_opt": res_opt, "eff_opt": eff_opt},
+            loss_func=loss_func,
+            default_pred=default_pred,
+            mu_generator=mu_generator,
+            partial_scatter_inferer=VoxelScatterBatch,
+            partial_x0_inferer=VoxelX0Inferer,
+        )
 
-    @property
-    def res_mom(self) -> float:
-        if "betas" in self.res_opt.param_groups[0]:
-            return self.res_opt.param_groups[0]["betas"][0]
-        else:
-            return self.res_opt.param_groups[0]["momentum"]
+    def _build_opt(self, **kwargs: PartialOpt) -> None:
+        self.opts = {
+            "res_opt": kwargs["res_opt"]((l.resolution for l in self.volume.get_detectors())),
+            "eff_opt": kwargs["eff_opt"]((l.efficiency for l in self.volume.get_detectors())),
+        }
 
-    @res_mom.setter
-    def res_mom(self, mom: float) -> None:
-        if "betas" in self.res_opt.param_groups[0]:
-            self.res_opt.param_groups[0]["betas"] = (mom, self.res_opt.param_groups[0]["betas"][1])
-        elif "momentum" in self.res_opt.param_groups[0]:
-            self.res_opt.param_groups[0]["momentum"] = mom
+    @classmethod
+    def from_save(
+        cls,
+        name: str,
+        *,
+        volume: Volume,
+        partial_opts: Dict[str, PartialOpt],
+        loss_func: Optional[DetectorLoss],
+        default_pred: Optional[float] = X0["beryllium"],
+        mu_generator: Callable[[int], Tensor] = generate_batch,
+        partial_scatter_inferer: Type[AbsScatterBatch] = VoxelScatterBatch,
+        partial_x0_inferer: Type[AbsX0Inferer] = VoxelX0Inferer,
+    ) -> AbsVolumeWrapper:
+        return super().from_save(
+            name,
+            volume=volume,
+            partial_opts=partial_opts,
+            loss_func=loss_func,
+            default_pred=default_pred,
+            mu_generator=mu_generator,
+            partial_scatter_inferer=partial_scatter_inferer,
+            partial_x0_inferer=partial_x0_inferer,
+        )
+
+
+class PanelVolumeWrapper(AbsVolumeWrapper):
+    def __init__(
+        self,
+        volume: Volume,
+        *,
+        xy_pos_opt: PartialOpt,
+        z_pos_opt: PartialOpt,
+        xy_span_opt: PartialOpt,
+        loss_func: Optional[DetectorLoss],
+        default_pred: Optional[float] = X0["beryllium"],
+        mu_generator: Callable[[int], Tensor] = generate_batch,
+    ):
+        super().__init__(
+            volume=volume,
+            partial_opts={"xy_pos_opt": xy_pos_opt, "z_pos_opt": z_pos_opt, "xy_span_opt": xy_span_opt},
+            loss_func=loss_func,
+            default_pred=default_pred,
+            mu_generator=mu_generator,
+            partial_scatter_inferer=PanelScatterBatch,
+            partial_x0_inferer=PanelX0Inferer,
+        )
+
+    def _build_opt(self, **kwargs: PartialOpt) -> None:
+        self.opts = {
+            "xy_pos_opt": kwargs["xy_pos_opt"]((p.xy for l in self.volume.get_detectors() for p in l.panels)),
+            "z_pos_opt": kwargs["z_pos_opt"]((p.z for l in self.volume.get_detectors() for p in l.panels)),
+            "xy_span_opt": kwargs["xy_span_opt"]((p.xy_span for l in self.volume.get_detectors() for p in l.panels)),
+        }
+
+    @classmethod
+    def from_save(
+        cls,
+        name: str,
+        *,
+        volume: Volume,
+        partial_opts: Dict[str, PartialOpt],
+        loss_func: Optional[DetectorLoss],
+        default_pred: Optional[float] = X0["beryllium"],
+        mu_generator: Callable[[int], Tensor] = generate_batch,
+        partial_scatter_inferer: Type[AbsScatterBatch] = PanelScatterBatch,
+        partial_x0_inferer: Type[AbsX0Inferer] = PanelX0Inferer,
+    ) -> AbsVolumeWrapper:
+        return super().from_save(
+            name,
+            volume=volume,
+            partial_opts=partial_opts,
+            loss_func=loss_func,
+            default_pred=default_pred,
+            mu_generator=mu_generator,
+            partial_scatter_inferer=partial_scatter_inferer,
+            partial_x0_inferer=partial_x0_inferer,
+        )

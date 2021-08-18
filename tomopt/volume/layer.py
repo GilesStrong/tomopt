@@ -1,6 +1,7 @@
-from typing import Optional, Callable, Dict, Tuple
+from typing import Optional, Callable, Dict, Tuple, List
 import math
-from abc import abstractmethod
+import numpy as np
+from abc import ABCMeta, abstractmethod
 
 import torch
 from torch import nn, Tensor
@@ -9,7 +10,7 @@ import torch.nn.functional as F
 from ..core import DEVICE, SCATTER_COEF_A
 from ..muon import MuonBatch
 
-__all__ = ["PassiveLayer", "DetectorLayer"]
+__all__ = ["PassiveLayer", "VoxelDetectorLayer", "PanelDetectorLayer"]
 
 
 class Layer(nn.Module):
@@ -97,10 +98,36 @@ class PassiveLayer(Layer):
             self.scatter_and_propagate(mu, deltaz=self.size / n)
 
 
-class DetectorLayer(Layer):
+class AbsDetectorLayer(Layer, metaclass=ABCMeta):
     def __init__(
         self,
         pos: str,
+        *,
+        lw: Tensor,
+        z: float,
+        size: float,
+        device: torch.device = DEVICE,
+    ):
+        super().__init__(lw=lw, z=z, size=size, device=device)
+        self.pos = pos
+
+    @abstractmethod
+    def forward(self, mu: MuonBatch) -> None:
+        pass
+
+    @abstractmethod
+    def get_cost(self) -> Tensor:
+        pass
+
+    def conform_detector(self) -> None:
+        pass
+
+
+class VoxelDetectorLayer(AbsDetectorLayer):
+    def __init__(
+        self,
+        pos: str,
+        *,
         init_res: float,
         init_eff: float,
         lw: Tensor,
@@ -110,8 +137,7 @@ class DetectorLayer(Layer):
         res_cost_func: Callable[[Tensor], Tensor],
         device: torch.device = DEVICE,
     ):
-        super().__init__(lw=lw, z=z, size=size, device=device)
-        self.pos = pos
+        super().__init__(pos=pos, lw=lw, z=z, size=size, device=device)
         self.resolution = nn.Parameter(torch.zeros(list((self.lw / size).long()), device=self.device) + init_res)
         self.efficiency = nn.Parameter(torch.zeros(list((self.lw / size).long()), device=self.device) + init_eff)
         self.eff_cost_func, self.res_cost_func = eff_cost_func, res_cost_func
@@ -131,7 +157,8 @@ class DetectorLayer(Layer):
         reco_xy = xy0 + reco_rel_xy
 
         hits = {
-            "xy": reco_xy,
+            "reco_xy": reco_xy,
+            "gen_xy": mu.xy.detach().clone(),
             "z": self.z.expand_as(mu.x)[:, None] - (self.size / 2),
         }
         return hits
@@ -143,3 +170,40 @@ class DetectorLayer(Layer):
 
     def get_cost(self) -> Tensor:
         return self.eff_cost_func(self.efficiency).sum() + self.res_cost_func(self.resolution).sum()
+
+
+class PanelDetectorLayer(AbsDetectorLayer):
+    def __init__(
+        self,
+        pos: str,
+        lw: Tensor,
+        z: float,
+        size: float,
+        panels: nn.ModuleList,  # nn.ModuleList[DetectorPanel]
+        device: torch.device = DEVICE,
+    ):
+        super().__init__(pos=pos, lw=lw, z=z, size=size, device=device)
+        if isinstance(panels, list):
+            panels = nn.ModuleList(panels)
+        self.panels = panels
+
+    def get_panel_zorder(self) -> List[int]:
+        return np.argsort([p.z.detach().cpu().item() for p in self.panels])[::-1]
+
+    def conform_detector(self) -> None:
+        lw = self.lw.detach().cpu().numpy()
+        z = self.z.detach().cpu()[0]
+        for p in self.panels:
+            p.clamp_params(xyz_low=(0, 0, z - self.size), xyz_high=(lw[0], lw[1], z))
+
+    def forward(self, mu: MuonBatch) -> None:
+        for i in self.get_panel_zorder():
+            self.scatter_and_propagate(mu, mu.z - self.panels[i].z)  # Move to panel
+            mu.append_hits(self.panels[i].get_hits(mu), self.pos)
+        self.scatter_and_propagate(mu, mu.z - (self.z - self.size))  # Move to bottom of layer
+
+    def get_cost(self) -> Tensor:
+        cost = None
+        for p in self.panels:
+            cost = p.get_cost() if cost is None else cost + p.get_cost()
+        return cost
