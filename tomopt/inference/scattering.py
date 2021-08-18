@@ -16,12 +16,12 @@ __all__ = ["VoxelScatterBatch", "PanelScatterBatch"]
 class AbsScatterBatch(metaclass=ABCMeta):
     track_in: Tensor
     track_out: Tensor
-    above_hits: Tensor
-    below_hits: Tensor
-    above_gen_hits: Tensor
-    below_gen_hits: Tensor
-    above_hit_uncs: Tensor
-    below_hit_uncs: Tensor
+    above_hits: List[Tensor]
+    below_hits: List[Tensor]
+    above_gen_hits: List[Tensor]
+    below_gen_hits: List[Tensor]
+    above_hit_uncs: List[Tensor]
+    below_hit_uncs: List[Tensor]
 
     def __init__(self, mu: MuonBatch, volume: Volume):
         self.mu, self.volume = mu, volume

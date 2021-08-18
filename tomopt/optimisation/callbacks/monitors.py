@@ -116,7 +116,7 @@ class MetricLogger(Callback):
         Prepare to track new loss
         """
 
-        self.tmp_loss, self.batch_cnt, self.volume_cnt = 0, 0, 0
+        self.tmp_loss, self.batch_cnt, self.volume_cnt = 0.0, 0, 0
         self.tmp_sub_losses: Dict[str, float] = defaultdict(float)
 
     def on_volume_end(self) -> None:

@@ -30,7 +30,7 @@ class ScatterRecord(Callback):
     def on_scatter_end(self) -> None:
         self.record.append(self.wrapper.fit_params.sb.location[self.wrapper.fit_params.sb.get_scatter_mask()].detach().cpu().clone())
 
-    def _to_df(self, record: np.ndarray) -> pd.DataFrame:
+    def _to_df(self, record: Tensor) -> pd.DataFrame:
         df = pd.DataFrame(record.numpy(), columns=["x", "y", "z"])
         df["layer"] = pd.cut(
             self.wrapper.volume.h - df.z,
