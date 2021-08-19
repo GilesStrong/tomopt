@@ -7,6 +7,7 @@ from torch import Tensor
 from torch.distributions import Normal
 
 from .scattering import AbsScatterBatch, PanelScatterBatch, VoxelScatterBatch
+from ..volume import VoxelDetectorLayer, PanelDetectorLayer
 from ..core import X0, SCATTER_COEF_A
 from ..utils import jacobian
 
@@ -157,7 +158,7 @@ class AbsX0Inferer(metaclass=ABCMeta):
             for i, d in enumerate(["x", "y", "z"]):
                 dists[d] = Normal(loc[:, i], loc_unc[:, i] + 1e-7)  # location uncertainty is sometimes zero, causing errors
 
-            def comp_int(low: Tensor, high: Tensor, dists: Dict[str, Tensor]) -> Tensor:
+            def comp_int(low: Tensor, high: Tensor, dists: Dict[str, Normal]) -> Tensor:
                 return torch.prod(torch.stack([dists[d].cdf(high[i]) - dists[d].cdf(low[i]) for i, d in enumerate(dists)]), dim=0)
 
             prob = (
@@ -203,8 +204,18 @@ class VoxelX0Inferer(AbsX0Inferer):
         super().__init__(scatters=scatters, default_pred=default_pred, use_gaussian_spread=use_gaussian_spread)
 
     def compute_efficiency(self) -> Tensor:
+        r"""
+        Does not yet handle more than two detectors per position
+        """
+
+        dets = self.volume.get_detectors()
+        if len(dets) != 4:
+            raise NotImplementedError("VoxelX0Inferer.compute_efficiency does not yet handle more than two detectros per position")
+
         eff = None
-        for p, l, i in zip(("above", "above", "below", "below"), self.volume.get_detectors(), (0, 1, 0, 1)):
+        for p, l, i in zip(("above", "above", "below", "below"), dets, (0, 1, 0, 1)):
+            if not isinstance(l, VoxelDetectorLayer):
+                raise ValueError(f"Detector {l} is not a VoxelDetectorLayer")
             x = l.abs2idx(self.hits[p]["xy"][:, i][self.mask])
             e = torch.clamp(l.efficiency[x[:, 0], x[:, 1]], min=0.0, max=1.0)
             if eff is None:
@@ -224,9 +235,11 @@ class PanelX0Inferer(AbsX0Inferer):
         eff = None
         for pos, hits in enumerate([self.scatters.above_gen_hits, self.scatters.below_gen_hits]):
             leff = None
-            layer = self.volume.get_detectors()[pos]
-            panel_idxs = layer.get_panel_zorder()
-            effs = torch.stack([layer.panels[i].get_efficiency(hits[i][self.mask, :2]) for i in panel_idxs], dim=0)
+            det = self.volume.get_detectors()[pos]
+            if not isinstance(det, PanelDetectorLayer):
+                raise ValueError(f"Detector {det} is not a PanelDetectorLayer")
+            panel_idxs = det.get_panel_zorder()
+            effs = torch.stack([det.panels[i].get_efficiency(hits[i][self.mask, :2]) for i in panel_idxs], dim=0)
             for r in range(2, len(effs) + 1):  # Muon goes through any combination of at least 2 panels
                 c = torch.combinations(torch.arange(0, len(effs)), r=r)
                 e = effs[c].prod(1).sum(0)

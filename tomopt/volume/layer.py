@@ -1,4 +1,4 @@
-from typing import Optional, Callable, Dict, Tuple, List
+from typing import Optional, Callable, Dict, Tuple, List, Union
 import math
 import numpy as np
 from abc import ABCMeta, abstractmethod
@@ -20,10 +20,12 @@ class Layer(nn.Module):
         self.rad_length: Optional[Tensor] = None
 
     @staticmethod
-    def _compute_n_x0(*, x0: Tensor, deltaz: float, theta: Tensor) -> Tensor:
+    def _compute_n_x0(*, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor) -> Tensor:
         return deltaz / (x0 * torch.cos(theta))
 
-    def _compute_displacements(self, *, n_x0: Tensor, deltaz: float, theta_x: Tensor, theta_y: Tensor, mom: Tensor) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+    def _compute_displacements(
+        self, *, n_x0: Tensor, deltaz: Union[Tensor, float], theta_x: Tensor, theta_y: Tensor, mom: Tensor
+    ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
         n = len(n_x0)
         z1 = torch.randn(n, device=self.device)
         z2 = torch.randn(n, device=self.device)
@@ -43,7 +45,7 @@ class Layer(nn.Module):
         dtheta_y = theta_msc * torch.sin(phi_msc)
         return dx, dy, dtheta_x, dtheta_y
 
-    def scatter_and_propagate(self, mu: MuonBatch, deltaz: float) -> None:
+    def scatter_and_propagate(self, mu: MuonBatch, deltaz: Union[Tensor, float]) -> None:
         """
         This function produces a model of multiple scattering through a layer of material
         of depth deltaz

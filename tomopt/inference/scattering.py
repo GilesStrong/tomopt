@@ -7,7 +7,8 @@ import torch
 from torch import Tensor
 
 from ..muon import MuonBatch
-from ..volume import Volume, VoxelDetectorLayer, DetectorPanel
+from ..volume import Volume, DetectorPanel
+from ..volume.layer import AbsDetectorLayer, VoxelDetectorLayer, PanelDetectorLayer
 from ..utils import jacobian
 
 __all__ = ["VoxelScatterBatch", "PanelScatterBatch"]
@@ -226,9 +227,11 @@ class AbsScatterBatch(metaclass=ABCMeta):
 
 class VoxelScatterBatch(AbsScatterBatch):
     @staticmethod
-    def _get_hit_uncs(dets: List[VoxelDetectorLayer], hits: List[Tensor]) -> List[Tensor]:
+    def _get_hit_uncs(dets: List[AbsDetectorLayer], hits: List[Tensor]) -> List[Tensor]:
         res = []
         for i, (l, h) in enumerate(zip(dets, hits)):
+            if not isinstance(l, VoxelDetectorLayer):
+                raise ValueError(f"Detector {l} is not a VoxelDetectorLayer")
             x = l.abs2idx(h)
             r = 1 / l.resolution[x[:, 0], x[:, 1]]
             res.append(torch.stack([r, r, torch.zeros_like(r)], dim=-1))
@@ -260,19 +263,21 @@ class VoxelScatterBatch(AbsScatterBatch):
 class PanelScatterBatch(AbsScatterBatch):
     @staticmethod
     def get_hit_uncs(zordered_panels: List[DetectorPanel], hits: List[Tensor]) -> List[Tensor]:
-        res = []
+        res: List[Tensor] = []
         for l, h in zip(zordered_panels, hits):
             r = 1 / l.get_resolution(h[:, :2])
             res.append(torch.cat([r, torch.zeros((len(r), 1), device=r.device)], dim=-1))
         return res
 
     def compute_tracks(self) -> None:
-        self.above_hit_uncs = self.get_hit_uncs(
-            [self.volume.get_detectors()[0].panels[i] for i in self.volume.get_detectors()[0].get_panel_zorder()], self.above_gen_hits
-        )
-        self.below_hit_uncs = self.get_hit_uncs(
-            [self.volume.get_detectors()[1].panels[i] for i in self.volume.get_detectors()[1].get_panel_zorder()], self.below_gen_hits
-        )
+        def _get_panels(i: int) -> List[DetectorPanel]:
+            det = self.volume.get_detectors()[i]
+            if not isinstance(det, PanelDetectorLayer):
+                raise ValueError(f"Detector {det} is not a PanelDetectorLayer")
+            return [det.panels[i] for i in det.get_panel_zorder()]
+
+        self.above_hit_uncs = self.get_hit_uncs(_get_panels(0), self.above_gen_hits)
+        self.below_hit_uncs = self.get_hit_uncs(_get_panels(1), self.below_gen_hits)
 
         self.track_in = self.get_muon_trajectory(self.above_hits, self.above_hit_uncs)
         self.track_out = self.get_muon_trajectory(self.below_hits, self.below_hit_uncs)

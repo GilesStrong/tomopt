@@ -16,7 +16,7 @@ from ..callbacks.callback import Callback
 from ..callbacks.cyclic_callbacks import CyclicCallback
 from ..callbacks.eval_metric import EvalMetric
 from ...optimisation.loss import DetectorLoss
-from ...volume import Volume
+from ...volume import Volume, VoxelDetectorLayer, PanelDetectorLayer
 from ...volume.layer import AbsDetectorLayer
 from ...core import X0, PartialOpt
 from ...muon import generate_batch, MuonBatch
@@ -50,8 +50,8 @@ Stated changes: adaption of FitParams to pass type-checking, heavy adaptation of
 class FitParams:
     state: Optional[str] = None
     pred: Optional[Tensor] = None
-    wpreds: Optional[Tensor] = None
-    weights: Optional[Tensor] = None
+    wpreds: Optional[List[Tensor]] = None
+    weights: Optional[List[Tensor]] = None
     weight: Optional[Tensor] = None
     n_mu_per_volume: Optional[int] = None
     mu_bs: Optional[int] = None
@@ -175,7 +175,7 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
                 c.on_scatter_end()
             inferer = self.partial_x0_inferer(self.fit_params.sb, self.default_pred)
             pred, wgt = inferer.pred_x0(inc_default=False)
-            if pred is not None:
+            if pred is not None and wgt is not None:
                 self.fit_params.wpreds.append(pred * wgt)
                 self.fit_params.weights.append(wgt)
             for c in self.fit_params.cbs:
@@ -407,9 +407,14 @@ class VoxelVolumeWrapper(AbsVolumeWrapper):
         )
 
     def _build_opt(self, **kwargs: PartialOpt) -> None:
+        all_dets = self.volume.get_detectors()
+        dets: List[VoxelDetectorLayer] = []
+        for l in all_dets:
+            if isinstance(l, VoxelDetectorLayer):
+                dets.append(l)
         self.opts = {
-            "res_opt": kwargs["res_opt"]((l.resolution for l in self.volume.get_detectors())),
-            "eff_opt": kwargs["eff_opt"]((l.efficiency for l in self.volume.get_detectors())),
+            "res_opt": kwargs["res_opt"]((l.resolution for l in dets)),
+            "eff_opt": kwargs["eff_opt"]((l.efficiency for l in dets)),
         }
 
     @classmethod
@@ -460,10 +465,15 @@ class PanelVolumeWrapper(AbsVolumeWrapper):
         )
 
     def _build_opt(self, **kwargs: PartialOpt) -> None:
+        all_dets = self.volume.get_detectors()
+        dets: List[PanelDetectorLayer] = []
+        for l in all_dets:
+            if isinstance(l, PanelDetectorLayer):
+                dets.append(l)
         self.opts = {
-            "xy_pos_opt": kwargs["xy_pos_opt"]((p.xy for l in self.volume.get_detectors() for p in l.panels)),
-            "z_pos_opt": kwargs["z_pos_opt"]((p.z for l in self.volume.get_detectors() for p in l.panels)),
-            "xy_span_opt": kwargs["xy_span_opt"]((p.xy_span for l in self.volume.get_detectors() for p in l.panels)),
+            "xy_pos_opt": kwargs["xy_pos_opt"]((p.xy for l in dets for p in l.panels)),
+            "z_pos_opt": kwargs["z_pos_opt"]((p.z for l in dets for p in l.panels)),
+            "xy_span_opt": kwargs["xy_span_opt"]((p.xy_span for l in dets for p in l.panels)),
         }
 
     @classmethod

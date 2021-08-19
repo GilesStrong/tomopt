@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 import torch
 from torch import nn, Tensor
 
@@ -8,7 +8,7 @@ __all__ = ["DetectorLoss"]
 
 
 class DetectorLoss(nn.Module):
-    def __init__(self, cost_coef: Optional[float] = None):
+    def __init__(self, cost_coef: Optional[Union[Tensor, float]] = None):
         super().__init__()
         self.cost_coef = cost_coef
         self.sub_losses: Dict[str, Tensor] = {}  # Store subcomponents in dict for telemetry

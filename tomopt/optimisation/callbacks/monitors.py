@@ -14,6 +14,8 @@ if IN_NOTEBOOK:
 
 from .callback import Callback
 from .eval_metric import EvalMetric
+from ...volume import VoxelDetectorLayer, PanelDetectorLayer
+from ...optimisation.wrapper.volume_wrapper import AbsVolumeWrapper
 
 r"""
 This MetricLogger is a modified version of the MetricLogger in LUMIN (https://github.com/GilesStrong/lumin/blob/v0.7.2/lumin/nn/callbacks/monitors.py#L125), distributed under the following lincence:
@@ -260,8 +262,16 @@ class MetricLogger(Callback):
 
 
 class VoxelMetricLogger(MetricLogger):
+    def set_wrapper(self, wrapper: AbsVolumeWrapper) -> None:
+        super().set_wrapper(wrapper)
+        self.dets: List[VoxelDetectorLayer] = []
+        for l in self.wrapper.get_detectors():
+            if not isinstance(l, VoxelDetectorLayer):
+                raise ValueError(f"Detector {l} is not a VoxelDetectorLayer")
+            self.dets.append(l)
+
     def _build_grid_spec(self) -> GridSpec:
-        self.n_dets = len(self.wrapper.get_detectors())
+        self.n_dets = len(self.dets)
         return self.fig.add_gridspec(5 + (self.main_metric_idx is None), self.n_dets)
 
     def _set_axes_labels(self) -> None:
@@ -282,13 +292,12 @@ class VoxelMetricLogger(MetricLogger):
     def update_plot(self) -> None:
         super().update_plot()
         with sns.axes_style(**self.style):
-            dets = self.wrapper.get_detectors()
-            res = np.array([l.resolution.data.cpu().numpy() for l in dets])
-            eff = np.array([l.efficiency.data.cpu().numpy() for l in dets])
+            res = np.array([l.resolution.data.cpu().numpy() for l in self.dets])
+            eff = np.array([l.efficiency.data.cpu().numpy() for l in self.dets])
             res_min, res_max = res.min(), res.max()
             eff_min, eff_max = eff.min(), eff.max()
 
-            for i, l in enumerate(dets):
+            for i, l in enumerate(self.dets):
                 self.res_axes[i].clear()
                 self.eff_axes[i].clear()
                 sns.heatmap(
@@ -354,6 +363,8 @@ class PanelMetricLogger(MetricLogger):
         with sns.axes_style(**self.style), sns.color_palette(self.cat_palette) as palette:
             for axes, det in zip([self.above_det, self.below_det], self.wrapper.get_detectors()):
                 l, s = [], []
+                if not isinstance(det, PanelDetectorLayer):
+                    raise ValueError(f"Detector {det} is not a PanelDetectorLayer")
                 for p in det.panels:
                     l.append(np.concatenate((p.xy.detach().cpu().numpy(), p.z.detach().cpu().numpy()[None])))
                     s.append(p.xy_span.detach().cpu().numpy())
