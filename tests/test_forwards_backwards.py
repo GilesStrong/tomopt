@@ -6,15 +6,18 @@ from torch import nn, Tensor
 import torch.nn.functional as F
 
 from tomopt.core import X0
-from tomopt.volume import Volume, PassiveLayer, VoxelDetectorLayer
+from tomopt.volume import Volume, PassiveLayer, VoxelDetectorLayer, PanelDetectorLayer, DetectorPanel
 from tomopt.muon import MuonBatch, generate_batch
-from tomopt.inference import VoxelScatterBatch, VoxelX0Inferer
+from tomopt.inference import VoxelScatterBatch, VoxelX0Inferer, PanelScatterBatch, PanelX0Inferer
 from tomopt.optimisation.loss import DetectorLoss
 
 LW = Tensor([1, 1])
 SZ = 0.1
 N = 100
 Z = 1
+INIT_RES = 1e4
+INIT_EFF = 0.5
+N_PANELS = 4
 
 
 def arb_rad_length(*, z: float, lw: Tensor, size: float) -> float:
@@ -32,14 +35,18 @@ def res_cost(x: Tensor) -> Tensor:
     return F.relu(x / 100) ** 2
 
 
-def get_layers(init_res: float = 1e3):
+def area_cost(x: Tensor) -> Tensor:
+    return F.relu(x / 1000) ** 2
+
+
+def get_voxel_layers():
     layers = []
-    init_eff = 0.5
+
     pos = "above"
     for z, d in zip(np.arange(Z, 0, -SZ), [1, 1, 0, 0, 0, 0, 0, 0, 1, 1]):
         if d:
             layers.append(
-                VoxelDetectorLayer(pos=pos, init_eff=init_eff, init_res=init_res, lw=LW, z=z, size=SZ, eff_cost_func=eff_cost, res_cost_func=res_cost)
+                VoxelDetectorLayer(pos=pos, init_eff=INIT_EFF, init_res=INIT_RES, lw=LW, z=z, size=SZ, eff_cost_func=eff_cost, res_cost_func=res_cost)
             )
         else:
             pos = "below"
@@ -48,35 +55,112 @@ def get_layers(init_res: float = 1e3):
     return nn.ModuleList(layers)
 
 
+def get_panel_layers():
+    layers = []
+    layers.append(
+        PanelDetectorLayer(
+            pos="above",
+            lw=LW,
+            z=1,
+            size=2 * SZ,
+            panels=[
+                DetectorPanel(res=INIT_RES, eff=INIT_EFF, init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / N_PANELS)], init_xy_span=[0.5, 0.5], area_cost_func=area_cost)
+                for i in range(N_PANELS)
+            ],
+        )
+    )
+    for z in [0.8, 0.7, 0.6, 0.5, 0.4, 0.3]:
+        layers.append(PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=z, size=SZ))
+    layers.append(
+        PanelDetectorLayer(
+            pos="below",
+            lw=LW,
+            z=0.2,
+            size=2 * SZ,
+            panels=[
+                DetectorPanel(
+                    res=INIT_RES, eff=INIT_EFF, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / N_PANELS)], init_xy_span=[0.5, 0.5], area_cost_func=area_cost
+                )
+                for i in range(N_PANELS)
+            ],
+        )
+    )
+
+    return nn.ModuleList(layers)
+
+
 @pytest.fixture
-def inferer():
+def voxel_inferer():
     mu = MuonBatch(generate_batch(N), init_z=1)
-    volume = Volume(get_layers())
+    volume = Volume(get_voxel_layers())
     volume(mu)
     sb = VoxelScatterBatch(mu=mu, volume=volume)
     return VoxelX0Inferer(sb)
 
 
-def test_forwards(inferer):
-    pred, weight = inferer.pred_x0()
-    loss_func = DetectorLoss(1e-5)
-    loss_val = loss_func(pred, weight, inferer.volume)
+@pytest.fixture
+def panel_inferer():
+    mu = MuonBatch(generate_batch(N), init_z=1)
+    volume = Volume(get_panel_layers())
+    volume(mu)
+    sb = PanelScatterBatch(mu=mu, volume=volume)
+    return PanelX0Inferer(sb)
 
-    for l in inferer.volume.get_detectors():
+
+def test_forwards_voxel(voxel_inferer):
+    pred, weight = voxel_inferer.pred_x0()
+    loss_func = DetectorLoss(1e-5)
+    loss_val = loss_func(pred, weight, voxel_inferer.volume)
+
+    for l in voxel_inferer.volume.get_detectors():
         assert torch.nan_to_num(torch.autograd.grad(loss_val, l.resolution, retain_graph=True, allow_unused=True)[0].abs(), 0).sum() > 0
         assert torch.autograd.grad(loss_val, l.efficiency, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
 
 
-def test_backwards(inferer):
-    pred, weight = inferer.pred_x0()
+def test_forwards_panel(panel_inferer):
+    pred, weight = panel_inferer.pred_x0()
+    loss_func = DetectorLoss(1e-5)
+    loss_val = loss_func(pred, weight, panel_inferer.volume)
+
+    for l in panel_inferer.volume.get_detectors():
+        for p in l.panels:
+            assert torch.autograd.grad(loss_val, p.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+            assert torch.autograd.grad(loss_val, p.z, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+            assert torch.autograd.grad(loss_val, p.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+
+
+def test_backwards_voxel(voxel_inferer):
+    pred, weight = voxel_inferer.pred_x0()
     loss_func = DetectorLoss(0.15)
-    loss_val = loss_func(pred, weight, inferer.volume)
-    opt = torch.optim.SGD(inferer.volume.parameters(), lr=1)
+    loss_val = loss_func(pred, weight, voxel_inferer.volume)
+    opt = torch.optim.SGD(voxel_inferer.volume.parameters(), lr=1)
     opt.zero_grad()
     loss_val.backward()
-    for p in inferer.volume.parameters():
+    for p in voxel_inferer.volume.parameters():
         assert p.grad is not None
     opt.step()
-    for l in inferer.volume.get_detectors():
-        assert l.resolution.mean() != 1e4
-        assert l.efficiency.mean() != 0.5
+    for l in voxel_inferer.volume.get_detectors():
+        assert l.resolution.mean() != Tensor([INIT_RES])
+        assert l.efficiency.mean() != Tensor([INIT_EFF])
+
+
+def test_backwards_panel(panel_inferer):
+    pred, weight = panel_inferer.pred_x0()
+    loss_func = DetectorLoss(0.15)
+    loss_val = loss_func(pred, weight, panel_inferer.volume)
+    opt = torch.optim.SGD(panel_inferer.volume.parameters(), lr=1)
+    opt.zero_grad()
+    loss_val.backward()
+    for p in panel_inferer.volume.parameters():
+        assert p.grad is not None
+    opt.step()
+    for l in panel_inferer.volume.get_detectors():
+        for i, p in enumerate(l.panels):
+            assert (p.xy != Tensor([0.5, 0.5])).all()
+            if l.pos == "above":
+                assert (p.z != Tensor([1 - (i * (2 * SZ) / N_PANELS)])).all()
+            else:
+                assert (p.z != Tensor([0.2 - (i * (2 * SZ) / N_PANELS)])).all()
+            assert (p.xy_span != Tensor([0.5, 0.5])).all()
+            assert p.resolution == Tensor([INIT_RES])
+            assert p.efficiency == Tensor([INIT_EFF])
