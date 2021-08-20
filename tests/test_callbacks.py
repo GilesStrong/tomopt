@@ -10,7 +10,7 @@ import torch.nn.functional as F
 
 from tomopt.optimisation.callbacks.callback import Callback
 from tomopt.optimisation.callbacks.eval_metric import EvalMetric
-from tomopt.optimisation.callbacks import NoMoreNaNs, PredHandler, MetricLogger
+from tomopt.optimisation.callbacks import NoMoreNaNs, PredHandler, MetricLogger, VoxelMetricLogger, PanelMetricLogger
 from tomopt.optimisation.callbacks.diagnostic_callbacks import ScatterRecord, HitRecord
 from tomopt.optimisation.loss import DetectorLoss
 from tomopt.optimisation.wrapper.volume_wrapper import FitParams
@@ -43,6 +43,20 @@ def check_callback_base(cb: Callback) -> bool:
     return True
 
 
+def get_voxel_detector() -> VoxelDetectorLayer:
+    return VoxelDetectorLayer("above", init_res=1, init_eff=1, lw=LW, z=1, size=SZ, eff_cost_func=eff_cost, res_cost_func=res_cost)
+
+
+def get_panel_detector() -> VoxelDetectorLayer:
+    return PanelDetectorLayer(
+        pos="above",
+        lw=LW[:2],
+        z=1,
+        size=2 * SZ,
+        panels=[DetectorPanel(res=1, eff=1, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[0.5, 0.5], area_cost_func=area_cost)],
+    )
+
+
 class MockWrapper:
     pass
 
@@ -67,7 +81,7 @@ def test_no_more_nans_voxel():
     cb = NoMoreNaNs()
     assert check_callback_base(cb)
 
-    l = VoxelDetectorLayer("above", init_res=1, init_eff=1, lw=LW, z=1, size=SZ, eff_cost_func=eff_cost, res_cost_func=res_cost)
+    l = get_voxel_detector()
     l.resolution.grad = l.resolution.data
     l.efficiency.grad = l.efficiency.data
     l.resolution.grad[:5, :5] = Tensor([np.nan])
@@ -88,13 +102,7 @@ def test_no_more_nans_panel():
     cb = NoMoreNaNs()
     assert check_callback_base(cb)
 
-    l = PanelDetectorLayer(
-        pos="above",
-        lw=LW[:2],
-        z=1,
-        size=2 * SZ,
-        panels=[DetectorPanel(res=1, eff=1, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[0.5, 0.5], area_cost_func=area_cost)],
-    )
+    l = get_panel_detector()
     p = l.panels[0]
     p.xy.grad = p.xy.data
     p.z.grad = p.z.data
@@ -151,9 +159,20 @@ def test_pred_handler():
     assert preds[1][1][0] == 3
 
 
-def test_metric_logger(mocker):  # noqa F811
-    logger = MetricLogger()
+@pytest.mark.parametrize("detector", ["none", "voxel", "panel"])
+def test_metric_logger(detector, mocker):  # noqa F811
     vw = MockWrapper()
+    vw.volume = MockVolume()
+    if detector == "none":
+        logger = MetricLogger()
+    if detector == "voxel":
+        logger = VoxelMetricLogger()
+        det = get_voxel_detector()
+        vw.get_detectors = lambda: [det]
+    if detector == "panel":
+        logger = PanelMetricLogger()
+        det = get_panel_detector()
+        vw.get_detectors = lambda: [det]
     vw.loss_func = DetectorLoss(1)
     vw.fit_params = FitParams(trn_passives=range(10), passive_bs=2, metric_cbs=[EvalMetric(name="test", main_metric=True, lower_metric_better=True)])
     logger.set_wrapper(vw)

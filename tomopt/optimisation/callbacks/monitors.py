@@ -15,9 +15,9 @@ if IN_NOTEBOOK:
 
 from .callback import Callback
 from .eval_metric import EvalMetric
+from ...volume import VoxelDetectorLayer, PanelDetectorLayer
 
 if TYPE_CHECKING:
-    from ...volume import VoxelDetectorLayer, PanelDetectorLayer
     from ...optimisation.wrapper.volume_wrapper import AbsVolumeWrapper
 
 r"""
@@ -40,7 +40,7 @@ Usage is compatible with the AGPL licence underwhich TomOpt is distributed.
 Stated changes: adaption to work with `VolumeWrapper` class, replacement of the telemtry plots with task specific information.
 """
 
-__all__ = ["MetricLogger"]
+__all__ = ["MetricLogger", "VoxelMetricLogger", "PanelMetricLogger"]
 
 
 class MetricLogger(Callback):
