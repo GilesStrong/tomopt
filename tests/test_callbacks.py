@@ -1,3 +1,4 @@
+from tomopt.volume.layer import VoxelDetectorLayer
 import pytest
 import numpy as np
 from pytest_mock import mocker  # noqa F401
@@ -6,6 +7,7 @@ import pandas as pd
 
 import torch
 from torch import Tensor
+import torch.nn.functional as F
 
 from tomopt.optimisation.callbacks.callback import Callback
 from tomopt.optimisation.callbacks.eval_metric import EvalMetric
@@ -13,6 +15,18 @@ from tomopt.optimisation.callbacks import NoMoreNaNs, PredHandler, MetricLogger
 from tomopt.optimisation.callbacks.diagnostic_callbacks import ScatterRecord, HitRecord
 from tomopt.optimisation.loss import DetectorLoss
 from tomopt.optimisation.wrapper.volume_wrapper import FitParams
+
+LW = Tensor([1, 1])
+SZ = 0.1
+Z = 1
+
+
+def eff_cost(x: Tensor) -> Tensor:
+    return torch.expm1(3 * F.relu(x))
+
+
+def res_cost(x: Tensor) -> Tensor:
+    return F.relu(x / 100) ** 2
 
 
 def check_callback_base(cb: Callback) -> bool:
@@ -49,9 +63,7 @@ def test_no_more_nans():
     cb = NoMoreNaNs()
     assert check_callback_base(cb)
 
-    l = MockLayer()
-    l.resolution = torch.rand(10, 10)
-    l.efficiency = torch.rand(10, 10)
+    l = VoxelDetectorLayer("above", init_res=1, init_eff=1, lw=LW, z=1, size=SZ, eff_cost_func=eff_cost, res_cost_func=res_cost)
     l.resolution.grad = l.resolution.data
     l.efficiency.grad = l.efficiency.data
     l.resolution.grad[:5, :5] = Tensor([np.nan])

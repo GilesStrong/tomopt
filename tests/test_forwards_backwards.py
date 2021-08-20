@@ -8,7 +8,7 @@ import torch.nn.functional as F
 from tomopt.core import X0
 from tomopt.volume import Volume, PassiveLayer, VoxelDetectorLayer
 from tomopt.muon import MuonBatch, generate_batch
-from tomopt.inference import VoxelScatterBatch, X0Inferer
+from tomopt.inference import VoxelScatterBatch, VoxelX0Inferer
 from tomopt.optimisation.loss import DetectorLoss
 
 LW = Tensor([1, 1])
@@ -54,7 +54,7 @@ def inferer():
     volume = Volume(get_layers())
     volume(mu)
     sb = VoxelScatterBatch(mu=mu, volume=volume)
-    return X0Inferer(sb)
+    return VoxelX0Inferer(sb)
 
 
 def test_forwards(inferer):

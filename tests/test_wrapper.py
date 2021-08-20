@@ -62,7 +62,7 @@ def test_volume_wrapper_methods():
     vw = VoxelVolumeWrapper(volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(0.15))
 
     # _build_opt
-    for l, r, e in zip(volume.get_detectors(), vw.res_opt.param_groups[0]["params"], vw.eff_opt.param_groups[0]["params"]):
+    for l, r, e in zip(volume.get_detectors(), vw.opts["res_opt"].param_groups[0]["params"], vw.opts["eff_opt"].param_groups[0]["params"]):
         assert torch.all(l.resolution == r)
         assert torch.all(l.efficiency == e)
 
@@ -80,8 +80,8 @@ def test_volume_wrapper_methods():
             nn.init.zeros_(l.efficiency)
         assert l.resolution.sum() == 0
         assert l.efficiency.sum() == 0
-        vw.res_lr = 0
-        vw.eff_lr = 0
+        vw.set_opt_lr(0, "res_opt")
+        vw.set_opt_lr(0, "eff_opt")
 
     p = Path("tests/test_save.pt")
     vw.save("tests/test_save.pt")
@@ -92,8 +92,8 @@ def test_volume_wrapper_methods():
     for l in volume.get_detectors():
         assert l.resolution.sum() != 0
         assert l.efficiency.sum() != 0
-    vw.res_lr != 0
-    vw.eff_lr != 0
+    vw.get_opt_lr("res_opt") == 0
+    vw.get_opt_lr("eff_opt") == 0
 
     # from_save
     zero_params(volume, vw)
@@ -101,28 +101,28 @@ def test_volume_wrapper_methods():
     for l in volume.get_detectors():
         assert l.resolution.sum() != 0
         assert l.efficiency.sum() != 0
-    vw.res_lr != 0
-    vw.eff_lr != 0
+    vw.get_opt_lr("res_opt") != 0
+    vw.get_opt_lr("eff_opt") != 0
 
 
 def test_volume_wrapper_parameters():
     volume = Volume(get_layers())
     vw = VoxelVolumeWrapper(volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(0.15))
 
-    assert vw.eff_lr == 2e-5
-    assert vw.res_lr == 2e1
-    assert vw.eff_mom == 0.9
-    assert vw.res_mom == 0.95
+    assert vw.get_opt_lr("res_opt") == 2e1
+    assert vw.get_opt_lr("eff_opt") == 2e-5
+    assert vw.get_opt_mom("res_opt") == 0.95
+    assert vw.get_opt_mom("eff_opt") == 0.9
 
-    vw.eff_lr = 2
-    vw.res_lr = 2
-    vw.eff_mom = 0.8
-    vw.res_mom = 0.8
+    vw.set_opt_lr(2, "res_opt")
+    vw.set_opt_lr(3, "eff_opt")
+    vw.set_opt_mom(0.8, "res_opt")
+    vw.set_opt_mom(0.7, "eff_opt")
 
-    assert vw.eff_lr == 2
-    assert vw.res_lr == 2
-    assert vw.eff_mom == 0.8
-    assert vw.res_mom == 0.8
+    assert vw.get_opt_lr("res_opt") == 2
+    assert vw.get_opt_lr("eff_opt") == 3
+    assert vw.get_opt_mom("res_opt") == 0.8
+    assert vw.get_opt_mom("eff_opt") == 0.7
 
 
 @pytest.mark.parametrize("state", ["train", "valid", "test"])
@@ -233,10 +233,10 @@ def test_volume_wrapper_scan_volumes(state, mocker):  # noqa F811
     mocker.spy(cb, "on_volume_batch_end")
     mocker.spy(cb, "on_backwards_begin")
     mocker.spy(cb, "on_backwards_end")
-    mocker.spy(vw.res_opt, "zero_grad")
-    mocker.spy(vw.eff_opt, "zero_grad")
-    mocker.spy(vw.res_opt, "step")
-    mocker.spy(vw.eff_opt, "step")
+    mocker.spy(vw.opts["res_opt"], "zero_grad")
+    mocker.spy(vw.opts["eff_opt"], "zero_grad")
+    mocker.spy(vw.opts["res_opt"], "step")
+    mocker.spy(vw.opts["eff_opt"], "step")
     mocker.patch.object(vw, "loss_func", return_value=torch.tensor(3.0, requires_grad=True))
 
     vw._scan_volumes(py)
@@ -260,17 +260,17 @@ def test_volume_wrapper_scan_volumes(state, mocker):  # noqa F811
     if state == "train":
         assert cb.on_backwards_begin.call_count == 2
         assert cb.on_backwards_end.call_count == 2
-        assert vw.res_opt.zero_grad.call_count == 2
-        assert vw.eff_opt.zero_grad.call_count == 2
-        assert vw.res_opt.step.call_count == 2
-        assert vw.eff_opt.step.call_count == 2
+        assert vw.opts["res_opt"].zero_grad.call_count == 2
+        assert vw.opts["eff_opt"].zero_grad.call_count == 2
+        assert vw.opts["res_opt"].step.call_count == 2
+        assert vw.opts["eff_opt"].step.call_count == 2
     else:
         assert cb.on_backwards_begin.call_count == 0
         assert cb.on_backwards_end.call_count == 0
-        assert vw.res_opt.zero_grad.call_count == 0
-        assert vw.eff_opt.zero_grad.call_count == 0
-        assert vw.res_opt.step.call_count == 0
-        assert vw.eff_opt.step.call_count == 0
+        assert vw.opts["res_opt"].zero_grad.call_count == 0
+        assert vw.opts["eff_opt"].zero_grad.call_count == 0
+        assert vw.opts["res_opt"].step.call_count == 0
+        assert vw.opts["eff_opt"].step.call_count == 0
 
 
 def test_volume_wrapper_fit_epoch(mocker):  # noqa F811

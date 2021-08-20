@@ -11,7 +11,7 @@ import torch.nn.functional as F
 from tomopt.volume import PassiveLayer, VoxelDetectorLayer, Volume
 from tomopt.muon import MuonBatch, generate_batch
 from tomopt.core import X0
-from tomopt.inference import VoxelScatterBatch, X0Inferer
+from tomopt.inference import VoxelScatterBatch, VoxelX0Inferer
 from tomopt.volume.layer import Layer
 
 LW = Tensor([1, 1])
@@ -101,19 +101,19 @@ def test_scatter_batch_trajectory_fit():
     xa0 = Tensor([[0, 0, 1]])
     xa1 = Tensor([[1, 1, 0]])
     # Same unc
-    traj = VoxelScatterBatch.get_muon_trajectory([xa0, xa1], [Tensor([[1]]), Tensor([[1]])])
+    traj = VoxelScatterBatch.get_muon_trajectory([xa0, xa1], [Tensor([[1, 1]]), Tensor([[1, 1]])], lw=Tensor([1, 1]))
     assert (traj == Tensor([[1, 1, -1]])).all()
     # Different unc
-    traj = VoxelScatterBatch.get_muon_trajectory([xa0, xa1], [Tensor([[10]]), Tensor([[1]])])
+    traj = VoxelScatterBatch.get_muon_trajectory([xa0, xa1], [Tensor([[10, 10]]), Tensor([[1, 1]])], lw=Tensor([1, 1]))
     assert (traj == Tensor([[1, 1, -1]])).all()
 
     # 3 Hits inline
     xa2 = Tensor([[0.5, 0.5, 0.5]])
     # Same unc
-    traj = VoxelScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[1]]), Tensor([[1]]), Tensor([[1]])])
+    traj = VoxelScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[1, 1]]), Tensor([[1, 1]]), Tensor([[1, 1]])], lw=Tensor([1, 1]))
     assert (traj == Tensor([[1, 1, -1]])).all()
     # Different unc
-    traj = VoxelScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[10]]), Tensor([[1]]), Tensor([[1]])])
+    traj = VoxelScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[10, 10]]), Tensor([[1, 1]]), Tensor([[1, 1]])], lw=Tensor([1, 1]))
     assert (traj == Tensor([[1, 1, -1]])).all()
 
     # 3 Hits offline
@@ -121,10 +121,10 @@ def test_scatter_batch_trajectory_fit():
     xa1 = Tensor([[0, 1, 0.5]])
     xa2 = Tensor([[1, 0, 0.5]])
     # Same unc
-    traj = VoxelScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[1]]), Tensor([[1]]), Tensor([[1]])])
+    traj = VoxelScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[1, 1]]), Tensor([[1, 1]]), Tensor([[1, 1]])], lw=Tensor([1, 1]))
     assert (traj - Tensor([[0.5, 0.5, -0.5]])).sum() < 1e-5
     # Different unc
-    traj = VoxelScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[1]]), Tensor([[1e9]]), Tensor([[1]])])
+    traj = VoxelScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[1, 1]]), Tensor([[1e9, 1e9]]), Tensor([[1, 1]])], lw=Tensor([1, 1]))
     assert (traj - Tensor([[1, 0, -0.5]])).sum() < 1e-5
 
 
@@ -132,7 +132,8 @@ def test_scatter_batch_compute(mocker, scatter_batch):  # noqa F811
     mu, volume = scatter_batch[0], scatter_batch[1]
     hits = {
         "above": {
-            "xy": Tensor([[[0.0, 0.0], [0.1, 0.1]]]),
+            "reco_xy": Tensor([[[0.0, 0.0], [0.1, 0.1]]]),
+            "gen_xy": Tensor([[[0.0, 0.0], [0.1, 0.1]]]),
             "z": Tensor(
                 [
                     [[1.0], [0.9]],
@@ -140,7 +141,12 @@ def test_scatter_batch_compute(mocker, scatter_batch):  # noqa F811
             ),
         },
         "below": {
-            "xy": Tensor(
+            "reco_xy": Tensor(
+                [
+                    [[0.1, 0.1], [0.0, 0.0]],
+                ]
+            ),
+            "gen_xy": Tensor(
                 [
                     [[0.1, 0.1], [0.0, 0.0]],
                 ]
@@ -170,7 +176,7 @@ def test_scatter_batch_compute(mocker, scatter_batch):  # noqa F811
 
 def test_x0_inferer_properties(scatter_batch):
     mu, volume, sb = scatter_batch
-    inferer = X0Inferer(scatters=sb, default_pred=X0["beryllium"])
+    inferer = VoxelX0Inferer(scatters=sb, default_pred=X0["beryllium"])
 
     assert inferer.mu == mu
     assert inferer.volume == volume
@@ -185,7 +191,7 @@ def test_x0_inferer_methods():
     volume = Volume(get_layers(init_res=1e3))
     volume(mu)
     sb = VoxelScatterBatch(mu=mu, volume=volume)
-    inferer = X0Inferer(scatters=sb, default_pred=X0["beryllium"])
+    inferer = VoxelX0Inferer(scatters=sb, default_pred=X0["beryllium"])
 
     pt, pt_unc = inferer.x0_from_dtheta()
     assert len(pt) == len(sb.location[sb.get_scatter_mask()])
@@ -229,7 +235,7 @@ def test_x0_inferer_methods():
 def test_x0_inferer_scatter_inversion(mocker, scatter_batch):  # noqa F811
     layer = Layer(LW, Z, SZ)
     mu, volume, sb = scatter_batch
-    inferer = X0Inferer(scatters=sb, default_pred=X0["beryllium"])
+    inferer = VoxelX0Inferer(scatters=sb, default_pred=X0["beryllium"])
     x0 = X0["lead"]
     n_x0 = layer._compute_n_x0(x0=x0, deltaz=SZ, theta=mu.theta)
     mocker.patch("tomopt.volume.layer.torch.randn", lambda n, device: torch.ones(n, device=device))  # remove randomness

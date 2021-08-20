@@ -216,7 +216,7 @@ class VoxelX0Inferer(AbsX0Inferer):
         for p, l, i in zip(("above", "above", "below", "below"), dets, (0, 1, 0, 1)):
             if not isinstance(l, VoxelDetectorLayer):
                 raise ValueError(f"Detector {l} is not a VoxelDetectorLayer")
-            x = l.abs2idx(self.hits[p]["xy"][:, i][self.mask])
+            x = l.abs2idx(self.hits[p]["reco_xy"][:, i][self.mask])
             e = torch.clamp(l.efficiency[x[:, 0], x[:, 1]], min=0.0, max=1.0)
             if eff is None:
                 eff = e

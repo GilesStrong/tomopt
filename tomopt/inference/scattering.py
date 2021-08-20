@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+from os import stat
 from typing import Optional, List
 import numpy as np
 import matplotlib.pyplot as plt
@@ -29,7 +30,8 @@ class AbsScatterBatch(metaclass=ABCMeta):
         self.hits = self.mu.get_hits(self.volume.lw)
         self.compute_scatters()
 
-    def get_muon_trajectory(self, hit_list: List[Tensor], unc_list: List[Tensor]) -> Tensor:
+    @staticmethod
+    def get_muon_trajectory(hit_list: List[Tensor], unc_list: List[Tensor], lw: Tensor) -> Tensor:
         r"""
         hits = [muons,(x,y,z)]
         uncs = [(unc,unc,0)]
@@ -42,7 +44,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
         """
 
         hits, uncs = torch.stack(hit_list, dim=1), torch.stack(unc_list, dim=1)
-        hits = torch.where(torch.isinf(hits), self.volume.lw.mean() / 2, hits)
+        hits = torch.where(torch.isinf(hits), lw.mean() / 2, hits)
 
         stars, angles = [], []
         for i in range(2):  # seperate x and y resolutions
@@ -241,8 +243,8 @@ class VoxelScatterBatch(AbsScatterBatch):
         self.above_hit_uncs = self._get_hit_uncs(self.volume.get_detectors()[: self.n_hits_above], self.above_hits)
         self.below_hit_uncs = self._get_hit_uncs(self.volume.get_detectors()[self.n_hits_above :], self.below_hits)
 
-        self.track_in = self.get_muon_trajectory(self.above_hits, self.above_hit_uncs)
-        self.track_out = self.get_muon_trajectory(self.below_hits, self.below_hit_uncs)
+        self.track_in = self.get_muon_trajectory(self.above_hits, self.above_hit_uncs, self.volume.lw)
+        self.track_out = self.get_muon_trajectory(self.below_hits, self.below_hit_uncs, self.volume.lw)
 
     def _compute_unc(self, var: Tensor, hits: List[Tensor], hit_uncs: List[Tensor]) -> Tensor:
         unc2_sum = None
@@ -279,8 +281,8 @@ class PanelScatterBatch(AbsScatterBatch):
         self.above_hit_uncs = self.get_hit_uncs(_get_panels(0), self.above_gen_hits)
         self.below_hit_uncs = self.get_hit_uncs(_get_panels(1), self.below_gen_hits)
 
-        self.track_in = self.get_muon_trajectory(self.above_hits, self.above_hit_uncs)
-        self.track_out = self.get_muon_trajectory(self.below_hits, self.below_hit_uncs)
+        self.track_in = self.get_muon_trajectory(self.above_hits, self.above_hit_uncs, self.volume.lw)
+        self.track_out = self.get_muon_trajectory(self.below_hits, self.below_hit_uncs, self.volume.lw)
 
     def _compute_unc(self, var: Tensor, hits: List[Tensor], hit_uncs: List[Tensor]) -> Tensor:
         unc2_sum = None

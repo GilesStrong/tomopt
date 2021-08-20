@@ -1,3 +1,4 @@
+from __future__ import annotations
 from fastprogress.fastprogress import IN_NOTEBOOK
 import math
 import matplotlib.pyplot as plt
@@ -6,7 +7,7 @@ import matplotlib.lines as mlines
 from matplotlib.gridspec import GridSpec
 import seaborn as sns
 import numpy as np
-from typing import List, Dict, Tuple, Optional
+from typing import List, Dict, Tuple, Optional, TYPE_CHECKING
 from collections import defaultdict
 
 if IN_NOTEBOOK:
@@ -14,8 +15,10 @@ if IN_NOTEBOOK:
 
 from .callback import Callback
 from .eval_metric import EvalMetric
-from ...volume import VoxelDetectorLayer, PanelDetectorLayer
-from ...optimisation.wrapper.volume_wrapper import AbsVolumeWrapper
+
+if TYPE_CHECKING:
+    from ...volume import VoxelDetectorLayer, PanelDetectorLayer
+    from ...optimisation.wrapper.volume_wrapper import AbsVolumeWrapper
 
 r"""
 This MetricLogger is a modified version of the MetricLogger in LUMIN (https://github.com/GilesStrong/lumin/blob/v0.7.2/lumin/nn/callbacks/monitors.py#L125), distributed under the following lincence:
@@ -79,7 +82,8 @@ class MetricLogger(Callback):
                     self.lock_to_metric = True
                     break
         self._prep_plots()
-        self.display = display(self.fig, display_id=True)
+        if self.show_plots:
+            self.display = display(self.fig, display_id=True)
 
     def _build_grid_spec(self) -> GridSpec:
         return self.fig.add_gridspec(3 + (self.main_metric_idx is None), 1)

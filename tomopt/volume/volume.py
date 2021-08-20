@@ -40,7 +40,7 @@ class Volume(nn.Module):
         ).sum():
             raise ValueError(f"{n} Coordinates outside passive volume")
         xyz[:, 2] = xyz[:, 2] - self.get_passive_z_range()[0]
-        return torch.floor(xyz / self.size).long()
+        return torch.floor(xyz / self.passive_size).long()
 
     def load_rad_length(self, rad_length_func: Callable[..., Tensor]) -> None:
         for p in self.get_passives():
