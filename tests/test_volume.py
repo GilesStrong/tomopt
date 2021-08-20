@@ -183,7 +183,10 @@ def test_volume_methods():
     assert volume.h == 10 * SZ
     with pytest.raises(AttributeError):
         volume.lw = 0
+    with pytest.raises(AttributeError):
         volume.passive_size = 0
+    with pytest.raises(AttributeError):
+
         volume.h = 0
 
     zr = volume.get_passive_z_range()
@@ -200,12 +203,19 @@ def test_volume_methods():
     assert torch.all(volume.lookup_passive_xyz_coords(Tensor([[0.55, 0.63, 0.31], [0.12, 0.86, 0.45]])) == Tensor([[5, 6, 1], [1, 8, 2]]))
     with pytest.raises(ValueError):
         volume.lookup_passive_xyz_coords(Tensor([1, 0.63, 0.31]))
+    with pytest.raises(ValueError):
         volume.lookup_passive_xyz_coords(Tensor([0.55, 1.2, 0.31]))
+    with pytest.raises(ValueError):
         volume.lookup_passive_xyz_coords(Tensor([0.55, 0.63, 13]))
+    with pytest.raises(ValueError):
         volume.lookup_passive_xyz_coords(Tensor([-1, 0.63, 0.31]))
+    with pytest.raises(ValueError):
         volume.lookup_passive_xyz_coords(Tensor([0.55, -1.2, 0.31]))
+    with pytest.raises(ValueError):
         volume.lookup_passive_xyz_coords(Tensor([0.55, 0.63, -13]))
+    with pytest.raises(ValueError):
         volume.lookup_passive_xyz_coords(Tensor([0.55, 0.63, 0]))
+    with pytest.raises(ValueError):
         volume.lookup_passive_xyz_coords(Tensor([0.55, 0.63, 1]))
 
     def arb_rad_length2(*, z: float, lw: Tensor, size: float) -> float:
@@ -305,3 +315,121 @@ def test_volume_forward_panel(batch):
                 grad = jacobian(hits["above" if l.z > 0.5 else "below"]["reco_xy"][:, j], v).sum((-1))
                 assert (grad == grad).sum() == 2 * len(grad)
                 assert ((grad == grad) * (grad != 0)).sum() > 0
+
+
+def test_detector_panel_properties():
+    panel = DetectorPanel(res=1, eff=0.5, init_xyz=[0.5, 0.4, 0.9], init_xy_span=[0.3, 0.5], area_cost_func=area_cost)
+    assert panel.area_cost_func == area_cost
+    assert panel.realistic_validation is False  # Realistiv validation still in development
+    assert panel.resolution == Tensor([1])
+    assert panel.efficiency == Tensor([0.5])
+    assert (panel.xy == Tensor([0.5, 0.4])).all()
+    assert panel.z == Tensor([0.9])
+    assert (panel.xy_span == Tensor([0.3, 0.5])).all()
+    assert panel.x == Tensor([0.5])
+    assert panel.y == Tensor([0.4])
+
+
+def test_detector_panel_methods():
+    panel = DetectorPanel(res=10, eff=0.5, init_xyz=[0.0, 0.01, 0.9], init_xy_span=[0.5, 0.51], area_cost_func=area_cost)
+
+    # get_xy_mask
+    mask = panel.get_xy_mask(Tensor([[0, 0], [0.1, 0.1], [0.25, 0.25], [0.5, 0.5], [1, 1], [0.1, 1], [1, 0.1], [-1, -1]]))
+    assert (mask.int() == Tensor([1, 1, 0, 0, 0, 0, 0, 0])).all()
+
+    # get_gauss
+    with pytest.raises(ValueError):
+        DetectorPanel(res=1, eff=0.5, init_xyz=[np.NaN, 0.0, 0.9], init_xy_span=[0.5, 0.5], area_cost_func=area_cost).get_gauss()
+    with pytest.raises(ValueError):
+        DetectorPanel(res=1, eff=0.5, init_xyz=[0.0, 0.0, 0.9], init_xy_span=[0.5, np.NaN], area_cost_func=area_cost).get_gauss()
+    gauss = panel.get_gauss()
+    assert (gauss.loc == Tensor([0.0, 0.01])).all()
+    assert (gauss.scale == Tensor([0.5, 0.51])).all()
+
+    # get_resolution
+    res = panel.get_resolution(Tensor([[0, 0.01], [0.1, 0.1], [0.5, 0.5], [0, 0.1]]))
+    assert res[0].mean() == 10
+    assert res[1].mean() < res[0].mean()
+    assert res[2].mean() > 0
+    assert res[3, 0] == 10
+
+    panel.realistic_validation = True
+    res = panel.get_resolution(Tensor([[0, 0.01], [0.1, 0.1], [0.5, 0.5], [0, 0.1]]))
+    assert res[0].mean() == 10
+    assert res[1].mean() < res[0].mean()
+    assert res[2].mean() > 0
+    assert res[3, 0] == 10
+
+    panel.eval()
+    res = panel.get_resolution(Tensor([[0, 0.01], [0.1, 0.1], [0.5, 0.5], [0, 0.1]]))
+    assert res[0].mean() == 10
+    assert res[1].mean() == 10
+    assert res[2].mean() == 0
+    assert res[3, 0] == 10
+    panel.realistic_validation = False
+    panel.train()
+
+    # get_efficiency
+    eff = panel.get_efficiency(Tensor([[0, 0.01], [0.1, 0.1], [0.5, 0.5], [0, 0.1]]))
+    assert eff[0] == 0.5
+    assert eff[1] < eff[0]
+    assert eff[2] > 0
+    assert 0 < eff[3] < 0.5
+
+    panel.realistic_validation = True
+    eff = panel.get_efficiency(Tensor([[0, 0.01], [0.1, 0.1], [0.5, 0.5], [0, 0.1]]))
+    assert eff[0] == 0.5
+    assert eff[1] < eff[0]
+    assert eff[2] > 0
+    assert 0 < eff[3] < 0.5
+
+    panel.eval()
+    eff = panel.get_efficiency(Tensor([[0, 0.01], [0.1, 0.1], [0.5, 0.5], [0, 0.1]]))
+    assert eff[0] == 0.5
+    assert eff[1] == 0.5
+    assert eff[2] == 0
+    assert eff[3] == 0.5
+    panel.realistic_validation = False
+    panel.train()
+
+    # get_hits
+    panel = DetectorPanel(res=10, eff=0.5, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[0.5, 0.5], area_cost_func=area_cost)
+    mu = MuonBatch(generate_batch(100), 1)
+    mu.xy = torch.ones_like(mu.xy) / 2
+    hits = panel.get_hits(mu)
+    assert (hits["gen_xy"] == mu.xy).all()
+    assert (hits["z"].mean() - 0.9).abs() < 1e-5
+    assert (hits["reco_xy"].mean(0) - Tensor([0.5, 0.5]) < 0.25).all()
+
+    panel.realistic_validation = True
+    mu.xy = torch.zeros_like(mu.xy)
+    hits = panel.get_hits(mu)
+    assert hits["reco_xy"].isinf().sum() == 0
+
+    panel.eval()
+    hits = panel.get_hits(mu)
+    assert hits["reco_xy"].isinf().sum() == 2 * len(mu)
+    mu = MuonBatch(generate_batch(100), 1)
+    hits = panel.get_hits(mu)
+    mask = hits["reco_xy"].isinf().prod(1) - 1 < 0
+    # Reco hits can't leave panel
+    assert (Tensor([0.25, 0.25]) <= hits["reco_xy"][mask]).all()
+    assert (hits["reco_xy"][mask] <= Tensor([0.75, 0.75])).all()
+
+    # get_cost
+    cost = panel.get_cost()
+    assert cost == area_cost(Tensor([0.5 * 0.5]))
+    assert (torch.autograd.grad(cost, panel.xy_span, retain_graph=True, allow_unused=True)[0] > 0).all()
+
+    # clamp_params
+    panel.clamp_params((0, 0, 0.8), (1, 1, 1))
+    assert panel.z == Tensor([0.9])
+    assert (panel.xy == Tensor([0.5, 0.5])).all()
+    assert (panel.xy_span == Tensor([0.5, 0.5])).all()
+
+    panel = DetectorPanel(res=10, eff=0.5, init_xyz=[2.0, -2.0, 2.0], init_xy_span=[0.0, 2.0], area_cost_func=area_cost)
+    panel.clamp_params((0, 0, 0), (1, 1, 1))
+    assert (panel.xy == Tensor([1, 0])).all()
+    assert panel.z - 1 < 0
+    assert (panel.z - 1).abs() < 1e-5
+    assert (panel.xy_span == Tensor([1e-7, 1])).all()

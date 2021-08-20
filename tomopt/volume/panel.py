@@ -20,7 +20,7 @@ class DetectorPanel(nn.Module):
         init_xyz: Tuple[float, float, float],
         init_xy_span: Tuple[float, float],
         area_cost_func: Callable[[Tensor], Tensor],
-        realistic_validation: bool = True,
+        realistic_validation: bool = False,
         device: torch.device = DEVICE,
     ):
         if res <= 0:
@@ -48,12 +48,11 @@ class DetectorPanel(nn.Module):
         try:
             return torch.distributions.Normal(self.xy, self.xy_span)  # maybe upscale span?
         except ValueError:
-            print(f"Invalid parameters for Gaussian: loc={self.xy}, scale={self.xy_span}")
-            assert False
+            raise ValueError(f"Invalid parameters for Gaussian: loc={self.xy}, scale={self.xy_span}")
 
     def get_resolution(self, xy: Tensor, mask: Optional[Tensor] = None) -> Tensor:
         if not isinstance(self.resolution, Tensor):
-            raise ValueError(f"{self.resolution} is not a Tensor for some reason.")
+            raise ValueError(f"{self.resolution} is not a Tensor for some reason.")  # To appease MyPy
         if self.training or not self.realistic_validation:
             g = self.get_gauss()
             res = self.resolution * torch.exp(g.log_prob(xy)) / torch.exp(g.log_prob(self.xy))  # Maybe detach the normalisation?
@@ -66,7 +65,7 @@ class DetectorPanel(nn.Module):
 
     def get_efficiency(self, xy: Tensor, mask: Optional[Tensor] = None) -> Tensor:
         if not isinstance(self.efficiency, Tensor):
-            raise ValueError(f"{self.efficiency} is not a Tensor for some reason.")
+            raise ValueError(f"{self.efficiency} is not a Tensor for some reason.")  # To appease MyPy
         if self.training or not self.realistic_validation:
             g = self.get_gauss()
             scale = torch.exp(g.log_prob(xy)) / torch.exp(g.log_prob(self.xy))  # Maybe detach the normalisation?

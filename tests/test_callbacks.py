@@ -37,6 +37,7 @@ def check_callback_base(cb: Callback) -> bool:
     assert cb.wrapper is None
     with pytest.raises(AttributeError):
         cb.on_pred_begin()
+    with pytest.raises(AttributeError):
         cb.on_train_begin()
     cb.set_wrapper(1)
     assert cb.wrapper == 1
