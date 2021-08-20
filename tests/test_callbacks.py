@@ -1,4 +1,3 @@
-from tomopt.volume.layer import VoxelDetectorLayer
 import pytest
 import numpy as np
 from pytest_mock import mocker  # noqa F401
@@ -15,6 +14,7 @@ from tomopt.optimisation.callbacks import NoMoreNaNs, PredHandler, MetricLogger
 from tomopt.optimisation.callbacks.diagnostic_callbacks import ScatterRecord, HitRecord
 from tomopt.optimisation.loss import DetectorLoss
 from tomopt.optimisation.wrapper.volume_wrapper import FitParams
+from tomopt.volume import VoxelDetectorLayer, PanelDetectorLayer, DetectorPanel
 
 LW = Tensor([1, 1])
 SZ = 0.1
@@ -27,6 +27,10 @@ def eff_cost(x: Tensor) -> Tensor:
 
 def res_cost(x: Tensor) -> Tensor:
     return F.relu(x / 100) ** 2
+
+
+def area_cost(x: Tensor) -> Tensor:
+    return F.relu(x / 1000) ** 2
 
 
 def check_callback_base(cb: Callback) -> bool:
@@ -59,7 +63,7 @@ class MockScatterBatch:
         return torch.ones(self.n) > 0
 
 
-def test_no_more_nans():
+def test_no_more_nans_voxel():
     cb = NoMoreNaNs()
     assert check_callback_base(cb)
 
@@ -78,6 +82,38 @@ def test_no_more_nans():
     cb.on_backwards_end()
     assert l.resolution.grad.sum() == l.resolution.grad.sum()
     assert l.efficiency.grad.sum() == l.efficiency.grad.sum()
+
+
+def test_no_more_nans_panel():
+    cb = NoMoreNaNs()
+    assert check_callback_base(cb)
+
+    l = PanelDetectorLayer(
+        pos="above",
+        lw=LW[:2],
+        z=1,
+        size=2 * SZ,
+        panels=[DetectorPanel(res=1, eff=1, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[0.5, 0.5], area_cost_func=area_cost)],
+    )
+    p = l.panels[0]
+    p.xy.grad = p.xy.data
+    p.z.grad = p.z.data
+    p.xy_span.grad = p.xy_span.data
+    p.xy.grad[:1] = Tensor([np.nan])
+    p.z.grad[:1] = Tensor([np.nan])
+    p.xy_span.grad[:1] = Tensor([np.nan])
+    assert p.xy.grad.sum() != p.xy.grad.sum()
+    assert p.z.grad.sum() != p.z.grad.sum()
+    assert p.xy_span.grad.sum() != p.xy_span.grad.sum()
+
+    vw = MockWrapper()
+    vw.volume = MockVolume()
+    vw.volume.get_detectors = lambda: [l]
+    cb.set_wrapper(vw)
+    cb.on_backwards_end()
+    assert p.xy.grad.sum() == p.xy.grad.sum()
+    assert p.z.grad.sum() == p.z.grad.sum()
+    assert p.xy_span.grad.sum() == p.xy_span.grad.sum()
 
 
 def test_pred_handler():

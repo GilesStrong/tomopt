@@ -33,7 +33,7 @@ class DetectorPanel(nn.Module):
         self.register_buffer("resolution", torch.tensor(float(res), requires_grad=True, device=self.device))
         self.register_buffer("efficiency", torch.tensor(float(eff), requires_grad=True, device=self.device))
         self.xy = nn.Parameter(torch.tensor(init_xyz[:2], device=self.device))
-        self.z = nn.Parameter(torch.tensor(init_xyz[2], device=self.device))
+        self.z = nn.Parameter(torch.tensor(init_xyz[2:3], device=self.device))
         self.xy_span = nn.Parameter(torch.tensor(init_xy_span, device=self.device))
 
     def __repr__(self) -> str:
