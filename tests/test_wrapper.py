@@ -9,8 +9,8 @@ from torch import nn, Tensor, optim
 import torch.nn.functional as F
 
 from tomopt.core import X0
-from tomopt.volume import Volume, PassiveLayer, VoxelDetectorLayer
-from tomopt.optimisation.wrapper.volume_wrapper import VoxelVolumeWrapper, FitParams
+from tomopt.volume import Volume, PassiveLayer, VoxelDetectorLayer, PanelDetectorLayer, DetectorPanel
+from tomopt.optimisation.wrapper.volume_wrapper import VoxelVolumeWrapper, FitParams, PanelVolumeWrapper
 from tomopt.optimisation.callbacks.callback import Callback
 from tomopt.optimisation.callbacks.cyclic_callbacks import CyclicCallback
 from tomopt.optimisation.callbacks.monitors import MetricLogger
@@ -35,7 +35,7 @@ def arb_rad_length(*, z: float, lw: Tensor, size: float) -> float:
     return rad_length
 
 
-def get_layers(init_res: float = 1e3):
+def get_voxel_layers(init_res: float = 1e3):
     def eff_cost(x: Tensor) -> Tensor:
         return torch.expm1(3 * F.relu(x))
 
@@ -57,8 +57,47 @@ def get_layers(init_res: float = 1e3):
     return nn.ModuleList(layers)
 
 
-def test_volume_wrapper_methods():
-    volume = Volume(get_layers())
+def get_panel_layers(init_res: float = 1e3) -> nn.ModuleList:
+    def area_cost(x: Tensor) -> Tensor:
+        return F.relu(x / 1000) ** 2
+
+    layers = []
+    init_eff = 0.5
+    n_panels = 4
+    layers.append(
+        PanelDetectorLayer(
+            pos="above",
+            lw=LW,
+            z=1,
+            size=2 * SZ,
+            panels=[
+                DetectorPanel(res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / n_panels)], init_xy_span=[0.5, 0.5], area_cost_func=area_cost)
+                for i in range(n_panels)
+            ],
+        )
+    )
+    for z in [0.8, 0.7, 0.6, 0.5, 0.4, 0.3]:
+        layers.append(PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=z, size=SZ))
+    layers.append(
+        PanelDetectorLayer(
+            pos="below",
+            lw=LW,
+            z=0.2,
+            size=2 * SZ,
+            panels=[
+                DetectorPanel(
+                    res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / n_panels)], init_xy_span=[0.5, 0.5], area_cost_func=area_cost
+                )
+                for i in range(n_panels)
+            ],
+        )
+    )
+
+    return nn.ModuleList(layers)
+
+
+def test_voxel_volume_wrapper_methods():
+    volume = Volume(get_voxel_layers())
     vw = VoxelVolumeWrapper(volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(0.15))
 
     # _build_opt
@@ -67,8 +106,8 @@ def test_volume_wrapper_methods():
         assert torch.all(l.efficiency == e)
 
     # get_detectors
-    for i, j in zip(volume.get_detectors(), vw.get_detectors()):
-        assert i == j
+    for i, j, k in zip(volume.get_detectors(), vw.get_detectors(), [volume.layers[0], volume.layers[1], volume.layers[-2], volume.layers[-1]]):
+        assert i == j == k
 
     # get_param_count
     assert vw.get_param_count() == 4 * 2 * 10 * 10
@@ -83,12 +122,12 @@ def test_volume_wrapper_methods():
         vw.set_opt_lr(0, "res_opt")
         vw.set_opt_lr(0, "eff_opt")
 
-    p = Path("tests/test_save.pt")
-    vw.save("tests/test_save.pt")
-    assert p.exists()
+    path = Path("tests/test_voxel_save.pt")
+    vw.save("tests/test_voxel_save.pt")
+    assert path.exists()
     zero_params(volume, vw)
 
-    vw.load(p)
+    vw.load(path)
     for l in volume.get_detectors():
         assert l.resolution.sum() != 0
         assert l.efficiency.sum() != 0
@@ -97,7 +136,7 @@ def test_volume_wrapper_methods():
 
     # from_save
     zero_params(volume, vw)
-    vw = VoxelVolumeWrapper.from_save(p, volume=volume, res_opt=partial(optim.SGD, lr=0), eff_opt=partial(optim.Adam, lr=0), loss_func=DetectorLoss(0.15))
+    vw = VoxelVolumeWrapper.from_save(path, volume=volume, res_opt=partial(optim.SGD, lr=0), eff_opt=partial(optim.Adam, lr=0), loss_func=DetectorLoss(0.15))
     for l in volume.get_detectors():
         assert l.resolution.sum() != 0
         assert l.efficiency.sum() != 0
@@ -105,8 +144,85 @@ def test_volume_wrapper_methods():
     vw.get_opt_lr("eff_opt") != 0
 
 
+def test_panel_volume_wrapper_methods():
+    volume = Volume(get_panel_layers())
+    vw = PanelVolumeWrapper(
+        volume,
+        xy_pos_opt=partial(optim.SGD, lr=2e0, momentum=0.95),
+        z_pos_opt=partial(optim.Adam, lr=2e-2),
+        xy_span_opt=partial(optim.Adam, lr=2e-0),
+        loss_func=DetectorLoss(0.15),
+    )
+
+    # _build_opt
+    for p, xy, z, s in zip(
+        [p for l in volume.get_detectors() for p in l.panels],
+        vw.opts["xy_pos_opt"].param_groups[0]["params"],
+        vw.opts["z_pos_opt"].param_groups[0]["params"],
+        vw.opts["xy_span_opt"].param_groups[0]["params"],
+    ):
+        assert torch.all(p.xy == xy)
+        assert torch.all(p.z == z)
+        assert torch.all(p.xy_span == s)
+
+    # get_detectors
+    for i, j, k in zip(volume.get_detectors(), vw.get_detectors(), (volume.layers[0], volume.layers[-1])):
+        assert i == j == k
+
+    # get_param_count
+    assert vw.get_param_count() == 4 * 2 * 5
+
+    # save
+    def zero_params(v, vw):
+        for l in v.get_detectors():
+            for p in l.panels:
+                nn.init.zeros_(p.xy)
+                nn.init.zeros_(p.z)
+                nn.init.zeros_(p.xy_span)
+                assert p.xy.sum() == 0
+                assert p.z.sum() == 0
+                assert p.xy_span.sum() == 0
+        vw.set_opt_lr(0, "xy_pos_opt")
+        vw.set_opt_lr(0, "z_pos_opt")
+        vw.set_opt_lr(0, "xy_span_opt")
+
+    path = Path("tests/test_panel_save.pt")
+    vw.save("tests/test_panel_save.pt")
+    assert path.exists()
+    zero_params(volume, vw)
+
+    vw.load(path)
+    for l in volume.get_detectors():
+        for p in l.panels:
+            assert p.xy.sum() != 0
+            assert p.z.sum() != 0
+            assert p.xy_span.sum() != 0
+    vw.get_opt_lr("xy_pos_opt") != 0
+    vw.get_opt_lr("z_pos_opt") != 0
+    vw.get_opt_lr("xy_span_opt") != 0
+
+    # from_save
+    zero_params(volume, vw)
+    vw = PanelVolumeWrapper.from_save(
+        path,
+        volume=volume,
+        xy_pos_opt=partial(optim.SGD, lr=0),
+        z_pos_opt=partial(optim.Adam, lr=0),
+        xy_span_opt=partial(optim.Adam, lr=0),
+        loss_func=DetectorLoss(0.15),
+    )
+    for l in volume.get_detectors():
+        for p in l.panels:
+            assert p.xy.sum() != 0
+            assert p.z.sum() != 0
+            assert p.xy_span.sum() != 0
+    vw.get_opt_lr("xy_pos_opt") != 0
+    vw.get_opt_lr("z_pos_opt") != 0
+    vw.get_opt_lr("xy_span_opt") != 0
+
+
 def test_volume_wrapper_parameters():
-    volume = Volume(get_layers())
+    volume = Volume(get_voxel_layers())
     vw = VoxelVolumeWrapper(volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(0.15))
 
     assert vw.get_opt_lr("res_opt") == 2e1
@@ -127,7 +243,7 @@ def test_volume_wrapper_parameters():
 
 @pytest.mark.parametrize("state", ["train", "valid", "test"])
 def test_volume_wrapper_scan_volume(state, mocker):  # noqa F811
-    volume = Volume(get_layers())
+    volume = Volume(get_voxel_layers())
     volume.load_rad_length(arb_rad_length)
     vw = VoxelVolumeWrapper(volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(0.15))
     cb = Callback()
@@ -169,7 +285,7 @@ def test_volume_wrapper_scan_volume(state, mocker):  # noqa F811
 
 
 def test_volume_wrapper_scan_volume_mu_batch(mocker):  # noqa F811
-    volume = Volume(get_layers())
+    volume = Volume(get_voxel_layers())
     volume.load_rad_length(arb_rad_length)
     vw = VoxelVolumeWrapper(volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(0.15))
     vw.fit_params = FitParams(n_mu_per_volume=100, mu_bs=100, state="train")
@@ -220,7 +336,7 @@ def test_volume_wrapper_scan_volume_mu_batch(mocker):  # noqa F811
 
 @pytest.mark.parametrize("state", ["train", "valid", "test"])
 def test_volume_wrapper_scan_volumes(state, mocker):  # noqa F811
-    volume = Volume(get_layers())
+    volume = Volume(get_voxel_layers())
     vw = VoxelVolumeWrapper(volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(0.15))
     cb = Callback()
     cb.set_wrapper(vw)
@@ -274,7 +390,7 @@ def test_volume_wrapper_scan_volumes(state, mocker):  # noqa F811
 
 
 def test_volume_wrapper_fit_epoch(mocker):  # noqa F811
-    volume = Volume(get_layers())
+    volume = Volume(get_voxel_layers())
     vw = VoxelVolumeWrapper(volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(0.15))
     cb = NoMoreNaNs()
     cb.set_wrapper(vw)
@@ -313,7 +429,7 @@ def test_volume_wrapper_sort_cbs():
 
 
 def test_volume_wrapper_fit(mocker):  # noqa F811
-    volume = Volume(get_layers())
+    volume = Volume(get_voxel_layers())
     vw = VoxelVolumeWrapper(volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(0.15))
     trn_py = PassiveYielder([arb_rad_length, arb_rad_length, arb_rad_length])
     val_py = PassiveYielder([arb_rad_length, arb_rad_length])
@@ -332,7 +448,7 @@ def test_volume_wrapper_fit(mocker):  # noqa F811
 
 
 def test_volume_wrapper_predict(mocker):  # noqa F811
-    volume = Volume(get_layers())
+    volume = Volume(get_voxel_layers())
     vw = VoxelVolumeWrapper(volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(0.15))
     py = PassiveYielder([arb_rad_length, arb_rad_length, arb_rad_length])
     cbs = [Callback()]
