@@ -1,4 +1,5 @@
-from typing import Optional, Callable, Dict, Tuple, List, Union
+from tomopt.volume.panel import DetectorPanel
+from typing import Iterator, Optional, Callable, Dict, Tuple, List, Union
 import math
 import numpy as np
 from abc import ABCMeta, abstractmethod
@@ -191,6 +192,10 @@ class PanelDetectorLayer(AbsDetectorLayer):
 
     def get_panel_zorder(self) -> List[int]:
         return np.argsort([p.z.detach().cpu().item() for p in self.panels])[::-1]
+
+    def yield_zordered_panels(self) -> Iterator[DetectorPanel]:
+        for i in self.get_panel_zorder():
+            yield self.panels[i]
 
     def conform_detector(self) -> None:
         lw = self.lw.detach().cpu().numpy()

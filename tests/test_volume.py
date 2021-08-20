@@ -7,7 +7,7 @@ from torch import Tensor, nn
 import torch.nn.functional as F
 
 from tomopt.volume.layer import Layer
-from tomopt.volume import PassiveLayer, VoxelDetectorLayer, Volume
+from tomopt.volume import PassiveLayer, VoxelDetectorLayer, Volume, PanelDetectorLayer, DetectorPanel
 from tomopt.muon import MuonBatch, generate_batch
 from tomopt.core import X0
 from tomopt.utils import jacobian
@@ -119,10 +119,44 @@ def test_voxel_detector_layer(batch):
     # every reco hit (x,y) is function of resolution
     grad = jacobian(hits["above"]["reco_xy"][:, 0], dl.resolution).sum((-1, -2))
     assert (grad == grad).sum() == 2 * len(grad)
-    assert ((grad == grad) * (grad != 0)).sum() > 0  # every reco hit (x,y) is function of resolution
+    assert ((grad == grad) * (grad != 0)).sum() > 0
 
 
-def get_layers():
+def area_cost(x: Tensor) -> Tensor:
+    return F.relu(x / 1000) ** 2
+
+
+def test_panel_detector_layer(batch):
+    dl = PanelDetectorLayer(
+        pos="above",
+        lw=LW,
+        z=1,
+        size=2 * SZ,
+        panels=[DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[0.5, 0.5], area_cost_func=area_cost)],
+    )
+    for p in dl.panels:
+        assert p.resolution == Tensor([1e3])
+        assert p.efficiency == Tensor([1])
+
+    start = batch.copy()
+    dl(batch)
+    assert torch.abs(batch.z - Tensor([Z - (2 * SZ)])) < 1e-5
+    assert torch.all(batch.dtheta(start) == 0)  # Detector layers don't scatter
+    assert torch.all(batch.xy != start.xy)
+
+    hits = batch.get_hits(LW)
+    assert len(hits) == 1
+    assert hits["above"]["reco_xy"].shape == torch.Size([batch.get_xy_mask((0, 0), LW).sum(), 1, 2])
+    assert hits["above"]["gen_xy"].shape == torch.Size([batch.get_xy_mask((0, 0), LW).sum(), 1, 2])
+
+    # every reco hit (x,y) is function of panel position and size
+    for v in [dl.panels[0].xy, dl.panels[0].xy_span]:
+        grad = jacobian(hits["above"]["reco_xy"][:, 0], v).sum((-1))
+        assert (grad == grad).sum() == 2 * len(grad)
+        assert ((grad == grad) * (grad != 0)).sum() > 0
+
+
+def get_voxel_layers():
     layers = []
     init_eff = 0.5
     init_res = 1000
@@ -140,7 +174,7 @@ def get_layers():
 
 
 def test_volume_methods():
-    layers = get_layers()
+    layers = get_voxel_layers()
     volume = Volume(layers=layers)
     assert volume.get_detectors()[-1] == layers[-1]
     assert volume.get_passives()[-1] == layers[-3]
@@ -187,8 +221,8 @@ def test_volume_methods():
     assert torch.all(cube[-1] == arb_rad_length2(z=Z, lw=LW, size=SZ))
 
 
-def test_volume_forward(batch):
-    layers = get_layers()
+def test_volume_forward_voxel(batch):
+    layers = get_voxel_layers()
     volume = Volume(layers=layers)
     start = batch.copy()
     volume(batch)
@@ -210,3 +244,64 @@ def test_volume_forward(batch):
         grad = jacobian(hits["above" if l.z > 0.5 else "below"]["reco_xy"][:, i % 2], l.resolution).sum((-1, -2))
         assert (grad == grad).sum() == 2 * len(grad)
         assert ((grad == grad) * (grad != 0)).sum() > 0  # every reco hit (x,y) is function of resolution
+
+
+def get_panel_layers(init_res: float = 1e4, init_eff: float = 0.5, n_panels: int = 4) -> nn.ModuleList:
+    layers = []
+    layers.append(
+        PanelDetectorLayer(
+            pos="above",
+            lw=LW,
+            z=1,
+            size=2 * SZ,
+            panels=[
+                DetectorPanel(res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / n_panels)], init_xy_span=[0.5, 0.5], area_cost_func=area_cost)
+                for i in range(n_panels)
+            ],
+        )
+    )
+    for z in [0.8, 0.7, 0.6, 0.5, 0.4, 0.3]:
+        layers.append(PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=z, size=SZ))
+    layers.append(
+        PanelDetectorLayer(
+            pos="below",
+            lw=LW,
+            z=0.2,
+            size=2 * SZ,
+            panels=[
+                DetectorPanel(
+                    res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / n_panels)], init_xy_span=[0.5, 0.5], area_cost_func=area_cost
+                )
+                for i in range(n_panels)
+            ],
+        )
+    )
+
+    return nn.ModuleList(layers)
+
+
+def test_volume_forward_panel(batch):
+    layers = get_panel_layers(n_panels=4)
+    volume = Volume(layers=layers)
+    start = batch.copy()
+    volume(batch)
+
+    assert torch.abs(batch.z) <= 1e-5  # Muons traverse whole volume
+    mask = batch.get_xy_mask((0, 0), LW)
+    assert mask.sum() > N / 2  # At least half the muons stay inside the volume
+    assert torch.all(batch.dtheta(start)[mask] > 0)  # All masked muons scatter
+
+    hits = batch.get_hits(LW)
+    assert "above" in hits and "below" in hits
+    assert hits["above"]["reco_xy"].shape[1] == 4
+    assert hits["below"]["reco_xy"].shape[1] == 4
+    assert hits["above"]["gen_xy"].shape[1] == 4
+    assert hits["below"]["gen_xy"].shape[1] == 4
+
+    # every reco hit (x,y) is function of panel position and size
+    for i, l in enumerate(volume.get_detectors()):
+        for j, p in enumerate(l.yield_zordered_panels()):
+            for v in [p.xy, p.xy_span]:
+                grad = jacobian(hits["above" if l.z > 0.5 else "below"]["reco_xy"][:, j], v).sum((-1))
+                assert (grad == grad).sum() == 2 * len(grad)
+                assert ((grad == grad) * (grad != 0)).sum() > 0

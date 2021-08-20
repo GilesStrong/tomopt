@@ -109,7 +109,7 @@ def panel_scatter_batch() -> Tuple[MuonBatch, Volume, PanelScatterBatch]:
 
 @pytest.mark.flaky(max_runs=3, min_passes=2)
 @patch("matplotlib.pyplot.show")
-def test_scatter_batch_properties_voxel(mock_show, voxel_scatter_batch):
+def test_voxel_scatter_batch_properties(mock_show, voxel_scatter_batch):
     mu, volume, sb = voxel_scatter_batch
 
     assert sb.hits["above"]["z"].shape == mu.get_hits(LW)["above"]["z"].shape
@@ -146,7 +146,7 @@ def test_scatter_batch_properties_voxel(mock_show, voxel_scatter_batch):
 
 # @pytest.mark.flaky(max_runs=3, min_passes=2)
 @patch("matplotlib.pyplot.show")
-def test_scatter_batch_properties_panel(mock_show, panel_scatter_batch):
+def test_spanel_catter_batch_properties(mock_show, panel_scatter_batch):
     mu, volume, sb = panel_scatter_batch
 
     assert sb.hits["above"]["z"].shape == mu.get_hits(LW)["above"]["z"].shape
@@ -274,7 +274,7 @@ def test_x0_inferer_properties(voxel_scatter_batch):
 
 
 @pytest.mark.flaky(max_runs=2, min_passes=1)
-def test_x0_inferer_methods_voxel():
+def test_voxel_x0_inferer_methods():
     mu = MuonBatch(generate_batch(N), init_z=1)
     volume = Volume(get_voxel_layers(init_res=1e3))
     volume(mu)
@@ -321,7 +321,7 @@ def test_x0_inferer_methods_voxel():
 
 
 @pytest.mark.flaky(max_runs=2, min_passes=1)
-def test_x0_inferer_methods_panel():
+def test_panel_x0_inferer_methods():
     mu = MuonBatch(generate_batch(N), init_z=1)
     volume = Volume(get_panel_layers(init_res=1e3))
     volume(mu)
