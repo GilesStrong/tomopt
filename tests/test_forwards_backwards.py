@@ -39,7 +39,7 @@ def area_cost(x: Tensor) -> Tensor:
     return F.relu(x / 1000) ** 2
 
 
-def get_voxel_layers():
+def get_voxel_layers() -> nn.ModuleList:
     layers = []
 
     pos = "above"
@@ -55,7 +55,7 @@ def get_voxel_layers():
     return nn.ModuleList(layers)
 
 
-def get_panel_layers():
+def get_panel_layers() -> nn.ModuleList:
     layers = []
     layers.append(
         PanelDetectorLayer(
@@ -90,7 +90,7 @@ def get_panel_layers():
 
 
 @pytest.fixture
-def voxel_inferer():
+def voxel_inferer() -> VoxelX0Inferer:
     mu = MuonBatch(generate_batch(N), init_z=1)
     volume = Volume(get_voxel_layers())
     volume(mu)
@@ -99,7 +99,7 @@ def voxel_inferer():
 
 
 @pytest.fixture
-def panel_inferer():
+def panel_inferer() -> PanelX0Inferer:
     mu = MuonBatch(generate_batch(N), init_z=1)
     volume = Volume(get_panel_layers())
     volume(mu)
