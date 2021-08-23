@@ -396,7 +396,7 @@ def test_volume_wrapper_fit_epoch(mocker):  # noqa F811
     cb.set_wrapper(vw)
     trn_py = PassiveYielder([arb_rad_length, arb_rad_length, arb_rad_length])
     val_py = PassiveYielder([arb_rad_length, arb_rad_length])
-    vw.fit_params = FitParams(n_mu_per_volume=100, mu_bs=10, cbs=[cb], trn_passives=trn_py, val_passives=val_py, passive_bs=1)
+    vw.fit_params = FitParams(n_mu_per_volume=100, mu_bs=100, cbs=[cb], trn_passives=trn_py, val_passives=val_py, passive_bs=1)
     mocker.spy(cb, "on_epoch_begin")
     mocker.spy(cb, "on_epoch_end")
     mocker.spy(cb, "on_volume_begin")

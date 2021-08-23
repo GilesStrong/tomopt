@@ -4,6 +4,7 @@ import numpy as np
 import math
 from unittest.mock import patch
 from typing import Tuple
+import types
 
 import torch
 from torch import Tensor, nn
@@ -402,14 +403,14 @@ def test_panel_x0_inferer_efficiency(mocker, panel_scatter_batch):  # noqa F811
     inferer = PanelX0Inferer(scatters=sb, default_pred=X0["beryllium"])
     a_effs = Tensor([0.1, 0.2, 0.3, 0.4])
     b_effs = Tensor([0.5, 0.6, 0.7, 0.8])
-    for i, d in enumerate(volume.get_detectors()):
-        for j, p in enumerate(d.panels):
-            p.eff = a_effs[j] if i == 0 else b_effs[j]
 
     def get_efficiency(self, xy):
         return self.eff.expand(len(xy)).clone()
 
-    DetectorPanel.get_efficiency = get_efficiency
+    for i, d in enumerate(volume.get_detectors()):
+        for j, p in enumerate(d.panels):
+            p.eff = a_effs[j] if i == 0 else b_effs[j]
+            p.get_efficiency = types.MethodType(get_efficiency, p)
 
     eff = []
     for effs in (a_effs, b_effs):
