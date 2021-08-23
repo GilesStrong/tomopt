@@ -109,10 +109,19 @@ def panel_scatter_batch() -> Tuple[MuonBatch, Volume, PanelScatterBatch]:
 
 @pytest.mark.flaky(max_runs=3, min_passes=2)
 @patch("matplotlib.pyplot.show")
-def test_voxel_scatter_batch_properties(mock_show, voxel_scatter_batch):
+def test_voxel_scatter_batch(mock_show, voxel_scatter_batch):
     mu, volume, sb = voxel_scatter_batch
 
-    assert sb.hits["above"]["z"].shape == mu.get_hits(LW)["above"]["z"].shape
+    # hits
+    hits = mu.get_hits(LW)
+    assert sb.hits["above"]["z"].shape == hits["above"]["z"].shape
+    assert sb.n_hits_above == 2
+    assert sb.n_hits_below == 2
+    for i in range(2):
+        assert (sb.above_hits[i][:, :2] == hits["above"]["reco_xy"][:, i]).all()
+        assert (sb.below_hits[i][:, :2] == hits["below"]["reco_xy"][:, i]).all()
+        assert (sb.above_gen_hits[i][:, :2] == hits["above"]["gen_xy"][:, i]).all()
+        assert (sb.below_gen_hits[i][:, :2] == hits["below"]["gen_xy"][:, i]).all()
 
     assert (loc_xy_unc := sb.location_unc[:, :2].mean()) < 0.5
     assert (loc_z_unc := sb.location_unc[:, 2].mean()) < 1.5
@@ -120,6 +129,10 @@ def test_voxel_scatter_batch_properties(mock_show, voxel_scatter_batch):
     assert (dtheta_unc := (sb.dtheta_unc / sb.dtheta).mean()) < 10
     assert (theta_out_unc := sb.theta_out_unc.mean() / sb.theta_out.abs().mean()) < 10
     assert (theta_in_unc := sb.theta_in_unc.mean() / sb.theta_in.abs().mean()) < 10
+
+    # uncertainties
+    uncs = sb._get_hit_uncs([volume.get_detectors()[0]], [sb.above_hits[0]])
+    assert (uncs[0].mean(0) - Tensor([1e-4, 1e-4, 0])).abs().sum() < 1e-5
 
     sb.plot_scatter(0)
 
@@ -144,12 +157,20 @@ def test_voxel_scatter_batch_properties(mock_show, voxel_scatter_batch):
     assert sb.theta_in_unc.mean() / sb.theta_in.abs().mean() < theta_in_unc
 
 
-# @pytest.mark.flaky(max_runs=3, min_passes=2)
 @patch("matplotlib.pyplot.show")
-def test_spanel_catter_batch_properties(mock_show, panel_scatter_batch):
+def test_panel_scatter_batch(mock_show, panel_scatter_batch):
     mu, volume, sb = panel_scatter_batch
 
-    assert sb.hits["above"]["z"].shape == mu.get_hits(LW)["above"]["z"].shape
+    # hits
+    hits = mu.get_hits(LW)
+    assert sb.hits["above"]["z"].shape == hits["above"]["z"].shape
+    assert sb.n_hits_above == 4
+    assert sb.n_hits_below == 4
+    for i in range(4):
+        assert (sb.above_hits[i][:, :2] == hits["above"]["reco_xy"][:, i]).all()
+        assert (sb.below_hits[i][:, :2] == hits["below"]["reco_xy"][:, i]).all()
+        assert (sb.above_gen_hits[i][:, :2] == hits["above"]["gen_xy"][:, i]).all()
+        assert (sb.below_gen_hits[i][:, :2] == hits["below"]["gen_xy"][:, i]).all()
 
     assert (loc_xy_unc := sb.location_unc[:, :2].mean()) < 0.5
     assert (loc_z_unc := sb.location_unc[:, 2].mean()) < 1.5
@@ -157,6 +178,10 @@ def test_spanel_catter_batch_properties(mock_show, panel_scatter_batch):
     assert (dtheta_unc := (sb.dtheta_unc / sb.dtheta).mean()) < 10
     assert (theta_out_unc := sb.theta_out_unc.mean() / sb.theta_out.abs().mean()) < 10
     assert (theta_in_unc := sb.theta_in_unc.mean() / sb.theta_in.abs().mean()) < 10
+
+    # uncertainties
+    uncs = sb._get_hit_uncs([next(volume.get_detectors()[0].yield_zordered_panels())], [sb.above_hits[0]])
+    assert (uncs[0].mean(0) - Tensor([1e-4, 1e-4, 0])).abs().sum() < 1e-4
 
     sb.plot_scatter(0)
 
