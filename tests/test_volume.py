@@ -155,6 +155,54 @@ def test_panel_detector_layer(batch):
         assert (grad == grad).sum() == 2 * len(grad)
         assert ((grad == grad) * (grad != 0)).sum() > 0
 
+    dl = PanelDetectorLayer(
+        pos="above",
+        lw=LW,
+        z=1,
+        size=2 * SZ,
+        panels=[
+            DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[0.5, 5.0], area_cost_func=area_cost),
+            DetectorPanel(res=1e3, eff=1, init_xyz=[3.0, 0.5, 2.0], init_xy_span=[0.5, 0.5], area_cost_func=area_cost),
+            DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, -0.5, -0.3], init_xy_span=[0.5, 0.5], area_cost_func=area_cost),
+            DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, 0.5, 0.4], init_xy_span=[0.0, 0.5], area_cost_func=area_cost),
+        ],
+    )
+
+    # z-ordering
+    zorder = dl.get_panel_zorder()
+    assert (zorder == np.array([1, 0, 3, 2])).all()
+    for i, p in enumerate(dl.yield_zordered_panels()):
+        assert p is dl.panels[zorder[i]]
+
+    # detector conform
+    dl.conform_detector()
+    for p in dl.panels:
+        assert p.xy[0] <= 1
+        assert p.xy[1] <= 1
+        assert p.xy[0] >= 0
+        assert p.xy[1] >= 0
+        assert p.z[0] <= 1
+        assert p.z[0] >= 0.8
+        assert p.xy_span[0] <= 1
+        assert p.xy_span[1] <= 1
+        assert p.xy_span[0] >= 0
+        assert p.xy_span[1] >= 0
+
+    # cost
+    dl = PanelDetectorLayer(
+        pos="above",
+        lw=LW,
+        z=1,
+        size=2 * SZ,
+        panels=[
+            DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[0.1, 0.2], area_cost_func=area_cost),
+            DetectorPanel(res=1e3, eff=1, init_xyz=[3.0, 0.5, 2.0], init_xy_span=[0.3, 0.4], area_cost_func=area_cost),
+            DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, -0.5, -0.3], init_xy_span=[0.5, 0.6], area_cost_func=area_cost),
+            DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, 0.5, 0.4], init_xy_span=[0.7, 0.8], area_cost_func=area_cost),
+        ],
+    )
+    assert dl.get_cost().detach().cpu().numpy() == np.sum([area_cost(p.xy_span.prod()).detach().cpu().numpy() for p in dl.panels])
+
 
 def get_voxel_layers():
     layers = []
@@ -201,8 +249,6 @@ def test_volume_methods():
 
     assert torch.all(volume.lookup_passive_xyz_coords(Tensor([0.55, 0.63, 0.31])) == Tensor([[5, 6, 1]]))
     assert torch.all(volume.lookup_passive_xyz_coords(Tensor([[0.55, 0.63, 0.31], [0.12, 0.86, 0.45]])) == Tensor([[5, 6, 1], [1, 8, 2]]))
-    with pytest.raises(ValueError):
-        volume.lookup_passive_xyz_coords(Tensor([1, 0.63, 0.31]))
     with pytest.raises(ValueError):
         volume.lookup_passive_xyz_coords(Tensor([0.55, 1.2, 0.31]))
     with pytest.raises(ValueError):

@@ -204,9 +204,9 @@ class PanelDetectorLayer(AbsDetectorLayer):
             p.clamp_params(xyz_low=(0, 0, z - self.size), xyz_high=(lw[0], lw[1], z))
 
     def forward(self, mu: MuonBatch) -> None:
-        for i in self.get_panel_zorder():
-            self.scatter_and_propagate(mu, mu.z - self.panels[i].z)  # Move to panel
-            mu.append_hits(self.panels[i].get_hits(mu), self.pos)
+        for p in self.yield_zordered_panels():
+            self.scatter_and_propagate(mu, mu.z - p.z)  # Move to panel
+            mu.append_hits(p.get_hits(mu), self.pos)
         self.scatter_and_propagate(mu, mu.z - (self.z - self.size))  # Move to bottom of layer
 
     def get_cost(self) -> Tensor:
