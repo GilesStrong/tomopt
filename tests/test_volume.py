@@ -121,6 +121,16 @@ def test_voxel_detector_layer(batch):
     assert (grad == grad).sum() == 2 * len(grad)
     assert ((grad == grad) * (grad != 0)).sum() > 0
 
+    # Conform detector
+    dl = VoxelDetectorLayer(pos="above", init_eff=-1, init_res=1e14, lw=LW, z=Z, size=SZ, eff_cost_func=eff_cost, res_cost_func=res_cost)
+    dl.conform_detector()
+    assert (dl.resolution == 1e7).all()
+    assert (dl.efficiency == 1e-7).all()
+    dl = VoxelDetectorLayer(pos="above", init_eff=10.0, init_res=-10.0, lw=LW, z=Z, size=SZ, eff_cost_func=eff_cost, res_cost_func=res_cost)
+    dl.conform_detector()
+    assert (dl.resolution == 1).all()
+    assert (dl.efficiency == 1).all()
+
 
 def area_cost(x: Tensor) -> Tensor:
     return F.relu(x / 1000) ** 2

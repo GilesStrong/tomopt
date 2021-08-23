@@ -145,6 +145,11 @@ class VoxelDetectorLayer(AbsDetectorLayer):
         self.efficiency = nn.Parameter(torch.zeros(list((self.lw / size).long()), device=self.device) + init_eff)
         self.eff_cost_func, self.res_cost_func = eff_cost_func, res_cost_func
 
+    def conform_detector(self) -> None:
+        with torch.no_grad():
+            self.resolution.clamp_(min=1, max=1e7)
+            self.efficiency.clamp_(min=1e-7, max=1)
+
     def get_hits(self, mu: MuonBatch) -> Dict[str, Tensor]:  # to dense and add precision
         mask = mu.get_xy_mask((0, 0), self.lw)
         res = torch.zeros(len(mu), device=self.device)  # Zero detection outside detector
