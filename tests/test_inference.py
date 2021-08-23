@@ -319,6 +319,7 @@ def test_voxel_x0_inferer_methods():
     assert pxy is None and pxy_unc is None  # modify tests when dxy predictions implemented
 
     eff = inferer.compute_efficiency()
+    assert eff.shape == pt.shape
     assert (eff - 0.0625).abs().mean() < 1e-5
 
     p, w = inferer.average_preds(x0_dtheta=pt, x0_dtheta_unc=pt_unc, x0_dxy=pxy, x0_dxy_unc=pxy_unc, efficiency=eff)
@@ -367,6 +368,7 @@ def test_panel_x0_inferer_methods():
     assert pxy is None and pxy_unc is None  # modify tests when dxy predictions implemented
 
     eff = inferer.compute_efficiency()
+    assert eff.shape == pt.shape
     assert (eff > 0).all()
 
     p, w = inferer.average_preds(x0_dtheta=pt, x0_dtheta_unc=pt_unc, x0_dxy=pxy, x0_dxy_unc=pxy_unc, efficiency=eff)
@@ -393,6 +395,39 @@ def test_panel_x0_inferer_methods():
 
     p2, w2 = inferer.pred_x0(inc_default=False)
     assert (p2 != p2).sum() >= 0  # NaNs NOT replaced with default prediction
+
+
+def test_panel_x0_inferer_efficiency(mocker, panel_scatter_batch):  # noqa F811
+    mu, volume, sb = panel_scatter_batch
+    inferer = PanelX0Inferer(scatters=sb, default_pred=X0["beryllium"])
+    a_effs = Tensor([0.1, 0.2, 0.3, 0.4])
+    b_effs = Tensor([0.5, 0.6, 0.7, 0.8])
+    for i, d in enumerate(volume.get_detectors()):
+        for j, p in enumerate(d.panels):
+            p.eff = a_effs[j] if i == 0 else b_effs[j]
+
+    def get_efficiency(self, xy):
+        return self.eff.expand(len(xy)).clone()
+
+    DetectorPanel.get_efficiency = get_efficiency
+
+    eff = []
+    for effs in (a_effs, b_effs):
+        eff.append(
+            (effs[0] * effs[1])
+            + (effs[0] * effs[2])
+            + (effs[0] * effs[3])
+            + (effs[1] * effs[2])
+            + (effs[1] * effs[3])
+            + (effs[2] * effs[3])
+            + (effs[0] * effs[1] * effs[2])
+            + (effs[0] * effs[1] * effs[3])
+            + (effs[0] * effs[3] * effs[2])
+            + (effs[3] * effs[1] * effs[2])
+            + (effs[0] * effs[1] * effs[2] * effs[3])
+        )
+
+    assert (inferer.compute_efficiency()[0] - eff[0] * eff[1]).abs() < 1e-5
 
 
 def test_x0_inferer_scatter_inversion(mocker, voxel_scatter_batch):  # noqa F811
