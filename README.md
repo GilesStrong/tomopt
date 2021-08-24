@@ -16,9 +16,21 @@ git clone git@github.com:GilesStrong/mode_muon_tomography.git
 cd mode_muon_tomography
 ```
 
+*N.B.* For GPU usage, it is recommended to manually setup conda and install PyTorch according to system, e.g.:
+```
+conda activate root
+conda install nb_conda_kernels
+conda env create -n tomopt python=3.8 pip ipykernel
+conda activate tomopt
+pip install torch==1.8.1+cu111 -f https://download.pytorch.org/whl/torch_stable.html
+pip install -r requirements.txt
+```
+
 Minimum python version is 3.8. Recommend creating a virtual environment, e.g. assuming your are using [Anaconda](https://www.anaconda.com/products/individual)/[Miniconda](https://docs.conda.io/en/latest/miniconda.html) (if installing conda for the first time, remember to restart the shell before attemting to use conda, and that by default conda writes the setup commands to `.bashrc`):
 
 ```
+conda activate root
+conda install nb_conda_kernels
 conda env create -f environment.yml
 conda activate tomopt
 ```
