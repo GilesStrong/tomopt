@@ -102,7 +102,7 @@ class DetectorPanel(nn.Module):
 
     def clamp_params(self, xyz_low: Tuple[float, float, float], xyz_high: Tuple[float, float, float]) -> None:
         with torch.no_grad():
-            eps = np.random.uniform(0, 1e-5)  # prevent hits at same z due to clamping
+            eps = np.random.uniform(0, 5e-5)  # prevent hits at same z due to clamping
             self.x.clamp_(min=xyz_low[0], max=xyz_high[0])
             self.y.clamp_(min=xyz_low[1], max=xyz_high[1])
             self.z.clamp_(min=xyz_low[2] + eps, max=xyz_high[2] - eps)

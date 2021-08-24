@@ -370,7 +370,7 @@ class PanelMetricLogger(MetricLogger):
                 if not isinstance(det, PanelDetectorLayer):
                     raise ValueError(f"Detector {det} is not a PanelDetectorLayer")
                 for p in det.panels:
-                    l.append(np.concatenate((p.xy.detach().cpu().numpy(), p.z.detach().cpu().numpy()[None])))
+                    l.append(np.concatenate((p.xy.detach().cpu().numpy(), p.z.detach().cpu().numpy())))
                     s.append(p.xy_span.detach().cpu().numpy())
                 loc, span = np.array(l), np.array(s)
 
