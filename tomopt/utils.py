@@ -22,4 +22,4 @@ def jacobian(y: Tensor, x: Tensor, create_graph: bool = False, allow_unused: boo
     def get_vjp(v: Tensor) -> Tensor:
         return torch.autograd.grad(flat_y, x, v, retain_graph=True, create_graph=create_graph, allow_unused=allow_unused)[0].reshape(x.shape)
 
-    return vmap(get_vjp)(torch.eye(len(flat_y))).reshape(y.shape + x.shape)
+    return vmap(get_vjp)(torch.eye(len(flat_y), device=y.device)).reshape(y.shape + x.shape)

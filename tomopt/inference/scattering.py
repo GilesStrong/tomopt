@@ -26,6 +26,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
 
     def __init__(self, mu: MuonBatch, volume: Volume):
         self.mu, self.volume = mu, volume
+        self.device = self.mu.device
         self.hits = self.mu.get_hits(self.volume.lw)
         self.compute_scatters()
 
@@ -43,7 +44,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
         """
 
         hits, uncs = torch.stack(hit_list, dim=1), torch.stack(unc_list, dim=1)
-        hits = torch.where(torch.isinf(hits), lw.mean() / 2, hits)
+        hits = torch.where(torch.isinf(hits), lw.mean().type(hits.type()) / 2, hits)
 
         stars, angles = [], []
         for i in range(2):  # seperate x and y resolutions
@@ -235,7 +236,7 @@ class VoxelScatterBatch(AbsScatterBatch):
                 raise ValueError(f"Detector {l} is not a VoxelDetectorLayer")
             x = l.abs2idx(h)
             r = 1 / l.resolution[x[:, 0], x[:, 1]]
-            uncs.append(torch.stack([r, r, torch.zeros_like(r)], dim=-1))
+            uncs.append(torch.stack([r, r, torch.zeros_like(r, device=r.device)], dim=-1))
         return uncs
 
     def compute_tracks(self) -> None:

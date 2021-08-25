@@ -17,7 +17,7 @@ __all__ = ["PassiveLayer", "VoxelDetectorLayer", "PanelDetectorLayer"]
 class Layer(nn.Module):
     def __init__(self, lw: Tensor, z: float, size: float, device: torch.device = DEVICE):
         super().__init__()
-        self.lw, self.z, self.size, self.device = lw, Tensor([z]), size, device
+        self.lw, self.z, self.size, self.device = lw.to(device), torch.tensor([z], device=device), size, device
         self.rad_length: Optional[Tensor] = None
 
     @staticmethod
@@ -188,12 +188,18 @@ class PanelDetectorLayer(AbsDetectorLayer):
         z: float,
         size: float,
         panels: nn.ModuleList,  # nn.ModuleList[DetectorPanel]
-        device: torch.device = DEVICE,
     ):
-        super().__init__(pos=pos, lw=lw, z=z, size=size, device=device)
+        super().__init__(pos=pos, lw=lw, z=z, size=size, device=self.get_device(panels))
         if isinstance(panels, list):
             panels = nn.ModuleList(panels)
         self.panels = panels
+    
+    @staticmethod
+    def get_device(panels:nn.ModuleList) -> torch.device:
+        device = panels[0].device
+        for p in panels[1:]:
+            if p.device != device: raise ValueError('All panels must use the same device, but found multiple devices')
+        return device
 
     def get_panel_zorder(self) -> List[int]:
         return np.argsort([p.z.detach().cpu().item() for p in self.panels])[::-1]
