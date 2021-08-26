@@ -32,9 +32,10 @@ class ScatterRecord(Callback):
 
     def _to_df(self, record: Tensor) -> pd.DataFrame:
         df = pd.DataFrame(record.numpy(), columns=["x", "y", "z"])
+        dw, up = self.wrapper.volume.get_passive_z_range()
         df["layer"] = pd.cut(
             self.wrapper.volume.h.detach().cpu().item() - df.z,
-            np.linspace(*[z.detach().cpu().item() for z in self.wrapper.volume.get_passive_z_range()], 1 + len(self.wrapper.volume.get_passives())).squeeze(),
+            np.linspace(dw.detach().cpu().item(), dw.detach().cpu().item(), 1 + len(self.wrapper.volume.get_passives())).squeeze(),
             labels=False,
         )
         return df

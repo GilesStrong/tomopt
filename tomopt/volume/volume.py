@@ -20,7 +20,7 @@ class Volume(nn.Module):
     def device(self) -> torch.device:
         return self._device
 
-    def _get_device(self):
+    def _get_device(self) -> torch.device:
         device = self.layers[0].device
         for l in self.layers[1:]:
             if l.device != device:
@@ -88,7 +88,7 @@ class Volume(nn.Module):
         return self.get_passives()[-1].size  # Same size for each passive layer
 
     @property
-    def h(self) -> float:
+    def h(self) -> Tensor:
         return self.layers[0].z
 
     def get_passive_z_range(self) -> Tuple[Tensor, Tensor]:
