@@ -20,10 +20,11 @@ class AbsX0Inferer(metaclass=ABCMeta):
         self.mu, self.volume, self.hits = self.scatters.mu, self.scatters.volume, self.scatters.hits
         self.size, self.lw = self.volume.passive_size, self.volume.lw
         self.mask = self.scatters.get_scatter_mask()
+        self.device = self.mu.device
         if self.default_pred is not None:
             self.default_weight = 1 / (self.default_pred ** 2)
-            self.default_weight_t = Tensor([self.default_weight]).to(self.mu.device)
-            self.default_pred_t = Tensor([self.default_pred]).to(self.mu.device)
+            self.default_weight_t = torch.tensor([self.default_weight], device=self.device)
+            self.default_pred_t = torch.tensor([self.default_pred], device=self.device)
         self.average_preds = self.average_preds_gaussian if self.use_gaussian_spread else self.average_preds_single
 
     def x0_from_dtheta(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
@@ -133,18 +134,18 @@ class AbsX0Inferer(metaclass=ABCMeta):
             len(self.volume.get_passives()),
         )
         shp_zxy = shp_xyz[0], shp_xyz[3], shp_xyz[1], shp_xyz[2]
-        int_bounds = (
+        bounds = (
             self.volume.passive_size
             * np.mgrid[
-                0 : round(self.volume.lw.numpy()[0] / self.volume.passive_size) : 1,
-                0 : round(self.volume.lw.numpy()[1] / self.volume.passive_size) : 1,
-                round(self.volume.get_passive_z_range()[0].numpy()[0] / self.volume.passive_size) : round(
-                    self.volume.get_passive_z_range()[1].numpy()[0] / self.volume.passive_size
+                0 : round(self.volume.lw.detach().cpu().numpy()[0] / self.volume.passive_size) : 1,
+                0 : round(self.volume.lw.detach().cpu().numpy()[1] / self.volume.passive_size) : 1,
+                round(self.volume.get_passive_z_range()[0].detach().cpu().numpy()[0] / self.volume.passive_size) : round(
+                    self.volume.get_passive_z_range()[1].detach().cpu().numpy()[0] / self.volume.passive_size
                 ) : 1,
             ]
         )
-        int_bounds[2] = np.flip(int_bounds[2])  # z is reversed
-        int_bounds = Tensor(int_bounds.reshape(3, -1).transpose(-1, -2))
+        bounds[2] = np.flip(bounds[2])  # z is reversed
+        int_bounds = torch.tensor(bounds.reshape(3, -1).transpose(-1, -2), device=self.device)
 
         wpreds, weights = [], []
         for x0, unc in ((x0_dtheta, x0_dtheta_unc), (x0_dxy, x0_dxy_unc)):
@@ -182,9 +183,9 @@ class AbsX0Inferer(metaclass=ABCMeta):
 
     def add_default_pred(self, pred: Tensor, weight: Tensor) -> Tuple[Tensor, Tensor]:
         pred = torch.nan_to_num(pred, self.default_pred)
-        pred = torch.where(pred == 0.0, self.default_pred_t, pred)
+        pred = torch.where(pred == 0.0, self.default_pred_t.type(pred.type()), pred)
         weight = torch.nan_to_num(weight, self.default_weight)
-        weight = torch.where(weight == 0.0, self.default_weight_t, weight)
+        weight = torch.where(weight == 0.0, self.default_weight_t.type(weight.type()), weight)
         return pred, weight
 
     def pred_x0(self, inc_default: bool = True) -> Tuple[Optional[Tensor], Optional[Tensor]]:
@@ -223,7 +224,7 @@ class VoxelX0Inferer(AbsX0Inferer):
             else:
                 eff = eff * e
         if eff is None:
-            eff = torch.zeros(0)
+            eff = torch.zeros(0, device=self.device)
         return eff
 
 
