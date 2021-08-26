@@ -22,9 +22,10 @@ class Volume(nn.Module):
 
     def _get_device(self) -> torch.device:
         device = self.layers[0].device
-        for l in self.layers[1:]:
-            if l.device != device:
-                raise ValueError("All layers must use the same device, but found multiple devices")
+        if len(self.layers) > 1:
+            for l in self.layers[1:]:
+                if l.device != device:
+                    raise ValueError("All layers must use the same device, but found multiple devices")
         return device
 
     def __getitem__(self, idx: int) -> Layer:

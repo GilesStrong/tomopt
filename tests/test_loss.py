@@ -9,6 +9,10 @@ from tomopt.volume import Volume
 SHP = (6, 10, 10)
 
 
+class MockLayer(nn.Module):
+    device = torch.device("cpu")
+
+
 def test_detector_loss(mocker):  # noqa F811
     cost = torch.ones((1), requires_grad=True)
     true = torch.ones(SHP)
@@ -17,16 +21,16 @@ def test_detector_loss(mocker):  # noqa F811
     pred = torch.ones(SHP, requires_grad=True) / 2
 
     loss_func = DetectorLoss(0)
-    loss_val = loss_func(pred, torch.ones_like(pred), Volume(nn.ModuleList([])))
+    loss_val = loss_func(pred, torch.ones_like(pred), Volume(nn.ModuleList([MockLayer()])))
     assert loss_val.shape == torch.Size([1])
     assert loss_val == (pred - true).pow(2).mean()
 
     # Decreasing variance improves loss
-    new_loss_val = loss_func(pred, 10 * torch.ones_like(pred), Volume(nn.ModuleList([])))
+    new_loss_val = loss_func(pred, 10 * torch.ones_like(pred), Volume(nn.ModuleList([MockLayer()])))
     assert new_loss_val < loss_val
 
     loss_func = DetectorLoss(1)
-    loss_val = loss_func(pred, torch.ones_like(pred), Volume(nn.ModuleList([])))
+    loss_val = loss_func(pred, torch.ones_like(pred), Volume(nn.ModuleList([MockLayer()])))
     assert loss_val.shape == torch.Size([1])
     assert loss_val == (pred - true).pow(2).mean() + cost
     assert loss_val > 0

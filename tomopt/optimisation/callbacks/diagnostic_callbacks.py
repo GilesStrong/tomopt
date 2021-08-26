@@ -35,7 +35,7 @@ class ScatterRecord(Callback):
         dw, up = self.wrapper.volume.get_passive_z_range()
         df["layer"] = pd.cut(
             self.wrapper.volume.h.detach().cpu().item() - df.z,
-            np.linspace(dw.detach().cpu().item(), dw.detach().cpu().item(), 1 + len(self.wrapper.volume.get_passives())).squeeze(),
+            np.linspace(dw.detach().cpu().item(), up.detach().cpu().item(), 1 + len(self.wrapper.volume.get_passives())).squeeze(),
             labels=False,
         )
         return df

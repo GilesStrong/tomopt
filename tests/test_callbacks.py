@@ -259,8 +259,8 @@ def test_scatter_record():
     sr = ScatterRecord()
     vw = MockWrapper()
     vw.volume = MockVolume()
-    vw.volume.h = 1
-    vw.volume.get_passive_z_range = lambda: (0.2, 0.8)
+    vw.volume.h = Tensor([1])
+    vw.volume.get_passive_z_range = lambda: Tensor([0.2, 0.8])
     vw.volume.get_passives = lambda: range(6)
     locs = torch.rand(10, 3)
     vw.fit_params = FitParams(sb=MockScatterBatch(5))
@@ -291,7 +291,7 @@ def test_hit_record():
     hr = HitRecord()
     vw = MockWrapper()
     vw.volume = MockVolume()
-    vw.volume.h = 1
+    vw.volume.h = Tensor([1])
     xa0 = torch.rand(10, 3)
     xa1 = torch.rand(10, 3)
     xb0 = torch.rand(10, 3)

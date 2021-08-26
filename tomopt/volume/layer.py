@@ -197,9 +197,10 @@ class PanelDetectorLayer(AbsDetectorLayer):
     @staticmethod
     def get_device(panels: nn.ModuleList) -> torch.device:
         device = panels[0].device
-        for p in panels[1:]:
-            if p.device != device:
-                raise ValueError("All panels must use the same device, but found multiple devices")
+        if len(panels) > 1:
+            for p in panels[1:]:
+                if p.device != device:
+                    raise ValueError("All panels must use the same device, but found multiple devices")
         return device
 
     def get_panel_zorder(self) -> List[int]:
