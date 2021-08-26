@@ -93,11 +93,11 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
         default_pred: Optional[float] = X0["beryllium"],
         mu_generator: Callable[[int], Tensor] = generate_batch,
         partial_scatter_inferer: Type[AbsScatterBatch],
-        partial_x0_inferer: Type[AbsX0Inferer]
+        partial_x0_inferer: Type[AbsX0Inferer],
     ):
         self.volume, self.loss_func, self.default_pred, self.mu_generator = volume, loss_func, default_pred, mu_generator
         self.partial_scatter_inferer, self.partial_x0_inferer = partial_scatter_inferer, partial_x0_inferer
-        self.device=self.volume.device
+        self.device = self.volume.device
         self._build_opt(**partial_opts)
         self.parameters = self.volume.parameters
 
@@ -285,7 +285,7 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
             trn_passives=trn_passives,
             val_passives=val_passives,
             passive_bs=passive_bs,
-            device=self.device
+            device=self.device,
         )
         self.fit_params.cb_savepath.mkdir(parents=True, exist_ok=True)
         try:
@@ -328,7 +328,7 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
             state="test",
             cb_savepath=cb_savepath,
             use_default_pred=use_default_pred,
-            device=self.device
+            device=self.device,
         )
         try:
             for c in self.fit_params.cbs:
@@ -373,7 +373,7 @@ class VoxelVolumeWrapper(AbsVolumeWrapper):
         eff_opt: PartialOpt,
         loss_func: Optional[DetectorLoss],
         default_pred: Optional[float] = X0["beryllium"],
-        mu_generator: Callable[[int], Tensor] = generate_batch
+        mu_generator: Callable[[int], Tensor] = generate_batch,
     ):
         super().__init__(
             volume=volume,
@@ -382,7 +382,7 @@ class VoxelVolumeWrapper(AbsVolumeWrapper):
             default_pred=default_pred,
             mu_generator=mu_generator,
             partial_scatter_inferer=VoxelScatterBatch,
-            partial_x0_inferer=VoxelX0Inferer
+            partial_x0_inferer=VoxelX0Inferer,
         )
 
     def _build_opt(self, **kwargs: PartialOpt) -> None:
@@ -406,7 +406,7 @@ class VoxelVolumeWrapper(AbsVolumeWrapper):
         eff_opt: PartialOpt,
         loss_func: Optional[DetectorLoss],
         default_pred: Optional[float] = X0["beryllium"],
-        mu_generator: Callable[[int], Tensor] = generate_batch
+        mu_generator: Callable[[int], Tensor] = generate_batch,
     ) -> AbsVolumeWrapper:
         vw = cls(volume=volume, res_opt=res_opt, eff_opt=eff_opt, loss_func=loss_func, default_pred=default_pred, mu_generator=mu_generator)
         vw.load(name)
@@ -423,7 +423,7 @@ class PanelVolumeWrapper(AbsVolumeWrapper):
         xy_span_opt: PartialOpt,
         loss_func: Optional[DetectorLoss],
         default_pred: Optional[float] = X0["beryllium"],
-        mu_generator: Callable[[int], Tensor] = generate_batch
+        mu_generator: Callable[[int], Tensor] = generate_batch,
     ):
         super().__init__(
             volume=volume,
@@ -432,15 +432,15 @@ class PanelVolumeWrapper(AbsVolumeWrapper):
             default_pred=default_pred,
             mu_generator=mu_generator,
             partial_scatter_inferer=PanelScatterBatch,
-            partial_x0_inferer=PanelX0Inferer
+            partial_x0_inferer=PanelX0Inferer,
         )
 
     def _build_opt(self, **kwargs: PartialOpt) -> None:
         all_dets = self.volume.get_detectors()
         dets: List[PanelDetectorLayer] = []
-        for l in all_dets:
-            if isinstance(l, PanelDetectorLayer):
-                dets.append(l)
+        for d in all_dets:
+            if isinstance(d, PanelDetectorLayer):
+                dets.append(d)
         self.opts = {
             "xy_pos_opt": kwargs["xy_pos_opt"]((p.xy for l in dets for p in l.panels)),
             "z_pos_opt": kwargs["z_pos_opt"]((p.z for l in dets for p in l.panels)),
@@ -458,7 +458,7 @@ class PanelVolumeWrapper(AbsVolumeWrapper):
         xy_span_opt: PartialOpt,
         loss_func: Optional[DetectorLoss],
         default_pred: Optional[float] = X0["beryllium"],
-        mu_generator: Callable[[int], Tensor] = generate_batch
+        mu_generator: Callable[[int], Tensor] = generate_batch,
     ) -> AbsVolumeWrapper:
         vw = cls(
             volume=volume,
@@ -467,7 +467,7 @@ class PanelVolumeWrapper(AbsVolumeWrapper):
             xy_span_opt=xy_span_opt,
             loss_func=loss_func,
             default_pred=default_pred,
-            mu_generator=mu_generator
+            mu_generator=mu_generator,
         )
         vw.load(name)
         return vw

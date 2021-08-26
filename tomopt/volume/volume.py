@@ -15,16 +15,16 @@ class Volume(nn.Module):
         super().__init__()
         self.layers = layers
         self._device = self._get_device()
-        
+
     @property
     def device(self) -> torch.device:
         return self._device
-        
+
     def _get_device(self):
         device = self.layers[0].device
         for l in self.layers[1:]:
             if l.device != device:
-                raise ValueError('All layers must use the same device, but found multiple devices')
+                raise ValueError("All layers must use the same device, but found multiple devices")
         return device
 
     def __getitem__(self, idx: int) -> Layer:
@@ -44,7 +44,7 @@ class Volume(nn.Module):
         if len(rads) > 0:
             return torch.stack([v.rad_length for v in vols if v.rad_length is not None], dim=0)
         else:
-            raise AttributeError('None of volume layers have a non-None rad_length attribute')
+            raise AttributeError("None of volume layers have a non-None rad_length attribute")
 
     def lookup_passive_xyz_coords(self, xyz: Tensor) -> Tensor:
         r"""Assume same size for all layers for now and no intermedeate detector layers"""
@@ -54,7 +54,7 @@ class Volume(nn.Module):
         if n := (
             ((xyz[:, :2] > self.lw) + (xyz[:, :2] < 0)).sum(1) + (xyz[:, 2] < self.get_passive_z_range()[0]) + ((xyz[:, 2] > self.get_passive_z_range()[1]))
         ).sum():
-            raise ValueError(f"{n} Coordinates outside passive volume")
+            raise ValueError(f"{n} coordinate(s) outside passive volume")
         xyz[:, 2] = xyz[:, 2] - self.get_passive_z_range()[0]
         return torch.floor(xyz / self.passive_size).long()
 
