@@ -134,7 +134,7 @@ class AbsX0Inferer(metaclass=ABCMeta):
             len(self.volume.get_passives()),
         )
         shp_zxy = shp_xyz[0], shp_xyz[3], shp_xyz[1], shp_xyz[2]
-        int_bounds = (
+        bounds = (
             self.volume.passive_size
             * np.mgrid[
                 0 : round(self.volume.lw.detach().cpu().numpy()[0] / self.volume.passive_size) : 1,
@@ -144,8 +144,8 @@ class AbsX0Inferer(metaclass=ABCMeta):
                 ) : 1,
             ]
         )
-        int_bounds[2] = np.flip(int_bounds[2])  # z is reversed
-        int_bounds = Tensor(int_bounds.reshape(3, -1).transpose(-1, -2)).to(self.device)
+        bounds[2] = np.flip(bounds[2])  # z is reversed
+        int_bounds = torch.tensor(bounds.reshape(3, -1).transpose(-1, -2), device=self.device)
 
         wpreds, weights = [], []
         for x0, unc in ((x0_dtheta, x0_dtheta_unc), (x0_dxy, x0_dxy_unc)):
