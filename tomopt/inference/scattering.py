@@ -38,6 +38,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
 
     def __init__(self, mu: MuonBatch, volume: Volume):
         self.mu, self.volume = mu, volume
+        self.device = self.mu.device
         self.hits = self.mu.get_hits(self.volume.lw)
         self.compute_scatters()
 
@@ -55,7 +56,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
         """
 
         hits, uncs = torch.stack(hit_list, dim=1), torch.stack(unc_list, dim=1)
-        hits = torch.where(torch.isinf(hits), lw.mean() / 2, hits)
+        hits = torch.where(torch.isinf(hits), lw.mean().type(hits.type()) / 2, hits)
 
         stars, angles = [], []
         for i in range(2):  # seperate x and y resolutions
@@ -104,35 +105,6 @@ class AbsScatterBatch(metaclass=ABCMeta):
     def compute_tracks(self) -> None:
         pass
 
-    @staticmethod
-    def compute_coefs(v1: Tensor, v2: Tensor, v3: Tensor, p1: Tensor, p2: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
-        print(v1[0], v2[0], v3[0], p1[0], p2[0])
-        # solve point_1+t1*v1 + t3*v3 = p2+t2*v2 => p2-p1 = t1*v1 - t2*v2 + t3*v3
-        dp = p2 - p1
-        v1x = v1[:, 0:1]
-        v1y = v1[:, 1:2]
-        v1z = v1[:, 2:3]
-        v2x = v2[:, 0:1]
-        v2y = v2[:, 1:2]
-        v2z = v2[:, 2:3]
-        v3x = v3[:, 0:1]
-        v3y = v3[:, 1:2]
-        v3z = v3[:, 2:3]
-        dpx = dp[:, 0:1]
-        dpy = dp[:, 1:2]
-        dpz = dp[:, 2:3]
-        a = (v2x * v1y) - (v2y * v1x)
-
-        t3 = ((dpx * (-(v1y * v1z * v2x) + (a * v1z) + (v1x * v1y * v2z))) + (dpy * ((v1x * v1z * v2x) - (v1x.square() * v2z))) + (a * dpz * v1x)) / (
-            -(v1y * v1z * v2x * v3x) + (v1x * v1z * v2x * v3y) + (a * v1z * v3x) - (v1x * v1y * v2z * v3x) + (v1x.square() * v2z * v3y) - (a * v1x * v3z)
-        )
-
-        t2 = -((t3 * ((v1y * v3x) - (v1x * v3y))) - (dpx * v1y) + (dpy * v1x)) / a
-
-        t1 = -((t2 * v2x) + (t3 * v3x) - dpx) / v1x
-
-        return t1, t2, t3
-
     def compute_scatters(self) -> None:
         r"""
         Currently only handles detectors above and below passive volume
@@ -154,22 +126,13 @@ class AbsScatterBatch(metaclass=ABCMeta):
         # scatter locations
         cross = torch.cross(self.track_in, self.track_out, dim=1)  # connecting vector perpendicular to both lines
 
-        t1, t2, t3 = self.compute_coefs(self.track_in, self.track_out, cross, self.track_start_in, self.track_start_out)
-        q1 = self.track_start_in + (t1 * self.track_in)  # closest point on v1
-        self._loc = q1 + (t2 * cross / 2)  # Move halfway along v3 from q1
-        self._loc_unc = None
-
         rhs = self.track_start_out - self.track_start_in
         lhs = torch.stack([self.track_in, -self.track_out, cross], dim=1).transpose(2, 1)
-        coefs = torch.linalg.solve(
-            lhs, rhs
-        )  # solve point_1+t1*track_in + t3*cross = point_2+t2*track_out => point_2-point_1 = t1*track_in - t2*track_out + t3*cross
-        c2 = torch.inverse(lhs) * rhs
-
-        print(coefs[0], t1[0], t2[0], t3[0], c2[0], c2.shape)
-        # q1 = self.above_hits[0] + (coefs[:, 0:1] * self.track_in)  # closest point on v1
-        # self._loc = q1 + (coefs[:, 2:3] * cross / 2)  # Move halfway along v3 from q1
-        # self._loc_unc = None
+        # coefs = torch.linalg.solve(lhs, rhs)  # solve p1+t1*v1 + t3*v3 = p2+t2*v2 => p2-p1 = t1*v1 - t2*v2 + t3*v3
+        coefs = (lhs.inverse() @ rhs[:, :, None]).squeeze(-1)
+        q1 = self.track_start_in + (coefs[:, 0:1] * self.track_in)  # closest point on v1
+        self._loc = q1 + (coefs[:, 2:3] * cross / 2)  # Move halfway along v3 from q1
+        self._loc_unc = None
 
         # Theta deviations
         self._theta_in = torch.arctan(self.track_in[:, :2] / self.track_in[:, 2:3])
@@ -180,7 +143,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
         self._dtheta_unc = None
 
         # xy deviations
-        self._dxy = t3 * cross[:, :2]
+        self._dxy = coefs[:, 2:3] * cross[:, :2]
         self._dxy_unc = None
 
     @abstractmethod
@@ -290,7 +253,7 @@ class VoxelScatterBatch(AbsScatterBatch):
                 raise ValueError(f"Detector {l} is not a VoxelDetectorLayer")
             x = l.abs2idx(h)
             r = 1 / l.resolution[x[:, 0], x[:, 1]]
-            uncs.append(torch.stack([r, r, torch.zeros_like(r)], dim=-1))
+            uncs.append(torch.stack([r, r, torch.zeros_like(r, device=r.device)], dim=-1))
         return uncs
 
     def compute_tracks(self) -> None:
