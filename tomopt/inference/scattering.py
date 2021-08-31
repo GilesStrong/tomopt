@@ -111,7 +111,8 @@ class AbsScatterBatch(metaclass=ABCMeta):
         cross = torch.cross(self.track_in, self.track_out, dim=1)  # connecting vector perpendicular to both lines
         rhs = self.below_hits[0] - self.above_hits[0]
         lhs = torch.stack([self.track_in, -self.track_out, cross], dim=1).transpose(2, 1)
-        coefs = torch.linalg.solve(lhs, rhs)  # solve p1+t1*v1 + t3*v3 = p2+t2*v2 => p2-p1 = t1*v1 - t2*v2 + t3*v3
+        #         coefs = torch.linalg.solve(lhs, rhs)  # solve p1+t1*v1 + t3*v3 = p2+t2*v2 => p2-p1 = t1*v1 - t2*v2 + t3*v3
+        coefs = (lhs.inverse() @ rhs[:, :, None]).squeeze(-1)
 
         q1 = self.above_hits[0] + (coefs[:, 0:1] * self.track_in)  # closest point on v1
         self._loc = q1 + (coefs[:, 2:3] * cross / 2)  # Move halfway along v3 from q1
