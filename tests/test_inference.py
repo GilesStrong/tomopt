@@ -215,19 +215,20 @@ def test_scatter_batch_trajectory_fit():
     xa0 = Tensor([[0, 0, 1]])
     xa1 = Tensor([[1, 1, 0]])
     # Same unc
-    traj = VoxelScatterBatch.get_muon_trajectory([xa0, xa1], [Tensor([[1, 1]]), Tensor([[1, 1]])], lw=Tensor([1, 1]))
+    traj, start = VoxelScatterBatch.get_muon_trajectory([xa0, xa1], [Tensor([[1, 1]]), Tensor([[1, 1]])], lw=Tensor([1, 1]))
     assert (traj == Tensor([[1, 1, -1]])).all()
+    assert (start == xa0).all()
     # Different unc
-    traj = VoxelScatterBatch.get_muon_trajectory([xa0, xa1], [Tensor([[10, 10]]), Tensor([[1, 1]])], lw=Tensor([1, 1]))
+    traj, _ = VoxelScatterBatch.get_muon_trajectory([xa0, xa1], [Tensor([[10, 10]]), Tensor([[1, 1]])], lw=Tensor([1, 1]))
     assert (traj == Tensor([[1, 1, -1]])).all()
 
     # 3 Hits inline
     xa2 = Tensor([[0.5, 0.5, 0.5]])
     # Same unc
-    traj = VoxelScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[1, 1]]), Tensor([[1, 1]]), Tensor([[1, 1]])], lw=Tensor([1, 1]))
+    traj, _ = VoxelScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[1, 1]]), Tensor([[1, 1]]), Tensor([[1, 1]])], lw=Tensor([1, 1]))
     assert (traj == Tensor([[1, 1, -1]])).all()
     # Different unc
-    traj = VoxelScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[10, 10]]), Tensor([[1, 1]]), Tensor([[1, 1]])], lw=Tensor([1, 1]))
+    traj, _ = VoxelScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[10, 10]]), Tensor([[1, 1]]), Tensor([[1, 1]])], lw=Tensor([1, 1]))
     assert (traj == Tensor([[1, 1, -1]])).all()
 
     # 3 Hits offline
@@ -235,10 +236,10 @@ def test_scatter_batch_trajectory_fit():
     xa1 = Tensor([[0, 1, 0.5]])
     xa2 = Tensor([[1, 0, 0.5]])
     # Same unc
-    traj = VoxelScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[1, 1]]), Tensor([[1, 1]]), Tensor([[1, 1]])], lw=Tensor([1, 1]))
+    traj, _ = VoxelScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[1, 1]]), Tensor([[1, 1]]), Tensor([[1, 1]])], lw=Tensor([1, 1]))
     assert (traj - Tensor([[0.5, 0.5, -0.5]])).sum() < 1e-5
     # Different unc
-    traj = VoxelScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[1, 1]]), Tensor([[1e9, 1e9]]), Tensor([[1, 1]])], lw=Tensor([1, 1]))
+    traj, _ = VoxelScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[1, 1]]), Tensor([[1e9, 1e9]]), Tensor([[1, 1]])], lw=Tensor([1, 1]))
     assert (traj - Tensor([[1, 0, -0.5]])).sum() < 1e-5
 
 
