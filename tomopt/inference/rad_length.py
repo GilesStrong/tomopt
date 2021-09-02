@@ -124,6 +124,7 @@ class AbsX0Inferer(metaclass=ABCMeta):
         Assign x0 inference to neighbourhood of voxels according to scatter-location uncertainty
         TODO: Implement differing x0 accoring to location via Gaussian spread
         TODO: Don't assume that location uncertainties are uncorrelated
+        TODO: Rescale total probability to one (Gaussians extend outside passive volume)
         """
 
         loc, loc_unc = self.scatters.location[self.mask], self.scatters.location_unc[self.mask]  # loc is (x,y,z)

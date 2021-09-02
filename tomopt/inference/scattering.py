@@ -50,6 +50,8 @@ class AbsScatterBatch(metaclass=ABCMeta):
 
         Assume no uncertainty for z
 
+        TODO: Should hit weight also include hit efficiency, not just resolution?
+
         In eval mode:
             Muons with <2 hits within panels have NaN trajectory.
             Muons with >=2 hits in panels have valid trajectories
