@@ -10,6 +10,8 @@ __all__ = ["DetectorLoss"]
 
 
 class DetectorLoss(nn.Module):
+    sub_losses: Dict[str, Tensor]  # Store subcomponents in dict for telemetry
+
     def __init__(
         self,
         target_budget: Union[Tensor, float],
@@ -19,7 +21,6 @@ class DetectorLoss(nn.Module):
     ):
         super().__init__()
         self.target_budget, self.budget_smoothing, self.cost_coef, self.debug_mode = target_budget, budget_smoothing, cost_coef, debug_mode
-        self.sub_losses: Dict[str, Tensor] = {}  # Store subcomponents in dict for telemetry
 
     def _get_budget_coef(self, cost: Tensor) -> Tensor:
         r"""Switch-on near target budget, plus linear increase above budget"""
@@ -31,6 +32,7 @@ class DetectorLoss(nn.Module):
         print(f"Automatically setting cost coefficient to {self.cost_coef}")
 
     def forward(self, pred_x0: Tensor, pred_weight: Tensor, volume: Volume) -> Tensor:
+        self.sub_losses = {}
         true_x0 = volume.get_rad_cube()
         inference = torch.mean((pred_x0 - true_x0).pow(2) / pred_weight)
         self.sub_losses["error"] = inference

@@ -133,11 +133,11 @@ class MetricLogger(Callback):
 
     def on_backwards_end(self) -> None:
         if self.wrapper.fit_params.state == "train":
-            self.loss_vals["Training"].append(self.wrapper.fit_params.mean_loss.data.item())
+            self.loss_vals["Training"].append(self.wrapper.fit_params.mean_loss.data.item() if self.wrapper.fit_params.mean_loss is not None else math.inf)
 
     def on_volume_batch_end(self) -> None:
         if self.wrapper.fit_params.state == "valid":
-            self.tmp_loss += self.wrapper.fit_params.mean_loss.data.item()
+            self.tmp_loss += self.wrapper.fit_params.mean_loss.data.item() if self.wrapper.fit_params.mean_loss is not None else math.inf
             self.batch_cnt += 1
 
     def on_epoch_end(self) -> None:
