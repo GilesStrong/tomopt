@@ -349,8 +349,8 @@ class PanelMetricLogger(MetricLogger):
             ax[0].set_xlim(0, lw[0])
             ax[1].set_xlim(0, lw[1])
             ax[2].set_xlim(0, lw[0])
-            ax[0].set_ylim(z - (1.5 * det.size), z + (0.5 * det.size))
-            ax[1].set_ylim(z - (1.5 * det.size), z + (0.5 * det.size))
+            ax[0].set_ylim(z - (1.25 * det.size), z + (0.25 * det.size))
+            ax[1].set_ylim(z - (1.25 * det.size), z + (0.25 * det.size))
             ax[2].set_ylim(0, lw[1])
             ax[2].set_aspect("equal", "box")
 

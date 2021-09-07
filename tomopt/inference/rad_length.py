@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+from tomopt.volume.panel import DetectorPanel
 from typing import Tuple, Optional, Dict
 import numpy as np
 
@@ -59,6 +60,7 @@ class AbsX0Inferer(metaclass=ABCMeta):
         cos_theta_in = torch.cos(theta_in)
         cos_theta_out = torch.cos(theta_out)
         cos_mean = (cos_theta_in + cos_theta_out) / 2
+
         pred = self.size / (n_x0 * cos_mean)
 
         unc2_sum = None
@@ -68,13 +70,24 @@ class AbsX0Inferer(metaclass=ABCMeta):
             for j, (vj, uncj) in enumerate(zip(vals, uncs)):
                 if j < i:
                     continue
-                dv_dx_2 = jacobian(pred, vi).sum(1) * jacobian(pred, vj).sum(1) if i != j else jacobian(pred, vi).sum(1) ** 2  # Muons, pred, unc_xyz
+                dv_dx_2 = (
+                    torch.nan_to_num(jacobian(pred, vi)).sum(1) * torch.nan_to_num(jacobian(pred, vj)).sum(1)
+                    if i != j
+                    else torch.nan_to_num(jacobian(pred, vi)).sum(1) ** 2
+                )  # Muons, pred, unc_xyz
                 unc_2 = (dv_dx_2 * unci * uncj).sum(1)  # Muons, pred
                 if unc2_sum is None:
                     unc2_sum = unc_2
                 else:
                     unc2_sum = unc2_sum + unc_2
         pred_unc = torch.sqrt(unc2_sum)
+
+        if pred.isnan().sum() > 0:
+            print(pred)
+            raise ValueError("Prediction contains NaN values")
+        if pred_unc.isnan().sum() > 0:
+            print(pred_unc)
+            raise ValueError("Prediction uncertainties contains NaN values")
 
         return pred, pred_unc
 
@@ -180,6 +193,14 @@ class AbsX0Inferer(metaclass=ABCMeta):
         wpred, weight = torch.cat(wpreds, dim=0), torch.cat(weights, dim=0)
         wpred, weight = wpred.sum(0), weight.sum(0)
         pred = wpred / weight
+
+        if weight.isnan().sum() > 0:
+            raise ValueError("Weight contains NaN values")
+        if (weight == 0).sum() > 0:
+            raise ValueError("Weight contains values at zero")
+        if pred.isnan().sum() > 0:
+            raise ValueError("Prediction contains NaN values")
+
         return pred, weight
 
     def add_default_pred(self, pred: Tensor, weight: Tensor) -> Tuple[Tensor, Tensor]:

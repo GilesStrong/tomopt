@@ -63,13 +63,15 @@ class DetectorPanel(nn.Module):
             res[mask] = self.resolution
         return res
 
-    def get_efficiency(self, xy: Tensor, mask: Optional[Tensor] = None) -> Tensor:
+    def get_efficiency(self, xy: Tensor, mask: Optional[Tensor] = None, as_2d: bool = False) -> Tensor:
         if not isinstance(self.efficiency, Tensor):
             raise ValueError(f"{self.efficiency} is not a Tensor for some reason.")  # To appease MyPy
         if self.training or not self.realistic_validation:
             g = self.get_gauss()
             scale = torch.exp(g.log_prob(xy)) / torch.exp(g.log_prob(self.xy))  # Maybe detach the normalisation?
-            eff = self.efficiency * torch.prod(scale, dim=-1)  # Maybe weight product by xy distance?
+            if not as_2d:
+                scale = torch.prod(scale, dim=-1)  # Maybe weight product by xy distance?
+            eff = self.efficiency * scale
         else:
             if mask is None:
                 mask = self.get_xy_mask(xy)
@@ -102,12 +104,12 @@ class DetectorPanel(nn.Module):
 
     def clamp_params(self, xyz_low: Tuple[float, float, float], xyz_high: Tuple[float, float, float]) -> None:
         with torch.no_grad():
-            eps = np.random.uniform(0, 5e-5)  # prevent hits at same z due to clamping
+            eps = np.random.uniform(0, 1e-3)  # prevent hits at same z due to clamping
             self.x.clamp_(min=xyz_low[0], max=xyz_high[0])
             self.y.clamp_(min=xyz_low[1], max=xyz_high[1])
             self.z.clamp_(min=xyz_low[2] + eps, max=xyz_high[2] - eps)
-            self.xy_span[0].clamp_(min=1e-7, max=xyz_high[0])
-            self.xy_span[1].clamp_(min=1e-7, max=xyz_high[1])
+            self.xy_span[0].clamp_(min=xyz_high[0] / 100, max=xyz_high[0])
+            self.xy_span[1].clamp_(min=xyz_high[1] / 100, max=xyz_high[1])
 
     @property
     def x(self) -> Tensor:

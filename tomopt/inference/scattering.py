@@ -289,7 +289,8 @@ class PanelScatterBatch(AbsScatterBatch):
     def _get_hit_uncs(zordered_panels: List[DetectorPanel], hits: List[Tensor]) -> List[Tensor]:
         uncs: List[Tensor] = []
         for l, h in zip(zordered_panels, hits):
-            r = 1 / l.get_resolution(h[:, :2])
+            xy = h[:, :2]
+            r = 1 / (l.get_resolution(xy) * l.get_efficiency(xy, as_2d=True))
             uncs.append(torch.cat([r, torch.zeros((len(r), 1), device=r.device)], dim=-1))
         return uncs
 

@@ -15,6 +15,7 @@ class DetectorLoss(nn.Module):
 
     def _compute_cost_coef(self, cost: Tensor, inference: Tensor) -> None:
         self.cost_coef = inference.detach() / cost.detach()
+        print(f"Automatically setting cost coefficient to {self.cost_coef}")
 
     def forward(self, pred_x0: Tensor, pred_weight: Tensor, volume: Volume) -> Tensor:
         true_x0 = volume.get_rad_cube()

@@ -142,7 +142,7 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
             muon_bar = progress_bar(range(self.fit_params.n_mu_per_volume // self.fit_params.mu_bs), display=False, leave=False)
         else:
             muon_bar = progress_bar(range(self.fit_params.n_mu_per_volume // self.fit_params.mu_bs), parent=self.fit_params.passive_bar)
-        for _ in muon_bar:
+        for i in muon_bar:
             self.fit_params.mu = MuonBatch(self.mu_generator(self.fit_params.mu_bs), init_z=self.volume.h, device=self.fit_params.device)
             for c in self.fit_params.cbs:
                 c.on_mu_batch_begin()
