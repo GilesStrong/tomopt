@@ -213,11 +213,13 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
                         o.zero_grad()
                     for c in self.fit_params.cbs:
                         c.on_backwards_begin()
-                    self.fit_params.mean_loss.backward()
+                    if self.fit_params.mean_loss is not None:
+                        self.fit_params.mean_loss.backward()
                     for c in self.fit_params.cbs:
                         c.on_backwards_end()
-                    for o in self.opts.values():
-                        o.step()
+                    if self.fit_params.mean_loss is not None:
+                        for o in self.opts.values():
+                            o.step()
                     for d in self.volume.get_detectors():
                         d.conform_detector()
 
