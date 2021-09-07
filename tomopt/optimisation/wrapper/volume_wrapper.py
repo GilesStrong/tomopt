@@ -204,6 +204,8 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
             if self.fit_params.state != "test" and (i + 1) % self.fit_params.passive_bs == 0:  # Volume batch end
                 if self.fit_params.loss_val is not None:
                     self.fit_params.mean_loss = self.fit_params.loss_val / self.fit_params.passive_bs
+                else:
+                    self.fit_params.mean_loss = None
                 for c in self.fit_params.cbs:
                     c.on_volume_batch_end()
 
