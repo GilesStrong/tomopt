@@ -346,12 +346,12 @@ class PanelMetricLogger(MetricLogger):
 
         for ax, det in zip((self.above_det, self.below_det), self.wrapper.get_detectors()):
             lw, z = det.lw.detach().cpu(), det.z.detach().cpu()
-            ax[0].set_xlim(0, lw[0])
-            ax[1].set_xlim(0, lw[1])
-            ax[2].set_xlim(0, lw[0])
+            ax[0].set_xlim(-lw[0] / 2, 1.5 * lw[0])
+            ax[1].set_xlim(-lw[1] / 2, 1.5 * lw[1])
+            ax[2].set_xlim(-lw[0] / 2, 1.5 * lw[0])
             ax[0].set_ylim(z - (1.25 * det.size), z + (0.25 * det.size))
             ax[1].set_ylim(z - (1.25 * det.size), z + (0.25 * det.size))
-            ax[2].set_ylim(0, lw[1])
+            ax[2].set_ylim(-lw[1] / 2, 1.5 * lw[1])
             ax[2].set_aspect("equal", "box")
 
     def _prep_plots(self) -> None:

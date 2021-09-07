@@ -195,10 +195,13 @@ class AbsX0Inferer(metaclass=ABCMeta):
         pred = wpred / weight
 
         if weight.isnan().sum() > 0:
+            print(weight)
             raise ValueError("Weight contains NaN values")
         if (weight == 0).sum() > 0:
+            print(weight)
             raise ValueError("Weight contains values at zero")
         if pred.isnan().sum() > 0:
+            print(pred)
             raise ValueError("Prediction contains NaN values")
 
         return pred, weight

@@ -1,6 +1,8 @@
 from typing import Dict, Optional, Union
+
 import torch
 from torch import nn, Tensor
+from torch.nn import functional as F
 
 from ...volume import Volume
 
@@ -8,10 +10,21 @@ __all__ = ["DetectorLoss"]
 
 
 class DetectorLoss(nn.Module):
-    def __init__(self, cost_coef: Optional[Union[Tensor, float]] = None):
+    def __init__(
+        self,
+        target_budget: Union[Tensor, float],
+        budget_smoothing: Union[Tensor, float] = 10,
+        cost_coef: Optional[Union[Tensor, float]] = None,
+        debug_mode: bool = False,
+    ):
         super().__init__()
-        self.cost_coef = cost_coef
+        self.target_budget, self.budget_smoothing, self.cost_coef, self.debug_mode = target_budget, budget_smoothing, cost_coef, debug_mode
         self.sub_losses: Dict[str, Tensor] = {}  # Store subcomponents in dict for telemetry
+
+    def _get_budget_coef(self, cost: Tensor) -> Tensor:
+        r"""Switch-on near target budget, plus linear increase above budget"""
+        d = cost - self.target_budget
+        return (2 * torch.sigmoid(self.budget_smoothing * d / self.target_budget)) + (F.relu(d) / self.target_budget)
 
     def _compute_cost_coef(self, cost: Tensor, inference: Tensor) -> None:
         self.cost_coef = inference.detach() / cost.detach()
@@ -24,5 +37,9 @@ class DetectorLoss(nn.Module):
         cost = volume.get_cost()
         if self.cost_coef is None:
             self._compute_cost_coef(cost, inference)
-        self.sub_losses["cost"] = self.cost_coef * cost
+        self.sub_losses["cost"] = self._get_budget_coef(cost) * self.cost_coef * cost
+        if self.debug_mode:
+            print(
+                f'cost {cost}, cost coef {self.cost_coef}, budget coef {self._get_budget_coef(cost)}. error loss {self.sub_losses["error"]}, cost loss {self.sub_losses["cost"]}'
+            )
         return self.sub_losses["error"] + self.sub_losses["cost"]
