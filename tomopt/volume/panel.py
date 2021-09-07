@@ -77,6 +77,8 @@ class DetectorPanel(nn.Module):
                 mask = self.get_xy_mask(xy)
             eff = torch.zeros(len(xy), device=self.device)  # Zero detection outside detector
             eff[mask] = self.efficiency
+            if as_2d:
+                eff = eff[:, None]
         return eff
 
     def get_hits(self, mu: MuonBatch) -> Dict[str, Tensor]:
