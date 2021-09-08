@@ -488,4 +488,4 @@ def test_detector_panel_methods():
     assert (panel.xy == Tensor([1, 0])).all()
     assert panel.z - 1 < 0
     assert (panel.z - 1).abs() < 5e-3
-    assert (panel.xy_span == Tensor([1e-7, 1])).all()
+    assert (panel.xy_span == Tensor([1e-2, 1])).all()

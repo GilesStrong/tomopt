@@ -52,7 +52,9 @@ def get_layers(init_res: float = 1e4):
 @patch("matplotlib.pyplot.show")
 def test_plot_pred_true_x0(mock_show):
     volume = Volume(get_layers())
-    vw = VoxelVolumeWrapper(volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(0.15))
+    vw = VoxelVolumeWrapper(
+        volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(target_budget=1, cost_coef=0.15)
+    )
     preds = vw.predict(PassiveYielder([arb_rad_length]), n_mu_per_volume=100, mu_bs=100)
     plot_pred_true_x0(*preds[0])
 
@@ -60,7 +62,9 @@ def test_plot_pred_true_x0(mock_show):
 @patch("matplotlib.pyplot.show")
 def test_plot_scatter_density(mock_show):
     volume = Volume(get_layers())
-    vw = VoxelVolumeWrapper(volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(0.15))
+    vw = VoxelVolumeWrapper(
+        volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(target_budget=1, cost_coef=0.15)
+    )
     sr = ScatterRecord()
     vw.predict(PassiveYielder([arb_rad_length]), n_mu_per_volume=100, mu_bs=100, cbs=[sr])
     df = sr.get_record(True)
@@ -70,7 +74,9 @@ def test_plot_scatter_density(mock_show):
 @patch("matplotlib.pyplot.show")
 def test_plot_hit_density(mock_show):
     volume = Volume(get_layers())
-    vw = VoxelVolumeWrapper(volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(0.15))
+    vw = VoxelVolumeWrapper(
+        volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(target_budget=1, cost_coef=0.15)
+    )
     hr = HitRecord()
     vw.predict(PassiveYielder([arb_rad_length]), n_mu_per_volume=100, mu_bs=100, cbs=[hr])
     df = hr.get_record(True)

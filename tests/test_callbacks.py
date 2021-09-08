@@ -174,7 +174,7 @@ def test_metric_logger(detector, mocker):  # noqa F811
         logger = PanelMetricLogger()
         det = get_panel_detector()
         vw.get_detectors = lambda: [det]
-    vw.loss_func = DetectorLoss(1)
+    vw.loss_func = DetectorLoss(target_budget=1, cost_coef=1)
     vw.fit_params = FitParams(trn_passives=range(10), passive_bs=2, metric_cbs=[EvalMetric(name="test", main_metric=True, lower_metric_better=True)])
     logger.set_wrapper(vw)
     mocker.spy(logger, "_reset")

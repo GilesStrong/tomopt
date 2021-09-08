@@ -109,7 +109,7 @@ def panel_inferer() -> PanelX0Inferer:
 
 def test_forwards_voxel(voxel_inferer):
     pred, weight = voxel_inferer.pred_x0()
-    loss_func = DetectorLoss(1e-5)
+    loss_func = DetectorLoss(target_budget=1, cost_coef=1e-5)
     loss_val = loss_func(pred, weight, voxel_inferer.volume)
 
     for l in voxel_inferer.volume.get_detectors():
@@ -119,7 +119,7 @@ def test_forwards_voxel(voxel_inferer):
 
 def test_forwards_panel(panel_inferer):
     pred, weight = panel_inferer.pred_x0()
-    loss_func = DetectorLoss(1e-5)
+    loss_func = DetectorLoss(target_budget=1, cost_coef=1e-5)
     loss_val = loss_func(pred, weight, panel_inferer.volume)
 
     for l in panel_inferer.volume.get_detectors():
@@ -131,7 +131,7 @@ def test_forwards_panel(panel_inferer):
 
 def test_backwards_voxel(voxel_inferer):
     pred, weight = voxel_inferer.pred_x0()
-    loss_func = DetectorLoss(0.15)
+    loss_func = DetectorLoss(target_budget=1, cost_coef=0.15)
     loss_val = loss_func(pred, weight, voxel_inferer.volume)
     opt = torch.optim.SGD(voxel_inferer.volume.parameters(), lr=1)
     opt.zero_grad()
@@ -146,7 +146,7 @@ def test_backwards_voxel(voxel_inferer):
 
 def test_backwards_panel(panel_inferer):
     pred, weight = panel_inferer.pred_x0()
-    loss_func = DetectorLoss(0.15)
+    loss_func = DetectorLoss(target_budget=1, cost_coef=0.15)
     loss_val = loss_func(pred, weight, panel_inferer.volume)
     opt = torch.optim.SGD(panel_inferer.volume.parameters(), lr=1)
     opt.zero_grad()

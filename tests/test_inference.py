@@ -181,8 +181,13 @@ def test_panel_scatter_batch(mock_show, panel_scatter_batch):
     assert (theta_in_unc := sb.theta_in_unc.mean() / sb.theta_in.abs().mean()) < 10
 
     # uncertainties
-    uncs = sb._get_hit_uncs([next(volume.get_detectors()[0].yield_zordered_panels())], [sb.above_hits[0]])
-    assert (uncs[0].mean(0) - Tensor([1e-4, 1e-4, 0])).abs().sum() < 1e-4
+    panel = next(volume.get_detectors()[0].yield_zordered_panels())
+    uncs = sb._get_hit_uncs([panel], [sb.above_hits[0]])
+    assert (uncs[0][:, 2] == 0).all()
+    xy_unc = uncs[0][:, :2]
+    assert xy_unc.min().item() > 0
+    assert xy_unc.max().item() < 0.1
+    assert xy_unc.std().item() > 0
 
     sb.plot_scatter(0)
 
