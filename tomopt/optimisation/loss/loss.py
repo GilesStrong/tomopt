@@ -10,28 +10,43 @@ __all__ = ["DetectorLoss"]
 
 
 class DetectorLoss(nn.Module):
-    sub_losses: Dict[str, Tensor]  # Store subcomponents in dict for telemetry
-
     def __init__(
         self,
         *,
         target_budget: float,
         budget_smoothing: float = 10,
         cost_coef: Optional[Union[Tensor, float]] = None,
+        steep_budget: bool = True,
         debug: bool = False,
     ):
         super().__init__()
-        self.target_budget, self.budget_smoothing, self.cost_coef, self.debug = target_budget, budget_smoothing, cost_coef, debug
+        self.target_budget, self.budget_smoothing, self.cost_coef, self.steep_budget, self.debug = (
+            target_budget,
+            budget_smoothing,
+            cost_coef,
+            steep_budget,
+            debug,
+        )
+        self.sub_losses: Dict[str, Tensor] = {}  # Store subcomponents in dict for telemetry
 
-    def _get_budget_coef(self, cost: Tensor) -> Union[float, Tensor]:
+    def _get_budget_coef(self, cost: Tensor) -> Tensor:
         r"""Switch-on near target budget, plus linear increase above budget"""
-        if self.target_budget == 0:
-            return 0
-        d = cost - self.target_budget
-        return (2 * torch.sigmoid(self.budget_smoothing * d / self.target_budget)) + (F.relu(d) / self.target_budget)
+
+        if self.target_budget is None:
+            return cost.new_zeros(1)
+
+        if self.steep_budget:
+            d = self.budget_smoothing * (cost - self.target_budget) / self.target_budget
+            if d <= 0:
+                return 2 * torch.sigmoid(d)
+            else:
+                return 1 + (d / 2)
+        else:
+            d = cost - self.target_budget
+            return (2 * torch.sigmoid(self.budget_smoothing * d / self.target_budget)) + (F.relu(d) / self.target_budget)
 
     def _compute_cost_coef(self, cost: Tensor, inference: Tensor) -> None:
-        self.cost_coef = inference.detach() / cost.detach()
+        self.cost_coef = inference.detach().clone()
         print(f"Automatically setting cost coefficient to {self.cost_coef}")
 
     def forward(self, pred_x0: Tensor, pred_weight: Tensor, volume: Volume) -> Tensor:
@@ -42,7 +57,7 @@ class DetectorLoss(nn.Module):
         cost = volume.get_cost()
         if self.cost_coef is None:
             self._compute_cost_coef(cost, inference)
-        self.sub_losses["cost"] = self._get_budget_coef(cost) * self.cost_coef * cost
+        self.sub_losses["cost"] = self._get_budget_coef(cost) * self.cost_coef
         if self.debug:
             print(
                 f'cost {cost}, cost coef {self.cost_coef}, budget coef {self._get_budget_coef(cost)}. error loss {self.sub_losses["error"]}, cost loss {self.sub_losses["cost"]}'

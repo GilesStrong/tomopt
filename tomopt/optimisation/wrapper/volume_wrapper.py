@@ -90,10 +90,10 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
         *,
         partial_opts: Dict[str, PartialOpt],
         loss_func: Optional[DetectorLoss],
-        default_pred: Optional[float] = X0["beryllium"],
-        mu_generator: Callable[[int], Tensor] = generate_batch,
         partial_scatter_inferer: Type[AbsScatterBatch],
         partial_x0_inferer: Type[AbsX0Inferer],
+        default_pred: Optional[float] = X0["beryllium"],
+        mu_generator: Callable[[int], Tensor] = generate_batch,
     ):
         self.volume, self.loss_func, self.default_pred, self.mu_generator = volume, loss_func, default_pred, mu_generator
         self.partial_scatter_inferer, self.partial_x0_inferer = partial_scatter_inferer, partial_x0_inferer

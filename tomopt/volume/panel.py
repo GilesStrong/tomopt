@@ -20,7 +20,7 @@ class DetectorPanel(nn.Module):
         init_xyz: Tuple[float, float, float],
         init_xy_span: Tuple[float, float],
         area_cost_func: Callable[[Tensor], Tensor],
-        realistic_validation: bool = False,
+        realistic_validation: bool = True,
         device: torch.device = DEVICE,
     ):
         if res <= 0:
@@ -110,8 +110,8 @@ class DetectorPanel(nn.Module):
             self.x.clamp_(min=xyz_low[0], max=xyz_high[0])
             self.y.clamp_(min=xyz_low[1], max=xyz_high[1])
             self.z.clamp_(min=xyz_low[2] + eps, max=xyz_high[2] - eps)
-            self.xy_span[0].clamp_(min=xyz_high[0] / 100, max=xyz_high[0])
-            self.xy_span[1].clamp_(min=xyz_high[1] / 100, max=xyz_high[1])
+            self.xy_span[0].clamp_(min=xyz_high[0] / 20, max=xyz_high[0])
+            self.xy_span[1].clamp_(min=xyz_high[1] / 20, max=xyz_high[1])
 
     @property
     def x(self) -> Tensor:

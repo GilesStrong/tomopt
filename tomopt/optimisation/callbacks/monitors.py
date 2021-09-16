@@ -127,9 +127,13 @@ class MetricLogger(Callback):
 
     def on_volume_end(self) -> None:
         if self.wrapper.fit_params.state == "valid" and self.wrapper.loss_func is not None and hasattr(self.wrapper.loss_func, "sub_losses"):
-            for k, v in self.wrapper.loss_func.sub_losses.items():
-                self.tmp_sub_losses[k] += v.data.item()
-            self.volume_cnt += 1
+            if self.wrapper.fit_params.pred is not None:  # Was able to scan volume
+                for k, v in self.wrapper.loss_func.sub_losses.items():
+                    self.tmp_sub_losses[k] += v.data.item()
+                self.volume_cnt += 1
+            else:
+                for k, v in self.wrapper.loss_func.sub_losses.items():
+                    self.tmp_sub_losses[k] += 0  # Create sub loss at 0 or add zero if exists
 
     def on_backwards_end(self) -> None:
         if self.wrapper.fit_params.state == "train":

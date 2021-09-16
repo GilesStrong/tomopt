@@ -10,10 +10,9 @@ import torch.nn.functional as F
 
 from tomopt.optimisation.callbacks.callback import Callback
 from tomopt.optimisation.callbacks.eval_metric import EvalMetric
-from tomopt.optimisation.callbacks import NoMoreNaNs, PredHandler, MetricLogger, VoxelMetricLogger, PanelMetricLogger
-from tomopt.optimisation.callbacks.diagnostic_callbacks import ScatterRecord, HitRecord
+from tomopt.optimisation.callbacks import NoMoreNaNs, PredHandler, MetricLogger, VoxelMetricLogger, PanelMetricLogger, ScatterRecord, HitRecord, CostCoefWarmup
 from tomopt.optimisation.loss import DetectorLoss
-from tomopt.optimisation.wrapper.volume_wrapper import FitParams
+from tomopt.optimisation.wrapper.volume_wrapper import AbsVolumeWrapper, FitParams
 from tomopt.volume import VoxelDetectorLayer, PanelDetectorLayer, DetectorPanel
 
 LW = Tensor([1, 1])
@@ -30,7 +29,7 @@ def res_cost(x: Tensor) -> Tensor:
 
 
 def area_cost(x: Tensor) -> Tensor:
-    return F.relu(x / 1000) ** 2
+    return F.relu(x) ** 2
 
 
 def check_callback_base(cb: Callback) -> bool:
@@ -67,6 +66,10 @@ class MockVolume:
 
 
 class MockLayer:
+    pass
+
+
+class MockOpt:
     pass
 
 
@@ -175,7 +178,7 @@ def test_metric_logger(detector, mocker):  # noqa F811
         det = get_panel_detector()
         vw.get_detectors = lambda: [det]
     vw.loss_func = DetectorLoss(target_budget=1, cost_coef=1)
-    vw.fit_params = FitParams(trn_passives=range(10), passive_bs=2, metric_cbs=[EvalMetric(name="test", main_metric=True, lower_metric_better=True)])
+    vw.fit_params = FitParams(pred=10, trn_passives=range(10), passive_bs=2, metric_cbs=[EvalMetric(name="test", main_metric=True, lower_metric_better=True)])
     logger.set_wrapper(vw)
     mocker.spy(logger, "_reset")
 
@@ -316,3 +319,53 @@ def test_hit_record():
     assert df.values.shape == (4, 4)
     assert np.all(df[["x", "y", "z"]].values == hr.record[0].numpy().reshape(-1, 3))
     assert np.all(df.layer.values == np.array([0, 1, 2, 3]))
+
+
+def test_cost_coef_warmup():
+    class VW(AbsVolumeWrapper):
+        def _build_opt(self, **kwargs) -> None:
+            pass
+
+    loss = DetectorLoss(target_budget=0.8)
+    vol = MockVolume()
+    vol.device = torch.device("cpu")
+    vol.parameters = []
+    vw = VW(volume=vol, partial_opts={}, loss_func=loss, partial_scatter_inferer=None, partial_x0_inferer=None)
+    vw.fit_params = FitParams(pred=10)
+    opt = MockOpt()
+    opt.param_groups = [{"lr": 1e2}]
+    vw.opts = {"mock_opt": opt}
+    ccw = CostCoefWarmup(5)
+    ccw.set_wrapper(vw)
+    vw.loss_func = loss
+
+    ccw.on_train_begin()
+    assert opt.param_groups[0]["lr"] == 0.0
+    for e in range(6):
+        for s in range(2):  # Training & validation
+            vw.fit_params.state = "train" if s == 0 else "valid"
+            ccw.on_epoch_begin()
+            for v in range(3):
+                print(e, s, v)
+                loss.sub_losses["error"] = Tensor([((-1) ** s) * (2 ** e) * (3 ** v)])  # Unique value per epoch per volume
+                ccw.on_volume_end()
+            if e < 5:
+                if s == 0:
+                    assert ccw.v_sum.item() == ((2 ** e)) + ((2 ** e) * 3) + ((2 ** e) * 9)
+                    assert ccw.volume_cnt == 3
+                else:
+                    assert ccw.v_sum.item() == 0.0
+                    assert ccw.volume_cnt == 0
+            else:  # Tracking stopped
+                assert ccw.v_sum.item() == 0.0
+                assert ccw.volume_cnt == 0
+            ccw.on_epoch_end()
+            if e < 5:
+                assert np.abs(ccw.e_sum.item() - np.sum([((2 ** i)) + ((2 ** i) * 3) + ((2 ** i) * 9) for i in range(0, e + 1)]) / 3) < 1e-4
+                assert ccw.epoch_cnt == e + 1
+            else:  # warm-up finished
+                assert ccw.tracking is False
+                assert opt.param_groups[0]["lr"] == 1e2
+                assert np.abs(ccw.e_sum.item() - (sum := np.sum([((2 ** i)) + ((2 ** i) * 3) + ((2 ** i) * 9) for i in range(0, 5)]) / 3)) < 1e-4
+                assert ccw.epoch_cnt == 5
+                assert np.abs(loss.cost_coef.item() - sum / 5) < 1e-4

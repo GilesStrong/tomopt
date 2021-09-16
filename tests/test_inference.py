@@ -38,7 +38,7 @@ def res_cost(x: Tensor) -> Tensor:
 
 
 def area_cost(x: Tensor) -> Tensor:
-    return F.relu(x / 1000) ** 2
+    return F.relu(x) ** 2
 
 
 def get_voxel_layers(init_res: float = 1e4, init_eff: float = 0.5) -> nn.ModuleList:

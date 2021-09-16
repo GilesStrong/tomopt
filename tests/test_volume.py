@@ -133,7 +133,7 @@ def test_voxel_detector_layer(batch):
 
 
 def area_cost(x: Tensor) -> Tensor:
-    return F.relu(x / 1000) ** 2
+    return F.relu(x) ** 2
 
 
 def test_panel_detector_layer(batch):
