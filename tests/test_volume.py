@@ -374,9 +374,8 @@ def test_volume_forward_panel(batch):
 
 
 def test_detector_panel_properties():
-    panel = DetectorPanel(res=1, eff=0.5, init_xyz=[0.5, 0.4, 0.9], init_xy_span=[0.3, 0.5], area_cost_func=area_cost)
+    panel = DetectorPanel(res=1, eff=0.5, init_xyz=[0.5, 0.4, 0.9], init_xy_span=[0.3, 0.5], area_cost_func=area_cost, realistic_validation=False)
     assert panel.area_cost_func == area_cost
-    assert panel.realistic_validation is False  # Realistiv validation still in development
     assert panel.resolution == Tensor([1])
     assert panel.efficiency == Tensor([0.5])
     assert (panel.xy == Tensor([0.5, 0.4])).all()
@@ -488,4 +487,4 @@ def test_detector_panel_methods():
     assert (panel.xy == Tensor([1, 0])).all()
     assert panel.z - 1 < 0
     assert (panel.z - 1).abs() < 5e-3
-    assert (panel.xy_span == Tensor([1e-2, 1])).all()
+    assert (panel.xy_span == Tensor([5e-2, 1])).all()

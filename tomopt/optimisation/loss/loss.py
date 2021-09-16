@@ -45,7 +45,7 @@ class DetectorLoss(nn.Module):
             d = cost - self.target_budget
             return (2 * torch.sigmoid(self.budget_smoothing * d / self.target_budget)) + (F.relu(d) / self.target_budget)
 
-    def _compute_cost_coef(self, cost: Tensor, inference: Tensor) -> None:
+    def _compute_cost_coef(self, inference: Tensor) -> None:
         self.cost_coef = inference.detach().clone()
         print(f"Automatically setting cost coefficient to {self.cost_coef}")
 
@@ -56,7 +56,7 @@ class DetectorLoss(nn.Module):
         self.sub_losses["error"] = inference
         cost = volume.get_cost()
         if self.cost_coef is None:
-            self._compute_cost_coef(cost, inference)
+            self._compute_cost_coef(inference)
         self.sub_losses["cost"] = self._get_budget_coef(cost) * self.cost_coef
         if self.debug:
             print(
