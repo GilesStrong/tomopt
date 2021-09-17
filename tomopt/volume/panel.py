@@ -20,7 +20,7 @@ class DetectorPanel(nn.Module):
         init_xyz: Tuple[float, float, float],
         init_xy_span: Tuple[float, float],
         area_cost_func: Callable[[Tensor], Tensor],
-        realistic_validation: bool = True,
+        realistic_validation: bool = False,
         device: torch.device = DEVICE,
     ):
         if res <= 0:
