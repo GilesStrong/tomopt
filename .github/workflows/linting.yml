@@ -35,6 +35,8 @@ jobs:
       with:
         python-version: "3.8"
     - name: Install Dependencies
-      run: pip install mypy
+      run: |
+        pip install -r requirements.txt
+        pip install -e .
     - name: mypy
-      run: mypy .
+      run: ./run-mypy

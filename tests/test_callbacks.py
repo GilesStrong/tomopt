@@ -6,23 +6,55 @@ import pandas as pd
 
 import torch
 from torch import Tensor
+import torch.nn.functional as F
 
 from tomopt.optimisation.callbacks.callback import Callback
 from tomopt.optimisation.callbacks.eval_metric import EvalMetric
-from tomopt.optimisation.callbacks import NoMoreNaNs, PredHandler, MetricLogger
-from tomopt.optimisation.callbacks.diagnostic_callbacks import ScatterRecord, HitRecord
+from tomopt.optimisation.callbacks import NoMoreNaNs, PredHandler, MetricLogger, VoxelMetricLogger, PanelMetricLogger, ScatterRecord, HitRecord, CostCoefWarmup
 from tomopt.optimisation.loss import DetectorLoss
-from tomopt.optimisation.wrapper.volume_wrapper import FitParams
+from tomopt.optimisation.wrapper.volume_wrapper import AbsVolumeWrapper, FitParams
+from tomopt.volume import VoxelDetectorLayer, PanelDetectorLayer, DetectorPanel
+
+LW = Tensor([1, 1])
+SZ = 0.1
+Z = 1
+
+
+def eff_cost(x: Tensor) -> Tensor:
+    return torch.expm1(3 * F.relu(x))
+
+
+def res_cost(x: Tensor) -> Tensor:
+    return F.relu(x / 100) ** 2
+
+
+def area_cost(x: Tensor) -> Tensor:
+    return F.relu(x) ** 2
 
 
 def check_callback_base(cb: Callback) -> bool:
     assert cb.wrapper is None
     with pytest.raises(AttributeError):
         cb.on_pred_begin()
+    with pytest.raises(AttributeError):
         cb.on_train_begin()
     cb.set_wrapper(1)
     assert cb.wrapper == 1
     return True
+
+
+def get_voxel_detector() -> VoxelDetectorLayer:
+    return VoxelDetectorLayer("above", init_res=1, init_eff=1, lw=LW, z=1, size=SZ, eff_cost_func=eff_cost, res_cost_func=res_cost)
+
+
+def get_panel_detector() -> VoxelDetectorLayer:
+    return PanelDetectorLayer(
+        pos="above",
+        lw=LW,
+        z=1,
+        size=2 * SZ,
+        panels=[DetectorPanel(res=1, eff=1, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[0.5, 0.5], area_cost_func=area_cost)],
+    )
 
 
 class MockWrapper:
@@ -37,6 +69,10 @@ class MockLayer:
     pass
 
 
+class MockOpt:
+    pass
+
+
 class MockScatterBatch:
     def __init__(self, n) -> None:
         self.n = n
@@ -45,13 +81,11 @@ class MockScatterBatch:
         return torch.ones(self.n) > 0
 
 
-def test_no_more_nans():
+def test_no_more_nans_voxel():
     cb = NoMoreNaNs()
     assert check_callback_base(cb)
 
-    l = MockLayer()
-    l.resolution = torch.rand(10, 10)
-    l.efficiency = torch.rand(10, 10)
+    l = get_voxel_detector()
     l.resolution.grad = l.resolution.data
     l.efficiency.grad = l.efficiency.data
     l.resolution.grad[:5, :5] = Tensor([np.nan])
@@ -66,6 +100,32 @@ def test_no_more_nans():
     cb.on_backwards_end()
     assert l.resolution.grad.sum() == l.resolution.grad.sum()
     assert l.efficiency.grad.sum() == l.efficiency.grad.sum()
+
+
+def test_no_more_nans_panel():
+    cb = NoMoreNaNs()
+    assert check_callback_base(cb)
+
+    l = get_panel_detector()
+    p = l.panels[0]
+    p.xy.grad = p.xy.data
+    p.z.grad = p.z.data
+    p.xy_span.grad = p.xy_span.data
+    p.xy.grad[:1] = Tensor([np.nan])
+    p.z.grad[:1] = Tensor([np.nan])
+    p.xy_span.grad[:1] = Tensor([np.nan])
+    assert p.xy.grad.sum() != p.xy.grad.sum()
+    assert p.z.grad.sum() != p.z.grad.sum()
+    assert p.xy_span.grad.sum() != p.xy_span.grad.sum()
+
+    vw = MockWrapper()
+    vw.volume = MockVolume()
+    vw.volume.get_detectors = lambda: [l]
+    cb.set_wrapper(vw)
+    cb.on_backwards_end()
+    assert p.xy.grad.sum() == p.xy.grad.sum()
+    assert p.z.grad.sum() == p.z.grad.sum()
+    assert p.xy_span.grad.sum() == p.xy_span.grad.sum()
 
 
 def test_pred_handler():
@@ -103,11 +163,22 @@ def test_pred_handler():
     assert preds[1][1][0] == 3
 
 
-def test_metric_logger(mocker):  # noqa F811
-    logger = MetricLogger()
+@pytest.mark.parametrize("detector", ["none", "voxel", "panel"])
+def test_metric_logger(detector, mocker):  # noqa F811
     vw = MockWrapper()
-    vw.loss_func = DetectorLoss(1)
-    vw.fit_params = FitParams(trn_passives=range(10), passive_bs=2, metric_cbs=[EvalMetric(name="test", main_metric=True, lower_metric_better=True)])
+    vw.volume = MockVolume()
+    if detector == "none":
+        logger = MetricLogger()
+    if detector == "voxel":
+        logger = VoxelMetricLogger()
+        det = get_voxel_detector()
+        vw.get_detectors = lambda: [det]
+    if detector == "panel":
+        logger = PanelMetricLogger()
+        det = get_panel_detector()
+        vw.get_detectors = lambda: [det]
+    vw.loss_func = DetectorLoss(target_budget=1, cost_coef=1)
+    vw.fit_params = FitParams(pred=10, trn_passives=range(10), passive_bs=2, metric_cbs=[EvalMetric(name="test", main_metric=True, lower_metric_better=True)])
     logger.set_wrapper(vw)
     mocker.spy(logger, "_reset")
 
@@ -191,8 +262,8 @@ def test_scatter_record():
     sr = ScatterRecord()
     vw = MockWrapper()
     vw.volume = MockVolume()
-    vw.volume.h = 1
-    vw.volume.get_passive_z_range = lambda: (0.2, 0.8)
+    vw.volume.h = Tensor([1])
+    vw.volume.get_passive_z_range = lambda: Tensor([0.2, 0.8])
     vw.volume.get_passives = lambda: range(6)
     locs = torch.rand(10, 3)
     vw.fit_params = FitParams(sb=MockScatterBatch(5))
@@ -223,7 +294,7 @@ def test_hit_record():
     hr = HitRecord()
     vw = MockWrapper()
     vw.volume = MockVolume()
-    vw.volume.h = 1
+    vw.volume.h = Tensor([1])
     xa0 = torch.rand(10, 3)
     xa1 = torch.rand(10, 3)
     xb0 = torch.rand(10, 3)
@@ -248,3 +319,53 @@ def test_hit_record():
     assert df.values.shape == (4, 4)
     assert np.all(df[["x", "y", "z"]].values == hr.record[0].numpy().reshape(-1, 3))
     assert np.all(df.layer.values == np.array([0, 1, 2, 3]))
+
+
+def test_cost_coef_warmup():
+    class VW(AbsVolumeWrapper):
+        def _build_opt(self, **kwargs) -> None:
+            pass
+
+    loss = DetectorLoss(target_budget=0.8)
+    vol = MockVolume()
+    vol.device = torch.device("cpu")
+    vol.parameters = []
+    vw = VW(volume=vol, partial_opts={}, loss_func=loss, partial_scatter_inferer=None, partial_x0_inferer=None)
+    vw.fit_params = FitParams(pred=10)
+    opt = MockOpt()
+    opt.param_groups = [{"lr": 1e2}]
+    vw.opts = {"mock_opt": opt}
+    ccw = CostCoefWarmup(5)
+    ccw.set_wrapper(vw)
+    vw.loss_func = loss
+
+    ccw.on_train_begin()
+    assert opt.param_groups[0]["lr"] == 0.0
+    for e in range(6):
+        for s in range(2):  # Training & validation
+            vw.fit_params.state = "train" if s == 0 else "valid"
+            ccw.on_epoch_begin()
+            for v in range(3):
+                print(e, s, v)
+                loss.sub_losses["error"] = Tensor([((-1) ** s) * (2 ** e) * (3 ** v)])  # Unique value per epoch per volume
+                ccw.on_volume_end()
+            if e < 5:
+                if s == 0:
+                    assert ccw.v_sum.item() == ((2 ** e)) + ((2 ** e) * 3) + ((2 ** e) * 9)
+                    assert ccw.volume_cnt == 3
+                else:
+                    assert ccw.v_sum.item() == 0.0
+                    assert ccw.volume_cnt == 0
+            else:  # Tracking stopped
+                assert ccw.v_sum.item() == 0.0
+                assert ccw.volume_cnt == 0
+            ccw.on_epoch_end()
+            if e < 5:
+                assert np.abs(ccw.e_sum.item() - np.sum([((2 ** i)) + ((2 ** i) * 3) + ((2 ** i) * 9) for i in range(0, e + 1)]) / 3) < 1e-4
+                assert ccw.epoch_cnt == e + 1
+            else:  # warm-up finished
+                assert ccw.tracking is False
+                assert opt.param_groups[0]["lr"] == 1e2
+                assert np.abs(ccw.e_sum.item() - (sum := np.sum([((2 ** i)) + ((2 ** i) * 3) + ((2 ** i) * 9) for i in range(0, 5)]) / 3)) < 1e-4
+                assert ccw.epoch_cnt == 5
+                assert np.abs(loss.cost_coef.item() - sum / 5) < 1e-4

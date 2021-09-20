@@ -12,7 +12,7 @@ class PredHandler(Callback):
     """
 
     def on_pred_begin(self) -> None:
-        super().__init__()
+        super().on_pred_begin()
         self.preds: List[Tuple[np.ndarray, np.ndarray]] = []
 
     def get_preds(self) -> List[Tuple[np.ndarray, np.ndarray]]:

@@ -70,10 +70,10 @@ def test_muon_batch_methods(batch):
 
     # mask
     lw = Tensor([1, 1])
-    assert batch.get_xy_mask(lw).sum() == 0
+    assert batch.get_xy_mask((0, 0), lw).sum() == 0
     batch.x = torch.zeros(N) + 0.5
     batch.y = torch.zeros(N) + 0.5
-    assert batch.get_xy_mask(lw).sum() == N
+    assert batch.get_xy_mask((0, 0), lw).sum() == N
 
     # hits
     above_hits = {"xy": Tensor([[0, 0], [0, 0], [0, 0]]), "z": Tensor([[1], [1], [1]])}

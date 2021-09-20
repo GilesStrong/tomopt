@@ -30,11 +30,12 @@ class ScatterRecord(Callback):
     def on_scatter_end(self) -> None:
         self.record.append(self.wrapper.fit_params.sb.location[self.wrapper.fit_params.sb.get_scatter_mask()].detach().cpu().clone())
 
-    def _to_df(self, record: np.ndarray) -> pd.DataFrame:
+    def _to_df(self, record: Tensor) -> pd.DataFrame:
         df = pd.DataFrame(record.numpy(), columns=["x", "y", "z"])
+        dw, up = self.wrapper.volume.get_passive_z_range()
         df["layer"] = pd.cut(
-            self.wrapper.volume.h - df.z,
-            np.linspace(*self.wrapper.volume.get_passive_z_range(), 1 + len(self.wrapper.volume.get_passives())).squeeze(),
+            self.wrapper.volume.h.detach().cpu().item() - df.z,
+            np.linspace(dw.detach().cpu().item(), up.detach().cpu().item(), 1 + len(self.wrapper.volume.get_passives())).squeeze(),
             labels=False,
         )
         return df
@@ -62,5 +63,5 @@ class HitRecord(ScatterRecord):
 
     def _to_df(self, record: Tensor) -> pd.DataFrame:
         df = pd.DataFrame(record.reshape(-1, 3).numpy(), columns=["x", "y", "z"])
-        df["layer"] = (self.wrapper.volume.h - df.z).astype("category").cat.codes  # df ordered by reshapeing hits
+        df["layer"] = (self.wrapper.volume.h.detach().cpu().item() - df.z).astype("category").cat.codes  # df ordered by reshapeing hits
         return df

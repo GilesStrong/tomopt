@@ -1,6 +1,8 @@
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
+
 import torch
 from torch import nn, Tensor
+from torch.nn import functional as F
 
 from ...volume import Volume
 
@@ -8,20 +10,56 @@ __all__ = ["DetectorLoss"]
 
 
 class DetectorLoss(nn.Module):
-    def __init__(self, cost_coef: Optional[float] = None):
+    def __init__(
+        self,
+        *,
+        target_budget: float,
+        budget_smoothing: float = 10,
+        cost_coef: Optional[Union[Tensor, float]] = None,
+        steep_budget: bool = True,
+        debug: bool = False,
+    ):
         super().__init__()
-        self.cost_coef = cost_coef
+        self.target_budget, self.budget_smoothing, self.cost_coef, self.steep_budget, self.debug = (
+            target_budget,
+            budget_smoothing,
+            cost_coef,
+            steep_budget,
+            debug,
+        )
         self.sub_losses: Dict[str, Tensor] = {}  # Store subcomponents in dict for telemetry
 
-    def _compute_cost_coef(self, cost: Tensor, inference: Tensor) -> None:
-        self.cost_coef = inference.detach() / cost.detach()
+    def _get_budget_coef(self, cost: Tensor) -> Tensor:
+        r"""Switch-on near target budget, plus linear increase above budget"""
+
+        if self.target_budget is None:
+            return cost.new_zeros(1)
+
+        if self.steep_budget:
+            d = self.budget_smoothing * (cost - self.target_budget) / self.target_budget
+            if d <= 0:
+                return 2 * torch.sigmoid(d)
+            else:
+                return 1 + (d / 2)
+        else:
+            d = cost - self.target_budget
+            return (2 * torch.sigmoid(self.budget_smoothing * d / self.target_budget)) + (F.relu(d) / self.target_budget)
+
+    def _compute_cost_coef(self, inference: Tensor) -> None:
+        self.cost_coef = inference.detach().clone()
+        print(f"Automatically setting cost coefficient to {self.cost_coef}")
 
     def forward(self, pred_x0: Tensor, pred_weight: Tensor, volume: Volume) -> Tensor:
+        self.sub_losses = {}
         true_x0 = volume.get_rad_cube()
         inference = torch.mean((pred_x0 - true_x0).pow(2) / pred_weight)
         self.sub_losses["error"] = inference
         cost = volume.get_cost()
         if self.cost_coef is None:
-            self._compute_cost_coef(cost, inference)
-        self.sub_losses["cost"] = self.cost_coef * cost
+            self._compute_cost_coef(inference)
+        self.sub_losses["cost"] = self._get_budget_coef(cost) * self.cost_coef
+        if self.debug:
+            print(
+                f'cost {cost}, cost coef {self.cost_coef}, budget coef {self._get_budget_coef(cost)}. error loss {self.sub_losses["error"]}, cost loss {self.sub_losses["cost"]}'
+            )
         return self.sub_losses["error"] + self.sub_losses["cost"]

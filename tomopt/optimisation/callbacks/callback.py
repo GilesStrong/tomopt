@@ -3,18 +3,18 @@ from __future__ import annotations
 from typing import List, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..wrapper.volume_wrapper import VolumeWrapper
+    from ..wrapper.volume_wrapper import AbsVolumeWrapper
 
 __all__: List[str] = []
 
 
 class Callback:
-    wrapper: Optional[VolumeWrapper] = None
+    wrapper: Optional[AbsVolumeWrapper] = None
 
     def __init__(self) -> None:
         pass
 
-    def set_wrapper(self, wrapper: VolumeWrapper) -> None:
+    def set_wrapper(self, wrapper: AbsVolumeWrapper) -> None:
         self.wrapper = wrapper
 
     def on_train_begin(self) -> None:

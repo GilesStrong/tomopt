@@ -9,8 +9,8 @@ from torch import nn, Tensor, optim
 import torch.nn.functional as F
 
 from tomopt.core import X0
-from tomopt.volume import Volume, PassiveLayer, DetectorLayer
-from tomopt.optimisation.wrapper.volume_wrapper import VolumeWrapper, FitParams
+from tomopt.volume import Volume, PassiveLayer, VoxelDetectorLayer, PanelDetectorLayer, DetectorPanel
+from tomopt.optimisation.wrapper.volume_wrapper import VoxelVolumeWrapper, FitParams, PanelVolumeWrapper
 from tomopt.optimisation.callbacks.callback import Callback
 from tomopt.optimisation.callbacks.cyclic_callbacks import CyclicCallback
 from tomopt.optimisation.callbacks.monitors import MetricLogger
@@ -35,7 +35,7 @@ def arb_rad_length(*, z: float, lw: Tensor, size: float) -> float:
     return rad_length
 
 
-def get_layers(init_res: float = 1e3):
+def get_voxel_layers(init_res: float = 1e3):
     def eff_cost(x: Tensor) -> Tensor:
         return torch.expm1(3 * F.relu(x))
 
@@ -47,7 +47,9 @@ def get_layers(init_res: float = 1e3):
     pos = "above"
     for z, d in zip(np.arange(Z, 0, -SZ), [1, 1, 0, 0, 0, 0, 0, 0, 1, 1]):
         if d:
-            layers.append(DetectorLayer(pos=pos, init_eff=init_eff, init_res=init_res, lw=LW, z=z, size=SZ, eff_cost_func=eff_cost, res_cost_func=res_cost))
+            layers.append(
+                VoxelDetectorLayer(pos=pos, init_eff=init_eff, init_res=init_res, lw=LW, z=z, size=SZ, eff_cost_func=eff_cost, res_cost_func=res_cost)
+            )
         else:
             pos = "below"
             layers.append(PassiveLayer(lw=LW, z=z, size=SZ))
@@ -55,18 +57,59 @@ def get_layers(init_res: float = 1e3):
     return nn.ModuleList(layers)
 
 
-def test_volume_wrapper_methods():
-    volume = Volume(get_layers())
-    vw = VolumeWrapper(volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(0.15))
+def get_panel_layers(init_res: float = 1e3) -> nn.ModuleList:
+    def area_cost(x: Tensor) -> Tensor:
+        return F.relu(x) ** 2
+
+    layers = []
+    init_eff = 0.5
+    n_panels = 4
+    layers.append(
+        PanelDetectorLayer(
+            pos="above",
+            lw=LW,
+            z=1,
+            size=2 * SZ,
+            panels=[
+                DetectorPanel(res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / n_panels)], init_xy_span=[0.5, 0.5], area_cost_func=area_cost)
+                for i in range(n_panels)
+            ],
+        )
+    )
+    for z in [0.8, 0.7, 0.6, 0.5, 0.4, 0.3]:
+        layers.append(PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=z, size=SZ))
+    layers.append(
+        PanelDetectorLayer(
+            pos="below",
+            lw=LW,
+            z=0.2,
+            size=2 * SZ,
+            panels=[
+                DetectorPanel(
+                    res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / n_panels)], init_xy_span=[0.5, 0.5], area_cost_func=area_cost
+                )
+                for i in range(n_panels)
+            ],
+        )
+    )
+
+    return nn.ModuleList(layers)
+
+
+def test_voxel_volume_wrapper_methods():
+    volume = Volume(get_voxel_layers())
+    vw = VoxelVolumeWrapper(
+        volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(target_budget=1, cost_coef=0.15)
+    )
 
     # _build_opt
-    for l, r, e in zip(volume.get_detectors(), vw.res_opt.param_groups[0]["params"], vw.eff_opt.param_groups[0]["params"]):
+    for l, r, e in zip(volume.get_detectors(), vw.opts["res_opt"].param_groups[0]["params"], vw.opts["eff_opt"].param_groups[0]["params"]):
         assert torch.all(l.resolution == r)
         assert torch.all(l.efficiency == e)
 
     # get_detectors
-    for i, j in zip(volume.get_detectors(), vw.get_detectors()):
-        assert i == j
+    for i, j, k in zip(volume.get_detectors(), vw.get_detectors(), [volume.layers[0], volume.layers[1], volume.layers[-2], volume.layers[-1]]):
+        assert i == j == k
 
     # get_param_count
     assert vw.get_param_count() == 4 * 2 * 10 * 10
@@ -78,56 +121,139 @@ def test_volume_wrapper_methods():
             nn.init.zeros_(l.efficiency)
         assert l.resolution.sum() == 0
         assert l.efficiency.sum() == 0
-        vw.res_lr = 0
-        vw.eff_lr = 0
+        vw.set_opt_lr(0, "res_opt")
+        vw.set_opt_lr(0, "eff_opt")
 
-    p = Path("tests/test_save.pt")
-    vw.save("tests/test_save.pt")
-    assert p.exists()
+    path = Path("tests/test_voxel_save.pt")
+    vw.save("tests/test_voxel_save.pt")
+    assert path.exists()
     zero_params(volume, vw)
 
-    vw.load(p)
+    vw.load(path)
     for l in volume.get_detectors():
         assert l.resolution.sum() != 0
         assert l.efficiency.sum() != 0
-    vw.res_lr != 0
-    vw.eff_lr != 0
+    vw.get_opt_lr("res_opt") == 0
+    vw.get_opt_lr("eff_opt") == 0
 
     # from_save
     zero_params(volume, vw)
-    vw = VolumeWrapper.from_save(p, volume=volume, res_opt=partial(optim.SGD, lr=0), eff_opt=partial(optim.Adam, lr=0), loss_func=DetectorLoss(0.15))
+    vw = VoxelVolumeWrapper.from_save(
+        path, volume=volume, res_opt=partial(optim.SGD, lr=0), eff_opt=partial(optim.Adam, lr=0), loss_func=DetectorLoss(target_budget=1, cost_coef=0.15)
+    )
     for l in volume.get_detectors():
         assert l.resolution.sum() != 0
         assert l.efficiency.sum() != 0
-    vw.res_lr != 0
-    vw.eff_lr != 0
+    vw.get_opt_lr("res_opt") != 0
+    vw.get_opt_lr("eff_opt") != 0
+
+
+def test_panel_volume_wrapper_methods():
+    volume = Volume(get_panel_layers())
+    vw = PanelVolumeWrapper(
+        volume,
+        xy_pos_opt=partial(optim.SGD, lr=2e0, momentum=0.95),
+        z_pos_opt=partial(optim.Adam, lr=2e-2),
+        xy_span_opt=partial(optim.Adam, lr=2e-0),
+        loss_func=DetectorLoss(target_budget=1, cost_coef=0.15),
+    )
+
+    # _build_opt
+    for p, xy, z, s in zip(
+        [p for l in volume.get_detectors() for p in l.panels],
+        vw.opts["xy_pos_opt"].param_groups[0]["params"],
+        vw.opts["z_pos_opt"].param_groups[0]["params"],
+        vw.opts["xy_span_opt"].param_groups[0]["params"],
+    ):
+        assert torch.all(p.xy == xy)
+        assert torch.all(p.z == z)
+        assert torch.all(p.xy_span == s)
+
+    # get_detectors
+    for i, j, k in zip(volume.get_detectors(), vw.get_detectors(), (volume.layers[0], volume.layers[-1])):
+        assert i == j == k
+
+    # get_param_count
+    assert vw.get_param_count() == 4 * 2 * 5
+
+    # save
+    def zero_params(v, vw):
+        for l in v.get_detectors():
+            for p in l.panels:
+                nn.init.zeros_(p.xy)
+                nn.init.zeros_(p.z)
+                nn.init.zeros_(p.xy_span)
+                assert p.xy.sum() == 0
+                assert p.z.sum() == 0
+                assert p.xy_span.sum() == 0
+        vw.set_opt_lr(0, "xy_pos_opt")
+        vw.set_opt_lr(0, "z_pos_opt")
+        vw.set_opt_lr(0, "xy_span_opt")
+
+    path = Path("tests/test_panel_save.pt")
+    vw.save("tests/test_panel_save.pt")
+    assert path.exists()
+    zero_params(volume, vw)
+
+    vw.load(path)
+    for l in volume.get_detectors():
+        for p in l.panels:
+            assert p.xy.sum() != 0
+            assert p.z.sum() != 0
+            assert p.xy_span.sum() != 0
+    vw.get_opt_lr("xy_pos_opt") != 0
+    vw.get_opt_lr("z_pos_opt") != 0
+    vw.get_opt_lr("xy_span_opt") != 0
+
+    # from_save
+    zero_params(volume, vw)
+    vw = PanelVolumeWrapper.from_save(
+        path,
+        volume=volume,
+        xy_pos_opt=partial(optim.SGD, lr=0),
+        z_pos_opt=partial(optim.Adam, lr=0),
+        xy_span_opt=partial(optim.Adam, lr=0),
+        loss_func=DetectorLoss(target_budget=1, cost_coef=0.15),
+    )
+    for l in volume.get_detectors():
+        for p in l.panels:
+            assert p.xy.sum() != 0
+            assert p.z.sum() != 0
+            assert p.xy_span.sum() != 0
+    vw.get_opt_lr("xy_pos_opt") != 0
+    vw.get_opt_lr("z_pos_opt") != 0
+    vw.get_opt_lr("xy_span_opt") != 0
 
 
 def test_volume_wrapper_parameters():
-    volume = Volume(get_layers())
-    vw = VolumeWrapper(volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(0.15))
+    volume = Volume(get_voxel_layers())
+    vw = VoxelVolumeWrapper(
+        volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(target_budget=1, cost_coef=0.15)
+    )
 
-    assert vw.eff_lr == 2e-5
-    assert vw.res_lr == 2e1
-    assert vw.eff_mom == 0.9
-    assert vw.res_mom == 0.95
+    assert vw.get_opt_lr("res_opt") == 2e1
+    assert vw.get_opt_lr("eff_opt") == 2e-5
+    assert vw.get_opt_mom("res_opt") == 0.95
+    assert vw.get_opt_mom("eff_opt") == 0.9
 
-    vw.eff_lr = 2
-    vw.res_lr = 2
-    vw.eff_mom = 0.8
-    vw.res_mom = 0.8
+    vw.set_opt_lr(2, "res_opt")
+    vw.set_opt_lr(3, "eff_opt")
+    vw.set_opt_mom(0.8, "res_opt")
+    vw.set_opt_mom(0.7, "eff_opt")
 
-    assert vw.eff_lr == 2
-    assert vw.res_lr == 2
-    assert vw.eff_mom == 0.8
-    assert vw.res_mom == 0.8
+    assert vw.get_opt_lr("res_opt") == 2
+    assert vw.get_opt_lr("eff_opt") == 3
+    assert vw.get_opt_mom("res_opt") == 0.8
+    assert vw.get_opt_mom("eff_opt") == 0.7
 
 
 @pytest.mark.parametrize("state", ["train", "valid", "test"])
 def test_volume_wrapper_scan_volume(state, mocker):  # noqa F811
-    volume = Volume(get_layers())
+    volume = Volume(get_voxel_layers())
     volume.load_rad_length(arb_rad_length)
-    vw = VolumeWrapper(volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(0.15))
+    vw = VoxelVolumeWrapper(
+        volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(target_budget=1, cost_coef=0.15)
+    )
     cb = Callback()
     cb.set_wrapper(vw)
     vw.fit_params = FitParams(n_mu_per_volume=100, mu_bs=10, cbs=[cb], state=state)
@@ -167,9 +293,11 @@ def test_volume_wrapper_scan_volume(state, mocker):  # noqa F811
 
 
 def test_volume_wrapper_scan_volume_mu_batch(mocker):  # noqa F811
-    volume = Volume(get_layers())
+    volume = Volume(get_voxel_layers())
     volume.load_rad_length(arb_rad_length)
-    vw = VolumeWrapper(volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(0.15))
+    vw = VoxelVolumeWrapper(
+        volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(target_budget=1, cost_coef=0.15)
+    )
     vw.fit_params = FitParams(n_mu_per_volume=100, mu_bs=100, state="train")
     mu = generate_batch(100)
 
@@ -218,8 +346,10 @@ def test_volume_wrapper_scan_volume_mu_batch(mocker):  # noqa F811
 
 @pytest.mark.parametrize("state", ["train", "valid", "test"])
 def test_volume_wrapper_scan_volumes(state, mocker):  # noqa F811
-    volume = Volume(get_layers())
-    vw = VolumeWrapper(volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(0.15))
+    volume = Volume(get_voxel_layers())
+    vw = VoxelVolumeWrapper(
+        volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(target_budget=1, cost_coef=0.15)
+    )
     cb = Callback()
     cb.set_wrapper(vw)
     vw.fit_params = FitParams(n_mu_per_volume=100, mu_bs=10, cbs=[cb], state=state, passive_bs=2)
@@ -231,10 +361,10 @@ def test_volume_wrapper_scan_volumes(state, mocker):  # noqa F811
     mocker.spy(cb, "on_volume_batch_end")
     mocker.spy(cb, "on_backwards_begin")
     mocker.spy(cb, "on_backwards_end")
-    mocker.spy(vw.res_opt, "zero_grad")
-    mocker.spy(vw.eff_opt, "zero_grad")
-    mocker.spy(vw.res_opt, "step")
-    mocker.spy(vw.eff_opt, "step")
+    mocker.spy(vw.opts["res_opt"], "zero_grad")
+    mocker.spy(vw.opts["eff_opt"], "zero_grad")
+    mocker.spy(vw.opts["res_opt"], "step")
+    mocker.spy(vw.opts["eff_opt"], "step")
     mocker.patch.object(vw, "loss_func", return_value=torch.tensor(3.0, requires_grad=True))
 
     vw._scan_volumes(py)
@@ -258,27 +388,29 @@ def test_volume_wrapper_scan_volumes(state, mocker):  # noqa F811
     if state == "train":
         assert cb.on_backwards_begin.call_count == 2
         assert cb.on_backwards_end.call_count == 2
-        assert vw.res_opt.zero_grad.call_count == 2
-        assert vw.eff_opt.zero_grad.call_count == 2
-        assert vw.res_opt.step.call_count == 2
-        assert vw.eff_opt.step.call_count == 2
+        assert vw.opts["res_opt"].zero_grad.call_count == 2
+        assert vw.opts["eff_opt"].zero_grad.call_count == 2
+        assert vw.opts["res_opt"].step.call_count == 2
+        assert vw.opts["eff_opt"].step.call_count == 2
     else:
         assert cb.on_backwards_begin.call_count == 0
         assert cb.on_backwards_end.call_count == 0
-        assert vw.res_opt.zero_grad.call_count == 0
-        assert vw.eff_opt.zero_grad.call_count == 0
-        assert vw.res_opt.step.call_count == 0
-        assert vw.eff_opt.step.call_count == 0
+        assert vw.opts["res_opt"].zero_grad.call_count == 0
+        assert vw.opts["eff_opt"].zero_grad.call_count == 0
+        assert vw.opts["res_opt"].step.call_count == 0
+        assert vw.opts["eff_opt"].step.call_count == 0
 
 
 def test_volume_wrapper_fit_epoch(mocker):  # noqa F811
-    volume = Volume(get_layers())
-    vw = VolumeWrapper(volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(0.15))
+    volume = Volume(get_voxel_layers())
+    vw = VoxelVolumeWrapper(
+        volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(target_budget=1, cost_coef=0.15)
+    )
     cb = NoMoreNaNs()
     cb.set_wrapper(vw)
     trn_py = PassiveYielder([arb_rad_length, arb_rad_length, arb_rad_length])
     val_py = PassiveYielder([arb_rad_length, arb_rad_length])
-    vw.fit_params = FitParams(n_mu_per_volume=100, mu_bs=10, cbs=[cb], trn_passives=trn_py, val_passives=val_py, passive_bs=1)
+    vw.fit_params = FitParams(n_mu_per_volume=100, mu_bs=100, cbs=[cb], trn_passives=trn_py, val_passives=val_py, passive_bs=1)
     mocker.spy(cb, "on_epoch_begin")
     mocker.spy(cb, "on_epoch_end")
     mocker.spy(cb, "on_volume_begin")
@@ -302,7 +434,7 @@ def test_volume_wrapper_fit_epoch(mocker):  # noqa F811
 
 def test_volume_wrapper_sort_cbs():
     cbs = [Callback(), CyclicCallback(), MetricLogger(), EvalMetric(False)]
-    cyclic_cbs, metric_log, metric_cbs = VolumeWrapper._sort_cbs(cbs)
+    cyclic_cbs, metric_log, metric_cbs = VoxelVolumeWrapper._sort_cbs(cbs)
     assert len(cyclic_cbs) == 1
     assert len(metric_cbs) == 1
     assert cyclic_cbs[0] == cbs[1]
@@ -311,8 +443,10 @@ def test_volume_wrapper_sort_cbs():
 
 
 def test_volume_wrapper_fit(mocker):  # noqa F811
-    volume = Volume(get_layers())
-    vw = VolumeWrapper(volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(0.15))
+    volume = Volume(get_voxel_layers())
+    vw = VoxelVolumeWrapper(
+        volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(target_budget=1, cost_coef=0.15)
+    )
     trn_py = PassiveYielder([arb_rad_length, arb_rad_length, arb_rad_length])
     val_py = PassiveYielder([arb_rad_length, arb_rad_length])
     cb = NoMoreNaNs()
@@ -330,8 +464,10 @@ def test_volume_wrapper_fit(mocker):  # noqa F811
 
 
 def test_volume_wrapper_predict(mocker):  # noqa F811
-    volume = Volume(get_layers())
-    vw = VolumeWrapper(volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(0.15))
+    volume = Volume(get_voxel_layers())
+    vw = VoxelVolumeWrapper(
+        volume, res_opt=partial(optim.SGD, lr=2e1, momentum=0.95), eff_opt=partial(optim.Adam, lr=2e-5), loss_func=DetectorLoss(target_budget=1, cost_coef=0.15)
+    )
     py = PassiveYielder([arb_rad_length, arb_rad_length, arb_rad_length])
     cbs = [Callback()]
     pred_cb = PredHandler()
