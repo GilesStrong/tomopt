@@ -57,18 +57,6 @@ class BlockPassiveGenerator(AbsPassiveGenerator):
         block_low = block_centre - (block_size / 2)
         block_low[block_low < 0] = 0
         block_high = block_centre + (block_size / 2)
-        print(
-            "centre",
-            block_centre,
-            "abs low",
-            block_low,
-            "abs high",
-            block_high,
-            "rel low",
-            np.round(block_low[:2] / 0.1).astype(int),
-            "rel high",
-            np.round(block_high[:2] / 0.1).astype(int),
-        )
 
         def generator(*, z: float, lw: Tensor, size: float) -> Tensor:
             shp = (lw / size).long()
