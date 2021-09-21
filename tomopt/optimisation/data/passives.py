@@ -27,7 +27,7 @@ class VoxelPassiveGenerator(AbsPassiveGenerator):
         def generator(*, z: float, lw: Tensor, size: float) -> Tensor:
             x0s = lw.new_tensor([X0[m] for m in self.materials])
             shp = (lw / size).long()
-            return x0s[torch.randint(high=len(x0s), size=(shp.prod().numpy()[0],), device=x0s.device)].reshape(list(shp))
+            return x0s[torch.randint(high=len(x0s), size=(shp.prod().numpy(),), device=x0s.device)].reshape(list(shp))
 
         return generator
 
