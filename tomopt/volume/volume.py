@@ -22,7 +22,7 @@ class Volume(nn.Module):
         for l in self.get_passives():
             if lw is None:
                 lw = l.lw
-            elif lw != l.lw:
+            elif (lw != l.lw).any():
                 raise ValueError("All passive layers must have the same length and width (LW)")
             if sz is None:
                 sz = l.size

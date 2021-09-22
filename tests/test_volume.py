@@ -110,7 +110,7 @@ def test_voxel_detector_layer(batch):
     assert torch.all(batch.dtheta(start) == 0)  # Detector layers don't scatter
     assert torch.all(batch.xy != start.xy)
 
-    hits = batch.get_hits(LW)
+    hits = batch.get_hits((0, 0), LW)
     assert len(hits) == 1
     assert hits["above"]["reco_xy"].shape == torch.Size([batch.get_xy_mask((0, 0), LW).sum(), 1, 2])
     assert hits["above"]["gen_xy"].shape == torch.Size([batch.get_xy_mask((0, 0), LW).sum(), 1, 2])
@@ -154,10 +154,10 @@ def test_panel_detector_layer(batch):
     assert torch.all(batch.dtheta(start) == 0)  # Detector layers don't scatter
     assert torch.all(batch.xy != start.xy)
 
-    hits = batch.get_hits(LW)
+    hits = batch.get_hits()
     assert len(hits) == 1
-    assert hits["above"]["reco_xy"].shape == torch.Size([batch.get_xy_mask((0, 0), LW).sum(), 1, 2])
-    assert hits["above"]["gen_xy"].shape == torch.Size([batch.get_xy_mask((0, 0), LW).sum(), 1, 2])
+    assert hits["above"]["reco_xy"].shape == torch.Size([len(batch), 1, 2])
+    assert hits["above"]["gen_xy"].shape == torch.Size([len(batch), 1, 2])
 
     # every reco hit (x,y) is function of panel position and size
     for v in [dl.panels[0].xy, dl.panels[0].xy_span]:
@@ -298,7 +298,7 @@ def test_volume_forward_voxel(batch):
     assert mask.sum() > N / 2  # At least half the muons stay inside the volume
     assert torch.all(batch.dtheta(start)[mask] > 0)  # All masked muons scatter
 
-    hits = batch.get_hits(LW)
+    hits = batch.get_hits((0, 0), LW)
     assert "above" in hits and "below" in hits
     assert hits["above"]["reco_xy"].shape[1] == 2
     assert hits["below"]["reco_xy"].shape[1] == 2
@@ -357,7 +357,7 @@ def test_volume_forward_panel(batch):
     assert mask.sum() > N / 2  # At least half the muons stay inside the volume
     assert torch.all(batch.dtheta(start)[mask] > 0)  # All masked muons scatter
 
-    hits = batch.get_hits(LW)
+    hits = batch.get_hits()
     assert "above" in hits and "below" in hits
     assert hits["above"]["reco_xy"].shape[1] == 4
     assert hits["below"]["reco_xy"].shape[1] == 4

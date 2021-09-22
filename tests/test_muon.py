@@ -82,7 +82,7 @@ def test_muon_batch_methods(batch):
     below_hits = {"xy": Tensor([[0, 0], [0, 0], [0, 0]]), "z": Tensor([[1], [1], [1]])}
     batch.append_hits(below_hits, "below")
     batch.append_hits(below_hits, "below")
-    hits = batch.get_hits(lw)
+    hits = batch.get_hits()
     assert len(hits) == 2
     assert torch.all(hits["above"]["xy"][:, 0] == above_hits["xy"])
 

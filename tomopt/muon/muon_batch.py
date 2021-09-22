@@ -119,9 +119,9 @@ class MuonBatch:
 
     def get_xy_mask(self, xy_low: Optional[Union[Tuple[float, float], Tensor]], xy_high: Optional[Union[Tuple[float, float], Tensor]]) -> Tensor:
         if xy_low is None:
-            xy_low == [-math.inf, -math.inf]
+            xy_low = (-math.inf, -math.inf)
         if xy_high is None:
-            xy_high == [math.inf, math.inf]
+            xy_high = (math.inf, math.inf)
         return (self.x >= xy_low[0]) * (self.x < xy_high[0]) * (self.y >= xy_low[1]) * (self.y < xy_high[1])
 
     def snapshot_xyz(self) -> None:
