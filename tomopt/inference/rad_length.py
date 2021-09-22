@@ -1,5 +1,4 @@
 from abc import ABCMeta, abstractmethod
-from tomopt.volume.panel import DetectorPanel
 from typing import Tuple, Optional, Dict
 import numpy as np
 
@@ -16,6 +15,8 @@ __all__ = ["VoxelX0Inferer", "PanelX0Inferer"]
 
 
 class AbsX0Inferer(metaclass=ABCMeta):
+    muon_mask: Optional[Tensor] = None
+
     def __init__(self, scatters: AbsScatterBatch, default_pred: Optional[float] = X0["beryllium"], use_gaussian_spread: bool = True):
         self.scatters, self.default_pred, self.use_gaussian_spread = scatters, default_pred, use_gaussian_spread
         self.mu, self.volume, self.hits = self.scatters.mu, self.scatters.volume, self.scatters.hits
@@ -44,7 +45,7 @@ class AbsX0Inferer(metaclass=ABCMeta):
         if self.mask.sum() == 0:
             return None, None
 
-        mom = self.mu.reco_mom[self.mu.get_xy_mask((0, 0), self.lw)][self.mask]
+        mom = self.mu.reco_mom[self.mask] if self.muon_mask is None else self.mu.reco_mom[self.muon_mask][self.mask]
         dtheta = self.scatters.dtheta[self.mask]
         dtheta_unc = self.scatters.dtheta_unc[self.mask]
         theta_xy_in = self.scatters.theta_in[self.mask]
@@ -228,6 +229,9 @@ class AbsX0Inferer(metaclass=ABCMeta):
 class VoxelX0Inferer(AbsX0Inferer):
     def __init__(self, scatters: VoxelScatterBatch, default_pred: Optional[float] = X0["beryllium"], use_gaussian_spread: bool = True):
         super().__init__(scatters=scatters, default_pred=default_pred, use_gaussian_spread=use_gaussian_spread)
+        self.muon_mask = self.mu.get_xy_mask(
+            (0, 0), self.lw
+        )  # Scatter mask assumes that muons are prefiltered to only include those which stay inside the volume
 
     def compute_efficiency(self) -> Tensor:
         r"""

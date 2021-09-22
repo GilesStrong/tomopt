@@ -39,7 +39,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
     def __init__(self, mu: MuonBatch, volume: Volume):
         self.mu, self.volume = mu, volume
         self.device = self.mu.device
-        self.hits = self.mu.get_hits(self.volume.lw)
+        self.hits = self.mu.get_hits()
         self.compute_scatters()
 
     @staticmethod
@@ -247,6 +247,12 @@ class AbsScatterBatch(metaclass=ABCMeta):
 
 
 class VoxelScatterBatch(AbsScatterBatch):
+    def __init__(self, mu: MuonBatch, volume: Volume):
+        self.mu, self.volume = mu, volume
+        self.device = self.mu.device
+        self.hits = self.mu.get_hits((0, 0), self.volume.lw)
+        self.compute_scatters()
+
     @staticmethod
     def _get_hit_uncs(dets: List[AbsDetectorLayer], hits: List[Tensor]) -> List[Tensor]:
         uncs = []
