@@ -114,7 +114,7 @@ def test_voxel_scatter_batch(mock_show, voxel_scatter_batch):
     mu, volume, sb = voxel_scatter_batch
 
     # hits
-    hits = mu.get_hits(LW)
+    hits = mu.get_hits((0, 0), LW)
     assert sb.hits["above"]["z"].shape == hits["above"]["z"].shape
     assert sb.n_hits_above == 2
     assert sb.n_hits_below == 2
@@ -163,7 +163,7 @@ def test_panel_scatter_batch(mock_show, panel_scatter_batch):
     mu, volume, sb = panel_scatter_batch
 
     # hits
-    hits = mu.get_hits(LW)
+    hits = mu.get_hits()
     assert sb.hits["above"]["z"].shape == hits["above"]["z"].shape
     assert sb.n_hits_above == 4
     assert sb.n_hits_below == 4
@@ -300,7 +300,7 @@ def test_x0_inferer_properties(voxel_scatter_batch):
 
     assert inferer.mu == mu
     assert inferer.volume == volume
-    assert len(inferer.hits["above"]["z"]) == len(mu.get_hits(LW)["above"]["z"])
+    assert len(inferer.hits["above"]["z"]) == len(mu.get_hits((0, 0), LW)["above"]["z"])
     assert torch.all(inferer.lw == LW)
     assert inferer.size == SZ
 
@@ -455,7 +455,7 @@ def test_x0_inferer_scatter_inversion(mocker, voxel_scatter_batch):  # noqa F811
     sb._theta_out_unc = torch.ones_like(dtheta)
     mask = torch.ones_like(n_x0) > 0
     inferer.mask = mask
-    mocker.patch.object(mu, "get_xy_mask", return_value=mask)
+    inferer.muon_mask = mask
 
     mocker.patch("tomopt.inference.rad_length.jacobian", lambda i, j: torch.ones((len(i), 1, 2), device=i.device))  # remove randomness
     pred, _ = inferer.x0_from_dtheta()

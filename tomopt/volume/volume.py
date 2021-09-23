@@ -15,6 +15,19 @@ class Volume(nn.Module):
         super().__init__()
         self.layers = layers
         self._device = self._get_device()
+        self._check_passives()
+
+    def _check_passives(self) -> None:
+        lw, sz = None, None
+        for l in self.get_passives():
+            if lw is None:
+                lw = l.lw
+            elif (lw != l.lw).any():
+                raise ValueError("All passive layers must have the same length and width (LW)")
+            if sz is None:
+                sz = l.size
+            elif sz != l.size:
+                raise ValueError("All passive layers must have the same size")
 
     @property
     def device(self) -> torch.device:
@@ -82,7 +95,7 @@ class Volume(nn.Module):
 
     @property
     def lw(self) -> Tensor:
-        return self.get_passives()[-1].lw
+        return self.get_passives()[-1].lw  # Same LW for each passive layer
 
     @property
     def passive_size(self) -> float:

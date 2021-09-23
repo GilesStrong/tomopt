@@ -1,5 +1,6 @@
 from __future__ import annotations
-from typing import Dict, List, Union, Tuple
+from typing import Dict, List, Union, Tuple, Optional
+import math
 from collections import defaultdict, OrderedDict
 
 import torch
@@ -116,7 +117,11 @@ class MuonBatch:
             self.y = self.y + (dz * torch.tan(self.theta_y))
             self.z = self.z - dz
 
-    def get_xy_mask(self, xy_low: Union[Tuple[float, float], Tensor], xy_high: Union[Tuple[float, float], Tensor]) -> Tensor:
+    def get_xy_mask(self, xy_low: Optional[Union[Tuple[float, float], Tensor]], xy_high: Optional[Union[Tuple[float, float], Tensor]]) -> Tensor:
+        if xy_low is None:
+            xy_low = (-math.inf, -math.inf)
+        if xy_high is None:
+            xy_high = (math.inf, math.inf)
         return (self.x >= xy_low[0]) * (self.x < xy_high[0]) * (self.y >= xy_low[1]) * (self.y < xy_high[1])
 
     def snapshot_xyz(self) -> None:
@@ -126,11 +131,16 @@ class MuonBatch:
         for k in hits:
             self.hits[pos][k].append(hits[k])
 
-    def get_hits(self, lw: Tensor) -> Dict[str, Dict[str, Tensor]]:
+    def get_hits(
+        self, xy_low: Optional[Union[Tuple[float, float], Tensor]] = None, xy_high: Optional[Union[Tuple[float, float], Tensor]] = None
+    ) -> Dict[str, Dict[str, Tensor]]:
         if len(self.hits) == 0:
             raise ValueError("MuonBatch has no recorded hits")
-        m = self.get_xy_mask((0, 0), lw)
-        return {p: {c: torch.stack(self.hits[p][c], dim=1)[m] for c in self.hits[p]} for p in self.hits}
+        if xy_low is None and xy_high is None:
+            return {p: {c: torch.stack(self.hits[p][c], dim=1) for c in self.hits[p]} for p in self.hits}
+        else:
+            m = self.get_xy_mask(xy_low, xy_high)
+            return {p: {c: torch.stack(self.hits[p][c], dim=1)[m] for c in self.hits[p]} for p in self.hits}
 
     def dtheta_x(self, mu: MuonBatch) -> Tensor:
         return torch.abs(self.theta_x - mu.theta_x)
