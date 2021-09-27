@@ -159,7 +159,7 @@ class AbsX0Inferer(metaclass=ABCMeta):
                 ) : 1,
             ]
         )
-        bounds[2] = np.flip(bounds[2])  # z is reversed
+        # bounds[2] = np.flip(bounds[2])  # z is reversed
         int_bounds = torch.tensor(bounds.reshape(3, -1).transpose(-1, -2), device=self.device)
 
         wpreds, weights = [], []
