@@ -11,7 +11,7 @@ from ..volume import Volume, DetectorPanel
 from ..volume.layer import AbsDetectorLayer, VoxelDetectorLayer, PanelDetectorLayer
 from ..utils import jacobian
 
-__all__ = ["VoxelScatterBatch", "PanelScatterBatch"]
+__all__ = ["VoxelScatterBatch", "PanelScatterBatch", "GenScatterBatch"]
 
 
 class AbsScatterBatch(metaclass=ABCMeta):
@@ -337,3 +337,15 @@ class PanelScatterBatch(AbsScatterBatch):
                 else:
                     unc2_sum = unc2_sum + unc_2
         return torch.sqrt(unc2_sum)
+
+
+class GenScatterBatch(AbsScatterBatch):
+    def compute_tracks(self) -> None:
+        self.above_hit_uncs = [torch.ones(len(self.above_gen_hits[0]), 3) for _ in range(len(self.above_gen_hits))]
+        self.below_hit_uncs = [torch.ones(len(self.below_gen_hits[0]), 3) for _ in range(len(self.below_gen_hits))]
+        self.track_in, self.track_start_in = self.get_muon_trajectory(self.above_gen_hits, self.above_hit_uncs, self.volume.lw)
+        self.track_out, self.track_start_out = self.get_muon_trajectory(self.below_gen_hits, self.below_hit_uncs, self.volume.lw)
+
+    @staticmethod
+    def _compute_unc(var: Tensor, hits: List[Tensor], hit_uncs: List[Tensor]) -> Tensor:
+        return var.new_zeros(var.shape)
