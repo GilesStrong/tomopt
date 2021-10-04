@@ -52,11 +52,15 @@ class BlockPassiveGenerator(AbsPassiveGenerator):
             base_x0, block_x0 = block_x0, base_x0
 
         block_size = np.random.choice(self.block_size, 3, replace=False)
-        block_centre = np.hstack((np.random.uniform(high=self.lw[0]), np.random.uniform(high=self.lw[1]), np.random.uniform(*self.z_range)))
+        block_low = np.hstack(
+            (
+                np.random.uniform(high=self.lw[0] - block_size[0]),
+                np.random.uniform(high=self.lw[1] - block_size[1]),
+                np.random.uniform(self.z_range[0], self.z_range[1] - block_size[2]),
+            )
+        )
 
-        block_low = block_centre - (block_size / 2)
-        block_low[block_low < 0] = 0
-        block_high = block_centre + (block_size / 2)
+        block_high = block_low + block_size
 
         def generator(*, z: float, lw: Tensor, size: float) -> Tensor:
             shp = (lw / size).long()

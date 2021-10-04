@@ -73,4 +73,4 @@ def test_block_passive_generator():
             print(z, layer)
             vol += (layer == x0s[0]).sum()
             print((layer == x0s[0]).sum(), vol)
-        assert vol >= 6  # At least an eighth of the block is present
+        assert vol == 48  # Entirety of the block is present
