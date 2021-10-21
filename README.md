@@ -49,6 +49,14 @@ Install git-hooks:
 pre-commit install
 ```
 
+### Windows usage
+
+Apparently when using Windows, the environment must also be activated within ipython using:
+
+```
+python -m ipykernel install --user --name tomopt --display-name "Python (tomopt)" 
+```
+
 ## Testing
 
 Testing is handled by `pytest` and is set up to run during pull requests. Tests can be manually ran locally via:
