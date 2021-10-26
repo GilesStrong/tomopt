@@ -187,11 +187,11 @@ class PanelDetectorLayer(AbsDetectorLayer):
         lw: Tensor,
         z: float,
         size: float,
-        panels: nn.ModuleList,  # nn.ModuleList[DetectorPanel]
+        panels: Union[List[DetectorPanel], nn.ModuleList],  # nn.ModuleList[DetectorPanel]
     ):
-        super().__init__(pos=pos, lw=lw, z=z, size=size, device=self.get_device(panels))
         if isinstance(panels, list):
             panels = nn.ModuleList(panels)
+        super().__init__(pos=pos, lw=lw, z=z, size=size, device=self.get_device(panels))
         self.panels = panels
 
     @staticmethod
