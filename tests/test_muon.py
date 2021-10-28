@@ -1,10 +1,26 @@
+import unittest
+from unittest.mock import patch
 import pytest
 import numpy as np
 
 import torch
 from torch import Tensor
+from tomopt import muon
 
 from tomopt.muon import generate_batch, MuonBatch
+from tomopt.muon import muon_generator
+
+
+@patch("np.random.uniform")
+@patch("muon_generator.flux", return_value=np.ones(int(200 * 200)))
+def test_muon_generator(self, mock_flux, mock_rng):
+    n_muons = 1e4
+    gen = muon_generator.MuonGenerator(1.0, 1.0)
+    mock_rng.return_value = np.ones(1 / n_muons)
+    set = gen.generate_set(n_muons)
+    assert set.shape == (n_muons, 5)
+    assert torch.sum(set, 0) == torch.ones(5)
+
 
 N = 3
 
