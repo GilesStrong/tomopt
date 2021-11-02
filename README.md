@@ -20,7 +20,7 @@ cd mode_muon_tomography
 ```
 conda activate root
 conda install nb_conda_kernels
-conda env create -n tomopt python=3.8 pip ipykernel
+conda create -n tomopt python=3.8 pip ipykernel
 conda activate tomopt
 pip install torch==1.8.1+cu111 -f https://download.pytorch.org/whl/torch_stable.html
 pip install -r requirements.txt
@@ -47,6 +47,14 @@ Install git-hooks:
 
 ```
 pre-commit install
+```
+
+### Windows usage
+
+Apparently when using Windows, the environment must also be activated within ipython using:
+
+```
+python -m ipykernel install --user --name tomopt --display-name "Python (tomopt)" 
 ```
 
 ## Testing
