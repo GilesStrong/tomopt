@@ -1,5 +1,6 @@
-import unittest
-from unittest.mock import patch
+import pytest_mock
+
+# from pytest_mock import mocker
 import pytest
 import numpy as np
 
@@ -7,19 +8,23 @@ import torch
 from torch import Tensor
 from tomopt import muon
 
-from tomopt.muon import generate_batch, MuonBatch
-from tomopt.muon import muon_generator
+from tomopt.muon import generate_batch, MuonGenerator, MuonBatch
+
+# from tomopt.muon import muon_generator
 
 
-@patch("np.random.uniform")
-@patch("muon_generator.flux", return_value=np.ones(int(200 * 200)))
-def test_muon_generator(self, mock_flux, mock_rng):
-    n_muons = 1e4
-    gen = muon_generator.MuonGenerator(1.0, 1.0)
-    mock_rng.return_value = np.ones(1 / n_muons)
+def test_muon_generator(mocker):
+    n_muons = int(1e4)
+    gen = MuonGenerator(1.0, 1.0)
+    mocker.patch("numpy.random.uniform", return_value=np.ones(n_muons))
     set = gen.generate_set(n_muons)
+    momenta = 2.7619 * np.ones(n_muons)
+    theta_x = 0.7553 * np.ones(n_muons)
+    theta_y = -0.6554 * np.ones(n_muons)
+    compare = torch.Tensor(np.stack([np.ones(n_muons), np.ones(n_muons), momenta, theta_x, theta_y], axis=1))
+    print(torch.sum(torch.round(set)) == torch.sum(torch.round(compare)))
     assert set.shape == (n_muons, 5)
-    assert torch.sum(set, 0) == torch.ones(5)
+    assert torch.sum(torch.round(set)) == torch.sum(torch.round(compare))
 
 
 N = 3
