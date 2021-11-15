@@ -152,12 +152,12 @@ def test_voxel_passive_generator(volume):
     assert (pg.generate()(z=0.3, lw=LW, size=0.1) != layer).any()
 
 
-def test_block_passive_generator(volume):
+def test_random_block_passive_generator(volume):
     mats = ["lead", "carbon"]
     x0s = [X0[m] for m in mats]
     pg = RandomBlockPassiveGenerator(volume, block_size=[0.6, 0.4, 0.2], sort_x0=True, enforce_diff_mat=True, materials=mats)
     for _ in range(10):
-        passive = pg.generate()
+        passive, targ = pg.get_data()
         vol = 0
         for z in [0.3, 0.4, 0.5, 0.6, 0.7, 0.8]:
             layer = passive(z=z, lw=LW, size=0.1)
@@ -165,4 +165,19 @@ def test_block_passive_generator(volume):
             vol += (layer == x0s[0]).sum()
             print((layer == x0s[0]).sum(), vol)
         assert vol == 48  # Entirety of the block is present
-        assert pg.get_data()[1] == X0["lead"]
+        assert targ == X0["lead"]
+
+
+def test_block_present_passive_generator(volume):
+    mats = ["lead", "carbon"]
+    x0s = [X0[m] for m in mats]
+    pg = BlockPresentPassiveGenerator(volume, block_size=[0.6, 0.4, 0.2], materials=mats)
+    for _ in range(10):
+        passive, targ = pg.get_data()
+        vol = 0
+        for z in [0.3, 0.4, 0.5, 0.6, 0.7, 0.8]:
+            layer = passive(z=z, lw=LW, size=0.1)
+            print(z, layer)
+            vol += (layer == x0s[1]).sum()
+            print((layer == x0s[1]).sum(), vol)
+        assert (vol == 48 and targ == x0s[1]) or (vol == 0 and targ == x0s[0])

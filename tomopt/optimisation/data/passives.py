@@ -116,7 +116,7 @@ class RandomBlockPassiveGenerator(AbsBlockPassiveGenerator):
         return generator, block_x0
 
 
-class BlockPresentPassiveGenerator(RandomBlockPassiveGenerator):
+class BlockPresentPassiveGenerator(AbsBlockPassiveGenerator):
     def _generate(self) -> Tuple[Callable[..., Tensor], float]:
         bkg_mat = 0
         block_mat = np.random.randint(0, len(self.materials))
