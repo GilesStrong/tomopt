@@ -18,7 +18,10 @@ class AbsPassiveGenerator(metaclass=ABCMeta):
         volume: Volume,
         materials: Optional[List[str]] = None,
     ) -> None:
-        self.volume, self.materials = volume, materials
+        self.volume = volume
+        if materials is None:
+            materials = [m for m in X0]
+        self.materials = materials
         self.lw = volume.lw.detach().cpu().numpy()
         self.z_range = [z.detach().cpu().item() for z in self.volume.get_passive_z_range()]
         self.size = volume.passive_size
@@ -38,14 +41,16 @@ class AbsPassiveGenerator(metaclass=ABCMeta):
 class AbsBlockPassiveGenerator(AbsPassiveGenerator):
     def __init__(
         self,
-        block_size: Optional[Tuple[float, float, float]],
         volume: Volume,
-        block_size_max_half: bool,
+        block_size: Optional[Tuple[float, float, float]],
+        block_size_max_half: Optional[bool] = None,
         materials: Optional[List[str]] = None,
     ) -> None:
         super().__init__(volume=volume, materials=materials)
         self.block_size = block_size
         self.block_size_max = [self.lw[0], self.lw[1], self.z_range[1] - self.z_range[0]]
+        if self.block_size is None and block_size_max_half is None:
+            raise ValueError("Random block size requested, but block_size_max_half is None, please set to True or False")
         if block_size_max_half:
             self.block_size_max = [x / 2 for x in self.block_size_max]
 
@@ -76,11 +81,11 @@ class AbsBlockPassiveGenerator(AbsPassiveGenerator):
 class RandomBlockPassiveGenerator(AbsBlockPassiveGenerator):
     def __init__(
         self,
-        block_size: Optional[Tuple[float, float, float]],
         volume: Volume,
-        block_size_max_half: bool,
+        block_size: Optional[Tuple[float, float, float]],
         sort_x0: bool,
         enforce_diff_mat: bool,
+        block_size_max_half: Optional[bool] = None,
         materials: Optional[List[str]] = None,
     ) -> None:
         super().__init__(volume=volume, block_size=block_size, materials=materials, block_size_max_half=block_size_max_half)
@@ -103,6 +108,7 @@ class RandomBlockPassiveGenerator(AbsBlockPassiveGenerator):
             low_xy = np.round(block_low[:2] / size).astype(int)
             high_xy = np.round(block_high[:2] / size).astype(int)
             rad_length = torch.ones(list(shp)) * base_x0
+            print(z, z >= block_low[2], z <= block_high[2])
             if z >= block_low[2] and z <= block_high[2]:
                 rad_length[low_xy[0] : high_xy[0], low_xy[1] : high_xy[1]] = block_x0
             return rad_length
