@@ -7,51 +7,60 @@ import torch
 from torch import Tensor
 
 from ...core import X0
+from ...volume import Volume
 
-__all__ = ["VoxelPassiveGenerator", "BlockPassiveGenerator", "PassiveYielder"]
+__all__ = ["VoxelPassiveGenerator", "RandomBlockPassiveGenerator", "BlockPresentPassiveGenerator", "PassiveYielder"]
 
 
 class AbsPassiveGenerator(metaclass=ABCMeta):
-    def __init__(self, materials: Optional[List[str]] = None) -> None:
-        if materials is None:
-            materials = [m for m in X0]
-        self.materials = materials
+    def __init__(
+        self,
+        volume: Volume,
+        materials: Optional[List[str]] = None,
+    ) -> None:
+        self.volume, self.materials = volume, materials
+        self.lw = volume.lw.detach().cpu().numpy()
+        self.z_range = [z.detach().cpu().item() for z in self.volume.get_passive_z_range()]
+        self.size = volume.passive_size
+
+    def get_data(self) -> Tuple[Callable[..., Tensor], Optional[float]]:
+        return self._generate()
+
+    def generate(self) -> Callable[..., Tensor]:
+        f, _ = self._generate()
+        return f
 
     @abstractmethod
-    def generate(self) -> Callable[..., Tensor]:
+    def _generate(self) -> Tuple[Callable[..., Tensor], Optional[float]]:
         pass
 
 
-class VoxelPassiveGenerator(AbsPassiveGenerator):
-    def generate(self) -> Callable[..., Tensor]:
-        def generator(*, z: float, lw: Tensor, size: float) -> Tensor:
-            x0s = lw.new_tensor([X0[m] for m in self.materials])
-            shp = (lw / size).long()
-            return x0s[torch.randint(high=len(x0s), size=(shp.prod().numpy(),), device=x0s.device)].reshape(list(shp))
-
-        return generator
-
-
-class BlockPassiveGenerator(AbsPassiveGenerator):
+class AbsBlockPassiveGenerator(AbsPassiveGenerator):
     def __init__(
         self,
-        lw: Tuple[float, float],
-        z_range: Tuple[float, float],
-        block_size: Tuple[float, float, float],
-        sort_x0: bool,
+        block_size: Optional[Tuple[float, float, float]],
+        volume: Volume,
+        block_size_max_half: bool,
         materials: Optional[List[str]] = None,
     ) -> None:
-        super().__init__(materials=materials)
-        self.lw, self.z_range, self.block_size, self.sort_x0 = lw, z_range, block_size, sort_x0
+        super().__init__(volume=volume, materials=materials)
+        self.block_size = block_size
+        self.block_size_max = [self.lw[0], self.lw[1], self.z_range[1] - self.z_range[0]]
+        if block_size_max_half:
+            self.block_size_max = [x / 2 for x in self.block_size_max]
 
-    def generate(self) -> Callable[..., Tensor]:
-        mats = np.random.choice(self.materials, 2, replace=False)
-        base_x0 = X0[mats[0]]
-        block_x0 = X0[mats[1]]
-        if self.sort_x0 and base_x0 < block_x0:  # Ensure block is denser material
-            base_x0, block_x0 = block_x0, base_x0
+    def _get_block_coords(self) -> Tuple[np.ndarray, np.ndarray]:
+        if self.block_size is None:
+            block_size = np.hstack(
+                (
+                    np.random.uniform(self.size, self.block_size_max[0]),
+                    np.random.uniform(self.size, self.block_size_max[1]),
+                    np.random.uniform(self.size, self.block_size_max[2]),
+                )
+            )
+        else:
+            block_size = np.random.choice(self.block_size, 3, replace=False)
 
-        block_size = np.random.choice(self.block_size, 3, replace=False)
         block_low = np.hstack(
             (
                 np.random.uniform(high=self.lw[0] - block_size[0]),
@@ -59,8 +68,35 @@ class BlockPassiveGenerator(AbsPassiveGenerator):
                 np.random.uniform(self.z_range[0], self.z_range[1] - block_size[2]),
             )
         )
-
         block_high = block_low + block_size
+
+        return block_low, block_high
+
+
+class RandomBlockPassiveGenerator(AbsBlockPassiveGenerator):
+    def __init__(
+        self,
+        block_size: Optional[Tuple[float, float, float]],
+        volume: Volume,
+        block_size_max_half: bool,
+        sort_x0: bool,
+        enforce_diff_mat: bool,
+        materials: Optional[List[str]] = None,
+    ) -> None:
+        super().__init__(volume=volume, block_size=block_size, materials=materials, block_size_max_half=block_size_max_half)
+        self.sort_x0, self.enforce_diff_mat = sort_x0, enforce_diff_mat
+
+    def _generate(self) -> Tuple[Callable[..., Tensor], float]:
+        bkg_mat, block_mat = None, None
+        while bkg_mat is None or block_mat is None or (bkg_mat == block_mat and self.enforce_diff_mat):
+            bkg_mat = np.random.randint(0, len(self.materials))
+            block_mat = np.random.randint(0, len(self.materials))
+        base_x0 = X0[self.materials[bkg_mat]]
+        block_x0 = X0[self.materials[block_mat]]
+        if self.sort_x0 and block_x0 > base_x0:
+            block_x0, base_x0 = base_x0, block_x0
+
+        block_low, block_high = self._get_block_coords()
 
         def generator(*, z: float, lw: Tensor, size: float) -> Tensor:
             shp = (lw / size).long()
@@ -71,7 +107,38 @@ class BlockPassiveGenerator(AbsPassiveGenerator):
                 rad_length[low_xy[0] : high_xy[0], low_xy[1] : high_xy[1]] = block_x0
             return rad_length
 
-        return generator
+        return generator, block_x0
+
+
+class BlockPresentPassiveGenerator(RandomBlockPassiveGenerator):
+    def _generate(self) -> Tuple[Callable[..., Tensor], float]:
+        bkg_mat = 0
+        block_mat = np.random.randint(0, len(self.materials))
+        base_x0 = X0[self.materials[bkg_mat]]
+        block_x0 = X0[self.materials[block_mat]]
+
+        block_low, block_high = self._get_block_coords()
+
+        def generator(*, z: float, lw: Tensor, size: float) -> Tensor:
+            shp = (lw / size).long()
+            low_xy = np.round(block_low[:2] / size).astype(int)
+            high_xy = np.round(block_high[:2] / size).astype(int)
+            rad_length = torch.ones(list(shp)) * base_x0
+            if z >= block_low[2] and z <= block_high[2]:
+                rad_length[low_xy[0] : high_xy[0], low_xy[1] : high_xy[1]] = block_x0
+            return rad_length
+
+        return generator, block_x0
+
+
+class VoxelPassiveGenerator(AbsPassiveGenerator):
+    def _generate(self) -> Tuple[Callable[..., Tensor], None]:
+        def generator(*, z: float, lw: Tensor, size: float) -> Tensor:
+            x0s = lw.new_tensor([X0[m] for m in self.materials])
+            shp = (lw / size).long()
+            return x0s[torch.randint(high=len(x0s), size=(shp.prod().numpy(),), device=x0s.device)].reshape(list(shp))
+
+        return generator, None
 
 
 class PassiveYielder:
