@@ -165,3 +165,4 @@ def test_block_passive_generator(volume):
             vol += (layer == x0s[0]).sum()
             print((layer == x0s[0]).sum(), vol)
         assert vol == 48  # Entirety of the block is present
+        assert pg.get_data()[1] == X0["lead"]
