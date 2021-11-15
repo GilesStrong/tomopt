@@ -167,6 +167,18 @@ def test_random_block_passive_generator(volume):
         assert vol == 48  # Entirety of the block is present
         assert targ == X0["lead"]
 
+    pg = RandomBlockPassiveGenerator(volume, block_size=None, sort_x0=True, enforce_diff_mat=True, materials=mats, block_size_max_half=True)
+    for _ in range(10):
+        passive, targ = pg.get_data()
+        vol = 0
+        for z in [0.3, 0.4, 0.5, 0.6, 0.7, 0.8]:
+            layer = passive(z=z, lw=LW, size=0.1)
+            print(z, layer)
+            vol += (layer == x0s[0]).sum()
+            print((layer == x0s[0]).sum(), vol)
+        assert 0 <= vol <= 75
+        assert targ == X0["lead"]
+
 
 def test_block_present_passive_generator(volume):
     mats = ["lead", "carbon"]
