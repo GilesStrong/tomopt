@@ -142,7 +142,7 @@ def test_voxel_passive_generator(volume):
     passive = pg.generate()
     layer = passive(z=0.3, lw=LW, size=0.1)
     assert len(set(layer.flatten().tolist())) >= len(X0) / 2
-    assert pg.get_data[1] is None
+    assert pg.get_data()[1] is None
 
     pg = VoxelPassiveGenerator(volume, materials=["lead", "iron"])
     passive = pg.generate()
