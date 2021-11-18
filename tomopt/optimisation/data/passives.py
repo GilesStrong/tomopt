@@ -108,7 +108,6 @@ class RandomBlockPassiveGenerator(AbsBlockPassiveGenerator):
             low_xy = np.round(block_low[:2] / size).astype(int)
             high_xy = np.round(block_high[:2] / size).astype(int)
             rad_length = torch.ones(list(shp)) * base_x0
-            print(z, z >= block_low[2], z <= block_high[2])
             if z >= block_low[2] and z <= block_high[2]:
                 rad_length[low_xy[0] : high_xy[0], low_xy[1] : high_xy[1]] = block_x0
             return rad_length
