@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+from collections import defaultdict
 from typing import Tuple, Optional, Dict
 import numpy as np
 
@@ -29,6 +30,50 @@ class AbsX0Inferer(metaclass=ABCMeta):
             self.default_pred_t = torch.tensor([self.default_pred], device=self.device)
         self.average_preds = self.average_preds_gaussian if self.use_gaussian_spread else self.average_preds_single
 
+    def _x0_from_dtheta(self, mom: Tensor, dtheta: Tensor, theta_xy_in: Tensor, theta_xy_out: Tensor) -> Tensor:
+        theta2 = dtheta.pow(2).sum(1)
+        n_x0 = 0.5 * theta2 * ((mom / SCATTER_COEF_A) ** 2)
+        theta_in = theta_xy_in.pow(2).sum(1).sqrt()
+        theta_out = theta_xy_out.pow(2).sum(1).sqrt()
+        cos_theta_in = torch.cos(theta_in)
+        cos_theta_out = torch.cos(theta_out)
+        cos_mean = (cos_theta_in + cos_theta_out) / 2
+
+        pred = self.size / (n_x0 * cos_mean)
+
+        if pred.isnan().sum() > 0:
+            print(pred)
+            raise ValueError("Prediction contains NaN values")
+
+        return pred
+
+    def _x0_from_dtheta_unc(
+        self, pred: Tensor, dtheta: Tensor, theta_xy_in: Tensor, theta_xy_out: Tensor, dtheta_unc: Tensor, theta_xy_in_unc: Tensor, theta_xy_out_unc: Tensor
+    ) -> Tensor:
+        unc2_sum = None
+        vals = [dtheta, theta_xy_in, theta_xy_out]
+        uncs = [dtheta_unc, theta_xy_in_unc, theta_xy_out_unc]
+        for i, (vi, unci) in enumerate(zip(vals, uncs)):
+            for j, (vj, uncj) in enumerate(zip(vals, uncs)):
+                if j < i:
+                    continue
+                dv_dx_2 = (
+                    torch.nan_to_num(jacobian(pred, vi)).sum(1) * torch.nan_to_num(jacobian(pred, vj)).sum(1)
+                    if i != j
+                    else torch.nan_to_num(jacobian(pred, vi)).sum(1) ** 2
+                )  # Muons, pred, unc_xyz
+                unc_2 = (dv_dx_2 * unci * uncj).sum(1)  # Muons, pred
+                if unc2_sum is None:
+                    unc2_sum = unc_2
+                else:
+                    unc2_sum = unc2_sum + unc_2
+        pred_unc = torch.sqrt(unc2_sum)
+        if pred_unc.isnan().sum() > 0:
+            print(pred_unc)
+            raise ValueError("Prediction uncertainties contains NaN values")
+
+        return pred_unc
+
     def x0_from_dtheta(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
         r"""
         TODO: Debias by considering each voxel on muon paths
@@ -53,42 +98,16 @@ class AbsX0Inferer(metaclass=ABCMeta):
         theta_xy_in_unc = self.scatters.theta_in_unc[self.mask]
         theta_xy_out_unc = self.scatters.theta_out_unc[self.mask]
 
-        # Prediction
-        theta2 = dtheta.pow(2).sum(1)
-        n_x0 = 0.5 * theta2 * ((mom / SCATTER_COEF_A) ** 2)
-        theta_in = theta_xy_in.pow(2).sum(1).sqrt()
-        theta_out = theta_xy_out.pow(2).sum(1).sqrt()
-        cos_theta_in = torch.cos(theta_in)
-        cos_theta_out = torch.cos(theta_out)
-        cos_mean = (cos_theta_in + cos_theta_out) / 2
-
-        pred = self.size / (n_x0 * cos_mean)
-
-        unc2_sum = None
-        vals = [dtheta, theta_xy_in, theta_xy_out]
-        uncs = [dtheta_unc, theta_xy_in_unc, theta_xy_out_unc]
-        for i, (vi, unci) in enumerate(zip(vals, uncs)):
-            for j, (vj, uncj) in enumerate(zip(vals, uncs)):
-                if j < i:
-                    continue
-                dv_dx_2 = (
-                    torch.nan_to_num(jacobian(pred, vi)).sum(1) * torch.nan_to_num(jacobian(pred, vj)).sum(1)
-                    if i != j
-                    else torch.nan_to_num(jacobian(pred, vi)).sum(1) ** 2
-                )  # Muons, pred, unc_xyz
-                unc_2 = (dv_dx_2 * unci * uncj).sum(1)  # Muons, pred
-                if unc2_sum is None:
-                    unc2_sum = unc_2
-                else:
-                    unc2_sum = unc2_sum + unc_2
-        pred_unc = torch.sqrt(unc2_sum)
-
-        if pred.isnan().sum() > 0:
-            print(pred)
-            raise ValueError("Prediction contains NaN values")
-        if pred_unc.isnan().sum() > 0:
-            print(pred_unc)
-            raise ValueError("Prediction uncertainties contains NaN values")
+        pred = self._x0_from_dtheta(mom=mom, dtheta=dtheta, theta_xy_in=theta_xy_in, theta_xy_out=theta_xy_out)
+        pred_unc = self._x0_from_dtheta_unc(
+            pred=pred,
+            dtheta=dtheta,
+            theta_xy_in=theta_xy_in,
+            theta_xy_out=theta_xy_out,
+            dtheta_unc=dtheta_unc,
+            theta_xy_in_unc=theta_xy_in_unc,
+            theta_xy_out_unc=theta_xy_out_unc,
+        )
 
         return pred, pred_unc
 
