@@ -30,7 +30,8 @@ class AbsX0Inferer(metaclass=ABCMeta):
             self.default_pred_t = torch.tensor([self.default_pred], device=self.device)
         self.average_preds = self.average_preds_gaussian if self.use_gaussian_spread else self.average_preds_single
 
-    def _x0_from_dtheta(self, mom: Tensor, dtheta: Tensor, theta_xy_in: Tensor, theta_xy_out: Tensor) -> Tensor:
+    @staticmethod
+    def _x0_from_dtheta(delta_z: float, mom: Tensor, dtheta: Tensor, theta_xy_in: Tensor, theta_xy_out: Tensor) -> Tensor:
         theta2 = dtheta.pow(2).sum(1)
         n_x0 = 0.5 * theta2 * ((mom / SCATTER_COEF_A) ** 2)
         theta_in = theta_xy_in.pow(2).sum(1).sqrt()
@@ -39,7 +40,7 @@ class AbsX0Inferer(metaclass=ABCMeta):
         cos_theta_out = torch.cos(theta_out)
         cos_mean = (cos_theta_in + cos_theta_out) / 2
 
-        pred = self.size / (n_x0 * cos_mean)
+        pred = delta_z / (n_x0 * cos_mean)
 
         if pred.isnan().sum() > 0:
             print(pred)
@@ -47,8 +48,9 @@ class AbsX0Inferer(metaclass=ABCMeta):
 
         return pred
 
+    @staticmethod
     def _x0_from_dtheta_unc(
-        self, pred: Tensor, dtheta: Tensor, theta_xy_in: Tensor, theta_xy_out: Tensor, dtheta_unc: Tensor, theta_xy_in_unc: Tensor, theta_xy_out_unc: Tensor
+        pred: Tensor, dtheta: Tensor, theta_xy_in: Tensor, theta_xy_out: Tensor, dtheta_unc: Tensor, theta_xy_in_unc: Tensor, theta_xy_out_unc: Tensor
     ) -> Tensor:
         unc2_sum = None
         vals = [dtheta, theta_xy_in, theta_xy_out]
@@ -98,7 +100,7 @@ class AbsX0Inferer(metaclass=ABCMeta):
         theta_xy_in_unc = self.scatters.theta_in_unc[self.mask]
         theta_xy_out_unc = self.scatters.theta_out_unc[self.mask]
 
-        pred = self._x0_from_dtheta(mom=mom, dtheta=dtheta, theta_xy_in=theta_xy_in, theta_xy_out=theta_xy_out)
+        pred = self._x0_from_dtheta(delta_z=self.size, mom=mom, dtheta=dtheta, theta_xy_in=theta_xy_in, theta_xy_out=theta_xy_out)
         pred_unc = self._x0_from_dtheta_unc(
             pred=pred,
             dtheta=dtheta,
