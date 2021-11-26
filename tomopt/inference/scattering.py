@@ -148,9 +148,22 @@ class AbsScatterBatch(metaclass=ABCMeta):
         self._dxy = coefs[:, 2:3] * cross[:, :2]
         self._dxy_unc = None
 
-    @abstractmethod
-    def _compute_unc(self, var: Tensor, hits: List[Tensor], hit_uncs: List[Tensor]) -> Tensor:
-        pass
+    @staticmethod
+    def _compute_unc(var: Tensor, hits: List[Tensor], hit_uncs: List[Tensor]) -> Tensor:
+        r"""
+        Behaviour tested only
+        """
+
+        # Compute dvar/dhit_x
+        jac = torch.cat([torch.nan_to_num(jacobian(var, x)).sum(2) for x in hits], dim=-1)
+        unc = torch.cat(hit_uncs, dim=-1)
+        unc = torch.where(torch.isinf(unc), torch.tensor([0], device=unc.device).type(unc.type()), unc)[:, None]
+
+        # Compute unc^2 = unc_x*unc_y*dvar/dhit_x*dvar/dhit_y summing over all x,y inclusive combinations
+        idxs = torch.combinations(torch.arange(0, unc.shape[-1]), with_replacement=True)
+        unc_2 = (jac[:, :, idxs] * unc[:, :, idxs]).prod(-1)
+
+        return unc_2.sum(-1).sqrt()
 
     @property
     def location(self) -> Tensor:
@@ -270,25 +283,6 @@ class VoxelScatterBatch(AbsScatterBatch):
         self.track_in, self.track_start_in = self.get_muon_trajectory(self.above_hits, self.above_hit_uncs, self.volume.lw)
         self.track_out, self.track_start_out = self.get_muon_trajectory(self.below_hits, self.below_hit_uncs, self.volume.lw)
 
-    @staticmethod
-    def _compute_unc(var: Tensor, hits: List[Tensor], hit_uncs: List[Tensor]) -> Tensor:
-        r"""
-        Behaviour tested only
-        """
-
-        unc2_sum = None
-        for i, (xi, unci) in enumerate(zip(hits, hit_uncs)):
-            for j, (xj, uncj) in enumerate(zip(hits, hit_uncs)):
-                if j < i:
-                    continue
-                dv_dx_2 = jacobian(var, xi).sum((2)) * jacobian(var, xj).sum((2)) if i != j else jacobian(var, xi).sum((2)) ** 2  # Muons, var_xyz, hit_xyz
-                unc_2 = (dv_dx_2 * unci[:, None] * uncj[:, None]).sum(2)  # Muons, (x,y,z)
-                if unc2_sum is None:
-                    unc2_sum = unc_2
-                else:
-                    unc2_sum = unc2_sum + unc_2
-        return torch.sqrt(unc2_sum)
-
 
 class PanelScatterBatch(AbsScatterBatch):
     @staticmethod
@@ -312,28 +306,3 @@ class PanelScatterBatch(AbsScatterBatch):
 
         self.track_in, self.track_start_in = self.get_muon_trajectory(self.above_hits, self.above_hit_uncs, self.volume.lw)
         self.track_out, self.track_start_out = self.get_muon_trajectory(self.below_hits, self.below_hit_uncs, self.volume.lw)
-
-    @staticmethod
-    def _compute_unc(var: Tensor, hits: List[Tensor], hit_uncs: List[Tensor]) -> Tensor:
-        r"""
-        Behaviour tested only
-        """
-
-        unc2_sum = None
-        for i, (xi, unci) in enumerate(zip(hits, hit_uncs)):
-            unci = torch.where(torch.isinf(unci), torch.tensor([0], device=unci.device).type(unci.type()), unci)[:, None]
-            for j, (xj, uncj) in enumerate(zip(hits, hit_uncs)):
-                if j < i:
-                    continue
-                uncj = torch.where(torch.isinf(uncj), torch.tensor([0], device=uncj.device).type(uncj.type()), uncj)[:, None]
-                dv_dx_2 = (
-                    torch.nan_to_num(jacobian(var, xi)).sum(2) * torch.nan_to_num(jacobian(var, xj)).sum(2)
-                    if i != j
-                    else torch.nan_to_num(jacobian(var, xi)).sum(2) ** 2
-                )  # Muons, var_xyz, hit_xyz
-                unc_2 = (dv_dx_2 * unci * uncj).sum(2)  # Muons, (x,y,z)
-                if unc2_sum is None:
-                    unc2_sum = unc_2
-                else:
-                    unc2_sum = unc2_sum + unc_2
-        return torch.sqrt(unc2_sum)
