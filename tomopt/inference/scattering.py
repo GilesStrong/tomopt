@@ -161,11 +161,9 @@ class AbsScatterBatch(metaclass=ABCMeta):
 
         # Compute unc^2 = unc_x*unc_y*dvar/dhit_x*dvar/dhit_y summing over all x,y inclusive combinations
         idxs = torch.combinations(torch.arange(0, unc.shape[-1]), with_replacement=True)
-        dv_dx_2 = jac[:, :, idxs].prod(-1)
-        unc_2 = dv_dx_2 * unc[:, :, idxs].prod(-1)
-        unc2_sum = unc_2.sum(-1)
+        unc_2 = (jac[:, :, idxs] * unc[:, :, idxs]).prod(-1)
 
-        return torch.sqrt(unc2_sum)
+        return unc_2.sum(-1).sqrt()
 
     @property
     def location(self) -> Tensor:

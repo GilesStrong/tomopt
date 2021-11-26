@@ -51,24 +51,17 @@ class AbsX0Inferer(metaclass=ABCMeta):
     def _x0_from_dtheta_unc(
         pred: Tensor, dtheta: Tensor, theta_xy_in: Tensor, theta_xy_out: Tensor, dtheta_unc: Tensor, theta_xy_in_unc: Tensor, theta_xy_out_unc: Tensor
     ) -> Tensor:
-        unc2_sum = None
-        vals = [dtheta, theta_xy_in, theta_xy_out]
-        uncs = [dtheta_unc, theta_xy_in_unc, theta_xy_out_unc]
-        for i, (vi, unci) in enumerate(zip(vals, uncs)):
-            for j, (vj, uncj) in enumerate(zip(vals, uncs)):
-                if j < i:
-                    continue
-                dv_dx_2 = (
-                    torch.nan_to_num(jacobian(pred, vi)).sum(1) * torch.nan_to_num(jacobian(pred, vj)).sum(1)
-                    if i != j
-                    else torch.nan_to_num(jacobian(pred, vi)).sum(1) ** 2
-                )  # Muons, pred, unc_xyz
-                unc_2 = (dv_dx_2 * unci * uncj).sum(1)  # Muons, pred
-                if unc2_sum is None:
-                    unc2_sum = unc_2
-                else:
-                    unc2_sum = unc2_sum + unc_2
-        pred_unc = torch.sqrt(unc2_sum)
+
+        # Compute dvar/dhit_x
+        jac = torch.cat([torch.nan_to_num(jacobian(pred, x)).sum(1) for x in [dtheta, theta_xy_in, theta_xy_out]], dim=-1)
+        unc = torch.cat([dtheta_unc, theta_xy_in_unc, theta_xy_out_unc], dim=-1)
+
+        # Compute unc^2 = unc_x*unc_y*dvar/dhit_x*dvar/dhit_y summing over all x,y inclusive combinations
+        idxs = torch.combinations(torch.arange(0, unc.shape[-1]), with_replacement=True)
+        unc_2 = (jac[:, idxs] * unc[:, idxs]).prod(-1)
+
+        pred_unc = unc_2.sum(-1).sqrt()
+
         if pred_unc.isnan().sum() > 0:
             print(pred_unc)
             raise ValueError("Prediction uncertainties contains NaN values")
