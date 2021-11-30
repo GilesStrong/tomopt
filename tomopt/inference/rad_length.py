@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import Tuple, Optional, Dict
+from typing import Tuple, Optional, Dict, List
 import numpy as np
 
 import torch
@@ -7,22 +7,70 @@ from torch import Tensor
 from torch.distributions import Normal
 
 from .scattering import AbsScatterBatch, PanelScatterBatch, VoxelScatterBatch
-from ..volume import VoxelDetectorLayer, PanelDetectorLayer
+from ..volume import VoxelDetectorLayer, PanelDetectorLayer, Volume
 from ..core import SCATTER_COEF_A
 from ..utils import jacobian
 
 __all__ = ["VoxelX0Inferer", "PanelX0Inferer"]
 
 
-class AbsX0Inferer(metaclass=ABCMeta):
-    muon_mask: Optional[Tensor] = None
+class AbsVolumeInferer(metaclass=ABCMeta):
+    mask_muons = False
 
-    def __init__(self, scatters: AbsScatterBatch):
-        self.scatters = scatters
-        self.mu, self.volume, self.hits = self.scatters.mu, self.scatters.volume, self.scatters.hits
-        self.size, self.lw = self.volume.passive_size, self.volume.lw
-        self.mask = self.scatters.get_scatter_mask()
-        self.device = self.mu.device
+    def __init__(self, volume: Volume):
+        self.scatter_batches: List[AbsScatterBatch] = []
+        self.volume = volume
+        self.size, self.lw, self.device = self.volume.passive_size, self.volume.lw, self.volume.device
+
+    def add_scatters(self, scatters: AbsScatterBatch) -> None:
+        self.scatter_batches.append(scatters)
+
+    @abstractmethod
+    def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
+        pass
+
+    @abstractmethod
+    def get_prediction(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
+        pass
+
+
+class AbsX0Inferer(AbsVolumeInferer):
+    def __init__(self, volume: Volume):
+        super().__init__(volume=volume)
+        self.x0_dthetas: List[Optional[Tensor]] = []
+        self.x0_dtheta_uncs: List[Optional[Tensor]] = []
+        self.x0_dxys: List[Optional[Tensor]] = []
+        self.x0_dxy_uncs: List[Optional[Tensor]] = []
+        self.efficiencies: List[Tensor] = []
+        self.preds: List[Tensor] = []
+        self.weights: List[Tensor] = []
+
+    def add_scatters(self, scatters: AbsScatterBatch) -> None:
+        scatter_mask = scatters.get_scatter_mask()
+        if scatter_mask.sum() > 0:
+            super().add_scatters(scatters=scatters)
+            # Compute muon-wise X0 predictions & efficiencies
+            x, u = self.x0_from_dtheta(scatters=scatters)
+            self.x0_dthetas.append(x)
+            self.x0_dtheta_uncs.append(u)
+
+            x, u = self.x0_from_dxy(scatters=scatters)
+            self.x0_dxys.append(x)
+            self.x0_dxy_uncs.append(u)
+
+            self.efficiencies.append(self.compute_efficiency(scatters=scatters))
+
+            # Get X0 prediction for all voxels
+            p, w = self.get_voxel_x0_preds(
+                x0_dtheta=self.x0_dthetas[-1],
+                x0_dtheta_unc=self.x0_dtheta_uncs[-1],
+                x0_dxy=self.x0_dxys[-1],
+                x0_dxy_unc=self.x0_dxy_uncs[-1],
+                efficiency=self.efficiencies[-1],
+                scatters=scatters,
+            )
+            self.preds.append(p)
+            self.weights.append(w)
 
     @staticmethod
     def _x0_from_dtheta(delta_z: float, mom: Tensor, dtheta: Tensor, theta_xy_in: Tensor, theta_xy_out: Tensor) -> Tensor:
@@ -63,7 +111,7 @@ class AbsX0Inferer(metaclass=ABCMeta):
 
         return pred_unc
 
-    def x0_from_dtheta(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
+    def x0_from_dtheta(self, scatters: AbsScatterBatch) -> Tuple[Optional[Tensor], Optional[Tensor]]:
         r"""
         TODO: Debias by considering each voxel on muon paths
         Maybe like:
@@ -76,16 +124,21 @@ class AbsX0Inferer(metaclass=ABCMeta):
         dtheta = dtheta_dbias
         """
 
-        if self.mask.sum() == 0:
+        scatter_mask = scatters.get_scatter_mask()
+        if scatter_mask.sum() == 0:
             return None, None
+        mu = scatters.mu
 
-        mom = self.mu.reco_mom[self.mask] if self.muon_mask is None else self.mu.reco_mom[self.muon_mask][self.mask]
-        dtheta = self.scatters.dtheta[self.mask]
-        dtheta_unc = self.scatters.dtheta_unc[self.mask]
-        theta_xy_in = self.scatters.theta_in[self.mask]
-        theta_xy_out = self.scatters.theta_out[self.mask]
-        theta_xy_in_unc = self.scatters.theta_in_unc[self.mask]
-        theta_xy_out_unc = self.scatters.theta_out_unc[self.mask]
+        if self.mask_muons:  # Scatter mask assumes that muons are prefiltered to only include those which stay inside the volume
+            muon_mask = mu.get_xy_mask((0, 0), self.lw)
+
+        mom = mu.reco_mom[scatter_mask] if self.mask_muons is False else mu.reco_mom[muon_mask][scatter_mask]
+        dtheta = scatters.dtheta[scatter_mask]
+        dtheta_unc = scatters.dtheta_unc[scatter_mask]
+        theta_xy_in = scatters.theta_in[scatter_mask]
+        theta_xy_out = scatters.theta_out[scatter_mask]
+        theta_xy_in_unc = scatters.theta_in_unc[scatter_mask]
+        theta_xy_out_unc = scatters.theta_out_unc[scatter_mask]
 
         pred = self._x0_from_dtheta(delta_z=self.size, mom=mom, dtheta=dtheta, theta_xy_in=theta_xy_in, theta_xy_out=theta_xy_out)
         pred_unc = self._x0_from_dtheta_unc(
@@ -100,7 +153,7 @@ class AbsX0Inferer(metaclass=ABCMeta):
 
         return pred, pred_unc
 
-    def x0_from_dxy(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
+    def x0_from_dxy(self, scatters: AbsScatterBatch) -> Tuple[Optional[Tensor], Optional[Tensor]]:
         # TODO: FIX this
         # dxy = torch.sqrt(scatters['dxy'][mask].pow(2).sum(1))
         # dh = dxy/((math.sqrt(2)*torch.cos(scatters['theta_in'][mask].pow(2).sum(1)))+1e-17)
@@ -108,12 +161,14 @@ class AbsX0Inferer(metaclass=ABCMeta):
         # x0_pred_dxy = (theta0*p/b)**2
         return None, None
 
-    @abstractmethod
-    def compute_efficiency(self) -> Tensor:
-        pass
-
-    def average_preds(
-        self, x0_dtheta: Optional[Tensor], x0_dtheta_unc: Optional[Tensor], x0_dxy: Optional[Tensor], x0_dxy_unc: Optional[Tensor], efficiency: Tensor
+    def get_voxel_x0_preds(
+        self,
+        x0_dtheta: Optional[Tensor],
+        x0_dtheta_unc: Optional[Tensor],
+        x0_dxy: Optional[Tensor],
+        x0_dxy_unc: Optional[Tensor],
+        efficiency: Tensor,
+        scatters: AbsScatterBatch,
     ) -> Tuple[Optional[Tensor], Optional[Tensor]]:
         r"""
         Assign x0 inference to neighbourhood of voxels according to scatter-location uncertainty
@@ -122,7 +177,9 @@ class AbsX0Inferer(metaclass=ABCMeta):
         TODO: Rescale total probability to one (Gaussians extend outside passive volume)
         """
 
-        loc, loc_unc = self.scatters.location[self.mask], self.scatters.location_unc[self.mask]  # loc is (x,y,z)
+        scatter_mask = scatters.get_scatter_mask()
+
+        loc, loc_unc = scatters.location[scatter_mask], scatters.location_unc[scatter_mask]  # loc is (x,y,z)
         shp_xyz = (
             len(loc),
             round(self.volume.lw.cpu().numpy()[0] / self.volume.passive_size),
@@ -188,27 +245,29 @@ class AbsX0Inferer(metaclass=ABCMeta):
 
         return pred, weight
 
-    def pred_x0(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
-        x0_dtheta, x0_dtheta_unc = self.x0_from_dtheta()
-        x0_dxy, x0_dxy_unc = self.x0_from_dxy()
-        eff = self.compute_efficiency()
-
-        pred, weight = self.average_preds(x0_dtheta=x0_dtheta, x0_dtheta_unc=x0_dtheta_unc, x0_dxy=x0_dxy, x0_dxy_unc=x0_dxy_unc, efficiency=eff)
-
+    def get_prediction(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
+        # Volume-level X0 prediciton per voxel already made per batch -> combine and reaverage
+        if len(self.scatter_batches) == 0:
+            print("Warning: unable to scan volume with prescribed number of muons.")
+            return None, None
+        preds = torch.stack(self.preds, dim=0)
+        weights = torch.stack(self.weights, dim=0)
+        wpred = (preds * weights).sum(0)
+        weight = weights.sum(0)
+        pred = wpred / weight
         return pred, weight
 
 
 class VoxelX0Inferer(AbsX0Inferer):
-    def __init__(self, scatters: VoxelScatterBatch):
-        super().__init__(scatters=scatters)
-        self.muon_mask = self.mu.get_xy_mask(
-            (0, 0), self.lw
-        )  # Scatter mask assumes that muons are prefiltered to only include those which stay inside the volume
+    mask_muons = True
 
-    def compute_efficiency(self) -> Tensor:
+    def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
         r"""
         Does not yet handle more than two detectors per position
         """
+
+        scatter_mask = scatters.get_scatter_mask()
+        hits = scatters.hits
 
         dets = self.volume.get_detectors()
         if len(dets) != 4:
@@ -218,7 +277,7 @@ class VoxelX0Inferer(AbsX0Inferer):
         for p, l, i in zip(("above", "above", "below", "below"), dets, (0, 1, 0, 1)):
             if not isinstance(l, VoxelDetectorLayer):
                 raise ValueError(f"Detector {l} is not a VoxelDetectorLayer")
-            x = l.abs2idx(self.hits[p]["reco_xy"][:, i][self.mask])
+            x = l.abs2idx(hits[p]["reco_xy"][:, i][scatter_mask])
             e = torch.clamp(l.efficiency[x[:, 0], x[:, 1]], min=0.0, max=1.0)
             if eff is None:
                 eff = e
@@ -230,18 +289,16 @@ class VoxelX0Inferer(AbsX0Inferer):
 
 
 class PanelX0Inferer(AbsX0Inferer):
-    def __init__(self, scatters: PanelScatterBatch):
-        super().__init__(scatters=scatters)
-
-    def compute_efficiency(self) -> Tensor:
+    def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
+        scatter_mask = scatters.get_scatter_mask()
         eff = None
-        for pos, hits in enumerate([self.scatters.above_gen_hits, self.scatters.below_gen_hits]):
+        for pos, hits in enumerate([scatters.above_gen_hits, scatters.below_gen_hits]):
             leff = None
             det = self.volume.get_detectors()[pos]
             if not isinstance(det, PanelDetectorLayer):
                 raise ValueError(f"Detector {det} is not a PanelDetectorLayer")
             panel_idxs = det.get_panel_zorder()
-            effs = torch.stack([det.panels[i].get_efficiency(hits[i][self.mask, :2]) for i in panel_idxs], dim=0)
+            effs = torch.stack([det.panels[i].get_efficiency(hits[i][scatter_mask, :2]) for i in panel_idxs], dim=0)
             for r in range(2, len(effs) + 1):  # Muon goes through any combination of at least 2 panels
                 c = torch.combinations(torch.arange(0, len(effs)), r=r)
                 e = effs[c].prod(1).sum(0)

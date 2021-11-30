@@ -276,10 +276,6 @@ def test_volume_wrapper_scan_volume(state, mocker):  # noqa F811
     assert cb.on_mu_batch_end.call_count == 10
     assert cb.on_x0_pred_begin.call_count == 1
     assert cb.on_x0_pred_end.call_count == 1
-    assert len(vw.fit_params.weights) == 10
-    assert len(vw.fit_params.wpreds) == 10
-    assert vw.fit_params.weights[0].shape == torch.Size((6, 10, 10))
-    assert vw.fit_params.wpreds[0].shape == torch.Size((6, 10, 10))
     assert vw.fit_params.pred.shape == torch.Size((6, 10, 10))
     assert vw.fit_params.weight.shape == torch.Size((6, 10, 10))
 

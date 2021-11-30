@@ -21,7 +21,7 @@ from ...volume.layer import AbsDetectorLayer
 from ...core import PartialOpt, DEVICE
 from ...muon import generate_batch, MuonBatch
 from ...inference.scattering import AbsScatterBatch, VoxelScatterBatch, PanelScatterBatch
-from ...inference.rad_length import AbsX0Inferer, VoxelX0Inferer, PanelX0Inferer
+from ...inference.rad_length import AbsVolumeInferer, VoxelX0Inferer, PanelX0Inferer
 
 __all__ = ["VoxelVolumeWrapper", "PanelVolumeWrapper"]
 
@@ -48,10 +48,9 @@ Stated changes: adaption of FitParams to pass type-checking, heavy adaptation of
 
 
 class FitParams:
+    volume_inferer: Optional[AbsVolumeInferer] = None
     state: Optional[str] = None
     pred: Optional[Tensor] = None
-    wpreds: Optional[List[Tensor]] = None
-    weights: Optional[List[Tensor]] = None
     weight: Optional[Tensor] = None
     n_mu_per_volume: Optional[int] = None
     mu_bs: Optional[int] = None
@@ -90,11 +89,11 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
         partial_opts: Dict[str, PartialOpt],
         loss_func: Optional[DetectorLoss],
         partial_scatter_inferer: Type[AbsScatterBatch],
-        partial_x0_inferer: Type[AbsX0Inferer],
+        partial_volume_inferer: Type[AbsVolumeInferer],
         mu_generator: Callable[[int], Tensor] = generate_batch,
     ):
         self.volume, self.loss_func, self.mu_generator = volume, loss_func, mu_generator
-        self.partial_scatter_inferer, self.partial_x0_inferer = partial_scatter_inferer, partial_x0_inferer
+        self.partial_scatter_inferer, self.partial_volume_inferer = partial_scatter_inferer, partial_volume_inferer
         self.device = self.volume.device
         self._build_opt(**partial_opts)
         self.parameters = self.volume.parameters
@@ -135,40 +134,28 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
 
     def _scan_volume(self) -> None:
         # Scan volume with muon batches
-        self.fit_params.wpreds, self.fit_params.weights = [], []
+        self.fit_params.pred, self.fit_params.weight = None, None
         if self.fit_params.state != "test":
             muon_bar = progress_bar(range(self.fit_params.n_mu_per_volume // self.fit_params.mu_bs), display=False, leave=False)
         else:
             muon_bar = progress_bar(range(self.fit_params.n_mu_per_volume // self.fit_params.mu_bs), parent=self.fit_params.passive_bar)
+        self.fit_params.volume_inferer = self.partial_volume_inferer(volume=self.volume)
         for _ in muon_bar:
             self.fit_params.mu = MuonBatch(self.mu_generator(self.fit_params.mu_bs), init_z=self.volume.h, device=self.fit_params.device)
             for c in self.fit_params.cbs:
                 c.on_mu_batch_begin()
             self.volume(self.fit_params.mu)
-            self.fit_params.sb = self.partial_scatter_inferer(self.fit_params.mu, self.volume)
+            self.fit_params.sb = self.partial_scatter_inferer(mu=self.fit_params.mu, volume=self.volume)
             for c in self.fit_params.cbs:
                 c.on_scatter_end()
-            inferer = self.partial_x0_inferer(self.fit_params.sb)
-            pred, wgt = inferer.pred_x0()
-            if pred is not None and wgt is not None:
-                self.fit_params.wpreds.append(pred * wgt)
-                self.fit_params.weights.append(wgt)
+            self.fit_params.volume_inferer.add_scatters(self.fit_params.sb)
             for c in self.fit_params.cbs:
                 c.on_mu_batch_end()
 
         # Predict volume based on all muon batches
         for c in self.fit_params.cbs:
             c.on_x0_pred_begin()
-        if len(self.fit_params.wpreds) == 0:
-            print("Warning: unable to scan volume with prescribed number of muons.")
-            self.fit_params.weight = None
-            self.fit_params.pred = None
-        else:
-            wgt = torch.stack(self.fit_params.weights, dim=0).sum(0)
-            pred = torch.stack(self.fit_params.wpreds, dim=0).sum(0) / wgt
-            self.fit_params.weight = wgt
-            self.fit_params.pred = pred
-
+        self.fit_params.pred, self.fit_params.weight = self.fit_params.volume_inferer.get_prediction()
         for c in self.fit_params.cbs:
             c.on_x0_pred_end()
 
@@ -378,7 +365,7 @@ class VoxelVolumeWrapper(AbsVolumeWrapper):
             loss_func=loss_func,
             mu_generator=mu_generator,
             partial_scatter_inferer=VoxelScatterBatch,
-            partial_x0_inferer=VoxelX0Inferer,
+            partial_volume_inferer=VoxelX0Inferer,
         )
 
     def _build_opt(self, **kwargs: PartialOpt) -> None:
@@ -425,7 +412,7 @@ class PanelVolumeWrapper(AbsVolumeWrapper):
             loss_func=loss_func,
             mu_generator=mu_generator,
             partial_scatter_inferer=PanelScatterBatch,
-            partial_x0_inferer=PanelX0Inferer,
+            partial_volume_inferer=PanelX0Inferer,
         )
 
     def _build_opt(self, **kwargs: PartialOpt) -> None:
