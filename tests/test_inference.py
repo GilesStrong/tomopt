@@ -296,7 +296,7 @@ def test_scatter_batch_compute(mocker, voxel_scatter_batch):  # noqa F811
 
 def test_x0_inferer_properties(voxel_scatter_batch):
     mu, volume, sb = voxel_scatter_batch
-    inferer = VoxelX0Inferer(scatters=sb, default_pred=X0["beryllium"])
+    inferer = VoxelX0Inferer(scatters=sb)
 
     assert inferer.mu == mu
     assert inferer.volume == volume
@@ -311,7 +311,7 @@ def test_voxel_x0_inferer_methods():
     volume = Volume(get_voxel_layers(init_res=1e3))
     volume(mu)
     sb = VoxelScatterBatch(mu=mu, volume=volume)
-    inferer = VoxelX0Inferer(scatters=sb, default_pred=X0["beryllium"])
+    inferer = VoxelX0Inferer(scatters=sb)
 
     pt, pt_unc = inferer.x0_from_dtheta()
     assert len(pt) == len(sb.location[sb.get_scatter_mask()])
@@ -333,24 +333,14 @@ def test_voxel_x0_inferer_methods():
     true = volume.get_rad_cube()
     assert p.shape == true.shape
     assert w.shape == true.shape
-    mask = p == p
-    assert (((p - true)[mask]).abs() / true[mask]).mean() < 100
-
-    p2, w2 = inferer.pred_x0()
-    assert p2.shape == true.shape
-    assert w2.shape == true.shape
-    assert (p2 != p2).sum() == 0  # NaNs replaced with default prediction
-    assert (p2_mse := (((p2 - true)).abs() / true).mean()) < 100  # noqa F841
-    print(torch.autograd.grad(p2.abs().sum(), l.resolution, retain_graph=True, allow_unused=True))
+    assert (p != p).sum() == 0  # No NaNs
+    assert (((p - true)).abs() / true).mean() < 100
 
     for l in volume.get_detectors():
-        assert torch.autograd.grad(p2.abs().sum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-        assert torch.autograd.grad(p2.abs().sum(), l.efficiency, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-        assert torch.autograd.grad(w2.abs().sum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-        assert torch.autograd.grad(w2.abs().sum(), l.efficiency, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-
-    p2, w2 = inferer.pred_x0(inc_default=False)
-    assert (p2 != p2).sum() >= 0  # NaNs NOT replaced with default prediction
+        assert torch.autograd.grad(p.abs().sum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+        assert torch.autograd.grad(p.abs().sum(), l.efficiency, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+        assert torch.autograd.grad(w.abs().sum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+        assert torch.autograd.grad(w.abs().sum(), l.efficiency, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
 
 
 @pytest.mark.flaky(max_runs=2, min_passes=1)
@@ -359,7 +349,7 @@ def test_panel_x0_inferer_methods():
     volume = Volume(get_panel_layers(init_res=1e3))
     volume(mu)
     sb = PanelScatterBatch(mu=mu, volume=volume)
-    inferer = PanelX0Inferer(scatters=sb, default_pred=X0["beryllium"])
+    inferer = PanelX0Inferer(scatters=sb)
 
     pt, pt_unc = inferer.x0_from_dtheta()
     assert len(pt) == len(sb.location[sb.get_scatter_mask()])
@@ -382,31 +372,22 @@ def test_panel_x0_inferer_methods():
     true = volume.get_rad_cube()
     assert p.shape == true.shape
     assert w.shape == true.shape
-    mask = p == p
-    assert (((p - true)[mask]).abs() / true[mask]).mean() < 100
-
-    p2, w2 = inferer.pred_x0()
-    assert p2.shape == true.shape
-    assert w2.shape == true.shape
-    assert (p2 != p2).sum() == 0  # NaNs replaced with default prediction
-    assert (p2_mse := (((p2 - true)).abs() / true).mean()) < 100  # noqa F841
+    assert (p != p).sum() == 0  # No NaNs
+    assert (((p - true)).abs() / true).mean() < 100
 
     for l in volume.get_detectors():
-        for p in l.panels:
-            assert torch.autograd.grad(p2.abs().sum(), p.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-            assert torch.autograd.grad(p2.abs().sum(), p.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-            assert torch.autograd.grad(p2.abs().sum(), p.z, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-            assert torch.autograd.grad(w2.abs().sum(), p.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-            assert torch.autograd.grad(w2.abs().sum(), p.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-            assert torch.autograd.grad(w2.abs().sum(), p.z, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-
-    p2, w2 = inferer.pred_x0(inc_default=False)
-    assert (p2 != p2).sum() >= 0  # NaNs NOT replaced with default prediction
+        for panel in l.panels:
+            assert torch.autograd.grad(p.abs().sum(), panel.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+            assert torch.autograd.grad(p.abs().sum(), panel.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+            assert torch.autograd.grad(p.abs().sum(), panel.z, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+            assert torch.autograd.grad(w.abs().sum(), panel.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+            assert torch.autograd.grad(w.abs().sum(), panel.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+            assert torch.autograd.grad(w.abs().sum(), panel.z, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
 
 
 def test_panel_x0_inferer_efficiency(mocker, panel_scatter_batch):  # noqa F811
     mu, volume, sb = panel_scatter_batch
-    inferer = PanelX0Inferer(scatters=sb, default_pred=X0["beryllium"])
+    inferer = PanelX0Inferer(scatters=sb)
     a_effs = Tensor([0.1, 0.2, 0.3, 0.4])
     b_effs = Tensor([0.5, 0.6, 0.7, 0.8])
 
@@ -440,7 +421,7 @@ def test_panel_x0_inferer_efficiency(mocker, panel_scatter_batch):  # noqa F811
 def test_x0_inferer_scatter_inversion(mocker, voxel_scatter_batch):  # noqa F811
     layer = Layer(LW, Z, SZ)
     mu, volume, sb = voxel_scatter_batch
-    inferer = VoxelX0Inferer(scatters=sb, default_pred=X0["beryllium"])
+    inferer = VoxelX0Inferer(scatters=sb)
     x0 = X0["lead"]
     n_x0 = layer._compute_n_x0(x0=x0, deltaz=SZ, theta=mu.theta)
     mocker.patch("tomopt.volume.layer.torch.randn", lambda n, device: torch.ones(n, device=device))  # remove randomness

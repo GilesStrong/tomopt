@@ -18,7 +18,7 @@ from ..callbacks.eval_metric import EvalMetric
 from ...optimisation.loss import DetectorLoss
 from ...volume import Volume, VoxelDetectorLayer, PanelDetectorLayer
 from ...volume.layer import AbsDetectorLayer
-from ...core import X0, PartialOpt, DEVICE
+from ...core import PartialOpt, DEVICE
 from ...muon import generate_batch, MuonBatch
 from ...inference.scattering import AbsScatterBatch, VoxelScatterBatch, PanelScatterBatch
 from ...inference.rad_length import AbsX0Inferer, VoxelX0Inferer, PanelX0Inferer
@@ -74,7 +74,6 @@ class FitParams:
     metric_log: Optional[MetricLogger] = None
     metric_cbs: Optional[List[EvalMetric]] = None
     passive_bar: Optional[Union[NBProgressBar, ConsoleProgressBar]] = None
-    use_default_pred: bool = False
     device: torch.device = DEVICE
 
     def __init__(self, **kwargs: Any) -> None:
@@ -92,10 +91,9 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
         loss_func: Optional[DetectorLoss],
         partial_scatter_inferer: Type[AbsScatterBatch],
         partial_x0_inferer: Type[AbsX0Inferer],
-        default_pred: Optional[float] = X0["beryllium"],
         mu_generator: Callable[[int], Tensor] = generate_batch,
     ):
-        self.volume, self.loss_func, self.default_pred, self.mu_generator = volume, loss_func, default_pred, mu_generator
+        self.volume, self.loss_func, self.mu_generator = volume, loss_func, mu_generator
         self.partial_scatter_inferer, self.partial_x0_inferer = partial_scatter_inferer, partial_x0_inferer
         self.device = self.volume.device
         self._build_opt(**partial_opts)
@@ -150,8 +148,8 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
             self.fit_params.sb = self.partial_scatter_inferer(self.fit_params.mu, self.volume)
             for c in self.fit_params.cbs:
                 c.on_scatter_end()
-            inferer = self.partial_x0_inferer(self.fit_params.sb, self.default_pred)
-            pred, wgt = inferer.pred_x0(inc_default=False)
+            inferer = self.partial_x0_inferer(self.fit_params.sb)
+            pred, wgt = inferer.pred_x0()
             if pred is not None and wgt is not None:
                 self.fit_params.wpreds.append(pred * wgt)
                 self.fit_params.weights.append(wgt)
@@ -168,8 +166,6 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
         else:
             wgt = torch.stack(self.fit_params.weights, dim=0).sum(0)
             pred = torch.stack(self.fit_params.wpreds, dim=0).sum(0) / wgt
-            if self.fit_params.use_default_pred:
-                pred, wgt = inferer.add_default_pred(pred, wgt)
             self.fit_params.weight = wgt
             self.fit_params.pred = pred
 
@@ -314,7 +310,6 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
         passives: PassiveYielder,
         n_mu_per_volume: int,
         mu_bs: int,
-        use_default_pred: bool = False,
         pred_cb: PredHandler = PredHandler(),
         cbs: Optional[List[Callback]] = None,
         cb_savepath: Path = Path("train_weights"),
@@ -331,7 +326,6 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
             tst_passives=passives,
             state="test",
             cb_savepath=cb_savepath,
-            use_default_pred=use_default_pred,
             device=self.device,
         )
         try:
@@ -376,14 +370,12 @@ class VoxelVolumeWrapper(AbsVolumeWrapper):
         res_opt: PartialOpt,
         eff_opt: PartialOpt,
         loss_func: Optional[DetectorLoss],
-        default_pred: Optional[float] = X0["beryllium"],
         mu_generator: Callable[[int], Tensor] = generate_batch,
     ):
         super().__init__(
             volume=volume,
             partial_opts={"res_opt": res_opt, "eff_opt": eff_opt},
             loss_func=loss_func,
-            default_pred=default_pred,
             mu_generator=mu_generator,
             partial_scatter_inferer=VoxelScatterBatch,
             partial_x0_inferer=VoxelX0Inferer,
@@ -409,10 +401,9 @@ class VoxelVolumeWrapper(AbsVolumeWrapper):
         res_opt: PartialOpt,
         eff_opt: PartialOpt,
         loss_func: Optional[DetectorLoss],
-        default_pred: Optional[float] = X0["beryllium"],
         mu_generator: Callable[[int], Tensor] = generate_batch,
     ) -> AbsVolumeWrapper:
-        vw = cls(volume=volume, res_opt=res_opt, eff_opt=eff_opt, loss_func=loss_func, default_pred=default_pred, mu_generator=mu_generator)
+        vw = cls(volume=volume, res_opt=res_opt, eff_opt=eff_opt, loss_func=loss_func, mu_generator=mu_generator)
         vw.load(name)
         return vw
 
@@ -426,14 +417,12 @@ class PanelVolumeWrapper(AbsVolumeWrapper):
         z_pos_opt: PartialOpt,
         xy_span_opt: PartialOpt,
         loss_func: Optional[DetectorLoss],
-        default_pred: Optional[float] = X0["beryllium"],
         mu_generator: Callable[[int], Tensor] = generate_batch,
     ):
         super().__init__(
             volume=volume,
             partial_opts={"xy_pos_opt": xy_pos_opt, "z_pos_opt": z_pos_opt, "xy_span_opt": xy_span_opt},
             loss_func=loss_func,
-            default_pred=default_pred,
             mu_generator=mu_generator,
             partial_scatter_inferer=PanelScatterBatch,
             partial_x0_inferer=PanelX0Inferer,
@@ -461,7 +450,6 @@ class PanelVolumeWrapper(AbsVolumeWrapper):
         z_pos_opt: PartialOpt,
         xy_span_opt: PartialOpt,
         loss_func: Optional[DetectorLoss],
-        default_pred: Optional[float] = X0["beryllium"],
         mu_generator: Callable[[int], Tensor] = generate_batch,
     ) -> AbsVolumeWrapper:
         vw = cls(
@@ -470,7 +458,6 @@ class PanelVolumeWrapper(AbsVolumeWrapper):
             z_pos_opt=z_pos_opt,
             xy_span_opt=xy_span_opt,
             loss_func=loss_func,
-            default_pred=default_pred,
             mu_generator=mu_generator,
         )
         vw.load(name)

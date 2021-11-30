@@ -477,7 +477,7 @@ def test_volume_wrapper_predict(mocker):  # noqa F811
         mocker.spy(c, "on_pred_end")
     mocker.spy(c, "get_preds")
 
-    preds = vw.predict(py, n_mu_per_volume=100, mu_bs=100, pred_cb=pred_cb, cbs=cbs, use_default_pred=True)
+    preds = vw.predict(py, n_mu_per_volume=100, mu_bs=100, pred_cb=pred_cb, cbs=cbs)
 
     for c in [cbs[0], pred_cb]:
         assert c.set_wrapper.call_count == 1
@@ -490,7 +490,3 @@ def test_volume_wrapper_predict(mocker):  # noqa F811
     assert preds[0][0].shape == (6, 10, 10)
     assert preds[0][1].shape == (6, 10, 10)
     assert preds[0][0].sum() > 0
-
-    preds = vw.predict(py, n_mu_per_volume=100, mu_bs=100, pred_cb=pred_cb, cbs=cbs, use_default_pred=False)
-    assert np.isnan(preds[0][0].sum()) >= 0
-    assert preds[0][1].sum() > 0

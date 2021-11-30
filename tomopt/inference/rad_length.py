@@ -8,7 +8,7 @@ from torch.distributions import Normal
 
 from .scattering import AbsScatterBatch, PanelScatterBatch, VoxelScatterBatch
 from ..volume import VoxelDetectorLayer, PanelDetectorLayer
-from ..core import X0, SCATTER_COEF_A
+from ..core import SCATTER_COEF_A
 from ..utils import jacobian
 
 __all__ = ["VoxelX0Inferer", "PanelX0Inferer"]
@@ -17,17 +17,12 @@ __all__ = ["VoxelX0Inferer", "PanelX0Inferer"]
 class AbsX0Inferer(metaclass=ABCMeta):
     muon_mask: Optional[Tensor] = None
 
-    def __init__(self, scatters: AbsScatterBatch, default_pred: Optional[float] = X0["beryllium"], use_gaussian_spread: bool = True):
-        self.scatters, self.default_pred, self.use_gaussian_spread = scatters, default_pred, use_gaussian_spread
+    def __init__(self, scatters: AbsScatterBatch):
+        self.scatters = scatters
         self.mu, self.volume, self.hits = self.scatters.mu, self.scatters.volume, self.scatters.hits
         self.size, self.lw = self.volume.passive_size, self.volume.lw
         self.mask = self.scatters.get_scatter_mask()
         self.device = self.mu.device
-        if self.default_pred is not None:
-            self.default_weight = 1 / (self.default_pred ** 2)
-            self.default_weight_t = torch.tensor([self.default_weight], device=self.device)
-            self.default_pred_t = torch.tensor([self.default_pred], device=self.device)
-        self.average_preds = self.average_preds_gaussian if self.use_gaussian_spread else self.average_preds_single
 
     @staticmethod
     def _x0_from_dtheta(delta_z: float, mom: Tensor, dtheta: Tensor, theta_xy_in: Tensor, theta_xy_out: Tensor) -> Tensor:
@@ -117,34 +112,7 @@ class AbsX0Inferer(metaclass=ABCMeta):
     def compute_efficiency(self) -> Tensor:
         pass
 
-    def average_preds_single(
-        self, x0_dtheta: Optional[Tensor], x0_dtheta_unc: Optional[Tensor], x0_dxy: Optional[Tensor], x0_dxy_unc: Optional[Tensor], efficiency: Tensor
-    ) -> Tuple[Tensor, Tensor]:
-        r"""
-        Assign entirety of x0 inference to single voxels per muon
-        """
-
-        loc, loc_unc = self.scatters.location[self.mask], self.scatters.location_unc[self.mask]  # noqa F841 will use loc_unc to infer around central voxel
-        loc_idx = self.volume.lookup_passive_xyz_coords(loc)
-        idxs = torch.stack((torch.arange(len(loc)).long(), loc_idx[:, 2], loc_idx[:, 0], loc_idx[:, 1]), dim=1)
-        shp = (len(loc), len(self.volume.get_passives()), *(self.volume.lw / self.volume.passive_size).long())
-
-        wpreds, weights = [], []
-        for x0, unc in ((x0_dtheta, x0_dtheta_unc), (x0_dxy, x0_dxy_unc)):
-            if x0 is None or unc is None:
-                continue
-            coef = efficiency / ((1e-17) + (unc ** 2))
-            p = torch.sparse_coo_tensor(idxs.T, x0 * coef, size=shp)
-            w = torch.sparse_coo_tensor(idxs.T, coef, size=shp)
-            wpreds.append(p.to_dense())
-            weights.append(w.to_dense())
-
-        wpred, weight = torch.cat(wpreds, dim=0), torch.cat(weights, dim=0)
-        wpred, weight = wpred.sum(0), weight.sum(0)
-        pred = wpred / weight
-        return pred, weight
-
-    def average_preds_gaussian(
+    def average_preds(
         self, x0_dtheta: Optional[Tensor], x0_dtheta_unc: Optional[Tensor], x0_dxy: Optional[Tensor], x0_dxy_unc: Optional[Tensor], efficiency: Tensor
     ) -> Tuple[Optional[Tensor], Optional[Tensor]]:
         r"""
@@ -220,28 +188,19 @@ class AbsX0Inferer(metaclass=ABCMeta):
 
         return pred, weight
 
-    def add_default_pred(self, pred: Tensor, weight: Tensor) -> Tuple[Tensor, Tensor]:
-        pred = torch.nan_to_num(pred, self.default_pred)
-        pred = torch.where(pred == 0.0, self.default_pred_t.type(pred.type()), pred)
-        weight = torch.nan_to_num(weight, self.default_weight)
-        weight = torch.where(weight == 0.0, self.default_weight_t.type(weight.type()), weight)
-        return pred, weight
-
-    def pred_x0(self, inc_default: bool = True) -> Tuple[Optional[Tensor], Optional[Tensor]]:
+    def pred_x0(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
         x0_dtheta, x0_dtheta_unc = self.x0_from_dtheta()
         x0_dxy, x0_dxy_unc = self.x0_from_dxy()
         eff = self.compute_efficiency()
 
         pred, weight = self.average_preds(x0_dtheta=x0_dtheta, x0_dtheta_unc=x0_dtheta_unc, x0_dxy=x0_dxy, x0_dxy_unc=x0_dxy_unc, efficiency=eff)
-        if inc_default and self.default_pred is not None and pred is not None:
-            pred, weight = self.add_default_pred(pred, weight)
 
         return pred, weight
 
 
 class VoxelX0Inferer(AbsX0Inferer):
-    def __init__(self, scatters: VoxelScatterBatch, default_pred: Optional[float] = X0["beryllium"], use_gaussian_spread: bool = True):
-        super().__init__(scatters=scatters, default_pred=default_pred, use_gaussian_spread=use_gaussian_spread)
+    def __init__(self, scatters: VoxelScatterBatch):
+        super().__init__(scatters=scatters)
         self.muon_mask = self.mu.get_xy_mask(
             (0, 0), self.lw
         )  # Scatter mask assumes that muons are prefiltered to only include those which stay inside the volume
@@ -271,8 +230,8 @@ class VoxelX0Inferer(AbsX0Inferer):
 
 
 class PanelX0Inferer(AbsX0Inferer):
-    def __init__(self, scatters: PanelScatterBatch, default_pred: Optional[float] = X0["beryllium"], use_gaussian_spread: bool = True):
-        super().__init__(scatters=scatters, default_pred=default_pred, use_gaussian_spread=use_gaussian_spread)
+    def __init__(self, scatters: PanelScatterBatch):
+        super().__init__(scatters=scatters)
 
     def compute_efficiency(self) -> Tensor:
         eff = None
