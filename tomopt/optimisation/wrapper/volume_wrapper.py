@@ -21,7 +21,7 @@ from ...volume.layer import AbsDetectorLayer
 from ...core import PartialOpt, DEVICE
 from ...muon import generate_batch, MuonBatch
 from ...inference.scattering import AbsScatterBatch, VoxelScatterBatch, PanelScatterBatch
-from ...inference.rad_length import AbsVolumeInferer, VoxelX0Inferer, PanelX0Inferer
+from ...inference.volume import AbsVolumeInferer, VoxelX0Inferer, PanelX0Inferer
 
 __all__ = ["VoxelVolumeWrapper", "PanelVolumeWrapper"]
 

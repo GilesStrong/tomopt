@@ -5,6 +5,7 @@ import math
 from unittest.mock import patch
 from typing import Tuple
 import types
+from tomopt import inference
 
 import torch
 from torch import Tensor, nn
@@ -14,7 +15,10 @@ from tomopt.volume import PassiveLayer, VoxelDetectorLayer, Volume, PanelDetecto
 from tomopt.muon import MuonBatch, generate_batch
 from tomopt.core import X0
 from tomopt.inference import VoxelScatterBatch, VoxelX0Inferer, PanelX0Inferer, PanelScatterBatch
+from tomopt.inference.volume import AbsVolumeInferer
 from tomopt.volume.layer import Layer
+
+from tomopt.inference.scattering import AbsScatterBatch
 
 LW = Tensor([1, 1])
 SZ = 0.1
@@ -294,10 +298,9 @@ def test_scatter_batch_compute(mocker, voxel_scatter_batch):  # noqa F811
     assert (sb.dtheta - Tensor([[math.pi / 2, math.pi / 2]])).sum().abs() < 1e-3
 
 
-def test_x0_inferer_properties(voxel_scatter_batch):
+def test_abs_volume_inferer_properties(voxel_scatter_batch):
     mu, volume, sb = voxel_scatter_batch
-    inferer = VoxelX0Inferer(volume=volume)
-    inferer.add_scatters(sb)
+    inferer = PanelX0Inferer(volume=volume)
 
     assert inferer.volume == volume
     assert torch.all(inferer.lw == LW)
@@ -350,6 +353,20 @@ def test_voxel_x0_inferer_methods():
     assert (pi - p).abs().sum() < 1e-5
     assert (wi - w).abs().sum() < 1e-5
 
+    # Multiple batches
+    mu = MuonBatch(generate_batch(N), init_z=1)
+    volume(mu)
+    sb = VoxelScatterBatch(mu=mu, volume=volume)
+    inferer.add_scatters(sb)
+
+    assert len(inferer.scatter_batches) == 2
+    assert len(inferer.preds) == 2
+    assert len(inferer.weights) == 2
+
+    pi, wi = inferer.get_prediction()  # Averaged prediction slightly changes
+    assert (pi - p).abs().sum() > 1e-2
+    assert (wi - w).abs().sum() > 1e-2
+
 
 @pytest.mark.flaky(max_runs=2, min_passes=1)
 def test_panel_x0_inferer_methods():
@@ -400,6 +417,20 @@ def test_panel_x0_inferer_methods():
     pi, wi = inferer.get_prediction()
     assert (pi - p).abs().sum() < 1e-5
     assert (wi - w).abs().sum() < 1e-5
+
+    # Multiple batches
+    mu = MuonBatch(generate_batch(N), init_z=1)
+    volume(mu)
+    sb = PanelScatterBatch(mu=mu, volume=volume)
+    inferer.add_scatters(sb)
+
+    assert len(inferer.scatter_batches) == 2
+    assert len(inferer.preds) == 2
+    assert len(inferer.weights) == 2
+
+    pi, wi = inferer.get_prediction()  # Averaged prediction slightly changes
+    assert (pi - p).abs().sum() > 1e-2
+    assert (wi - w).abs().sum() > 1e-2
 
 
 def test_panel_x0_inferer_efficiency(mocker, panel_scatter_batch):  # noqa F811
@@ -456,6 +487,6 @@ def test_x0_inferer_scatter_inversion(mocker, voxel_scatter_batch):  # noqa F811
     mocker.patch.object(sb, "get_scatter_mask", lambda: mask)
     inferer.mask_muons = False
 
-    mocker.patch("tomopt.inference.rad_length.jacobian", lambda i, j: torch.ones((len(i), 1, 2), device=i.device))  # remove randomness
+    mocker.patch("tomopt.inference.volume.jacobian", lambda i, j: torch.ones((len(i), 1, 2), device=i.device))  # remove randomness
     pred, _ = inferer.x0_from_dtheta(scatters=sb)
     assert (pred.mean() - x0) < 1e-5

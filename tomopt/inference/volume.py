@@ -6,7 +6,7 @@ import torch
 from torch import Tensor
 from torch.distributions import Normal
 
-from .scattering import AbsScatterBatch, PanelScatterBatch, VoxelScatterBatch
+from .scattering import AbsScatterBatch
 from ..volume import VoxelDetectorLayer, PanelDetectorLayer, Volume
 from ..core import SCATTER_COEF_A
 from ..utils import jacobian
