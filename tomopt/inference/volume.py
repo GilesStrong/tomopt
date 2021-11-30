@@ -250,12 +250,15 @@ class AbsX0Inferer(AbsVolumeInferer):
         if len(self.scatter_batches) == 0:
             print("Warning: unable to scan volume with prescribed number of muons.")
             return None, None
-        preds = torch.stack(self.preds, dim=0)
-        weights = torch.stack(self.weights, dim=0)
-        wpred = (preds * weights).sum(0)
-        weight = weights.sum(0)
-        pred = wpred / weight
-        return pred, weight
+        elif len(self.scatter_batches) == 1:
+            return self.preds[0], self.weights[0]
+        else:
+            preds = torch.stack(self.preds, dim=0)
+            weights = torch.stack(self.weights, dim=0)
+            wpred = (preds * weights).sum(0)
+            weight = weights.sum(0)
+            pred = wpred / weight
+            return pred, weight
 
 
 class VoxelX0Inferer(AbsX0Inferer):
