@@ -5,7 +5,6 @@ import math
 from unittest.mock import patch
 from typing import Tuple
 import types
-from tomopt import inference
 
 import torch
 from torch import Tensor, nn
