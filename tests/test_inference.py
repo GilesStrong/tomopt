@@ -15,9 +15,8 @@ from tomopt.muon import MuonBatch, generate_batch
 from tomopt.core import X0
 from tomopt.inference import VoxelScatterBatch, VoxelX0Inferer, PanelX0Inferer, PanelScatterBatch
 from tomopt.inference.volume import AbsVolumeInferer
-from tomopt.volume.layer import Layer
-
 from tomopt.inference.scattering import AbsScatterBatch
+from tomopt.volume.layer import Layer
 
 LW = Tensor([1, 1])
 SZ = 0.1
