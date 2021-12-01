@@ -92,9 +92,7 @@ class AbsX0Inferer(AbsVolumeInferer):
 
     @staticmethod
     def _x0_from_dtheta_unc(pred: Tensor, in_vars: Tensor, uncs: Tensor) -> Tensor:
-
-        # Compute dvar/dhit_x
-        jac = torch.nan_to_num(jacobian(pred, in_vars)).sum(1)
+        jac = torch.nan_to_num(jacobian(pred, in_vars)).sum(1)  # Compute dvar/dhit_x
 
         # Compute unc^2 = unc_x*unc_y*dvar/dhit_x*dvar/dhit_y summing over all x,y inclusive combinations
         idxs = torch.combinations(torch.arange(0, uncs.shape[-1]), with_replacement=True)
