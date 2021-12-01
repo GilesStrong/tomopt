@@ -14,8 +14,6 @@ from tomopt.volume import PassiveLayer, VoxelDetectorLayer, Volume, PanelDetecto
 from tomopt.muon import MuonBatch, generate_batch
 from tomopt.core import X0
 from tomopt.inference import VoxelScatterBatch, VoxelX0Inferer, PanelX0Inferer, PanelScatterBatch
-from tomopt.inference.volume import AbsVolumeInferer
-from tomopt.inference.scattering import AbsScatterBatch
 from tomopt.volume.layer import Layer
 
 LW = Tensor([1, 1])
@@ -121,10 +119,10 @@ def test_voxel_scatter_batch(mock_show, voxel_scatter_batch):
     assert sb.n_hits_above == 2
     assert sb.n_hits_below == 2
     for i in range(2):
-        assert (sb.above_hits[i][:, :2] == hits["above"]["reco_xy"][:, i]).all()
-        assert (sb.below_hits[i][:, :2] == hits["below"]["reco_xy"][:, i]).all()
-        assert (sb.above_gen_hits[i][:, :2] == hits["above"]["gen_xy"][:, i]).all()
-        assert (sb.below_gen_hits[i][:, :2] == hits["below"]["gen_xy"][:, i]).all()
+        assert (sb.above_hits[:, i, :2] == hits["above"]["reco_xy"][:, i]).all()
+        assert (sb.below_hits[:, i, :2] == hits["below"]["reco_xy"][:, i]).all()
+        assert (sb.above_gen_hits[:, i, :2] == hits["above"]["gen_xy"][:, i]).all()
+        assert (sb.below_gen_hits[:, i, :2] == hits["below"]["gen_xy"][:, i]).all()
 
     assert (loc_xy_unc := sb.location_unc[:, :2].mean()) < 0.5
     assert (loc_z_unc := sb.location_unc[:, 2].mean()) < 1.5
@@ -134,8 +132,8 @@ def test_voxel_scatter_batch(mock_show, voxel_scatter_batch):
     assert (theta_in_unc := sb.theta_in_unc.mean() / sb.theta_in.abs().mean()) < 10
 
     # uncertainties
-    uncs = sb._get_hit_uncs([volume.get_detectors()[0]], [sb.above_hits[0]])
-    assert (uncs[0].mean(0) - Tensor([1e-4, 1e-4, 0])).abs().sum() < 1e-5
+    uncs = sb._get_hit_uncs(volume.get_detectors(), sb.reco_hits)
+    assert (uncs[:, 0].mean(0) - Tensor([1e-4, 1e-4, 0])).abs().sum() < 1e-5
 
     sb.plot_scatter(0)
 
@@ -170,10 +168,10 @@ def test_panel_scatter_batch(mock_show, panel_scatter_batch):
     assert sb.n_hits_above == 4
     assert sb.n_hits_below == 4
     for i in range(4):
-        assert (sb.above_hits[i][:, :2] == hits["above"]["reco_xy"][:, i]).all()
-        assert (sb.below_hits[i][:, :2] == hits["below"]["reco_xy"][:, i]).all()
-        assert (sb.above_gen_hits[i][:, :2] == hits["above"]["gen_xy"][:, i]).all()
-        assert (sb.below_gen_hits[i][:, :2] == hits["below"]["gen_xy"][:, i]).all()
+        assert (sb.above_hits[:, i, :2] == hits["above"]["reco_xy"][:, i]).all()
+        assert (sb.below_hits[:, i, :2] == hits["below"]["reco_xy"][:, i]).all()
+        assert (sb.above_gen_hits[:, i, :2] == hits["above"]["gen_xy"][:, i]).all()
+        assert (sb.below_gen_hits[:, i, :2] == hits["below"]["gen_xy"][:, i]).all()
 
     assert (loc_xy_unc := sb.location_unc[:, :2].mean()) < 0.5
     assert (loc_z_unc := sb.location_unc[:, 2].mean()) < 1.5
@@ -184,7 +182,7 @@ def test_panel_scatter_batch(mock_show, panel_scatter_batch):
 
     # uncertainties
     panel = next(volume.get_detectors()[0].yield_zordered_panels())
-    uncs = sb._get_hit_uncs([panel], [sb.above_hits[0]])
+    uncs = sb._get_hit_uncs([panel], sb.reco_hits[:, 0:1])
     assert (uncs[0][:, 2] == 0).all()
     xy_unc = uncs[0][:, :2]
     assert xy_unc.min().item() > 0
@@ -222,20 +220,28 @@ def test_scatter_batch_trajectory_fit():
     xa0 = Tensor([[0, 0, 1]])
     xa1 = Tensor([[1, 1, 0]])
     # Same unc
-    traj, start = VoxelScatterBatch.get_muon_trajectory([xa0, xa1], [Tensor([[1, 1]]), Tensor([[1, 1]])], lw=Tensor([1, 1]))
+    traj, start = VoxelScatterBatch.get_muon_trajectory(
+        torch.stack([xa0, xa1], dim=1), torch.stack([Tensor([[1, 1]]), Tensor([[1, 1]])], dim=1), lw=Tensor([1, 1])
+    )
     assert (traj == Tensor([[1, 1, -1]])).all()
     assert (start == xa0).all()
     # Different unc
-    traj, _ = VoxelScatterBatch.get_muon_trajectory([xa0, xa1], [Tensor([[10, 10]]), Tensor([[1, 1]])], lw=Tensor([1, 1]))
+    traj, _ = VoxelScatterBatch.get_muon_trajectory(
+        torch.stack([xa0, xa1], dim=1), torch.stack([Tensor([[10, 10]]), Tensor([[1, 1]])], dim=1), lw=Tensor([1, 1])
+    )
     assert (traj == Tensor([[1, 1, -1]])).all()
 
     # 3 Hits inline
     xa2 = Tensor([[0.5, 0.5, 0.5]])
     # Same unc
-    traj, _ = VoxelScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[1, 1]]), Tensor([[1, 1]]), Tensor([[1, 1]])], lw=Tensor([1, 1]))
+    traj, _ = VoxelScatterBatch.get_muon_trajectory(
+        torch.stack([xa0, xa1, xa2], dim=1), torch.stack([Tensor([[1, 1]]), Tensor([[1, 1]]), Tensor([[1, 1]])], dim=1), lw=Tensor([1, 1])
+    )
     assert (traj == Tensor([[1, 1, -1]])).all()
     # Different unc
-    traj, _ = VoxelScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[10, 10]]), Tensor([[1, 1]]), Tensor([[1, 1]])], lw=Tensor([1, 1]))
+    traj, _ = VoxelScatterBatch.get_muon_trajectory(
+        torch.stack([xa0, xa1, xa2], dim=1), torch.stack([Tensor([[10, 10]]), Tensor([[1, 1]]), Tensor([[1, 1]])], dim=1), lw=Tensor([1, 1])
+    )
     assert (traj == Tensor([[1, 1, -1]])).all()
 
     # 3 Hits offline
@@ -243,10 +249,14 @@ def test_scatter_batch_trajectory_fit():
     xa1 = Tensor([[0, 1, 0.5]])
     xa2 = Tensor([[1, 0, 0.5]])
     # Same unc
-    traj, _ = VoxelScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[1, 1]]), Tensor([[1, 1]]), Tensor([[1, 1]])], lw=Tensor([1, 1]))
+    traj, _ = VoxelScatterBatch.get_muon_trajectory(
+        torch.stack([xa0, xa1, xa2], dim=1), torch.stack([Tensor([[1, 1]]), Tensor([[1, 1]]), Tensor([[1, 1]])], dim=1), lw=Tensor([1, 1])
+    )
     assert (traj - Tensor([[0.5, 0.5, -0.5]])).sum() < 1e-5
     # Different unc
-    traj, _ = VoxelScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[1, 1]]), Tensor([[1e9, 1e9]]), Tensor([[1, 1]])], lw=Tensor([1, 1]))
+    traj, _ = VoxelScatterBatch.get_muon_trajectory(
+        torch.stack([xa0, xa1, xa2], dim=1), torch.stack([Tensor([[1, 1]]), Tensor([[1e9, 1e9]]), Tensor([[1, 1]])], dim=1), lw=Tensor([1, 1])
+    )
     assert (traj - Tensor([[1, 0, -0.5]])).sum() < 1e-5
 
 

@@ -112,7 +112,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
         if self._gen_hits is None:
             return None
         else:
-            return self._gen_hits[:, : self.n_hits_above]
+            return self._gen_hits[:, self.n_hits_above :]
 
     @property
     def above_hits(self) -> Optional[Tensor]:
