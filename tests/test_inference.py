@@ -158,6 +158,7 @@ def test_voxel_scatter_batch(mock_show, voxel_scatter_batch):
     assert sb.theta_in_unc.mean() / sb.theta_in.abs().mean() < theta_in_unc
 
 
+@pytest.mark.flaky(max_runs=3, min_passes=2)
 @patch("matplotlib.pyplot.show")
 def test_panel_scatter_batch(mock_show, panel_scatter_batch):
     mu, volume, sb = panel_scatter_batch
