@@ -91,17 +91,14 @@ class AbsX0Inferer(AbsVolumeInferer):
         return pred
 
     @staticmethod
-    def _x0_from_dtheta_unc(
-        pred: Tensor, dtheta: Tensor, theta_xy_in: Tensor, theta_xy_out: Tensor, dtheta_unc: Tensor, theta_xy_in_unc: Tensor, theta_xy_out_unc: Tensor
-    ) -> Tensor:
+    def _x0_from_dtheta_unc(pred: Tensor, in_vars: Tensor, uncs: Tensor) -> Tensor:
 
         # Compute dvar/dhit_x
-        jac = torch.cat([torch.nan_to_num(jacobian(pred, x)).sum(1) for x in [dtheta, theta_xy_in, theta_xy_out]], dim=-1)
-        unc = torch.cat([dtheta_unc, theta_xy_in_unc, theta_xy_out_unc], dim=-1)
+        jac = torch.nan_to_num(jacobian(pred, in_vars)).sum(1)
 
         # Compute unc^2 = unc_x*unc_y*dvar/dhit_x*dvar/dhit_y summing over all x,y inclusive combinations
-        idxs = torch.combinations(torch.arange(0, unc.shape[-1]), with_replacement=True)
-        unc_2 = (jac[:, idxs] * unc[:, idxs]).prod(-1)
+        idxs = torch.combinations(torch.arange(0, uncs.shape[-1]), with_replacement=True)
+        unc_2 = (jac[:, idxs] * uncs[:, idxs]).prod(-1)
 
         pred_unc = unc_2.sum(-1).sqrt()
 
@@ -132,24 +129,27 @@ class AbsX0Inferer(AbsVolumeInferer):
         if self.mask_muons:  # Scatter mask assumes that muons are prefiltered to only include those which stay inside the volume
             muon_mask = mu.get_xy_mask((0, 0), self.lw)
 
-        mom = mu.reco_mom[scatter_mask] if self.mask_muons is False else mu.reco_mom[muon_mask][scatter_mask]
-        dtheta = scatters.dtheta[scatter_mask]
-        dtheta_unc = scatters.dtheta_unc[scatter_mask]
-        theta_xy_in = scatters.theta_in[scatter_mask]
-        theta_xy_out = scatters.theta_out[scatter_mask]
-        theta_xy_in_unc = scatters.theta_in_unc[scatter_mask]
-        theta_xy_out_unc = scatters.theta_out_unc[scatter_mask]
+        in_vars = torch.cat(
+            [
+                (mu.reco_mom[scatter_mask] if self.mask_muons is False else mu.reco_mom[muon_mask][scatter_mask])[:, None],  # 0
+                scatters.dtheta[scatter_mask],  # 1,2
+                scatters.theta_in[scatter_mask],  # 3,4
+                scatters.theta_out[scatter_mask],
+            ],
+            dim=-1,
+        )  # 5,6
+        mom = in_vars[:, 0]
+        dtheta = in_vars[:, 1:3]
+        theta_xy_in = in_vars[:, 3:5]
+        theta_xy_out = in_vars[:, 5:7]
+
+        uncs = torch.cat(
+            [torch.zeros_like(mom)[:, None], scatters.dtheta_unc[scatter_mask], scatters.theta_in_unc[scatter_mask], scatters.theta_out_unc[scatter_mask]],
+            dim=-1,
+        )
 
         pred = self._x0_from_dtheta(delta_z=self.size, mom=mom, dtheta=dtheta, theta_xy_in=theta_xy_in, theta_xy_out=theta_xy_out)
-        pred_unc = self._x0_from_dtheta_unc(
-            pred=pred,
-            dtheta=dtheta,
-            theta_xy_in=theta_xy_in,
-            theta_xy_out=theta_xy_out,
-            dtheta_unc=dtheta_unc,
-            theta_xy_in_unc=theta_xy_in_unc,
-            theta_xy_out_unc=theta_xy_out_unc,
-        )
+        pred_unc = self._x0_from_dtheta_unc(pred=pred, in_vars=in_vars, uncs=uncs)
 
         return pred, pred_unc
 
