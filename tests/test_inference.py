@@ -13,7 +13,7 @@ import torch.nn.functional as F
 from tomopt.volume import PassiveLayer, VoxelDetectorLayer, Volume, PanelDetectorLayer, DetectorPanel
 from tomopt.muon import MuonBatch, generate_batch
 from tomopt.core import X0
-from tomopt.inference import VoxelScatterBatch, VoxelX0Inferer, PanelX0Inferer, PanelScatterBatch
+from tomopt.inference import VoxelScatterBatch, VoxelX0Inferer, PanelX0Inferer, PanelScatterBatch, GenScatterBatch
 from tomopt.volume.layer import Layer
 
 LW = Tensor([1, 1])
@@ -300,6 +300,47 @@ def test_scatter_batch_compute(mocker, voxel_scatter_batch):  # noqa F811
     mocker.patch("tomopt.inference.scattering.jacobian", mock_jac)
 
     sb = VoxelScatterBatch(mu=mu, volume=volume)
+    assert (sb.location - Tensor([[0.5, 0.5, 0.5]])).sum().abs() < 1e-3
+    assert (sb.dxy - Tensor([[0.0, 0.0]])).sum().abs() < 1e-3
+    assert (sb.theta_in - Tensor([[-math.pi / 4, -math.pi / 4]])).sum().abs() < 1e-3
+    assert (sb.theta_out - Tensor([[math.pi / 4, math.pi / 4]])).sum().abs() < 1e-3
+    assert (sb.dtheta - Tensor([[math.pi / 2, math.pi / 2]])).sum().abs() < 1e-3
+
+
+def test_gen_scatter_batch_compute(mocker, voxel_scatter_batch):  # noqa F811
+    mu, volume = voxel_scatter_batch[0], voxel_scatter_batch[1]
+    hits = {
+        "above": {
+            "reco_xy": Tensor([[[10.0, -2.0], [1, 0.3]]]),
+            "gen_xy": Tensor([[[0.0, 0.0], [0.1, 0.1]]]),
+            "z": Tensor(
+                [
+                    [[1.0], [0.9]],
+                ]
+            ),
+        },
+        "below": {
+            "reco_xy": Tensor(
+                [
+                    [[np.nan, 0.1], [10.0, -20.0]],
+                ]
+            ),
+            "gen_xy": Tensor(
+                [
+                    [[0.1, 0.1], [0.0, 0.0]],
+                ]
+            ),
+            "z": Tensor(
+                [
+                    [[0.1], [0.0]],
+                ]
+            ),
+        },
+    }
+    mocker.patch.object(mu, "get_hits", return_value=hits)
+    mocker.patch("tomopt.volume.layer.Layer.abs2idx", return_value=torch.zeros((1, 3), dtype=torch.long))
+
+    sb = GenScatterBatch(mu=mu, volume=volume)
     assert (sb.location - Tensor([[0.5, 0.5, 0.5]])).sum().abs() < 1e-3
     assert (sb.dxy - Tensor([[0.0, 0.0]])).sum().abs() < 1e-3
     assert (sb.theta_in - Tensor([[-math.pi / 4, -math.pi / 4]])).sum().abs() < 1e-3
