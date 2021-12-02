@@ -119,10 +119,10 @@ def test_voxel_scatter_batch(mock_show, voxel_scatter_batch):
     assert sb.n_hits_above == 2
     assert sb.n_hits_below == 2
     for i in range(2):
-        assert (sb.above_hits[i][:, :2] == hits["above"]["reco_xy"][:, i]).all()
-        assert (sb.below_hits[i][:, :2] == hits["below"]["reco_xy"][:, i]).all()
-        assert (sb.above_gen_hits[i][:, :2] == hits["above"]["gen_xy"][:, i]).all()
-        assert (sb.below_gen_hits[i][:, :2] == hits["below"]["gen_xy"][:, i]).all()
+        assert (sb.above_hits[:, i, :2] == hits["above"]["reco_xy"][:, i]).all()
+        assert (sb.below_hits[:, i, :2] == hits["below"]["reco_xy"][:, i]).all()
+        assert (sb.above_gen_hits[:, i, :2] == hits["above"]["gen_xy"][:, i]).all()
+        assert (sb.below_gen_hits[:, i, :2] == hits["below"]["gen_xy"][:, i]).all()
 
     assert (loc_xy_unc := sb.location_unc[:, :2].mean()) < 0.5
     assert (loc_z_unc := sb.location_unc[:, 2].mean()) < 1.5
@@ -132,8 +132,8 @@ def test_voxel_scatter_batch(mock_show, voxel_scatter_batch):
     assert (theta_in_unc := sb.theta_in_unc.mean() / sb.theta_in.abs().mean()) < 10
 
     # uncertainties
-    uncs = sb._get_hit_uncs([volume.get_detectors()[0]], [sb.above_hits[0]])
-    assert (uncs[0].mean(0) - Tensor([1e-4, 1e-4, 0])).abs().sum() < 1e-5
+    uncs = sb._get_hit_uncs(volume.get_detectors(), sb.reco_hits)
+    assert (uncs[:, 0].mean(0) - Tensor([1e-4, 1e-4, 0])).abs().sum() < 1e-5
 
     sb.plot_scatter(0)
 
@@ -158,6 +158,7 @@ def test_voxel_scatter_batch(mock_show, voxel_scatter_batch):
     assert sb.theta_in_unc.mean() / sb.theta_in.abs().mean() < theta_in_unc
 
 
+@pytest.mark.flaky(max_runs=3, min_passes=2)
 @patch("matplotlib.pyplot.show")
 def test_panel_scatter_batch(mock_show, panel_scatter_batch):
     mu, volume, sb = panel_scatter_batch
@@ -168,10 +169,10 @@ def test_panel_scatter_batch(mock_show, panel_scatter_batch):
     assert sb.n_hits_above == 4
     assert sb.n_hits_below == 4
     for i in range(4):
-        assert (sb.above_hits[i][:, :2] == hits["above"]["reco_xy"][:, i]).all()
-        assert (sb.below_hits[i][:, :2] == hits["below"]["reco_xy"][:, i]).all()
-        assert (sb.above_gen_hits[i][:, :2] == hits["above"]["gen_xy"][:, i]).all()
-        assert (sb.below_gen_hits[i][:, :2] == hits["below"]["gen_xy"][:, i]).all()
+        assert (sb.above_hits[:, i, :2] == hits["above"]["reco_xy"][:, i]).all()
+        assert (sb.below_hits[:, i, :2] == hits["below"]["reco_xy"][:, i]).all()
+        assert (sb.above_gen_hits[:, i, :2] == hits["above"]["gen_xy"][:, i]).all()
+        assert (sb.below_gen_hits[:, i, :2] == hits["below"]["gen_xy"][:, i]).all()
 
     assert (loc_xy_unc := sb.location_unc[:, :2].mean()) < 0.5
     assert (loc_z_unc := sb.location_unc[:, 2].mean()) < 1.5
@@ -182,7 +183,7 @@ def test_panel_scatter_batch(mock_show, panel_scatter_batch):
 
     # uncertainties
     panel = next(volume.get_detectors()[0].yield_zordered_panels())
-    uncs = sb._get_hit_uncs([panel], [sb.above_hits[0]])
+    uncs = sb._get_hit_uncs([panel], sb.reco_hits[:, 0:1])
     assert (uncs[0][:, 2] == 0).all()
     xy_unc = uncs[0][:, :2]
     assert xy_unc.min().item() > 0
@@ -220,20 +221,28 @@ def test_scatter_batch_trajectory_fit():
     xa0 = Tensor([[0, 0, 1]])
     xa1 = Tensor([[1, 1, 0]])
     # Same unc
-    traj, start = VoxelScatterBatch.get_muon_trajectory([xa0, xa1], [Tensor([[1, 1]]), Tensor([[1, 1]])], lw=Tensor([1, 1]))
+    traj, start = VoxelScatterBatch.get_muon_trajectory(
+        torch.stack([xa0, xa1], dim=1), torch.stack([Tensor([[1, 1]]), Tensor([[1, 1]])], dim=1), lw=Tensor([1, 1])
+    )
     assert (traj == Tensor([[1, 1, -1]])).all()
     assert (start == xa0).all()
     # Different unc
-    traj, _ = VoxelScatterBatch.get_muon_trajectory([xa0, xa1], [Tensor([[10, 10]]), Tensor([[1, 1]])], lw=Tensor([1, 1]))
+    traj, _ = VoxelScatterBatch.get_muon_trajectory(
+        torch.stack([xa0, xa1], dim=1), torch.stack([Tensor([[10, 10]]), Tensor([[1, 1]])], dim=1), lw=Tensor([1, 1])
+    )
     assert (traj == Tensor([[1, 1, -1]])).all()
 
     # 3 Hits inline
     xa2 = Tensor([[0.5, 0.5, 0.5]])
     # Same unc
-    traj, _ = VoxelScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[1, 1]]), Tensor([[1, 1]]), Tensor([[1, 1]])], lw=Tensor([1, 1]))
+    traj, _ = VoxelScatterBatch.get_muon_trajectory(
+        torch.stack([xa0, xa1, xa2], dim=1), torch.stack([Tensor([[1, 1]]), Tensor([[1, 1]]), Tensor([[1, 1]])], dim=1), lw=Tensor([1, 1])
+    )
     assert (traj == Tensor([[1, 1, -1]])).all()
     # Different unc
-    traj, _ = VoxelScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[10, 10]]), Tensor([[1, 1]]), Tensor([[1, 1]])], lw=Tensor([1, 1]))
+    traj, _ = VoxelScatterBatch.get_muon_trajectory(
+        torch.stack([xa0, xa1, xa2], dim=1), torch.stack([Tensor([[10, 10]]), Tensor([[1, 1]]), Tensor([[1, 1]])], dim=1), lw=Tensor([1, 1])
+    )
     assert (traj == Tensor([[1, 1, -1]])).all()
 
     # 3 Hits offline
@@ -241,10 +250,14 @@ def test_scatter_batch_trajectory_fit():
     xa1 = Tensor([[0, 1, 0.5]])
     xa2 = Tensor([[1, 0, 0.5]])
     # Same unc
-    traj, _ = VoxelScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[1, 1]]), Tensor([[1, 1]]), Tensor([[1, 1]])], lw=Tensor([1, 1]))
+    traj, _ = VoxelScatterBatch.get_muon_trajectory(
+        torch.stack([xa0, xa1, xa2], dim=1), torch.stack([Tensor([[1, 1]]), Tensor([[1, 1]]), Tensor([[1, 1]])], dim=1), lw=Tensor([1, 1])
+    )
     assert (traj - Tensor([[0.5, 0.5, -0.5]])).sum() < 1e-5
     # Different unc
-    traj, _ = VoxelScatterBatch.get_muon_trajectory([xa0, xa1, xa2], [Tensor([[1, 1]]), Tensor([[1e9, 1e9]]), Tensor([[1, 1]])], lw=Tensor([1, 1]))
+    traj, _ = VoxelScatterBatch.get_muon_trajectory(
+        torch.stack([xa0, xa1, xa2], dim=1), torch.stack([Tensor([[1, 1]]), Tensor([[1e9, 1e9]]), Tensor([[1, 1]])], dim=1), lw=Tensor([1, 1])
+    )
     assert (traj - Tensor([[1, 0, -0.5]])).sum() < 1e-5
 
 
@@ -294,13 +307,11 @@ def test_scatter_batch_compute(mocker, voxel_scatter_batch):  # noqa F811
     assert (sb.dtheta - Tensor([[math.pi / 2, math.pi / 2]])).sum().abs() < 1e-3
 
 
-def test_x0_inferer_properties(voxel_scatter_batch):
+def test_abs_volume_inferer_properties(voxel_scatter_batch):
     mu, volume, sb = voxel_scatter_batch
-    inferer = VoxelX0Inferer(scatters=sb, default_pred=X0["beryllium"])
+    inferer = PanelX0Inferer(volume=volume)
 
-    assert inferer.mu == mu
     assert inferer.volume == volume
-    assert len(inferer.hits["above"]["z"]) == len(mu.get_hits((0, 0), LW)["above"]["z"])
     assert torch.all(inferer.lw == LW)
     assert inferer.size == SZ
 
@@ -311,9 +322,9 @@ def test_voxel_x0_inferer_methods():
     volume = Volume(get_voxel_layers(init_res=1e3))
     volume(mu)
     sb = VoxelScatterBatch(mu=mu, volume=volume)
-    inferer = VoxelX0Inferer(scatters=sb, default_pred=X0["beryllium"])
+    inferer = VoxelX0Inferer(volume=volume)
 
-    pt, pt_unc = inferer.x0_from_dtheta()
+    pt, pt_unc = inferer.x0_from_dtheta(scatters=sb)
     assert len(pt) == len(sb.location[sb.get_scatter_mask()])
     assert pt.shape == pt_unc.shape
     assert (pt_unc / pt).mean() < 10
@@ -322,35 +333,48 @@ def test_voxel_x0_inferer_methods():
         assert torch.autograd.grad(pt.abs().sum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
         assert torch.autograd.grad(pt_unc.abs().sum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
 
-    pxy, pxy_unc = inferer.x0_from_dxy()
+    pxy, pxy_unc = inferer.x0_from_dxy(scatters=sb)
     assert pxy is None and pxy_unc is None  # modify tests when dxy predictions implemented
 
-    eff = inferer.compute_efficiency()
+    eff = inferer.compute_efficiency(scatters=sb)
     assert eff.shape == pt.shape
     assert (eff - 0.0625).abs().mean() < 1e-5
 
-    p, w = inferer.average_preds(x0_dtheta=pt, x0_dtheta_unc=pt_unc, x0_dxy=pxy, x0_dxy_unc=pxy_unc, efficiency=eff)
+    p, w = inferer.get_voxel_x0_preds(x0_dtheta=pt, x0_dtheta_unc=pt_unc, x0_dxy=pxy, x0_dxy_unc=pxy_unc, efficiency=eff, scatters=sb)
     true = volume.get_rad_cube()
     assert p.shape == true.shape
     assert w.shape == true.shape
-    mask = p == p
-    assert (((p - true)[mask]).abs() / true[mask]).mean() < 100
-
-    p2, w2 = inferer.pred_x0()
-    assert p2.shape == true.shape
-    assert w2.shape == true.shape
-    assert (p2 != p2).sum() == 0  # NaNs replaced with default prediction
-    assert (p2_mse := (((p2 - true)).abs() / true).mean()) < 100  # noqa F841
-    print(torch.autograd.grad(p2.abs().sum(), l.resolution, retain_graph=True, allow_unused=True))
+    assert (p != p).sum() == 0  # No NaNs
+    assert (((p - true)).abs() / true).mean() < 100
 
     for l in volume.get_detectors():
-        assert torch.autograd.grad(p2.abs().sum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-        assert torch.autograd.grad(p2.abs().sum(), l.efficiency, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-        assert torch.autograd.grad(w2.abs().sum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-        assert torch.autograd.grad(w2.abs().sum(), l.efficiency, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+        assert torch.autograd.grad(p.abs().sum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+        assert torch.autograd.grad(p.abs().sum(), l.efficiency, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+        assert torch.autograd.grad(w.abs().sum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+        assert torch.autograd.grad(w.abs().sum(), l.efficiency, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
 
-    p2, w2 = inferer.pred_x0(inc_default=False)
-    assert (p2 != p2).sum() >= 0  # NaNs NOT replaced with default prediction
+    inferer.add_scatters(sb)
+    assert len(inferer.scatter_batches) == 1
+    assert (inferer.preds[0] - p).abs().sum() < 1e-5
+    assert (inferer.weights[0] - w).abs().sum() < 1e-5
+
+    pi, wi = inferer.get_prediction()
+    assert (pi - p).abs().sum() < 1e-5
+    assert (wi - w).abs().sum() < 1e-5
+
+    # Multiple batches
+    mu = MuonBatch(generate_batch(N), init_z=1)
+    volume(mu)
+    sb = VoxelScatterBatch(mu=mu, volume=volume)
+    inferer.add_scatters(sb)
+
+    assert len(inferer.scatter_batches) == 2
+    assert len(inferer.preds) == 2
+    assert len(inferer.weights) == 2
+
+    pi, wi = inferer.get_prediction()  # Averaged prediction slightly changes
+    assert (pi - p).abs().sum() > 1e-2
+    assert (wi - w).abs().sum() > 1e-2
 
 
 @pytest.mark.flaky(max_runs=2, min_passes=1)
@@ -359,9 +383,9 @@ def test_panel_x0_inferer_methods():
     volume = Volume(get_panel_layers(init_res=1e3))
     volume(mu)
     sb = PanelScatterBatch(mu=mu, volume=volume)
-    inferer = PanelX0Inferer(scatters=sb, default_pred=X0["beryllium"])
+    inferer = PanelX0Inferer(volume=volume)
 
-    pt, pt_unc = inferer.x0_from_dtheta()
+    pt, pt_unc = inferer.x0_from_dtheta(scatters=sb)
     assert len(pt) == len(sb.location[sb.get_scatter_mask()])
     assert pt.shape == pt_unc.shape
     assert (pt_unc / pt).mean() < 10
@@ -371,42 +395,56 @@ def test_panel_x0_inferer_methods():
             assert torch.autograd.grad(pt.abs().sum(), p.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
             assert torch.autograd.grad(pt_unc.abs().sum(), p.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
 
-    pxy, pxy_unc = inferer.x0_from_dxy()
+    pxy, pxy_unc = inferer.x0_from_dxy(scatters=sb)
     assert pxy is None and pxy_unc is None  # modify tests when dxy predictions implemented
 
-    eff = inferer.compute_efficiency()
+    eff = inferer.compute_efficiency(scatters=sb)
     assert eff.shape == pt.shape
     assert (eff > 0).all()
 
-    p, w = inferer.average_preds(x0_dtheta=pt, x0_dtheta_unc=pt_unc, x0_dxy=pxy, x0_dxy_unc=pxy_unc, efficiency=eff)
+    p, w = inferer.get_voxel_x0_preds(x0_dtheta=pt, x0_dtheta_unc=pt_unc, x0_dxy=pxy, x0_dxy_unc=pxy_unc, efficiency=eff, scatters=sb)
     true = volume.get_rad_cube()
     assert p.shape == true.shape
     assert w.shape == true.shape
-    mask = p == p
-    assert (((p - true)[mask]).abs() / true[mask]).mean() < 100
-
-    p2, w2 = inferer.pred_x0()
-    assert p2.shape == true.shape
-    assert w2.shape == true.shape
-    assert (p2 != p2).sum() == 0  # NaNs replaced with default prediction
-    assert (p2_mse := (((p2 - true)).abs() / true).mean()) < 100  # noqa F841
+    assert (p != p).sum() == 0  # No NaNs
+    assert (((p - true)).abs() / true).mean() < 100
 
     for l in volume.get_detectors():
-        for p in l.panels:
-            assert torch.autograd.grad(p2.abs().sum(), p.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-            assert torch.autograd.grad(p2.abs().sum(), p.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-            assert torch.autograd.grad(p2.abs().sum(), p.z, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-            assert torch.autograd.grad(w2.abs().sum(), p.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-            assert torch.autograd.grad(w2.abs().sum(), p.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-            assert torch.autograd.grad(w2.abs().sum(), p.z, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+        for panel in l.panels:
+            assert torch.autograd.grad(p.abs().sum(), panel.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+            assert torch.autograd.grad(p.abs().sum(), panel.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+            assert torch.autograd.grad(p.abs().sum(), panel.z, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+            assert torch.autograd.grad(w.abs().sum(), panel.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+            assert torch.autograd.grad(w.abs().sum(), panel.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+            assert torch.autograd.grad(w.abs().sum(), panel.z, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
 
-    p2, w2 = inferer.pred_x0(inc_default=False)
-    assert (p2 != p2).sum() >= 0  # NaNs NOT replaced with default prediction
+    inferer.add_scatters(sb)
+    assert len(inferer.scatter_batches) == 1
+    assert (inferer.preds[0] - p).abs().sum() < 1e-5
+    assert (inferer.weights[0] - w).abs().sum() < 1e-5
+
+    pi, wi = inferer.get_prediction()
+    assert (pi - p).abs().sum() < 1e-5
+    assert (wi - w).abs().sum() < 1e-5
+
+    # Multiple batches
+    mu = MuonBatch(generate_batch(N), init_z=1)
+    volume(mu)
+    sb = PanelScatterBatch(mu=mu, volume=volume)
+    inferer.add_scatters(sb)
+
+    assert len(inferer.scatter_batches) == 2
+    assert len(inferer.preds) == 2
+    assert len(inferer.weights) == 2
+
+    pi, wi = inferer.get_prediction()  # Averaged prediction slightly changes
+    assert (pi - p).abs().sum() > 1e-2
+    assert (wi - w).abs().sum() > 1e-2
 
 
 def test_panel_x0_inferer_efficiency(mocker, panel_scatter_batch):  # noqa F811
     mu, volume, sb = panel_scatter_batch
-    inferer = PanelX0Inferer(scatters=sb, default_pred=X0["beryllium"])
+    inferer = PanelX0Inferer(volume=volume)
     a_effs = Tensor([0.1, 0.2, 0.3, 0.4])
     b_effs = Tensor([0.5, 0.6, 0.7, 0.8])
 
@@ -434,13 +472,13 @@ def test_panel_x0_inferer_efficiency(mocker, panel_scatter_batch):  # noqa F811
             + (effs[0] * effs[1] * effs[2] * effs[3])
         )
 
-    assert (inferer.compute_efficiency()[0] - eff[0] * eff[1]).abs() < 1e-5
+    assert (inferer.compute_efficiency(scatters=sb)[0] - eff[0] * eff[1]).abs() < 1e-5
 
 
 def test_x0_inferer_scatter_inversion(mocker, voxel_scatter_batch):  # noqa F811
     layer = Layer(LW, Z, SZ)
     mu, volume, sb = voxel_scatter_batch
-    inferer = VoxelX0Inferer(scatters=sb, default_pred=X0["beryllium"])
+    inferer = VoxelX0Inferer(volume=volume)
     x0 = X0["lead"]
     n_x0 = layer._compute_n_x0(x0=x0, deltaz=SZ, theta=mu.theta)
     mocker.patch("tomopt.volume.layer.torch.randn", lambda n, device: torch.ones(n, device=device))  # remove randomness
@@ -453,10 +491,11 @@ def test_x0_inferer_scatter_inversion(mocker, voxel_scatter_batch):  # noqa F811
     sb._theta_in_unc = torch.ones_like(dtheta)
     sb._theta_out = mu.theta_xy + dtheta
     sb._theta_out_unc = torch.ones_like(dtheta)
-    mask = torch.ones_like(n_x0) > 0
-    inferer.mask = mask
-    inferer.muon_mask = mask
 
-    mocker.patch("tomopt.inference.rad_length.jacobian", lambda i, j: torch.ones((len(i), 1, 2), device=i.device))  # remove randomness
-    pred, _ = inferer.x0_from_dtheta()
+    mask = torch.ones_like(n_x0) > 0
+    mocker.patch.object(sb, "get_scatter_mask", lambda: mask)
+    inferer.mask_muons = False
+
+    mocker.patch("tomopt.inference.volume.jacobian", lambda i, j: torch.ones((len(i), 1, 7), device=i.device))  # remove randomness
+    pred, _ = inferer.x0_from_dtheta(scatters=sb)
     assert (pred.mean() - x0) < 1e-5

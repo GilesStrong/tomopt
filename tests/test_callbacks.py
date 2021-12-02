@@ -330,7 +330,7 @@ def test_cost_coef_warmup():
     vol = MockVolume()
     vol.device = torch.device("cpu")
     vol.parameters = []
-    vw = VW(volume=vol, partial_opts={}, loss_func=loss, partial_scatter_inferer=None, partial_x0_inferer=None)
+    vw = VW(volume=vol, partial_opts={}, loss_func=loss, partial_scatter_inferer=None, partial_volume_inferer=None)
     vw.fit_params = FitParams(pred=10)
     opt = MockOpt()
     opt.param_groups = [{"lr": 1e2}]

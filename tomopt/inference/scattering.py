@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Dict
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -15,16 +15,13 @@ __all__ = ["VoxelScatterBatch", "PanelScatterBatch", "GenScatterBatch"]
 
 
 class AbsScatterBatch(metaclass=ABCMeta):
-    track_in: Tensor
-    track_out: Tensor
-    track_start_in: Tensor
-    track_start_out: Tensor
-    above_hits: List[Tensor]
-    below_hits: List[Tensor]
-    above_gen_hits: List[Tensor]
-    below_gen_hits: List[Tensor]
-    above_hit_uncs: List[Tensor]
-    below_hit_uncs: List[Tensor]
+    _track_in: Optional[Tensor] = None
+    _track_out: Optional[Tensor] = None
+    _track_start_in: Optional[Tensor] = None
+    _track_start_out: Optional[Tensor] = None
+    _reco_hits: Optional[Tensor] = None
+    _gen_hits: Optional[Tensor] = None
+    _hit_uncs: Optional[Tensor] = None
     _loc: Tensor
     _loc_unc: Optional[Tensor] = None
     _theta_in: Tensor
@@ -39,14 +36,14 @@ class AbsScatterBatch(metaclass=ABCMeta):
     def __init__(self, mu: MuonBatch, volume: Volume):
         self.mu, self.volume = mu, volume
         self.device = self.mu.device
-        self.hits = self.mu.get_hits()
+        self._hits = self.mu.get_hits()
         self.compute_scatters()
 
     @staticmethod
-    def get_muon_trajectory(hit_list: List[Tensor], unc_list: List[Tensor], lw: Tensor) -> Tuple[Tensor, Tensor]:
+    def get_muon_trajectory(hits: Tensor, uncs: Tensor, lw: Tensor) -> Tuple[Tensor, Tensor]:
         r"""
-        hits = [muons,(x,y,z)]
-        uncs = [(unc,unc,0)]
+        hits = (muons,panels,(x,y,z))
+        uncs = (muons,panels,(unc,unc,0))
 
         Assume no uncertainty for z
 
@@ -55,7 +52,6 @@ class AbsScatterBatch(metaclass=ABCMeta):
             Muons with >=2 hits in panels have valid trajectories
         """
 
-        hits, uncs = torch.stack(hit_list, dim=1), torch.stack(unc_list, dim=1)
         hits = torch.where(torch.isinf(hits), lw.mean().type(hits.type()) / 2, hits)
 
         stars, angles = [], []
@@ -84,22 +80,112 @@ class AbsScatterBatch(metaclass=ABCMeta):
 
         return vec, start
 
+    @property
+    def hits(self) -> Dict[str, Dict[str, Tensor]]:
+        return self._hits
+
+    @property
+    def reco_hits(self) -> Optional[Tensor]:
+        return self._reco_hits
+
+    @property
+    def gen_hits(self) -> Optional[Tensor]:
+        return self._gen_hits
+
+    @property
+    def n_hits_above(self) -> Optional[int]:
+        return self._n_hits_above
+
+    @property
+    def n_hits_below(self) -> Optional[int]:
+        return self._n_hits_below
+
+    @property
+    def above_gen_hits(self) -> Optional[Tensor]:
+        if self._gen_hits is None:
+            return None
+        else:
+            return self._gen_hits[:, : self.n_hits_above]
+
+    @property
+    def below_gen_hits(self) -> Optional[Tensor]:
+        if self._gen_hits is None:
+            return None
+        else:
+            return self._gen_hits[:, self.n_hits_above :]
+
+    @property
+    def above_hits(self) -> Optional[Tensor]:
+        if self._reco_hits is None:
+            return None
+        else:
+            return self._reco_hits[:, : self.n_hits_above]
+
+    @property
+    def below_hits(self) -> Optional[Tensor]:
+        if self._reco_hits is None:
+            return None
+        else:
+            return self._reco_hits[:, self.n_hits_above :]
+
+    @property
+    def hit_uncs(self) -> Optional[Tensor]:
+        return self._hit_uncs
+
+    @property
+    def above_hit_uncs(self) -> Optional[Tensor]:
+        if self._hit_uncs is None:
+            return None
+        else:
+            return self._hit_uncs[:, : self.n_hits_above]
+
+    @property
+    def below_hit_uncs(self) -> Optional[Tensor]:
+        if self._hit_uncs is None:
+            return None
+        else:
+            return self._hit_uncs[:, self.n_hits_above :]
+
     def extract_hits(self) -> None:
         # reco x, reco y, gen z, must be a list to allow computation of uncertainty
-        self.above_hits = [
-            torch.cat([self.hits["above"]["reco_xy"][:, i], self.hits["above"]["z"][:, i]], dim=-1) for i in range(self.hits["above"]["reco_xy"].shape[1])
-        ]
-        self.below_hits = [
-            torch.cat([self.hits["below"]["reco_xy"][:, i], self.hits["below"]["z"][:, i]], dim=-1) for i in range(self.hits["below"]["reco_xy"].shape[1])
-        ]
-        self.above_gen_hits = [
-            torch.cat([self.hits["above"]["gen_xy"][:, i], self.hits["above"]["z"][:, i]], dim=-1) for i in range(self.hits["above"]["gen_xy"].shape[1])
-        ]
-        self.below_gen_hits = [
-            torch.cat([self.hits["below"]["gen_xy"][:, i], self.hits["below"]["z"][:, i]], dim=-1) for i in range(self.hits["below"]["gen_xy"].shape[1])
-        ]
-        self.n_hits_above = len(self.above_hits)
-        self.n_hits_below = len(self.below_hits)
+        above_hits = torch.stack(
+            [torch.cat([self.hits["above"]["reco_xy"][:, i], self.hits["above"]["z"][:, i]], dim=-1) for i in range(self.hits["above"]["reco_xy"].shape[1])],
+            dim=1,
+        )  # muons, panels, xyz
+        below_hits = torch.stack(
+            [torch.cat([self.hits["below"]["reco_xy"][:, i], self.hits["below"]["z"][:, i]], dim=-1) for i in range(self.hits["below"]["reco_xy"].shape[1])],
+            dim=1,
+        )
+        _above_gen_hits = torch.stack(
+            [torch.cat([self.hits["above"]["gen_xy"][:, i], self.hits["above"]["z"][:, i]], dim=-1) for i in range(self.hits["above"]["gen_xy"].shape[1])],
+            dim=1,
+        )  # muons, panels, xyz
+        _below_gen_hits = torch.stack(
+            [torch.cat([self.hits["below"]["gen_xy"][:, i], self.hits["below"]["z"][:, i]], dim=-1) for i in range(self.hits["below"]["gen_xy"].shape[1])],
+            dim=1,
+        )
+        self._n_hits_above = above_hits.shape[1]
+        self._n_hits_below = below_hits.shape[1]
+
+        # Combine all input vars into single tensor, NB ideally would stack to new dim but can't assume same number of panels above & below
+        self._reco_hits = torch.cat((above_hits, below_hits), dim=1)  # muons, all panels, reco xyz
+        self._gen_hits = torch.cat((_above_gen_hits, _below_gen_hits), dim=1)  # muons, all panels, true xyz
+
+    @property
+    def track_in(self) -> Optional[Tensor]:
+        return self._track_in
+
+    @property
+    def track_start_in(self) -> Optional[Tensor]:
+        return self._track_start_in
+
+    @property
+    def track_out(self) -> Optional[Tensor]:
+        return self._track_out
+
+    @property
+    def track_start_out(self) -> Optional[Tensor]:
+        return self._track_start_out
 
     @abstractmethod
     def compute_tracks(self) -> None:
@@ -146,9 +232,20 @@ class AbsScatterBatch(metaclass=ABCMeta):
         self._dxy = coefs[:, 2:3] * cross[:, :2]
         self._dxy_unc = None
 
-    @abstractmethod
-    def _compute_unc(self, var: Tensor, hits: List[Tensor], hit_uncs: List[Tensor]) -> Tensor:
-        pass
+    def _compute_out_var_unc(self, var: Tensor) -> Tensor:
+        r"""
+        Behaviour tested only
+        """
+
+        # Compute dvar/dhits
+        jac = torch.nan_to_num(jacobian(var, self.reco_hits)).sum(2)
+        unc = torch.where(torch.isinf(self.hit_uncs), torch.tensor([0], device=self.device).type(self.hit_uncs.type()), self.hit_uncs)[:, None]
+        jac, unc = jac.reshape(jac.shape[0], jac.shape[1], -1), unc.reshape(unc.shape[0], unc.shape[1], -1)
+
+        # Compute unc^2 = unc_x*unc_y*dvar/dhit_x*dvar/dhit_y summing over all x,y inclusive combinations
+        idxs = torch.combinations(torch.arange(0, unc.shape[-1]), with_replacement=True)
+        unc_2 = (jac[:, :, idxs] * unc[:, :, idxs]).prod(-1)
+        return unc_2.sum(-1).sqrt()
 
     @property
     def location(self) -> Tensor:
@@ -157,11 +254,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
     @property
     def location_unc(self) -> Tensor:
         if self._loc_unc is None:
-            self._loc_unc = self._compute_unc(
-                var=self._loc,
-                hits=self.above_hits + self.below_hits,
-                hit_uncs=self.above_hit_uncs + self.below_hit_uncs,
-            )
+            self._loc_unc = self._compute_out_var_unc(self._loc)
         return self._loc_unc
 
     @property
@@ -171,11 +264,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
     @property
     def dtheta_unc(self) -> Tensor:
         if self._dtheta_unc is None:
-            self._dtheta_unc = self._compute_unc(
-                var=self._dtheta,
-                hits=self.above_hits + self.below_hits,
-                hit_uncs=self.above_hit_uncs + self.below_hit_uncs,
-            )
+            self._dtheta_unc = self._compute_out_var_unc(self._dtheta)
         return self._dtheta_unc
 
     @property
@@ -185,10 +274,8 @@ class AbsScatterBatch(metaclass=ABCMeta):
     @property
     def dxy_unc(self) -> Tensor:
         if self._dxy_unc is None:
-            self._dxy_unc = self._compute_unc(
-                var=self._dxy,
-                hits=self.above_hits + self.below_hits,
-                hit_uncs=self.above_hit_uncs + self.below_hit_uncs,
+            self._dxy_unc = self._compute_out_var_unc(
+                self._dxy,
             )
         return self._dxy_unc
 
@@ -199,7 +286,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
     @property
     def theta_in_unc(self) -> Tensor:
         if self._theta_in_unc is None:
-            self._theta_in_unc = self._compute_unc(var=self._theta_in, hits=self.above_hits, hit_uncs=self.above_hit_uncs)
+            self._theta_in_unc = self._compute_out_var_unc(self._theta_in)
         return self._theta_in_unc
 
     @property
@@ -209,7 +296,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
     @property
     def theta_out_unc(self) -> Tensor:
         if self._theta_out_unc is None:
-            self._theta_out_unc = self._compute_unc(var=self._theta_out, hits=self.below_hits, hit_uncs=self.below_hit_uncs)
+            self._theta_out_unc = self._compute_out_var_unc(self._theta_out)
         return self._theta_out_unc
 
     def plot_scatter(self, idx: int) -> None:
@@ -248,101 +335,55 @@ class VoxelScatterBatch(AbsScatterBatch):
     def __init__(self, mu: MuonBatch, volume: Volume):
         self.mu, self.volume = mu, volume
         self.device = self.mu.device
-        self.hits = self.mu.get_hits((0, 0), self.volume.lw)
+        self._hits = self.mu.get_hits((0, 0), self.volume.lw)
         self.compute_scatters()
 
     @staticmethod
-    def _get_hit_uncs(dets: List[AbsDetectorLayer], hits: List[Tensor]) -> List[Tensor]:
+    def _get_hit_uncs(dets: List[AbsDetectorLayer], hits: Tensor) -> Tensor:
         uncs = []
-        for i, (l, h) in enumerate(zip(dets, hits)):
+        for i, (l, h) in enumerate(zip(dets, hits.unbind(1))):
             if not isinstance(l, VoxelDetectorLayer):
                 raise ValueError(f"Detector {l} is not a VoxelDetectorLayer")
             x = l.abs2idx(h)
             r = 1 / l.resolution[x[:, 0], x[:, 1]]
             uncs.append(torch.stack([r, r, torch.zeros_like(r, device=r.device)], dim=-1))
-        return uncs
+        return torch.stack(uncs, dim=1)  # muons, panels, unc xyz
 
     def compute_tracks(self) -> None:
-        self.above_hit_uncs = self._get_hit_uncs(self.volume.get_detectors()[: self.n_hits_above], self.above_hits)
-        self.below_hit_uncs = self._get_hit_uncs(self.volume.get_detectors()[self.n_hits_above :], self.below_hits)
-        self.track_in, self.track_start_in = self.get_muon_trajectory(self.above_hits, self.above_hit_uncs, self.volume.lw)
-        self.track_out, self.track_start_out = self.get_muon_trajectory(self.below_hits, self.below_hit_uncs, self.volume.lw)
-
-    @staticmethod
-    def _compute_unc(var: Tensor, hits: List[Tensor], hit_uncs: List[Tensor]) -> Tensor:
-        r"""
-        Behaviour tested only
-        """
-
-        unc2_sum = None
-        for i, (xi, unci) in enumerate(zip(hits, hit_uncs)):
-            for j, (xj, uncj) in enumerate(zip(hits, hit_uncs)):
-                if j < i:
-                    continue
-                dv_dx_2 = jacobian(var, xi).sum((2)) * jacobian(var, xj).sum((2)) if i != j else jacobian(var, xi).sum((2)) ** 2  # Muons, var_xyz, hit_xyz
-                unc_2 = (dv_dx_2 * unci[:, None] * uncj[:, None]).sum(2)  # Muons, (x,y,z)
-                if unc2_sum is None:
-                    unc2_sum = unc_2
-                else:
-                    unc2_sum = unc2_sum + unc_2
-        return torch.sqrt(unc2_sum)
+        self._hit_uncs = self._get_hit_uncs(self.volume.get_detectors(), self.reco_hits)
+        self._track_in, self._track_start_in = self.get_muon_trajectory(self.above_hits, self.above_hit_uncs, self.volume.lw)
+        self._track_out, self._track_start_out = self.get_muon_trajectory(self.below_hits, self.below_hit_uncs, self.volume.lw)
 
 
 class PanelScatterBatch(AbsScatterBatch):
     @staticmethod
-    def _get_hit_uncs(zordered_panels: List[DetectorPanel], hits: List[Tensor]) -> List[Tensor]:
+    def _get_hit_uncs(zordered_panels: List[DetectorPanel], hits: Tensor) -> Tensor:
         uncs: List[Tensor] = []
-        for l, h in zip(zordered_panels, hits):
+        for l, h in zip(zordered_panels, hits.unbind(1)):
             xy = h[:, :2]
             r = 1 / (l.get_resolution(xy) * l.get_efficiency(xy, as_2d=True))
             uncs.append(torch.cat([r, torch.zeros((len(r), 1), device=r.device)], dim=-1))
-        return uncs
+        return torch.stack(uncs, dim=1)  # muons, panels, unc xyz
 
     def compute_tracks(self) -> None:
-        def _get_panels(i: int) -> List[DetectorPanel]:
-            det = self.volume.get_detectors()[i]
-            if not isinstance(det, PanelDetectorLayer):
-                raise ValueError(f"Detector {det} is not a PanelDetectorLayer")
-            return [det.panels[i] for i in det.get_panel_zorder()]
+        def _get_panels() -> List[DetectorPanel]:
+            panels = []
+            for det in self.volume.get_detectors():
+                if not isinstance(det, PanelDetectorLayer):
+                    raise ValueError(f"Detector {det} is not a PanelDetectorLayer")
+                panels += [det.panels[j] for j in det.get_panel_zorder()]
+            return panels
 
-        self.above_hit_uncs = self._get_hit_uncs(_get_panels(0), self.above_gen_hits)
-        self.below_hit_uncs = self._get_hit_uncs(_get_panels(1), self.below_gen_hits)
-
-        self.track_in, self.track_start_in = self.get_muon_trajectory(self.above_hits, self.above_hit_uncs, self.volume.lw)
-        self.track_out, self.track_start_out = self.get_muon_trajectory(self.below_hits, self.below_hit_uncs, self.volume.lw)
-
-    @staticmethod
-    def _compute_unc(var: Tensor, hits: List[Tensor], hit_uncs: List[Tensor]) -> Tensor:
-        r"""
-        Behaviour tested only
-        """
-
-        unc2_sum = None
-        for i, (xi, unci) in enumerate(zip(hits, hit_uncs)):
-            unci = torch.where(torch.isinf(unci), torch.tensor([0], device=unci.device).type(unci.type()), unci)[:, None]
-            for j, (xj, uncj) in enumerate(zip(hits, hit_uncs)):
-                if j < i:
-                    continue
-                uncj = torch.where(torch.isinf(uncj), torch.tensor([0], device=uncj.device).type(uncj.type()), uncj)[:, None]
-                dv_dx_2 = (
-                    torch.nan_to_num(jacobian(var, xi)).sum(2) * torch.nan_to_num(jacobian(var, xj)).sum(2)
-                    if i != j
-                    else torch.nan_to_num(jacobian(var, xi)).sum(2) ** 2
-                )  # Muons, var_xyz, hit_xyz
-                unc_2 = (dv_dx_2 * unci * uncj).sum(2)  # Muons, (x,y,z)
-                if unc2_sum is None:
-                    unc2_sum = unc_2
-                else:
-                    unc2_sum = unc2_sum + unc_2
-        return torch.sqrt(unc2_sum)
+        self._hit_uncs = self._get_hit_uncs(_get_panels(), self.gen_hits)
+        self._track_in, self._track_start_in = self.get_muon_trajectory(self.above_hits, self.above_hit_uncs, self.volume.lw)
+        self._track_out, self._track_start_out = self.get_muon_trajectory(self.below_hits, self.below_hit_uncs, self.volume.lw)
 
 
 class GenScatterBatch(AbsScatterBatch):
     def compute_tracks(self) -> None:
-        self.above_hit_uncs = [torch.ones(len(self.above_gen_hits[0]), 3) for _ in range(len(self.above_gen_hits))]
-        self.below_hit_uncs = [torch.ones(len(self.below_gen_hits[0]), 3) for _ in range(len(self.below_gen_hits))]
-        self.track_in, self.track_start_in = self.get_muon_trajectory(self.above_gen_hits, self.above_hit_uncs, self.volume.lw)
-        self.track_out, self.track_start_out = self.get_muon_trajectory(self.below_gen_hits, self.below_hit_uncs, self.volume.lw)
+        self._hit_uncs = torch.ones_like(self._gen_hits)
+        self._track_in, self._track_start_in = self.get_muon_trajectory(self.above_gen_hits, self.above_hit_uncs, self.volume.lw)
+        self._track_out, self._track_start_out = self.get_muon_trajectory(self.below_gen_hits, self.below_hit_uncs, self.volume.lw)
 
     @staticmethod
     def _compute_unc(var: Tensor, hits: List[Tensor], hit_uncs: List[Tensor]) -> Tensor:
