@@ -325,7 +325,7 @@ def test_voxel_x0_inferer_methods():
     inferer = VoxelX0Inferer(volume=volume)
 
     pt, pt_unc = inferer.x0_from_dtheta(scatters=sb)
-    assert len(pt) == len(sb.location[sb.get_scatter_mask()])
+    assert len(pt) == len(sb.location)
     assert pt.shape == pt_unc.shape
     assert (pt_unc / pt).mean() < 10
 
@@ -386,7 +386,7 @@ def test_panel_x0_inferer_methods():
     inferer = PanelX0Inferer(volume=volume)
 
     pt, pt_unc = inferer.x0_from_dtheta(scatters=sb)
-    assert len(pt) == len(sb.location[sb.get_scatter_mask()])
+    assert len(pt) == len(sb.location)
     assert pt.shape == pt_unc.shape
     assert (pt_unc / pt).mean() < 10
 
