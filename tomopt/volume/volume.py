@@ -1,5 +1,6 @@
+from torch._C import T
 from tomopt.volume.layer import Layer
-from typing import Tuple, List, Callable
+from typing import Tuple, List, Callable, Optional
 
 import torch
 from torch import nn, Tensor
@@ -16,6 +17,7 @@ class Volume(nn.Module):
         self.layers = layers
         self._device = self._get_device()
         self._check_passives()
+        self._target: Optional[Tensor] = None
 
     def _check_passives(self) -> None:
         lw, sz = None, None
@@ -32,6 +34,10 @@ class Volume(nn.Module):
     @property
     def device(self) -> torch.device:
         return self._device
+
+    @property
+    def target(self) -> Optional[Tensor]:
+        return self._target
 
     def _get_device(self) -> torch.device:
         device = self.layers[0].device
@@ -72,7 +78,8 @@ class Volume(nn.Module):
         xyz[:, 2] = xyz[:, 2] - self.get_passive_z_range()[0]
         return torch.floor(xyz / self.passive_size).long()
 
-    def load_rad_length(self, rad_length_func: Callable[..., Tensor]) -> None:
+    def load_rad_length(self, rad_length_func: Callable[..., Tensor], target: Optional[Tensor] = None) -> None:
+        self._target = target
         for p in self.get_passives():
             p.load_rad_length(rad_length_func)
 

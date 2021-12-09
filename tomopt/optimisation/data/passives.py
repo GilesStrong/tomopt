@@ -26,7 +26,7 @@ class AbsPassiveGenerator(metaclass=ABCMeta):
         self.z_range = [z.detach().cpu().item() for z in self.volume.get_passive_z_range()]
         self.size = volume.passive_size
 
-    def get_data(self) -> Tuple[Callable[..., Tensor], Optional[float]]:
+    def get_data(self) -> Tuple[Callable[..., Tensor], Optional[Tensor]]:
         return self._generate()
 
     def generate(self) -> Callable[..., Tensor]:
@@ -34,7 +34,7 @@ class AbsPassiveGenerator(metaclass=ABCMeta):
         return f
 
     @abstractmethod
-    def _generate(self) -> Tuple[Callable[..., Tensor], Optional[float]]:
+    def _generate(self) -> Tuple[Callable[..., Tensor], Optional[Tensor]]:
         pass
 
 
@@ -91,7 +91,7 @@ class RandomBlockPassiveGenerator(AbsBlockPassiveGenerator):
         super().__init__(volume=volume, block_size=block_size, materials=materials, block_size_max_half=block_size_max_half)
         self.sort_x0, self.enforce_diff_mat = sort_x0, enforce_diff_mat
 
-    def _generate(self) -> Tuple[Callable[..., Tensor], float]:
+    def _generate(self) -> Tuple[Callable[..., Tensor], Tensor]:
         bkg_mat, block_mat = None, None
         while bkg_mat is None or block_mat is None or (bkg_mat == block_mat and self.enforce_diff_mat):
             bkg_mat = np.random.randint(0, len(self.materials))
@@ -112,11 +112,11 @@ class RandomBlockPassiveGenerator(AbsBlockPassiveGenerator):
                 rad_length[low_xy[0] : high_xy[0], low_xy[1] : high_xy[1]] = block_x0
             return rad_length
 
-        return generator, block_x0
+        return generator, Tensor(block_x0)
 
 
 class BlockPresentPassiveGenerator(AbsBlockPassiveGenerator):
-    def _generate(self) -> Tuple[Callable[..., Tensor], float]:
+    def _generate(self) -> Tuple[Callable[..., Tensor], Tensor]:
         bkg_mat = 0
         block_mat = np.random.randint(0, len(self.materials))
         base_x0 = X0[self.materials[bkg_mat]]
@@ -133,7 +133,7 @@ class BlockPresentPassiveGenerator(AbsBlockPassiveGenerator):
                 rad_length[low_xy[0] : high_xy[0], low_xy[1] : high_xy[1]] = block_x0
             return rad_length
 
-        return generator, block_x0
+        return generator, Tensor(block_x0)
 
 
 class VoxelPassiveGenerator(AbsPassiveGenerator):
@@ -147,7 +147,9 @@ class VoxelPassiveGenerator(AbsPassiveGenerator):
 
 
 class PassiveYielder:
-    def __init__(self, passives: Union[List[Callable[..., Tensor]], AbsPassiveGenerator], n_passives: Optional[int] = None, shuffle: bool = True):
+    def __init__(
+        self, passives: Union[List[Tuple[Callable[..., Tensor], Tensor]], AbsPassiveGenerator], n_passives: Optional[int] = None, shuffle: bool = True
+    ):
         self.passives, self.n_passives, self.shuffle = passives, n_passives, shuffle
         if isinstance(self.passives, AbsPassiveGenerator):
             if self.n_passives is None:
@@ -158,10 +160,10 @@ class PassiveYielder:
     def __len__(self) -> int:
         return self.n_passives
 
-    def __iter__(self) -> Generator[Callable[..., Tensor], None, None]:
+    def __iter__(self) -> Generator[Tuple[Callable[..., Tensor], Tensor], None, None]:
         if isinstance(self.passives, AbsPassiveGenerator):
             for _ in range(self.n_passives):
-                yield self.passives.generate()
+                yield self.passives.get_data()
         else:
             if self.shuffle:
                 shuffle(self.passives)

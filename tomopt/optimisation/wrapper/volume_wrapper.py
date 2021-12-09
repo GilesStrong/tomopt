@@ -170,14 +170,14 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
     def _scan_volumes(self, passives: PassiveYielder) -> None:
         if self.fit_params.state == "test":
             self.fit_params.passive_bar = master_bar(passives)
-        for i, passive in enumerate(self.fit_params.passive_bar if self.fit_params.state == "test" else passives):
+        for i, (passive, target) in enumerate(self.fit_params.passive_bar if self.fit_params.state == "test" else passives):
             self.fit_params.volume_id = i
             if self.fit_params.state != "test" and i % self.fit_params.passive_bs == 0:  # Volume batch start
                 self.fit_params.loss_val = None
                 for c in self.fit_params.cbs:
                     c.on_volume_batch_begin()
 
-            self.volume.load_rad_length(passive)
+            self.volume.load_rad_length(passive, target)
             for c in self.fit_params.cbs:
                 c.on_volume_begin()
             self._scan_volume()
