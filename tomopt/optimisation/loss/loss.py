@@ -104,7 +104,7 @@ class VoxelClassLoss(AbsMaterialClassLoss):
     def _get_inference_loss(self, pred: Tensor, pred_weight: Tensor, volume: Volume) -> Tensor:
         true_x0 = volume.get_rad_cube()
         for x0 in true_x0.unique():
-            true_x0[true_x0 == x0] = self.x02id[np.round(x0.detach().data.item(), decimals=6)]
+            true_x0[true_x0 == x0] = self.x02id[min(self.x02id, key=lambda x: abs(x - x0))]
         true_x0 = true_x0.long().flatten()[None]
         return torch.mean(F.nll_loss(pred, true_x0, reduction="none") / pred_weight)
 
@@ -115,6 +115,6 @@ class VolumeClassLoss(AbsMaterialClassLoss):
     def _get_inference_loss(self, pred: Tensor, pred_weight: Tensor, volume: Volume) -> Tensor:
         targ = volume.target.clone()
         for x0 in targ.unique():
-            targ[targ == x0] = self.x02id[np.round(x0.detach().data.item(), decimals=6)]
+            targ[targ == x0] = self.x02id[min(self.x02id, key=lambda x: abs(x - x0))]
         loss = F.nll_loss(pred, targ.long(), reduction="none") if pred.shape[1] > 1 else F.binary_cross_entropy(pred, targ[:, None], reduction="none")
         return torch.mean(loss / pred_weight)
