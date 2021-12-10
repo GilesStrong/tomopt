@@ -112,7 +112,7 @@ class RandomBlockPassiveGenerator(AbsBlockPassiveGenerator):
                 rad_length[low_xy[0] : high_xy[0], low_xy[1] : high_xy[1]] = block_x0
             return rad_length
 
-        return generator, Tensor(block_x0)
+        return generator, Tensor([block_x0])
 
 
 class BlockPresentPassiveGenerator(AbsBlockPassiveGenerator):
@@ -133,7 +133,7 @@ class BlockPresentPassiveGenerator(AbsBlockPassiveGenerator):
                 rad_length[low_xy[0] : high_xy[0], low_xy[1] : high_xy[1]] = block_x0
             return rad_length
 
-        return generator, Tensor(block_x0)
+        return generator, Tensor([block_x0])
 
 
 class VoxelPassiveGenerator(AbsPassiveGenerator):

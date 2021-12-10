@@ -15,7 +15,7 @@ from ..callbacks import MetricLogger, PredHandler
 from ..callbacks.callback import Callback
 from ..callbacks.cyclic_callbacks import CyclicCallback
 from ..callbacks.eval_metric import EvalMetric
-from ...optimisation.loss import DetectorLoss
+from ...optimisation.loss.loss import AbsDetectorLoss
 from ...volume import Volume, VoxelDetectorLayer, PanelDetectorLayer
 from ...volume.layer import AbsDetectorLayer
 from ...core import PartialOpt, DEVICE
@@ -87,7 +87,7 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
         volume: Volume,
         *,
         partial_opts: Dict[str, PartialOpt],
-        loss_func: Optional[DetectorLoss],
+        loss_func: Optional[AbsDetectorLoss],
         partial_scatter_inferer: Type[AbsScatterBatch],
         partial_volume_inferer: Type[AbsVolumeInferer],
         mu_generator: Callable[[int], Tensor] = generate_batch,
@@ -356,7 +356,7 @@ class VoxelVolumeWrapper(AbsVolumeWrapper):
         *,
         res_opt: PartialOpt,
         eff_opt: PartialOpt,
-        loss_func: Optional[DetectorLoss],
+        loss_func: Optional[AbsDetectorLoss],
         mu_generator: Callable[[int], Tensor] = generate_batch,
     ):
         super().__init__(
@@ -387,7 +387,7 @@ class VoxelVolumeWrapper(AbsVolumeWrapper):
         volume: Volume,
         res_opt: PartialOpt,
         eff_opt: PartialOpt,
-        loss_func: Optional[DetectorLoss],
+        loss_func: Optional[AbsDetectorLoss],
         mu_generator: Callable[[int], Tensor] = generate_batch,
     ) -> AbsVolumeWrapper:
         vw = cls(volume=volume, res_opt=res_opt, eff_opt=eff_opt, loss_func=loss_func, mu_generator=mu_generator)
@@ -403,7 +403,7 @@ class PanelVolumeWrapper(AbsVolumeWrapper):
         xy_pos_opt: PartialOpt,
         z_pos_opt: PartialOpt,
         xy_span_opt: PartialOpt,
-        loss_func: Optional[DetectorLoss],
+        loss_func: Optional[AbsDetectorLoss],
         mu_generator: Callable[[int], Tensor] = generate_batch,
     ):
         super().__init__(
@@ -436,7 +436,7 @@ class PanelVolumeWrapper(AbsVolumeWrapper):
         xy_pos_opt: PartialOpt,
         z_pos_opt: PartialOpt,
         xy_span_opt: PartialOpt,
-        loss_func: Optional[DetectorLoss],
+        loss_func: Optional[AbsDetectorLoss],
         mu_generator: Callable[[int], Tensor] = generate_batch,
     ) -> AbsVolumeWrapper:
         vw = cls(

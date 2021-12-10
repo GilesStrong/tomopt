@@ -1,4 +1,3 @@
-from torch._C import T
 from tomopt.volume.layer import Layer
 from typing import Tuple, List, Callable, Optional
 
