@@ -326,7 +326,7 @@ class DeepVolumeInferer(AbsVolumeInferer):
         return x[:, None], u[:, None]
 
     def add_scatters(self, scatters: AbsScatterBatch) -> None:
-        super().add_scatters(scatters=scatters)
+        self.scatter_batches.append(scatters)
         x0, x0_unc = self.get_base_predictions(scatters)
         self.in_vars.append(torch.cat((scatters.dtheta, scatters.dxy, x0, scatters.location), dim=-1))
         self.in_var_uncs.append(torch.cat((scatters.dtheta_unc, scatters.dxy_unc, x0_unc, scatters.location_unc), dim=-1))
