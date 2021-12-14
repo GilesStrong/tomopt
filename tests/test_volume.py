@@ -194,7 +194,7 @@ def test_panel_detector_layer(batch):
         assert p.z[0] <= 1
         assert p.z[0] >= 0.8
         assert p.xy_span[0] <= 1
-        assert p.xy_span[1] <= 1
+        assert p.xy_span[1] <= 10
         assert p.xy_span[0] >= 0
         assert p.xy_span[1] >= 0
 
@@ -482,9 +482,9 @@ def test_detector_panel_methods():
     assert (panel.xy == Tensor([0.5, 0.5])).all()
     assert (panel.xy_span == Tensor([0.5, 0.5])).all()
 
-    panel = DetectorPanel(res=10, eff=0.5, init_xyz=[2.0, -2.0, 2.0], init_xy_span=[0.0, 2.0], area_cost_func=area_cost)
+    panel = DetectorPanel(res=10, eff=0.5, init_xyz=[2.0, -2.0, 2.0], init_xy_span=[0.0, 20.0], area_cost_func=area_cost)
     panel.clamp_params((0, 0, 0), (1, 1, 1))
     assert (panel.xy == Tensor([1, 0])).all()
     assert panel.z - 1 < 0
     assert (panel.z - 1).abs() < 5e-3
-    assert (panel.xy_span == Tensor([5e-2, 1])).all()
+    assert (panel.xy_span == Tensor([5e-2, 10])).all()
