@@ -6,7 +6,7 @@ import torch
 from torch import Tensor
 from torch._vmap_internals import _vmap as vmap
 
-__all__ = ["jacobian"]
+__all__ = ["jacobian", "class_to_x0preds", "x0targs_to_classtargs"]
 
 
 if (ver := LooseVersion(torch.__version__).vstring.split("+")[0]) not in ["1.8.1", "1.10.0"]:

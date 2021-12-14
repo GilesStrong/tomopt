@@ -53,6 +53,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
         """
 
         hits = torch.where(torch.isinf(hits), lw.mean().type(hits.type()) / 2, hits)
+        uncs = torch.nan_to_num(uncs)  # Set Infs to large number
 
         stars, angles = [], []
         for i in range(2):  # seperate x and y resolutions

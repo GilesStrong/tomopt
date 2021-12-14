@@ -161,7 +161,7 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
 
         # Compute loss for volume
         if self.fit_params.state != "test" and self.loss_func is not None and self.fit_params.pred is not None:
-            loss = self.loss_func(pred_x0=self.fit_params.pred, pred_weight=self.fit_params.weight, volume=self.volume)
+            loss = self.loss_func(pred=self.fit_params.pred, pred_weight=self.fit_params.weight, volume=self.volume)
             if self.fit_params.loss_val is None:
                 self.fit_params.loss_val = loss
             else:
@@ -358,14 +358,16 @@ class VoxelVolumeWrapper(AbsVolumeWrapper):
         eff_opt: PartialOpt,
         loss_func: Optional[AbsDetectorLoss],
         mu_generator: Callable[[int], Tensor] = generate_batch,
+        partial_scatter_inferer: Type[AbsScatterBatch] = VoxelScatterBatch,
+        partial_volume_inferer: Type[AbsVolumeInferer] = VoxelX0Inferer,
     ):
         super().__init__(
             volume=volume,
             partial_opts={"res_opt": res_opt, "eff_opt": eff_opt},
             loss_func=loss_func,
             mu_generator=mu_generator,
-            partial_scatter_inferer=VoxelScatterBatch,
-            partial_volume_inferer=VoxelX0Inferer,
+            partial_scatter_inferer=partial_scatter_inferer,
+            partial_volume_inferer=partial_volume_inferer,
         )
 
     def _build_opt(self, **kwargs: PartialOpt) -> None:
@@ -405,14 +407,16 @@ class PanelVolumeWrapper(AbsVolumeWrapper):
         xy_span_opt: PartialOpt,
         loss_func: Optional[AbsDetectorLoss],
         mu_generator: Callable[[int], Tensor] = generate_batch,
+        partial_scatter_inferer: Type[AbsScatterBatch] = PanelScatterBatch,
+        partial_volume_inferer: Type[AbsVolumeInferer] = PanelX0Inferer,
     ):
         super().__init__(
             volume=volume,
             partial_opts={"xy_pos_opt": xy_pos_opt, "z_pos_opt": z_pos_opt, "xy_span_opt": xy_span_opt},
             loss_func=loss_func,
             mu_generator=mu_generator,
-            partial_scatter_inferer=PanelScatterBatch,
-            partial_volume_inferer=PanelX0Inferer,
+            partial_scatter_inferer=partial_scatter_inferer,
+            partial_volume_inferer=partial_volume_inferer,
         )
 
     def _build_opt(self, **kwargs: PartialOpt) -> None:

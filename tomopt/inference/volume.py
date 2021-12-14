@@ -249,7 +249,7 @@ class AbsX0Inferer(AbsVolumeInferer):
             wpred = (preds * weights).sum(0)
             weight = weights.sum(0)
             pred = wpred / weight
-            return pred, weight
+            return pred, 1 / weight  # Loss weights are multiplicative
 
 
 class VoxelX0Inferer(AbsX0Inferer):
@@ -354,7 +354,7 @@ class DeepVolumeInferer(AbsVolumeInferer):
 
     def _get_weight(self) -> Tensor:
         """Maybe alter this to include resolution/pred uncertainties"""
-        return self.efficiency
+        return self.efficiency.sum()
 
     def get_prediction(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
         self.in_var = torch.cat(self.in_vars, dim=0)
@@ -364,4 +364,4 @@ class DeepVolumeInferer(AbsVolumeInferer):
         inputs = self._build_inputs(self.in_var)
         pred = self.model(inputs[None])
         weight = self._get_weight()
-        return pred, weight
+        return pred, 1 / weight  # Loss weights are multiplicative
