@@ -119,9 +119,10 @@ def test_passive_yielder_generator(volume):
     pg = PG(volume)
     py = PassiveYielder(passives=pg, n_passives=3)
     assert len(py) == 3
-    for j, p in enumerate(py):
+    for j, (p, t) in enumerate(py):
         assert p() == j
         i += 1
+        assert t is None
 
 
 def test_abs_passive_generator(volume):

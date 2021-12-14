@@ -61,7 +61,7 @@ class AbsDetectorLoss(nn.Module, metaclass=ABCMeta):
         cost_loss = self._get_budget_coef(cost) * self.cost_coef
         if self.debug:
             print(
-                f'cost {cost}, cost coef {self.cost_coef}, budget coef {self._get_budget_coef(cost)}. error loss {self.sub_losses["error"]}, cost loss {self.sub_losses["cost"]}'
+                f'cost {cost}, cost coef {self.cost_coef}, budget coef {self._get_budget_coef(cost)}. error loss {self.sub_losses["error"]}, cost loss {cost_loss}'
             )
         return cost_loss
 

@@ -148,7 +148,10 @@ class VoxelPassiveGenerator(AbsPassiveGenerator):
 
 class PassiveYielder:
     def __init__(
-        self, passives: Union[List[Tuple[Callable[..., Tensor], Tensor]], AbsPassiveGenerator], n_passives: Optional[int] = None, shuffle: bool = True
+        self,
+        passives: Union[List[Union[Tuple[Callable[..., Tensor], Optional[Tensor]], Callable[..., Tensor]]], AbsPassiveGenerator],
+        n_passives: Optional[int] = None,
+        shuffle: bool = True,
     ):
         self.passives, self.n_passives, self.shuffle = passives, n_passives, shuffle
         if isinstance(self.passives, AbsPassiveGenerator):
@@ -160,7 +163,7 @@ class PassiveYielder:
     def __len__(self) -> int:
         return self.n_passives
 
-    def __iter__(self) -> Generator[Tuple[Callable[..., Tensor], Tensor], None, None]:
+    def __iter__(self) -> Generator[Tuple[Callable[..., Tensor], Optional[Tensor]], None, None]:
         if isinstance(self.passives, AbsPassiveGenerator):
             for _ in range(self.n_passives):
                 yield self.passives.get_data()
@@ -168,4 +171,7 @@ class PassiveYielder:
             if self.shuffle:
                 shuffle(self.passives)
             for p in self.passives:
-                yield p
+                if isinstance(p, tuple):
+                    yield p
+                else:
+                    yield p, None
