@@ -6,7 +6,7 @@ __all__ = ["CostCoefWarmup"]
 
 
 class CostCoefWarmup(Callback):
-    r"""Sets a more stable cost coeficient in the DetectorLoss by averaging the inference-error component for several epochs"""
+    r"""Sets a more stable cost coeficient in the AbsDetectorLoss by averaging the inference-error component for several epochs"""
 
     def __init__(self, n_warmup: int):
         self.n_warmup = n_warmup

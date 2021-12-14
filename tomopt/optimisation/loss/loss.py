@@ -1,5 +1,4 @@
 from typing import Dict, Optional, Union
-import numpy as np
 from abc import abstractmethod, ABCMeta
 
 import torch

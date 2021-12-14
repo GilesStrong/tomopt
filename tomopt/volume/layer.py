@@ -17,7 +17,7 @@ __all__ = ["PassiveLayer", "VoxelDetectorLayer", "PanelDetectorLayer"]
 class Layer(nn.Module):
     def __init__(self, lw: Tensor, z: float, size: float, device: torch.device = DEVICE):
         super().__init__()
-        self.lw, self.z, self.size, self.device = lw.to(device), torch.tensor([z], device=device), size, device
+        self.lw, self.z, self.size, self.device = lw.to(device), torch.tensor([z], dtype=torch.float32, device=device), size, device
         self.rad_length: Optional[Tensor] = None
 
     @staticmethod

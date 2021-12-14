@@ -3,7 +3,7 @@ from pytest_mock import mocker  # noqa F401
 import torch
 from torch import nn
 
-from tomopt.optimisation import DetectorLoss
+from tomopt.optimisation import VoxelX0Loss
 from tomopt.volume import Volume
 
 SHP = (6, 10, 10)
@@ -20,7 +20,7 @@ def test_detector_loss(mocker):  # noqa F811
     mocker.patch("tomopt.optimisation.loss.loss.Volume.get_cost", return_value=cost)
     pred = torch.ones(SHP, requires_grad=True) / 2
 
-    loss_func = DetectorLoss(target_budget=None, cost_coef=0, debug=True)
+    loss_func = VoxelX0Loss(target_budget=None, cost_coef=0, debug=True)
     loss_val = loss_func(pred, torch.ones_like(pred), Volume(nn.ModuleList([MockLayer()])))
     assert loss_val.shape == torch.Size([1])
     assert loss_val == (pred - true).pow(2).mean()
@@ -29,7 +29,7 @@ def test_detector_loss(mocker):  # noqa F811
     new_loss_val = loss_func(pred, 10 * torch.ones_like(pred), Volume(nn.ModuleList([MockLayer()])))
     assert new_loss_val < loss_val
 
-    loss_func = DetectorLoss(target_budget=1, cost_coef=1, debug=True, steep_budget=True)
+    loss_func = VoxelX0Loss(target_budget=1, cost_coef=1, debug=True, steep_budget=True)
     loss_val = loss_func(pred, torch.ones_like(pred), Volume(nn.ModuleList([MockLayer()])))
     assert loss_val.shape == torch.Size([1])
     assert loss_val == (pred - true).pow(2).mean() + cost
@@ -49,7 +49,7 @@ def test_detector_loss(mocker):  # noqa F811
 
     with torch.no_grad():
         cost /= cost
-    loss_func = DetectorLoss(target_budget=1, cost_coef=1, debug=True, steep_budget=False)
+    loss_func = VoxelX0Loss(target_budget=1, cost_coef=1, debug=True, steep_budget=False)
     loss_val = loss_func(pred, torch.ones_like(pred), Volume(nn.ModuleList([MockLayer()])))
     assert loss_val.shape == torch.Size([1])
     assert loss_val == (pred - true).pow(2).mean() + cost

@@ -9,7 +9,7 @@ from tomopt.core import X0
 from tomopt.volume import Volume, PassiveLayer, VoxelDetectorLayer, PanelDetectorLayer, DetectorPanel
 from tomopt.muon import MuonBatch, generate_batch
 from tomopt.inference import VoxelScatterBatch, VoxelX0Inferer, PanelScatterBatch, PanelX0Inferer
-from tomopt.optimisation.loss import DetectorLoss
+from tomopt.optimisation.loss import VoxelX0Loss
 
 LW = Tensor([1, 1])
 SZ = 0.1
@@ -113,7 +113,7 @@ def panel_inferer() -> PanelX0Inferer:
 
 def test_forwards_voxel(voxel_inferer):
     pred, weight = voxel_inferer.get_prediction()
-    loss_func = DetectorLoss(target_budget=1, cost_coef=1e-5)
+    loss_func = VoxelX0Loss(target_budget=1, cost_coef=1e-5)
     loss_val = loss_func(pred, weight, voxel_inferer.volume)
 
     for l in voxel_inferer.volume.get_detectors():
@@ -123,7 +123,7 @@ def test_forwards_voxel(voxel_inferer):
 
 def test_forwards_panel(panel_inferer):
     pred, weight = panel_inferer.get_prediction()
-    loss_func = DetectorLoss(target_budget=1, cost_coef=1e-5)
+    loss_func = VoxelX0Loss(target_budget=1, cost_coef=1e-5)
     loss_val = loss_func(pred, weight, panel_inferer.volume)
 
     for l in panel_inferer.volume.get_detectors():
@@ -135,7 +135,7 @@ def test_forwards_panel(panel_inferer):
 
 def test_backwards_voxel(voxel_inferer):
     pred, weight = voxel_inferer.get_prediction()
-    loss_func = DetectorLoss(target_budget=1, cost_coef=0.15)
+    loss_func = VoxelX0Loss(target_budget=1, cost_coef=0.15)
     loss_val = loss_func(pred, weight, voxel_inferer.volume)
     opt = torch.optim.SGD(voxel_inferer.volume.parameters(), lr=1)
     opt.zero_grad()
@@ -150,7 +150,7 @@ def test_backwards_voxel(voxel_inferer):
 
 def test_backwards_panel(panel_inferer):
     pred, weight = panel_inferer.get_prediction()
-    loss_func = DetectorLoss(target_budget=1, cost_coef=0.15)
+    loss_func = VoxelX0Loss(target_budget=1, cost_coef=0.15)
     loss_val = loss_func(pred, weight, panel_inferer.volume)
     opt = torch.optim.SGD(panel_inferer.volume.parameters(), lr=1)
     opt.zero_grad()

@@ -11,7 +11,7 @@ import torch.nn.functional as F
 from tomopt.optimisation.callbacks.callback import Callback
 from tomopt.optimisation.callbacks.eval_metric import EvalMetric
 from tomopt.optimisation.callbacks import NoMoreNaNs, PredHandler, MetricLogger, VoxelMetricLogger, PanelMetricLogger, ScatterRecord, HitRecord, CostCoefWarmup
-from tomopt.optimisation.loss import DetectorLoss
+from tomopt.optimisation.loss import VoxelX0Loss
 from tomopt.optimisation.wrapper.volume_wrapper import AbsVolumeWrapper, FitParams
 from tomopt.volume import VoxelDetectorLayer, PanelDetectorLayer, DetectorPanel
 
@@ -177,7 +177,7 @@ def test_metric_logger(detector, mocker):  # noqa F811
         logger = PanelMetricLogger()
         det = get_panel_detector()
         vw.get_detectors = lambda: [det]
-    vw.loss_func = DetectorLoss(target_budget=1, cost_coef=1)
+    vw.loss_func = VoxelX0Loss(target_budget=1, cost_coef=1)
     vw.fit_params = FitParams(pred=10, trn_passives=range(10), passive_bs=2, metric_cbs=[EvalMetric(name="test", main_metric=True, lower_metric_better=True)])
     logger.set_wrapper(vw)
     mocker.spy(logger, "_reset")
@@ -326,7 +326,7 @@ def test_cost_coef_warmup():
         def _build_opt(self, **kwargs) -> None:
             pass
 
-    loss = DetectorLoss(target_budget=0.8)
+    loss = VoxelX0Loss(target_budget=0.8)
     vol = MockVolume()
     vol.device = torch.device("cpu")
     vol.parameters = []
