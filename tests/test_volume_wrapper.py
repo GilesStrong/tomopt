@@ -277,7 +277,7 @@ def test_volume_wrapper_scan_volume(state, mocker):  # noqa F811
     assert cb.on_x0_pred_begin.call_count == 1
     assert cb.on_x0_pred_end.call_count == 1
     assert vw.fit_params.pred.shape == torch.Size((6, 10, 10))
-    assert vw.fit_params.weight.shape == torch.Size((6, 10, 10))
+    assert vw.fit_params.inv_weight.shape == torch.Size((6, 10, 10))
 
     if state == "test":
         assert vw.loss_func.call_count == 0
@@ -316,13 +316,13 @@ def test_volume_wrapper_scan_volume_mu_batch(mocker):  # noqa F811
     vw.fit_params.cbs = [sr]
     vw.mu_generator = mu_batch_yielder(mu)
     vw._scan_volume()
-    pred_1b, weight_1b = vw.fit_params.pred.detach().clone(), vw.fit_params.weight.detach().clone()
+    pred_1b, weight_1b = vw.fit_params.pred.detach().clone(), vw.fit_params.inv_weight.detach().clone()
     scatters_1b = sr.get_record()
     loss_1b = vw.fit_params.loss_val.detach().clone()
 
     vw.fit_params.loss_val = None
     vw.fit_params.pred = None
-    vw.fit_params.weight = None
+    vw.fit_params.inv_weight = None
 
     sr._reset()
     vw.mu_generator = mu_batch_yielder(mu)
@@ -334,7 +334,7 @@ def test_volume_wrapper_scan_volume_mu_batch(mocker):  # noqa F811
     assert scatters_1b.shape == scatters_10b.shape
     assert torch.all(scatters_1b == scatters_10b)
 
-    pred_10b, weight_10b = vw.fit_params.pred.detach().clone(), vw.fit_params.weight.detach().clone()
+    pred_10b, weight_10b = vw.fit_params.pred.detach().clone(), vw.fit_params.inv_weight.detach().clone()
     diff = torch.abs((weight_1b - weight_10b) / weight_1b)
     mask = diff > 1e-7
     print("diff", diff[mask])
