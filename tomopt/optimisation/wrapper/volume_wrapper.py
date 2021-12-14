@@ -161,7 +161,7 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
 
         # Compute loss for volume
         if self.fit_params.state != "test" and self.loss_func is not None and self.fit_params.pred is not None:
-            loss = self.loss_func(pred=self.fit_params.pred, pred_weight=self.fit_params.weight, volume=self.volume)
+            loss = self.loss_func(pred=self.fit_params.pred, inv_pred_weight=self.fit_params.weight, volume=self.volume)
             if self.fit_params.loss_val is None:
                 self.fit_params.loss_val = loss
             else:

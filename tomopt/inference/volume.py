@@ -249,7 +249,7 @@ class AbsX0Inferer(AbsVolumeInferer):
             wpred = (preds * weights).sum(0)
             weight = weights.sum(0)
             pred = wpred / weight
-            return pred, 1 / weight  # Loss weights are multiplicative
+            return pred, weight  # Loss weights are multiplicative
 
 
 class VoxelX0Inferer(AbsX0Inferer):
@@ -364,4 +364,4 @@ class DeepVolumeInferer(AbsVolumeInferer):
         inputs = self._build_inputs(self.in_var)
         pred = self.model(inputs[None])
         weight = self._get_weight()
-        return pred, 1 / weight  # Loss weights are multiplicative
+        return pred, weight  # Loss weights are multiplicative

@@ -51,7 +51,7 @@ class AbsDetectorLoss(nn.Module, metaclass=ABCMeta):
         print(f"Automatically setting cost coefficient to {self.cost_coef}")
 
     @abstractmethod
-    def _get_inference_loss(self, pred: Tensor, pred_weight: Tensor, volume: Volume) -> Tensor:
+    def _get_inference_loss(self, pred: Tensor, inv_pred_weight: Tensor, volume: Volume) -> Tensor:
         pass
 
     def _get_cost_loss(self, volume: Volume) -> Tensor:
@@ -65,9 +65,9 @@ class AbsDetectorLoss(nn.Module, metaclass=ABCMeta):
             )
         return cost_loss
 
-    def forward(self, pred: Tensor, pred_weight: Tensor, volume: Volume) -> Tensor:
+    def forward(self, pred: Tensor, inv_pred_weight: Tensor, volume: Volume) -> Tensor:
         self.sub_losses = {}
-        self.sub_losses["error"] = self._get_inference_loss(pred, pred_weight, volume)
+        self.sub_losses["error"] = self._get_inference_loss(pred, inv_pred_weight, volume)
         self.sub_losses["cost"] = self._get_cost_loss(volume)
         return self.sub_losses["error"] + self.sub_losses["cost"]
 
@@ -75,9 +75,9 @@ class AbsDetectorLoss(nn.Module, metaclass=ABCMeta):
 class VoxelX0Loss(AbsDetectorLoss):
     """MSE on X0 float predictions per voxel"""
 
-    def _get_inference_loss(self, pred: Tensor, pred_weight: Tensor, volume: Volume) -> Tensor:
+    def _get_inference_loss(self, pred: Tensor, inv_pred_weight: Tensor, volume: Volume) -> Tensor:
         true_x0 = volume.get_rad_cube()
-        return torch.mean(F.mse_loss(pred, true_x0, reduction="none") * pred_weight)
+        return torch.mean(F.mse_loss(pred, true_x0, reduction="none") / inv_pred_weight)
 
 
 class AbsMaterialClassLoss(AbsDetectorLoss):
@@ -100,20 +100,20 @@ class AbsMaterialClassLoss(AbsDetectorLoss):
 class VoxelClassLoss(AbsMaterialClassLoss):
     """Predictions are classes per voxel"""
 
-    def _get_inference_loss(self, pred: Tensor, pred_weight: Tensor, volume: Volume) -> Tensor:
+    def _get_inference_loss(self, pred: Tensor, inv_pred_weight: Tensor, volume: Volume) -> Tensor:
         true_x0 = volume.get_rad_cube()
         for x0 in true_x0.unique():
             true_x0[true_x0 == x0] = self.x02id[min(self.x02id, key=lambda x: abs(x - x0))]
         true_x0 = true_x0.long().flatten()[None]
-        return torch.mean(F.nll_loss(pred, true_x0, reduction="none") * pred_weight)
+        return torch.mean(F.nll_loss(pred, true_x0, reduction="none") / inv_pred_weight)
 
 
 class VolumeClassLoss(AbsMaterialClassLoss):
     """Predictions are classes of whole volume"""
 
-    def _get_inference_loss(self, pred: Tensor, pred_weight: Tensor, volume: Volume) -> Tensor:
+    def _get_inference_loss(self, pred: Tensor, inv_pred_weight: Tensor, volume: Volume) -> Tensor:
         targ = volume.target.clone()
         for x0 in targ.unique():
             targ[targ == x0] = self.x02id[min(self.x02id, key=lambda x: abs(x - x0))]
         loss = F.nll_loss(pred, targ.long(), reduction="none") if pred.shape[1] > 1 else F.binary_cross_entropy(pred, targ[:, None], reduction="none")
-        return torch.mean(loss * pred_weight)
+        return torch.mean(loss / inv_pred_weight)

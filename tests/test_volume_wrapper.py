@@ -318,26 +318,36 @@ def test_volume_wrapper_scan_volume_mu_batch(mocker):  # noqa F811
     vw._scan_volume()
     pred_1b, weight_1b = vw.fit_params.pred.detach().clone(), vw.fit_params.weight.detach().clone()
     scatters_1b = sr.get_record()
+    loss_1b = vw.fit_params.loss_val.detach().clone()
+
+    vw.fit_params.loss_val = None
+    vw.fit_params.pred = None
+    vw.fit_params.weight = None
 
     sr._reset()
     vw.mu_generator = mu_batch_yielder(mu)
     vw.fit_params.mu_bs = 10
     vw._scan_volume()
     scatters_10b = sr.get_record()
+    loss_10b = vw.fit_params.loss_val.detach().clone()
 
     assert scatters_1b.shape == scatters_10b.shape
     assert torch.all(scatters_1b == scatters_10b)
 
     pred_10b, weight_10b = vw.fit_params.pred.detach().clone(), vw.fit_params.weight.detach().clone()
-    diff = torch.abs(weight_1b - weight_10b) / weight_1b
+    diff = torch.abs((weight_1b - weight_10b) / weight_1b)
     mask = diff > 1e-7
     print("diff", diff[mask])
     print("1bp", pred_1b[mask])
     print("10bp", pred_10b[mask])
     print("1bw", weight_1b[mask])
     print("10bw", weight_10b[mask])
+    print("preds", (pred_1b - pred_10b).mean(), pred_1b.mean(), pred_10b.mean())
+    print("weights", (weight_1b - weight_10b).mean(), weight_1b.mean(), weight_10b.mean())
+    print("loss", (loss_1b - loss_10b).mean(), loss_1b.mean(), loss_10b.mean())
     assert torch.abs((pred_1b - pred_10b) / pred_1b).sum() < 1e-4
     assert torch.abs((weight_1b - weight_10b) / weight_1b).sum() < 1e-4
+    assert torch.abs((loss_1b - loss_10b) / loss_1b).sum() < 1e-4
 
 
 @pytest.mark.parametrize("state", ["train", "valid", "test"])
