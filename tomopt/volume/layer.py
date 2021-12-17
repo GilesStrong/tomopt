@@ -13,6 +13,8 @@ from ..muon import MuonBatch
 
 __all__ = ["PassiveLayer", "VoxelDetectorLayer", "PanelDetectorLayer"]
 
+SCATTER_PARAMS: Tensor  # Load params from ".scattering.file"
+
 
 class Layer(nn.Module):
     def __init__(self, lw: Tensor, z: float, size: float, device: torch.device = DEVICE):
@@ -28,22 +30,32 @@ class Layer(nn.Module):
         self, *, n_x0: Tensor, deltaz: Union[Tensor, float], theta_x: Tensor, theta_y: Tensor, mom: Tensor
     ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
         n = len(n_x0)
-        z1 = torch.randn(n, device=self.device)
-        z2 = torch.randn(n, device=self.device)
+        # z1 = torch.randn(n, device=self.device)
+        # z2 = torch.randn(n, device=self.device)
 
-        theta0 = (SCATTER_COEF_A / mom) * torch.sqrt(n_x0)  # Ignore due to inversion problems * (1+(SCATTER_COEF_B*torch.log(x0)))
-        theta_msc = math.sqrt(2) * z2 * theta0
-        phi_msc = torch.rand(n, device=self.device) * 2 * math.pi
-        dh_msc = deltaz * torch.sin(theta0) * ((z1 / math.sqrt(12)) + (z2 / 2))
+        # theta0 = (SCATTER_COEF_A / mom) * torch.sqrt(n_x0)  # Ignore due to inversion problems * (1+(SCATTER_COEF_B*torch.log(x0)))
+        # theta_msc = math.sqrt(2) * z2 * theta0
+        # phi_msc = torch.rand(n, device=self.device) * 2 * math.pi
+        # dh_msc = deltaz * torch.sin(theta0) * ((z1 / math.sqrt(12)) + (z2 / 2))
+
+        def interp_func(mom: Tensor, x0: Tensor) -> Tensor:
+            """interp between points in SCATTER_PARAMS to get values at mom & x0"""
+            # values = ....\
+
+            return values
+
+        params = interp_func(mom, x0)
+        cdfs = get_cdfs(params)
+        dtheta = get_dtheta(cdfs)
 
         # Note that if a track incides on a layer
         # with angle theta_mu, the dx and dy displacements are relative to zero angle
         # (generation of MSC formulas are oblivious of angle of incidence) so we need
         # to rescale them by cos of thetax and thetay.
-        dx = math.sqrt(2) * dh_msc * torch.cos(phi_msc) * torch.cos(theta_x)  # we need to account for direction of incident particle!
-        dy = math.sqrt(2) * dh_msc * torch.sin(phi_msc) * torch.cos(theta_y)  # ... so we project onto the surface of the layer
-        dtheta_x = theta_msc * torch.cos(phi_msc)
-        dtheta_y = theta_msc * torch.sin(phi_msc)
+        # dx = math.sqrt(2) * dh_msc * torch.cos(phi_msc) * torch.cos(theta_x)  # we need to account for direction of incident particle!
+        # dy = math.sqrt(2) * dh_msc * torch.sin(phi_msc) * torch.cos(theta_y)  # ... so we project onto the surface of the layer
+        # dtheta_x = theta_msc * torch.cos(phi_msc)
+        # dtheta_y = theta_msc * torch.sin(phi_msc)
         return dx, dy, dtheta_x, dtheta_y
 
     def scatter_and_propagate(self, mu: MuonBatch, deltaz: Union[Tensor, float]) -> None:
