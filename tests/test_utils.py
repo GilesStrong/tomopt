@@ -1,7 +1,9 @@
 import torch
 from torch import Tensor
+import numpy as np
+import pytest
 
-from tomopt.utils import jacobian
+from tomopt.utils import jacobian, class_to_x0preds
 
 
 def test_jacobian():
@@ -29,3 +31,15 @@ def test_jacobian():
         return torch.stack(jac).reshape(y.shape + x.shape)
 
     assert torch.all(jacobian(y, x) == non_vmap_jacobian(y, x))
+
+
+def test_class_to_x0preds():
+    id2x0 = {0: -1.0, 1: -2.0}
+    arr = np.array([0, 1, 1])
+    tarr = class_to_x0preds(arr, id2x0)
+    assert tarr[0] == -1
+    assert (tarr[1:] == -2).all()
+    assert (arr == np.array([0, 1, 1])).all()
+
+    with pytest.raises(KeyError):
+        class_to_x0preds(np.array([0, 1, 1, 2]), id2x0)
