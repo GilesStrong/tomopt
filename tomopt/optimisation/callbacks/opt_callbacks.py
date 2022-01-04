@@ -23,12 +23,13 @@ class PanelOptConfig(Callback):
             self.wrapper.set_opt_lr(0.0, o)
 
     def on_backwards_end(self) -> None:
-        for l in self.wrapper.volume.get_detectors():
-            if isinstance(l, PanelDetectorLayer):
-                for p in l.panels:
-                    self.stats["xy_pos_opt"].append(p.xy.grad.cpu().numpy())
-                    self.stats["z_pos_opt"].append(p.z.grad.cpu().numpy())
-                    self.stats["xy_span_opt"].append(p.xy_span.grad.cpu().numpy())
+        if self.tracking and self.wrapper.fit_params.state == "train":
+            for l in self.wrapper.volume.get_detectors():
+                if isinstance(l, PanelDetectorLayer):
+                    for p in l.panels:
+                        self.stats["xy_pos_opt"].append(p.xy.grad.cpu().numpy())
+                        self.stats["z_pos_opt"].append(p.z.grad.cpu().numpy())
+                        self.stats["xy_span_opt"].append(p.xy_span.grad.cpu().numpy())
 
     def on_epoch_end(self) -> None:
         if self.tracking and self.wrapper.fit_params.state == "train":
