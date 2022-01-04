@@ -8,8 +8,8 @@ import torch.nn.functional as F
 from tomopt.core import X0
 from tomopt.volume import Volume, PassiveLayer, VoxelDetectorLayer, PanelDetectorLayer, DetectorPanel
 from tomopt.muon import MuonBatch, generate_batch
-from tomopt.inference import VoxelScatterBatch, VoxelX0Inferer, PanelScatterBatch, PanelX0Inferer
-from tomopt.optimisation.loss import VoxelX0Loss
+from tomopt.inference import VoxelScatterBatch, VoxelX0Inferer, PanelScatterBatch, PanelX0Inferer, DeepVolumeInferer
+from tomopt.optimisation.loss import VoxelX0Loss, VolumeClassLoss
 
 LW = Tensor([1, 1])
 SZ = 0.1
@@ -111,6 +111,28 @@ def panel_inferer() -> PanelX0Inferer:
     return inf
 
 
+@pytest.fixture
+def deep_inferer() -> DeepVolumeInferer:
+    mu = MuonBatch(generate_batch(N), init_z=1)
+    volume = Volume(get_panel_layers())
+    volume._target = Tensor([1])
+    volume(mu)
+    sb = PanelScatterBatch(mu=mu, volume=volume)
+
+    class MockModel(nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.layer = nn.Linear(600 * 9, 1)
+            self.act = nn.Sigmoid()
+
+        def forward(self, x: Tensor) -> Tensor:
+            return self.act(self.layer(x.mean(2).flatten()[None]))
+
+    inf = DeepVolumeInferer(model=MockModel(), base_inferer=PanelX0Inferer(volume=volume), volume=volume)
+    inf.add_scatters(sb)
+    return inf
+
+
 def test_forwards_voxel(voxel_inferer):
     pred, weight = voxel_inferer.get_prediction()
     loss_func = VoxelX0Loss(target_budget=1, cost_coef=1e-5)
@@ -127,6 +149,18 @@ def test_forwards_panel(panel_inferer):
     loss_val = loss_func(pred, weight, panel_inferer.volume)
 
     for l in panel_inferer.volume.get_detectors():
+        for p in l.panels:
+            assert torch.autograd.grad(loss_val, p.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+            assert torch.autograd.grad(loss_val, p.z, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+            assert torch.autograd.grad(loss_val, p.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+
+
+def test_forwards_deep_panel(deep_inferer):
+    pred, weight = deep_inferer.get_prediction()
+    loss_func = VolumeClassLoss(target_budget=1, cost_coef=1e-5, x02id={1: 1})
+    loss_val = loss_func(pred, weight, deep_inferer.volume)
+
+    for l in deep_inferer.volume.get_detectors():
         for p in l.panels:
             assert torch.autograd.grad(loss_val, p.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
             assert torch.autograd.grad(loss_val, p.z, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
@@ -159,6 +193,28 @@ def test_backwards_panel(panel_inferer):
         assert p.grad is not None
     opt.step()
     for l in panel_inferer.volume.get_detectors():
+        for i, p in enumerate(l.panels):
+            assert (p.xy != Tensor([0.5, 0.5])).all()
+            if l.pos == "above":
+                assert (p.z != Tensor([1 - (i * (2 * SZ) / N_PANELS)])).all()
+            else:
+                assert (p.z != Tensor([0.2 - (i * (2 * SZ) / N_PANELS)])).all()
+            assert (p.xy_span != Tensor([0.5, 0.5])).all()
+            assert p.resolution == Tensor([INIT_RES])
+            assert p.efficiency == Tensor([INIT_EFF])
+
+
+def test_backwards_deep_panel(deep_inferer):
+    pred, weight = deep_inferer.get_prediction()
+    loss_func = VolumeClassLoss(target_budget=1, cost_coef=0.15, x02id={1: 1})
+    loss_val = loss_func(pred, weight, deep_inferer.volume)
+    opt = torch.optim.SGD(deep_inferer.volume.parameters(), lr=1)
+    opt.zero_grad()
+    loss_val.backward()
+    for p in deep_inferer.volume.parameters():
+        assert p.grad is not None
+    opt.step()
+    for l in deep_inferer.volume.get_detectors():
         for i, p in enumerate(l.panels):
             assert (p.xy != Tensor([0.5, 0.5])).all()
             if l.pos == "above":
