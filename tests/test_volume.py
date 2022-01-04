@@ -286,6 +286,15 @@ def test_volume_methods():
     assert torch.all(cube[0] == arb_rad_length2(z=SZ, lw=LW, size=SZ))  # cube reversed to match lookup_passive_xyz_coords: layer zero = bottom layer
     assert torch.all(cube[-1] == arb_rad_length2(z=Z, lw=LW, size=SZ))
 
+    edges = volume.edges
+    assert edges.shape == torch.Size((600, 3))
+    assert (edges[0] == Tensor([0, 0, 2 * SZ])).all()
+    assert (edges[-1] == Tensor([LW[0] - SZ, LW[1] - SZ, 7 * SZ])).all()
+    centres = volume.centres
+    assert centres.shape == torch.Size((600, 3))
+    assert (centres[0] == Tensor([0, 0, 2 * SZ]) + (SZ / 2)).all()
+    assert (centres[-1] == Tensor([LW[0] - SZ, LW[1] - SZ, 7 * SZ]) + (SZ / 2)).all()
+
 
 def test_volume_forward_voxel(batch):
     layers = get_voxel_layers()

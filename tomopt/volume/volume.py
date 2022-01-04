@@ -1,5 +1,6 @@
 from tomopt.volume.layer import Layer
 from typing import Tuple, List, Callable, Optional
+import numpy as np
 
 import torch
 from torch import nn, Tensor
@@ -17,6 +18,29 @@ class Volume(nn.Module):
         self._device = self._get_device()
         self._check_passives()
         self._target: Optional[Tensor] = None
+        self._edges = self.build_edges()
+
+    @property
+    def edges(self) -> Tensor:
+        return self._edges
+
+    @property
+    def centres(self) -> Tensor:
+        return self._edges + (self.passive_size / 2)
+
+    def build_edges(self) -> Tensor:
+        bounds = (
+            self.passive_size
+            * np.mgrid[
+                0 : round(self.lw.detach().cpu().numpy()[0] / self.passive_size) : 1,
+                0 : round(self.lw.detach().cpu().numpy()[1] / self.passive_size) : 1,
+                round(self.get_passive_z_range()[0].detach().cpu().numpy()[0] / self.passive_size) : round(
+                    self.get_passive_z_range()[1].detach().cpu().numpy()[0] / self.passive_size
+                ) : 1,
+            ]
+        )
+        # bounds[2] = np.flip(bounds[2])  # z is reversed
+        return torch.tensor(bounds.reshape(3, -1).transpose(-1, -2), dtype=torch.float32, device=self.device)
 
     def _check_passives(self) -> None:
         lw, sz = None, None
