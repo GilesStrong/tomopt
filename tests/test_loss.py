@@ -1,7 +1,9 @@
 from pytest_mock import mocker  # noqa F401
+import numpy as np
 
 import torch
 from torch import nn, Tensor
+import torch.nn.functional as F
 
 from tomopt.optimisation import VoxelX0Loss, VoxelClassLoss
 from tomopt.optimisation.loss.loss import AbsDetectorLoss
@@ -105,4 +107,69 @@ def test_voxel_X0_loss(mocker):  # noqa F811
     with torch.no_grad():
         cost /= 4
     loss_val = loss_func(pred, torch.ones_like(pred), Volume(nn.ModuleList([MockLayer()])))
+    assert torch.autograd.grad(loss_val, cost)[0].abs().sum() < grad_at_budget
+
+
+def test_voxel_class_loss(mocker):  # noqa F811
+    cost = torch.ones((1), requires_grad=True)
+    true = torch.ones(SHP)
+    x02id = {1: 1}
+    mocker.patch("tomopt.optimisation.loss.loss.Volume.get_rad_cube", return_value=true)
+    mocker.patch("tomopt.optimisation.loss.loss.Volume.get_cost", return_value=cost)
+    pred = F.log_softmax(torch.ones((1, 2, np.prod(SHP)), requires_grad=True) / 2, dim=1)
+
+    loss_func = VoxelClassLoss(target_budget=None, cost_coef=0, debug=True, x02id=x02id)
+
+    # Loss goes to zero
+    correct = 10 * torch.ones((1, 2, np.prod(SHP)))
+    correct[:, 0] = -10
+    correct = F.log_softmax(correct, dim=1)
+    loss_val = loss_func(correct, 1, Volume(nn.ModuleList([MockLayer()])))
+    assert loss_val <= 1e-5
+
+    # Decreasing variance improves loss
+    loss_val = loss_func(pred, torch.ones_like(pred), Volume(nn.ModuleList([MockLayer()])))
+    assert loss_val.shape == torch.Size([1])
+    assert loss_val == F.nll_loss(pred, true.flatten()[None].long())
+
+    new_loss_val = loss_func(pred, 10, Volume(nn.ModuleList([MockLayer()])))
+    assert new_loss_val < loss_val
+
+    # Include cost
+    loss_func = VoxelClassLoss(target_budget=1, cost_coef=1, debug=True, steep_budget=True, x02id=x02id)
+    loss_val = loss_func(pred, 1, Volume(nn.ModuleList([MockLayer()])))
+    assert loss_val.shape == torch.Size([1])
+    assert loss_val == F.nll_loss(pred, true.flatten()[None].long()) + cost
+    assert loss_val > 0
+
+    assert torch.autograd.grad(loss_val, pred)[0].abs().sum() > 0
+    assert (grad_at_budget := torch.autograd.grad(loss_val, cost)[0].abs().sum()) > 0
+
+    with torch.no_grad():
+        cost += 1
+    loss_val = loss_func(pred, 1, Volume(nn.ModuleList([MockLayer()])))
+    assert torch.autograd.grad(loss_val, cost)[0].abs().sum() == grad_at_budget
+    with torch.no_grad():
+        cost /= 4
+    loss_val = loss_func(pred, 1, Volume(nn.ModuleList([MockLayer()])))
+    assert torch.autograd.grad(loss_val, cost)[0].abs().sum() < grad_at_budget
+
+    with torch.no_grad():
+        cost /= cost
+    loss_func = VoxelClassLoss(target_budget=1, cost_coef=1, debug=True, steep_budget=False, x02id=x02id)
+    loss_val = loss_func(pred, 1, Volume(nn.ModuleList([MockLayer()])))
+    assert loss_val.shape == torch.Size([1])
+    assert loss_val == F.nll_loss(pred, true.flatten()[None].long()) + cost
+    assert loss_val > 0
+
+    assert torch.autograd.grad(loss_val, pred)[0].abs().sum() > 0
+    assert (grad_at_budget := torch.autograd.grad(loss_val, cost)[0].abs().sum()) > 0
+
+    with torch.no_grad():
+        cost += 1
+    loss_val = loss_func(pred, 1, Volume(nn.ModuleList([MockLayer()])))
+    assert torch.autograd.grad(loss_val, cost)[0].abs().sum() < grad_at_budget
+    with torch.no_grad():
+        cost /= 4
+    loss_val = loss_func(pred, 1, Volume(nn.ModuleList([MockLayer()])))
     assert torch.autograd.grad(loss_val, cost)[0].abs().sum() < grad_at_budget
