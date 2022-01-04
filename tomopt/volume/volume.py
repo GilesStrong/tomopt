@@ -18,14 +18,18 @@ class Volume(nn.Module):
         self._device = self._get_device()
         self._check_passives()
         self._target: Optional[Tensor] = None
-        self._edges = self.build_edges()
+        self._edges: Optional[Tensor] = None
 
     @property
     def edges(self) -> Tensor:
+        if self._edges is None:
+            self._edges = self.build_edges()
         return self._edges
 
     @property
     def centres(self) -> Tensor:
+        if self._edges is None:
+            self._edges = self.build_edges()
         return self._edges + (self.passive_size / 2)
 
     def build_edges(self) -> Tensor:
