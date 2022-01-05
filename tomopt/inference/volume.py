@@ -338,4 +338,4 @@ class DeepVolumeInferer(AbsVolumeInferer):
         inputs = self._build_inputs(self.in_var)
         pred = self.model(inputs[None])
         weight = self._get_weight()
-        return pred, weight  # Loss weights are multiplicative
+        return pred, weight
