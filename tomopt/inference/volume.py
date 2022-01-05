@@ -237,7 +237,7 @@ class AbsX0Inferer(AbsVolumeInferer):
             wpred = (preds * weights).sum(0)
             weight = weights.sum(0)
             pred = wpred / weight
-            return pred, weight  # Loss weights are multiplicative
+            return pred, weight
 
 
 class VoxelX0Inferer(AbsX0Inferer):

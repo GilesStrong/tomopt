@@ -204,7 +204,7 @@ class PanelDetectorLayer(AbsDetectorLayer):
         return device
 
     def get_panel_zorder(self) -> List[int]:
-        return np.argsort([p.z.detach().cpu().item() for p in self.panels])[::-1]
+        return list(np.argsort([p.z.detach().cpu().item() for p in self.panels])[::-1])
 
     def yield_zordered_panels(self) -> Iterator[DetectorPanel]:
         for i in self.get_panel_zorder():
