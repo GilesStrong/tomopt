@@ -1,9 +1,9 @@
 from abc import ABCMeta, abstractmethod
-from typing import Tuple, Optional, Dict, List
+from typing import Tuple, Optional, Dict, List, Union
 import numpy as np
 
 import torch
-from torch import Tensor
+from torch import Tensor, nn
 from torch.distributions import Normal
 
 from .scattering import AbsScatterBatch
@@ -11,7 +11,7 @@ from ..volume import VoxelDetectorLayer, PanelDetectorLayer, Volume
 from ..core import SCATTER_COEF_A
 from ..utils import jacobian
 
-__all__ = ["VoxelX0Inferer", "PanelX0Inferer"]
+__all__ = ["VoxelX0Inferer", "PanelX0Inferer", "DeepVolumeInferer"]
 
 
 class AbsVolumeInferer(metaclass=ABCMeta):
@@ -178,18 +178,6 @@ class AbsX0Inferer(AbsVolumeInferer):
             len(self.volume.get_passives()),
         )
         shp_zxy = shp_xyz[0], shp_xyz[3], shp_xyz[1], shp_xyz[2]
-        bounds = (
-            self.volume.passive_size
-            * np.mgrid[
-                0 : round(self.volume.lw.detach().cpu().numpy()[0] / self.volume.passive_size) : 1,
-                0 : round(self.volume.lw.detach().cpu().numpy()[1] / self.volume.passive_size) : 1,
-                round(self.volume.get_passive_z_range()[0].detach().cpu().numpy()[0] / self.volume.passive_size) : round(
-                    self.volume.get_passive_z_range()[1].detach().cpu().numpy()[0] / self.volume.passive_size
-                ) : 1,
-            ]
-        )
-        bounds[2] = np.flip(bounds[2])  # z is reversed
-        int_bounds = torch.tensor(bounds.reshape(3, -1).transpose(-1, -2), device=self.device)
 
         wpreds, weights = [], []
         for x0, unc in ((x0_dtheta, x0_dtheta_unc), (x0_dxy, x0_dxy_unc)):
@@ -207,7 +195,7 @@ class AbsX0Inferer(AbsVolumeInferer):
                 return torch.prod(torch.stack([dists[d].cdf(high[i]) - dists[d].cdf(low[i]) for i, d in enumerate(dists)]), dim=0)
 
             prob = (
-                torch.stack([comp_int(l, l + self.volume.passive_size, dists) for l in int_bounds.unbind()])
+                torch.stack([comp_int(l, l + self.volume.passive_size, dists) for l in self.volume.edges.unbind()])
                 .transpose(-1, -2)
                 .reshape(shp_xyz)
                 .permute(0, 3, 1, 2)
@@ -303,3 +291,51 @@ class PanelX0Inferer(AbsX0Inferer):
             else:
                 eff = eff * leff  # Muons detected above & below passive volume
         return eff
+
+
+class DeepVolumeInferer(AbsVolumeInferer):
+    def __init__(self, model: Union[torch.jit._script.RecursiveScriptModule, nn.Module], base_inferer: AbsX0Inferer, volume: Volume):
+        super().__init__(volume=volume)
+        self.model, self.base_inferer = model, base_inferer
+        self.voxel_centres = self.volume.centres
+
+        self.in_vars: List[Tensor] = []
+        self.in_var_uncs: List[Tensor] = []
+        self.efficiencies: List[Tensor] = []
+        self.in_var: Optional[Tensor] = None
+        self.in_var_unc: Optional[Tensor] = None
+        self.efficiency: Optional[Tensor] = None
+
+    def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
+        return self.base_inferer.compute_efficiency(scatters=scatters)
+
+    def get_base_predictions(self, scatters: AbsScatterBatch) -> Tuple[Tensor, Tensor]:
+        x, u = self.base_inferer.x0_from_dtheta(scatters=scatters)
+        return x[:, None], u[:, None]
+
+    def add_scatters(self, scatters: AbsScatterBatch) -> None:
+        self.scatter_batches.append(scatters)
+        x0, x0_unc = self.get_base_predictions(scatters)
+        self.in_vars.append(torch.cat((scatters.dtheta, scatters.dxy, x0, scatters.location), dim=-1))
+        self.in_var_uncs.append(torch.cat((scatters.dtheta_unc, scatters.dxy_unc, x0_unc, scatters.location_unc), dim=-1))
+        self.efficiencies.append(self.compute_efficiency(scatters=scatters))
+
+    def _build_inputs(self, in_var: Tensor) -> Tensor:
+        data = in_var[None, :].repeat_interleave(len(self.voxel_centres), dim=0)
+        data[:, :, -3:] -= self.voxel_centres[:, None].repeat_interleave(len(in_var), dim=1)
+        data = torch.cat((data, torch.norm(data[:, :, -3:], dim=-1, keepdim=True)), dim=-1)  # dR
+        return data
+
+    def _get_weight(self) -> Tensor:
+        """Maybe alter this to include resolution/pred uncertainties"""
+        return self.efficiency.sum()
+
+    def get_prediction(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
+        self.in_var = torch.cat(self.in_vars, dim=0)
+        self.in_var_unc = torch.cat(self.in_var_uncs, dim=0)
+        self.efficiency = torch.cat(self.efficiencies, dim=0)
+
+        inputs = self._build_inputs(self.in_var)
+        pred = self.model(inputs[None])
+        weight = self._get_weight()
+        return pred, weight

@@ -110,8 +110,8 @@ class DetectorPanel(nn.Module):
             self.x.clamp_(min=xyz_low[0], max=xyz_high[0])
             self.y.clamp_(min=xyz_low[1], max=xyz_high[1])
             self.z.clamp_(min=xyz_low[2] + eps, max=xyz_high[2] - eps)
-            self.xy_span[0].clamp_(min=xyz_high[0] / 20, max=xyz_high[0])
-            self.xy_span[1].clamp_(min=xyz_high[1] / 20, max=xyz_high[1])
+            self.xy_span[0].clamp_(min=xyz_high[0] / 20, max=10 * xyz_high[0])
+            self.xy_span[1].clamp_(min=xyz_high[1] / 20, max=10 * xyz_high[1])
 
     @property
     def x(self) -> Tensor:

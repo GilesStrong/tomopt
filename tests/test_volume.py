@@ -194,7 +194,7 @@ def test_panel_detector_layer(batch):
         assert p.z[0] <= 1
         assert p.z[0] >= 0.8
         assert p.xy_span[0] <= 1
-        assert p.xy_span[1] <= 1
+        assert p.xy_span[1] <= 10
         assert p.xy_span[0] >= 0
         assert p.xy_span[1] >= 0
 
@@ -285,6 +285,15 @@ def test_volume_methods():
     assert cube.shape == torch.Size([6] + list((LW / SZ).long()))
     assert torch.all(cube[0] == arb_rad_length2(z=SZ, lw=LW, size=SZ))  # cube reversed to match lookup_passive_xyz_coords: layer zero = bottom layer
     assert torch.all(cube[-1] == arb_rad_length2(z=Z, lw=LW, size=SZ))
+
+    edges = volume.edges
+    assert edges.shape == torch.Size((600, 3))
+    assert (edges[0] == Tensor([0, 0, 2 * SZ])).all()
+    assert (edges[-1] == Tensor([LW[0] - SZ, LW[1] - SZ, 7 * SZ])).all()
+    centres = volume.centres
+    assert centres.shape == torch.Size((600, 3))
+    assert (centres[0] == Tensor([0, 0, 2 * SZ]) + (SZ / 2)).all()
+    assert (centres[-1] == Tensor([LW[0] - SZ, LW[1] - SZ, 7 * SZ]) + (SZ / 2)).all()
 
 
 def test_volume_forward_voxel(batch):
@@ -482,9 +491,9 @@ def test_detector_panel_methods():
     assert (panel.xy == Tensor([0.5, 0.5])).all()
     assert (panel.xy_span == Tensor([0.5, 0.5])).all()
 
-    panel = DetectorPanel(res=10, eff=0.5, init_xyz=[2.0, -2.0, 2.0], init_xy_span=[0.0, 2.0], area_cost_func=area_cost)
+    panel = DetectorPanel(res=10, eff=0.5, init_xyz=[2.0, -2.0, 2.0], init_xy_span=[0.0, 20.0], area_cost_func=area_cost)
     panel.clamp_params((0, 0, 0), (1, 1, 1))
     assert (panel.xy == Tensor([1, 0])).all()
     assert panel.z - 1 < 0
     assert (panel.z - 1).abs() < 5e-3
-    assert (panel.xy_span == Tensor([5e-2, 1])).all()
+    assert (panel.xy_span == Tensor([5e-2, 10])).all()

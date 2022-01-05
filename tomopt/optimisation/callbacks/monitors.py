@@ -249,15 +249,16 @@ class MetricLogger(Callback):
         return history
 
     def get_results(self, loaded_best: bool) -> Dict[str, float]:
+        idx: int
         if loaded_best:
             if self.lock_to_metric:
-                idx = (
+                idx = int(
                     np.nanargmin(self.metric_vals[self.main_metric_idx])
                     if self.metric_cbs[self.main_metric_idx].lower_metric_better
                     else np.nanargmax(self.metric_vals[self.main_metric_idx])
                 )
             else:
-                idx = np.nanargmin(self.loss_vals["Validation"])
+                idx = int(np.nanargmin(self.loss_vals["Validation"]))
         else:
             idx = -1
 

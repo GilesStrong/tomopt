@@ -13,7 +13,7 @@ import torch.nn.functional as F
 from tomopt.volume import PassiveLayer, VoxelDetectorLayer, Volume, PanelDetectorLayer, DetectorPanel
 from tomopt.muon import MuonBatch, generate_batch
 from tomopt.core import X0
-from tomopt.inference import VoxelScatterBatch, VoxelX0Inferer, PanelX0Inferer, PanelScatterBatch
+from tomopt.inference import VoxelScatterBatch, VoxelX0Inferer, PanelX0Inferer, PanelScatterBatch, GenScatterBatch, DeepVolumeInferer
 from tomopt.volume.layer import Layer
 
 LW = Tensor([1, 1])
@@ -307,6 +307,47 @@ def test_scatter_batch_compute(mocker, voxel_scatter_batch):  # noqa F811
     assert (sb.dtheta - Tensor([[math.pi / 2, math.pi / 2]])).sum().abs() < 1e-3
 
 
+def test_gen_scatter_batch_compute(mocker, voxel_scatter_batch):  # noqa F811
+    mu, volume = voxel_scatter_batch[0], voxel_scatter_batch[1]
+    hits = {
+        "above": {
+            "reco_xy": Tensor([[[10.0, -2.0], [1, 0.3]]]),
+            "gen_xy": Tensor([[[0.0, 0.0], [0.1, 0.1]]]),
+            "z": Tensor(
+                [
+                    [[1.0], [0.9]],
+                ]
+            ),
+        },
+        "below": {
+            "reco_xy": Tensor(
+                [
+                    [[np.nan, 0.1], [10.0, -20.0]],
+                ]
+            ),
+            "gen_xy": Tensor(
+                [
+                    [[0.1, 0.1], [0.0, 0.0]],
+                ]
+            ),
+            "z": Tensor(
+                [
+                    [[0.1], [0.0]],
+                ]
+            ),
+        },
+    }
+    mocker.patch.object(mu, "get_hits", return_value=hits)
+    mocker.patch("tomopt.volume.layer.Layer.abs2idx", return_value=torch.zeros((1, 3), dtype=torch.long))
+
+    sb = GenScatterBatch(mu=mu, volume=volume)
+    assert (sb.location - Tensor([[0.5, 0.5, 0.5]])).sum().abs() < 1e-3
+    assert (sb.dxy - Tensor([[0.0, 0.0]])).sum().abs() < 1e-3
+    assert (sb.theta_in - Tensor([[-math.pi / 4, -math.pi / 4]])).sum().abs() < 1e-3
+    assert (sb.theta_out - Tensor([[math.pi / 4, math.pi / 4]])).sum().abs() < 1e-3
+    assert (sb.dtheta - Tensor([[math.pi / 2, math.pi / 2]])).sum().abs() < 1e-3
+
+
 def test_abs_volume_inferer_properties(voxel_scatter_batch):
     mu, volume, sb = voxel_scatter_batch
     inferer = PanelX0Inferer(volume=volume)
@@ -372,7 +413,7 @@ def test_voxel_x0_inferer_methods():
     assert len(inferer.preds) == 2
     assert len(inferer.weights) == 2
 
-    pi, wi = inferer.get_prediction()  # Averaged prediction slightly changes
+    pi, wi = inferer.get_prediction()  # Averaged prediction slightly changes with new batch
     assert (pi - p).abs().sum() > 1e-2
     assert (wi - w).abs().sum() > 1e-2
 
@@ -437,7 +478,7 @@ def test_panel_x0_inferer_methods():
     assert len(inferer.preds) == 2
     assert len(inferer.weights) == 2
 
-    pi, wi = inferer.get_prediction()  # Averaged prediction slightly changes
+    pi, wi = inferer.get_prediction()  # Averaged prediction slightly changes with new batch
     assert (pi - p).abs().sum() > 1e-2
     assert (wi - w).abs().sum() > 1e-2
 
@@ -499,3 +540,53 @@ def test_x0_inferer_scatter_inversion(mocker, voxel_scatter_batch):  # noqa F811
     mocker.patch("tomopt.inference.volume.jacobian", lambda i, j: torch.ones((len(i), 1, 7), device=i.device))  # remove randomness
     pred, _ = inferer.x0_from_dtheta(scatters=sb)
     assert (pred.mean() - x0) < 1e-5
+
+
+@pytest.mark.flaky(max_runs=2, min_passes=1)
+def test_deep_volume_inferer():
+    mu = MuonBatch(generate_batch(N), init_z=1)
+    volume = Volume(get_panel_layers(init_res=1e3))
+    volume(mu)
+    sb = PanelScatterBatch(mu=mu, volume=volume)
+
+    class MockModel(nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.layer = nn.Linear(600 * 9, 1)
+            self.act = nn.Sigmoid()
+
+        def forward(self, x: Tensor) -> Tensor:
+            return self.act(self.layer(x.mean(2).flatten()[None]))
+
+    inferer = DeepVolumeInferer(model=MockModel(), base_inferer=PanelX0Inferer(volume=volume), volume=volume)
+
+    pt, pt_unc = inferer.get_base_predictions(scatters=sb)
+    assert len(pt) == len(sb.location)
+    assert pt.shape == pt_unc.shape
+
+    assert len(inferer.in_vars) == 0
+    assert len(inferer.in_var_uncs) == 0
+    assert len(inferer.efficiencies) == 0
+    inferer.add_scatters(sb)
+    assert len(inferer.in_vars) == 1
+    assert len(inferer.in_var_uncs) == 1
+    assert len(inferer.efficiencies) == 1
+    assert inferer.in_vars[-1].shape == torch.Size((N, 8))
+    assert inferer.in_var_uncs[-1].shape == torch.Size((N, 8))
+    assert len(inferer.efficiencies[-1]) == N
+
+    inputs = inferer._build_inputs(inferer.in_vars[0])
+    assert inputs.shape == torch.Size((600, N, 9))
+
+    pred, weight = inferer.get_prediction()
+    assert pred.shape == torch.Size((1, 1))
+    assert weight.shape == torch.Size(())
+
+    for l in volume.get_detectors():
+        for panel in l.panels:
+            assert torch.autograd.grad(pred.abs().sum(), panel.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+            assert torch.autograd.grad(pred.abs().sum(), panel.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+            assert torch.autograd.grad(pred.abs().sum(), panel.z, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+            assert torch.autograd.grad(weight.abs().sum(), panel.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+            assert torch.autograd.grad(weight.abs().sum(), panel.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+            assert torch.autograd.grad(weight.abs().sum(), panel.z, retain_graph=True, allow_unused=True)[0].abs().sum() == 0
