@@ -285,7 +285,6 @@ class PanelX0Inferer(AbsX0Inferer):
             p_one_hit = (effs * p_miss[c].prod(1)).sum(0)
             p_no_hit = p_miss.prod(0)
             leff = 1 - p_one_hit - p_no_hit
-            print(pos, leff)
             if eff is None:
                 eff = leff
             else:
