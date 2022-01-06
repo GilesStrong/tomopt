@@ -486,8 +486,9 @@ def test_panel_x0_inferer_methods():
 def test_panel_x0_inferer_efficiency(mocker, panel_scatter_batch):  # noqa F811
     mu, volume, sb = panel_scatter_batch
     inferer = PanelX0Inferer(volume=volume)
-    a_effs = Tensor([0.1, 0.2, 0.3, 0.4])
+    a_effs = Tensor([0.6, 0.2, 0.3, 0.4])
     b_effs = Tensor([0.5, 0.6, 0.7, 0.8])
+    true_eff = 0.4263  # from MC sim
 
     def get_efficiency(self, xy):
         return self.eff.expand(len(xy)).clone()
@@ -497,23 +498,7 @@ def test_panel_x0_inferer_efficiency(mocker, panel_scatter_batch):  # noqa F811
             p.eff = a_effs[j] if i == 0 else b_effs[j]
             p.get_efficiency = types.MethodType(get_efficiency, p)
 
-    eff = []
-    for effs in (a_effs, b_effs):
-        eff.append(
-            (effs[0] * effs[1])
-            + (effs[0] * effs[2])
-            + (effs[0] * effs[3])
-            + (effs[1] * effs[2])
-            + (effs[1] * effs[3])
-            + (effs[2] * effs[3])
-            + (effs[0] * effs[1] * effs[2])
-            + (effs[0] * effs[1] * effs[3])
-            + (effs[0] * effs[3] * effs[2])
-            + (effs[3] * effs[1] * effs[2])
-            + (effs[0] * effs[1] * effs[2] * effs[3])
-        )
-
-    assert (inferer.compute_efficiency(scatters=sb)[0] - eff[0] * eff[1]).abs() < 1e-5
+    assert (inferer.compute_efficiency(scatters=sb)[0] - true_eff).abs() < 1e-3
 
 
 def test_x0_inferer_scatter_inversion(mocker, voxel_scatter_batch):  # noqa F811
