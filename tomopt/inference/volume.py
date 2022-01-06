@@ -279,13 +279,12 @@ class PanelX0Inferer(AbsX0Inferer):
                 raise ValueError(f"Detector {det} is not a PanelDetectorLayer")
             panel_idxs = det.get_panel_zorder()
             effs = torch.stack([det.panels[i].get_efficiency(hits[:, i, :2]) for i in panel_idxs], dim=0)
-            for r in range(2, len(effs) + 1):  # Muon goes through any combination of at least 2 panels
-                c = torch.combinations(torch.arange(0, len(effs)), r=r)
-                e = effs[c].prod(1).sum(0)
-                if leff is None:
-                    leff = e
-                else:
-                    leff = leff + e
+            # Muon goes through any combination of at least 2 panels
+            p_miss = 1 - effs
+            c = torch.combinations(torch.arange(0, len(effs)), r=len(effs) - 1)[torch.arange(len(effs) - 1, -1, -1)]
+            p_one_hit = (effs * p_miss[c].prod(1)).sum(0)
+            p_no_hit = p_miss.prod(0)
+            leff = 1 - p_one_hit - p_no_hit
             if eff is None:
                 eff = leff
             else:
