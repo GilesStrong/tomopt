@@ -281,7 +281,8 @@ class PanelX0Inferer(AbsX0Inferer):
             effs = torch.stack([det.panels[i].get_efficiency(hits[:, i, :2]) for i in panel_idxs], dim=0)
             # Muon goes through any combination of at least 2 panels
             p_miss = 1 - effs
-            c = torch.combinations(torch.arange(0, len(effs)), r=len(effs) - 1)[torch.arange(len(effs) - 1, -1, -1)]
+            c = torch.combinations(torch.arange(0, len(effs)), r=len(effs) - 1)
+            c = c[torch.arange(len(effs) - 1, -1, -1)]  # Reverse order to match panel hit
             p_one_hit = (effs * p_miss[c].prod(1)).sum(0)
             p_no_hit = p_miss.prod(0)
             leff = 1 - p_one_hit - p_no_hit
