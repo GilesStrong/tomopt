@@ -1,4 +1,5 @@
 from typing import Dict, Optional, Union
+from abc import abstractmethod, ABCMeta
 
 import torch
 from torch import nn, Tensor
@@ -6,14 +7,14 @@ from torch.nn import functional as F
 
 from ...volume import Volume
 
-__all__ = ["DetectorLoss"]
+__all__ = ["VoxelX0Loss", "VoxelClassLoss", "VolumeClassLoss"]
 
 
-class DetectorLoss(nn.Module):
+class AbsDetectorLoss(nn.Module, metaclass=ABCMeta):
     def __init__(
         self,
         *,
-        target_budget: float,
+        target_budget: Optional[float],
         budget_smoothing: float = 10,
         cost_coef: Optional[Union[Tensor, float]] = None,
         steep_budget: bool = True,
@@ -49,17 +50,70 @@ class DetectorLoss(nn.Module):
         self.cost_coef = inference.detach().clone()
         print(f"Automatically setting cost coefficient to {self.cost_coef}")
 
-    def forward(self, pred_x0: Tensor, pred_weight: Tensor, volume: Volume) -> Tensor:
-        self.sub_losses = {}
-        true_x0 = volume.get_rad_cube()
-        inference = torch.mean((pred_x0 - true_x0).pow(2) / pred_weight)
-        self.sub_losses["error"] = inference
-        cost = volume.get_cost()
+    @abstractmethod
+    def _get_inference_loss(self, pred: Tensor, inv_pred_weight: Tensor, volume: Volume) -> Tensor:
+        pass
+
+    def _get_cost_loss(self, volume: Volume) -> Tensor:
         if self.cost_coef is None:
-            self._compute_cost_coef(inference)
-        self.sub_losses["cost"] = self._get_budget_coef(cost) * self.cost_coef
+            self._compute_cost_coef(self.sub_losses["error"])
+        cost = volume.get_cost()
+        cost_loss = self._get_budget_coef(cost) * self.cost_coef
         if self.debug:
             print(
-                f'cost {cost}, cost coef {self.cost_coef}, budget coef {self._get_budget_coef(cost)}. error loss {self.sub_losses["error"]}, cost loss {self.sub_losses["cost"]}'
+                f'cost {cost}, cost coef {self.cost_coef}, budget coef {self._get_budget_coef(cost)}. error loss {self.sub_losses["error"]}, cost loss {cost_loss}'
             )
+        return cost_loss
+
+    def forward(self, pred: Tensor, inv_pred_weight: Tensor, volume: Volume) -> Tensor:
+        self.sub_losses = {}
+        self.sub_losses["error"] = self._get_inference_loss(pred, inv_pred_weight, volume)
+        self.sub_losses["cost"] = self._get_cost_loss(volume)
         return self.sub_losses["error"] + self.sub_losses["cost"]
+
+
+class VoxelX0Loss(AbsDetectorLoss):
+    """MSE on X0 float predictions per voxel"""
+
+    def _get_inference_loss(self, pred: Tensor, inv_pred_weight: Tensor, volume: Volume) -> Tensor:
+        true_x0 = volume.get_rad_cube()
+        return torch.mean(F.mse_loss(pred, true_x0, reduction="none") / inv_pred_weight)
+
+
+class AbsMaterialClassLoss(AbsDetectorLoss):
+    """Predictions are class IDs, targets might be float X0"""
+
+    def __init__(
+        self,
+        *,
+        x02id: Dict[float, int],
+        target_budget: float,
+        budget_smoothing: float = 10,
+        cost_coef: Optional[Union[Tensor, float]] = None,
+        steep_budget: bool = True,
+        debug: bool = False,
+    ):
+        super().__init__(target_budget=target_budget, budget_smoothing=budget_smoothing, cost_coef=cost_coef, steep_budget=steep_budget, debug=debug)
+        self.x02id = x02id
+
+
+class VoxelClassLoss(AbsMaterialClassLoss):
+    """Predictions are classes per voxel"""
+
+    def _get_inference_loss(self, pred: Tensor, inv_pred_weight: Tensor, volume: Volume) -> Tensor:
+        true_x0 = volume.get_rad_cube()
+        for x0 in true_x0.unique():
+            true_x0[true_x0 == x0] = self.x02id[min(self.x02id, key=lambda x: abs(x - x0))]
+        true_x0 = true_x0.long().flatten()[None]
+        return torch.mean(F.nll_loss(pred, true_x0, reduction="none") / inv_pred_weight)
+
+
+class VolumeClassLoss(AbsMaterialClassLoss):
+    """Predictions are classes of whole volume"""
+
+    def _get_inference_loss(self, pred: Tensor, inv_pred_weight: Tensor, volume: Volume) -> Tensor:
+        targ = volume.target.clone()
+        for x0 in targ.unique():
+            targ[targ == x0] = self.x02id[min(self.x02id, key=lambda x: abs(x - x0))]
+        loss = F.nll_loss(pred, targ.long(), reduction="none") if pred.shape[1] > 1 else F.binary_cross_entropy(pred, targ[:, None], reduction="none")
+        return torch.mean(loss / inv_pred_weight)
