@@ -110,9 +110,11 @@ class AbsDetectorLayer(Layer, metaclass=ABCMeta):
         z: float,
         size: float,
         device: torch.device = DEVICE,
+        type_label: str = None,
     ):
         super().__init__(lw=lw, z=z, size=size, device=device)
         self.pos = pos
+        self.type_label = type_label
 
     @abstractmethod
     def forward(self, mu: MuonBatch) -> None:
@@ -188,10 +190,11 @@ class PanelDetectorLayer(AbsDetectorLayer):
         z: float,
         size: float,
         panels: Union[List[DetectorPanel], nn.ModuleList],  # nn.ModuleList[DetectorPanel]
+        type_label: str = None,
     ):
         if isinstance(panels, list):
             panels = nn.ModuleList(panels)
-        super().__init__(pos=pos, lw=lw, z=z, size=size, device=self.get_device(panels))
+        super().__init__(pos=pos, lw=lw, z=z, size=size, device=self.get_device(panels), type_label=type_label)
         self.panels = panels
 
     @staticmethod
@@ -214,6 +217,11 @@ class PanelDetectorLayer(AbsDetectorLayer):
         lw = self.lw.detach().cpu().numpy()
         z = self.z.detach().cpu()[0]
         for p in self.panels:
+            # if self.type_label == "heatmap":
+            #     xy_low = p.xy_fix - p.range_mult * p.xy_span_fix
+            #     xy_high = p.xy_fix + p.range_mult * p.xy_span_fix
+            #     p.clamp_params(xyz_low=(xy_low, xy_low, z - self.size), xyz_high=(xy_high, xy_high, z))
+            # else:
             p.clamp_params(xyz_low=(0, 0, z - self.size), xyz_high=(lw[0], lw[1], z))
 
     def forward(self, mu: MuonBatch) -> None:
