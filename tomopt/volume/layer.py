@@ -1,6 +1,5 @@
 from tomopt.volume.panel import DetectorPanel
 from typing import Iterator, Optional, Callable, Dict, Tuple, List, Union
-import math
 import numpy as np
 from abc import ABCMeta, abstractmethod
 
@@ -8,12 +7,11 @@ import torch
 from torch import nn, Tensor
 import torch.nn.functional as F
 
-from ..core import DEVICE, SCATTER_COEF_A
+from .scatter_model import SCATTER_MODEL
+from ..core import DEVICE
 from ..muon import MuonBatch
 
 __all__ = ["PassiveLayer", "VoxelDetectorLayer", "PanelDetectorLayer"]
-
-SCATTER_PARAMS: Tensor  # Load params from ".scattering.file"
 
 
 class Layer(nn.Module):
@@ -22,41 +20,12 @@ class Layer(nn.Module):
         self.lw, self.z, self.size, self.device = lw.to(device), torch.tensor([z], device=device), size, device
         self.rad_length: Optional[Tensor] = None
 
-    @staticmethod
-    def _compute_n_x0(*, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor) -> Tensor:
-        return deltaz / (x0 * torch.cos(theta))
+    def _compute_displacements(self, *, x0: Tensor, deltaz: Union[Tensor, float], theta_xy: Tensor, mom: Tensor) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+        if not SCATTER_MODEL.initialised:
+            SCATTER_MODEL.load_data()  # Delay loading until requrired
 
-    def _compute_displacements(
-        self, *, n_x0: Tensor, deltaz: Union[Tensor, float], theta_x: Tensor, theta_y: Tensor, mom: Tensor
-    ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-        n = len(n_x0)
-        # z1 = torch.randn(n, device=self.device)
-        # z2 = torch.randn(n, device=self.device)
-
-        # theta0 = (SCATTER_COEF_A / mom) * torch.sqrt(n_x0)  # Ignore due to inversion problems * (1+(SCATTER_COEF_B*torch.log(x0)))
-        # theta_msc = math.sqrt(2) * z2 * theta0
-        # phi_msc = torch.rand(n, device=self.device) * 2 * math.pi
-        # dh_msc = deltaz * torch.sin(theta0) * ((z1 / math.sqrt(12)) + (z2 / 2))
-
-        def interp_func(mom: Tensor, x0: Tensor) -> Tensor:
-            """interp between points in SCATTER_PARAMS to get values at mom & x0"""
-            # values = ....\
-
-            return values
-
-        params = interp_func(mom, x0)
-        cdfs = get_cdfs(params)
-        dtheta = get_dtheta(cdfs)
-
-        # Note that if a track incides on a layer
-        # with angle theta_mu, the dx and dy displacements are relative to zero angle
-        # (generation of MSC formulas are oblivious of angle of incidence) so we need
-        # to rescale them by cos of thetax and thetay.
-        # dx = math.sqrt(2) * dh_msc * torch.cos(phi_msc) * torch.cos(theta_x)  # we need to account for direction of incident particle!
-        # dy = math.sqrt(2) * dh_msc * torch.sin(phi_msc) * torch.cos(theta_y)  # ... so we project onto the surface of the layer
-        # dtheta_x = theta_msc * torch.cos(phi_msc)
-        # dtheta_y = theta_msc * torch.sin(phi_msc)
-        return dx, dy, dtheta_x, dtheta_y
+        dtheta, dxy = SCATTER_MODEL.compute_scattering(x0=x0, deltaz=deltaz, theta_xy=theta_xy, mom=mom)
+        return dtheta[:, 0], dtheta[:, 1], dxy[:, 0], dxy[:, 1]
 
     def scatter_and_propagate(self, mu: MuonBatch, deltaz: Union[Tensor, float]) -> None:
         """
@@ -70,11 +39,8 @@ class Layer(nn.Module):
             mask = mu.get_xy_mask((0, 0), self.lw)  # Only scatter muons inside volume
             xy_idx = self.mu_abs2idx(mu, mask)
 
-            x0 = self.rad_length[xy_idx[:, 0], xy_idx[:, 1]]
-            n_x0 = self._compute_n_x0(x0=x0, deltaz=deltaz, theta=mu.theta[mask])
-            dx, dy, dtheta_x, dtheta_y = self._compute_displacements(
-                n_x0=n_x0, deltaz=deltaz, theta_x=mu.theta_x[mask], theta_y=mu.theta_y[mask], mom=mu.mom[mask]
-            )
+            x0 = self.rad_length[xy_idx[:, 0], xy_idx[:, 1]]  # Already masked
+            dx, dy, dtheta_x, dtheta_y = self._compute_displacements(x0=x0, deltaz=deltaz, theta_xy=mu.theta_xy[mask], mom=mu.mom[mask])
 
             # Update to position at scattering.
             mu.x[mask] = mu.x[mask] + dx
@@ -110,7 +76,7 @@ class PassiveLayer(Layer):
 
     def forward(self, mu: MuonBatch, n: int = 2) -> None:
         for _ in range(n):
-            self.scatter_and_propagate(mu, deltaz=self.size / n)
+            self.scatter_and_propagate(mu, deltaz=self.size)
 
 
 class AbsDetectorLayer(Layer, metaclass=ABCMeta):
@@ -172,14 +138,14 @@ class VoxelDetectorLayer(AbsDetectorLayer):
         xy0 = torch.zeros((len(mu), 2), device=self.device)
         xy0[mask] = xy_idxs.float() * self.size  # Low-left of voxel
         rel_xy = mu.xy - xy0
-        reco_rel_xy = rel_xy + (torch.randn((len(mu), 2), device=self.device) / res)
+        reco_rel_xy = rel_xy + (torch.randn((len(mu), 2), device=self.device), res)
         reco_rel_xy = torch.clamp(reco_rel_xy, 0, self.size - 1e-7)  # Prevent reco hit from exiting triggering voxel
         reco_xy = xy0 + reco_rel_xy
 
         hits = {
             "reco_xy": reco_xy,
             "gen_xy": mu.xy.detach().clone(),
-            "z": self.z.expand_as(mu.x)[:, None] - (self.size / 2),
+            "z": self.z.expand_as(mu.x)[:, None] - (self.size, 2),
         }
         return hits
 
@@ -216,7 +182,7 @@ class PanelDetectorLayer(AbsDetectorLayer):
         return device
 
     def get_panel_zorder(self) -> List[int]:
-        return np.argsort([p.z.detach().cpu().item() for p in self.panels])[::-1]
+        return list(np.argsort([p.z.detach().cpu().item() for p in self.panels])[::-1])
 
     def yield_zordered_panels(self) -> Iterator[DetectorPanel]:
         for i in self.get_panel_zorder():
