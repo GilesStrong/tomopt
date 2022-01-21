@@ -11,7 +11,7 @@ from ..volume import Volume, DetectorPanel
 from ..volume.layer import AbsDetectorLayer, VoxelDetectorLayer, PanelDetectorLayer
 from ..utils import jacobian
 
-__all__ = ["VoxelScatterBatch", "PanelScatterBatch"]
+__all__ = ["VoxelScatterBatch", "PanelScatterBatch", "GenScatterBatch"]
 
 
 class AbsScatterBatch(metaclass=ABCMeta):
@@ -53,6 +53,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
         """
 
         hits = torch.where(torch.isinf(hits), lw.mean().type(hits.type()) / 2, hits)
+        uncs = torch.nan_to_num(uncs)  # Set Infs to large number
 
         stars, angles = [], []
         for i in range(2):  # seperate x and y resolutions
@@ -377,3 +378,14 @@ class PanelScatterBatch(AbsScatterBatch):
         self._hit_uncs = self._get_hit_uncs(_get_panels(), self.gen_hits)
         self._track_in, self._track_start_in = self.get_muon_trajectory(self.above_hits, self.above_hit_uncs, self.volume.lw)
         self._track_out, self._track_start_out = self.get_muon_trajectory(self.below_hits, self.below_hit_uncs, self.volume.lw)
+
+
+class GenScatterBatch(AbsScatterBatch):
+    def compute_tracks(self) -> None:
+        self._hit_uncs = torch.ones_like(self._gen_hits)
+        self._track_in, self._track_start_in = self.get_muon_trajectory(self.above_gen_hits, self.above_hit_uncs, self.volume.lw)
+        self._track_out, self._track_start_out = self.get_muon_trajectory(self.below_gen_hits, self.below_hit_uncs, self.volume.lw)
+
+    @staticmethod
+    def _compute_unc(var: Tensor, hits: List[Tensor], hit_uncs: List[Tensor]) -> Tensor:
+        return var.new_zeros(var.shape)

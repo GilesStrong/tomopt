@@ -5,6 +5,7 @@ from .pred_callbacks import *  # noqa F403
 from .grad_callbacks import *  # noqa F403
 from .diagnostic_callbacks import *  # noqa F403
 from .loss_callbacks import *  # noqa F403
+from .opt_callbacks import *  # noqa F403
 
 
-__all__ = [*callback.__all__, *cyclic_callbacks.__all__, *monitors.__all__, *pred_callbacks.__all__, *grad_callbacks.__all__, *diagnostic_callbacks.__all__, *loss_callbacks.__all__]  # type: ignore  # noqa F405
+__all__ = [*callback.__all__, *cyclic_callbacks.__all__, *monitors.__all__, *pred_callbacks.__all__, *grad_callbacks.__all__, *diagnostic_callbacks.__all__, *loss_callbacks.__all__, *opt_callbacks.__all__]  # type: ignore  # noqa F405

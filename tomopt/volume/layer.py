@@ -17,7 +17,7 @@ __all__ = ["PassiveLayer", "VoxelDetectorLayer", "PanelDetectorLayer"]
 class Layer(nn.Module):
     def __init__(self, lw: Tensor, z: float, size: float, device: torch.device = DEVICE):
         super().__init__()
-        self.lw, self.z, self.size, self.device = lw.to(device), torch.tensor([z], device=device), size, device
+        self.lw, self.z, self.size, self.device = lw.to(device), torch.tensor([z], dtype=torch.float32, device=device), size, device
         self.rad_length: Optional[Tensor] = None
 
     def _compute_displacements(self, *, x0: Tensor, deltaz: Union[Tensor, float], theta_xy: Tensor, mom: Tensor) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
@@ -165,11 +165,11 @@ class PanelDetectorLayer(AbsDetectorLayer):
         lw: Tensor,
         z: float,
         size: float,
-        panels: nn.ModuleList,  # nn.ModuleList[DetectorPanel]
+        panels: Union[List[DetectorPanel], nn.ModuleList],  # nn.ModuleList[DetectorPanel]
     ):
-        super().__init__(pos=pos, lw=lw, z=z, size=size, device=self.get_device(panels))
         if isinstance(panels, list):
             panels = nn.ModuleList(panels)
+        super().__init__(pos=pos, lw=lw, z=z, size=size, device=self.get_device(panels))
         self.panels = panels
 
     @staticmethod

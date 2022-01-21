@@ -3,6 +3,7 @@ import numpy as np
 from pytest_mock import mocker  # noqa F401
 import math
 import pandas as pd
+from functools import partial
 
 import torch
 from torch import Tensor
@@ -10,10 +11,21 @@ import torch.nn.functional as F
 
 from tomopt.optimisation.callbacks.callback import Callback
 from tomopt.optimisation.callbacks.eval_metric import EvalMetric
-from tomopt.optimisation.callbacks import NoMoreNaNs, PredHandler, MetricLogger, VoxelMetricLogger, PanelMetricLogger, ScatterRecord, HitRecord, CostCoefWarmup
-from tomopt.optimisation.loss import DetectorLoss
-from tomopt.optimisation.wrapper.volume_wrapper import AbsVolumeWrapper, FitParams
+from tomopt.optimisation.callbacks import (
+    NoMoreNaNs,
+    PredHandler,
+    MetricLogger,
+    VoxelMetricLogger,
+    PanelMetricLogger,
+    ScatterRecord,
+    HitRecord,
+    CostCoefWarmup,
+    PanelOptConfig,
+)
+from tomopt.optimisation.loss import VoxelX0Loss
+from tomopt.optimisation.wrapper.volume_wrapper import AbsVolumeWrapper, FitParams, PanelVolumeWrapper
 from tomopt.volume import VoxelDetectorLayer, PanelDetectorLayer, DetectorPanel
+from tomopt.volume.volume import Volume
 
 LW = Tensor([1, 1])
 SZ = 0.1
@@ -62,7 +74,7 @@ class MockWrapper:
 
 
 class MockVolume:
-    pass
+    device = torch.device("cpu")
 
 
 class MockLayer:
@@ -177,7 +189,7 @@ def test_metric_logger(detector, mocker):  # noqa F811
         logger = PanelMetricLogger()
         det = get_panel_detector()
         vw.get_detectors = lambda: [det]
-    vw.loss_func = DetectorLoss(target_budget=1, cost_coef=1)
+    vw.loss_func = VoxelX0Loss(target_budget=1, cost_coef=1)
     vw.fit_params = FitParams(pred=10, trn_passives=range(10), passive_bs=2, metric_cbs=[EvalMetric(name="test", main_metric=True, lower_metric_better=True)])
     logger.set_wrapper(vw)
     mocker.spy(logger, "_reset")
@@ -326,9 +338,8 @@ def test_cost_coef_warmup():
         def _build_opt(self, **kwargs) -> None:
             pass
 
-    loss = DetectorLoss(target_budget=0.8)
+    loss = VoxelX0Loss(target_budget=0.8)
     vol = MockVolume()
-    vol.device = torch.device("cpu")
     vol.parameters = []
     vw = VW(volume=vol, partial_opts={}, loss_func=loss, partial_scatter_inferer=None, partial_volume_inferer=None)
     vw.fit_params = FitParams(pred=10)
@@ -337,7 +348,6 @@ def test_cost_coef_warmup():
     vw.opts = {"mock_opt": opt}
     ccw = CostCoefWarmup(5)
     ccw.set_wrapper(vw)
-    vw.loss_func = loss
 
     ccw.on_train_begin()
     assert opt.param_groups[0]["lr"] == 0.0
@@ -369,3 +379,53 @@ def test_cost_coef_warmup():
                 assert np.abs(ccw.e_sum.item() - (sum := np.sum([((2 ** i)) + ((2 ** i) * 3) + ((2 ** i) * 9) for i in range(0, 5)]) / 3)) < 1e-4
                 assert ccw.epoch_cnt == 5
                 assert np.abs(loss.cost_coef.item() - sum / 5) < 1e-4
+
+
+def test_panel_opt_config():
+    volume = MockVolume()
+    volume.parameters = []
+    panel_det = get_panel_detector()
+    volume.get_detectors = lambda: [panel_det]
+    vw = PanelVolumeWrapper(
+        volume,
+        xy_pos_opt=partial(torch.optim.SGD, lr=5e4),
+        z_pos_opt=partial(torch.optim.SGD, lr=5e3),
+        xy_span_opt=partial(torch.optim.SGD, lr=1e4),
+        loss_func=VoxelX0Loss(target_budget=0),
+    )
+    vw.fit_params = FitParams()
+    xy_pos_rate = 0.1
+    z_pos_rate = 0.05
+    xy_span_rate = 0.2
+    xy_pos_mult = 1
+    z_pos_mult = -3
+    xy_span_mult = 2
+    poc = PanelOptConfig(n_warmup=2, xy_pos_rate=xy_pos_rate, z_pos_rate=z_pos_rate, xy_span_rate=xy_span_rate)
+    poc.set_wrapper(vw)
+
+    poc.on_train_begin()
+    for o in ["xy_pos_opt", "z_pos_opt", "xy_span_opt"]:
+        assert vw.get_opt_lr(o) == 0.0
+    for e in range(3):
+        if e < 2:
+            assert poc.tracking is True
+        for s in range(2):  # Training & validation
+            vw.fit_params.state = "train" if s == 0 else "valid"
+            for p in panel_det.panels:
+                p.xy.grad = xy_pos_mult * torch.ones(2) * e * (1 + s)
+                p.z.grad = z_pos_mult * torch.ones(1) * e * (1 + s)
+                p.xy_span.grad = xy_span_mult * torch.ones(2) * e * (1 + s)
+            poc.on_backwards_end()
+            if e < 2:
+                assert len(poc.stats["xy_pos_opt"]) == e + 1
+                assert len(poc.stats["z_pos_opt"]) == e + 1
+                assert len(poc.stats["xy_span_opt"]) == e + 1
+                assert poc.stats["xy_pos_opt"][-1].mean() == xy_pos_mult * e
+                assert poc.stats["z_pos_opt"][-1].mean() == z_pos_mult * e
+                assert poc.stats["xy_span_opt"][-1].mean() == xy_span_mult * e
+            poc.on_epoch_end()
+            if e >= 1:
+                assert poc.tracking is False
+                assert vw.get_opt_lr("xy_pos_opt") == xy_pos_rate / (xy_pos_mult / 2)
+                assert vw.get_opt_lr("z_pos_opt") == np.abs(z_pos_rate / (z_pos_mult / 2))
+                assert vw.get_opt_lr("xy_span_opt") == xy_span_rate / (xy_span_mult / 2)
