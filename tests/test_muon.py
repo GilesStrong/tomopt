@@ -1,8 +1,9 @@
-from pytest_mock import mocker
+from unittest import mock
 import pytest
 import numpy as np
 
 import torch
+import tomopt
 from torch import Tensor
 
 from tomopt.muon import MuonGenerator, MuonBatch
@@ -17,13 +18,13 @@ def batch():
     return MuonBatch(batch, init_z=1)
 
 
-mock = mocker
+mocker = mock
 
 
-def test_muon_generator(mock):
+def test_muon_generator(mocker):
     n_muons = int(1e4)
     gen = MuonGenerator(1.0, 1.0, True)
-    mock.patch("numpy.random.uniform", return_value=np.ones(n_muons))
+    mocker.patch("tomopt.muon.generation.np.random.uniform", return_value=np.ones(n_muons))
     set = gen.generate_set(n_muons)
     momenta = 2.7619 * np.ones(n_muons) if gen._sample_momentum is True else 5.0 * np.ones(n_muons)
     theta_x = 0.7553 * np.ones(n_muons)
