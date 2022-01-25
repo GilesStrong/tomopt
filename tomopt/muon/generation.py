@@ -10,12 +10,12 @@ __all__ = ["MuonGenerator"]
 
 
 class MuonGenerator:
-    def __init__(self, max_x: float = 1.0, max_y: float = 1.0, fixed_mom: bool = False) -> None:
+    def __init__(self, max_x: float = 1.0, max_y: float = 1.0, sample_mom: bool = False) -> None:
         """
-        Initializer. Specify dimensions x,y of the impinging surface flag (True/False) for sampled vs uniform muon momenta
+        Initializer. Specify dimensions x,y of the impinging surface flag (True/False) for sampled vs uniform muon momenta respectively
         """
         self._muon_mass = Particle.from_pdgid(13).mass * 1e-3
-        self._sample_momentum = fixed_mom
+        self._sample_momentum = sample_mom
         self._dimensions = (max_x, max_y)
         self._n_bins_energy = 200
         self._n_bins_phi = 200
