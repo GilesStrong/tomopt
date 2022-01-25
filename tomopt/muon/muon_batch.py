@@ -6,8 +6,6 @@ from collections import defaultdict, OrderedDict
 import torch
 from torch import Tensor
 
-from tomopt.muon.generation import MuonGenerator
-
 from ..core import DEVICE
 
 __all__ = ["MuonBatch"]
