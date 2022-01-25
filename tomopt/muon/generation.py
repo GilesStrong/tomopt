@@ -42,6 +42,7 @@ class MuonGenerator:
     def flux(self, energy: Union[float, np.ndarray], theta: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
         """
         Function returning modified Gaisser formula for cosmic muon flux given energy (float/np.array) and incidence angle (float/np.array)
+        Uses model defined in arXiv:1509.06176
         """
         cosTheta = np.cos(theta)
         P1 = 0.102573
