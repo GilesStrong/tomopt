@@ -93,22 +93,7 @@ class DetectorHeatMap(nn.Module):
         return eff
 
     def get_cost(self) -> Tensor:
-        with torch.no_grad():
-            thresh = [0.5, 0.8, 0.9, 1.0]
-            x = self.xy_fix[0].detach().numpy()
-            y = self.xy_fix[1].detach().numpy()
-            xs = torch.linspace(x - 2 * self.delta_xy, x + 2 * self.delta_xy, steps=1000)
-            ys = torch.linspace(y - 2 * self.delta_xy, y + 2 * self.delta_xy, steps=1000)
-            x, y = torch.meshgrid(xs, ys)
-
-            z = self.get_z_from_mesh(x, y)
-            integ = torch.tensor(0.0)
-            for t in thresh:
-                #             integ += (z[z >= t] / z.shape[0]).sum()
-                integ += t * (z >= t).sum() / z.shape[0]
-
-        # ToDo: smudge factor
-        return integ / self._n_cluster
+        return self.area_cost_func(self.sig.prod(1).mean())
 
     def get_hits(self, mu: MuonBatch) -> Dict[str, Tensor]:
         mask = mu.get_xy_mask(self.xy_fix - self.range_mult * self.delta_xy, self.xy_fix + self.range_mult * self.delta_xy)  # Muons in panel
