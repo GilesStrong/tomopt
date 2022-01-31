@@ -46,7 +46,8 @@ class DetectorHeatMap(nn.Module):
         self.mu = self.gmm.mu
         self.sig = self.gmm.sig
         self.norm = self.gmm.norm
-        self.z = torch.tensor(init_xyz[2:3], device=self.device)
+        self.z = nn.Parameter(torch.tensor(init_xyz[2:3], device=self.device))
+        self.gmm.my_params.append(self.z)
         # ToDo: range to consider outside xy_span_fix?
         self.range_mult = 5
 

@@ -18,6 +18,7 @@ class NoMoreNaNs(Callback):
                         torch.nan_to_num_(p.mu.grad, 0)
                         torch.nan_to_num_(p.norm.grad, 0)
                         torch.nan_to_num_(p.sig.grad, 0)
+                        torch.nan_to_num_(p.z.grad, 0)
                     else:
                         torch.nan_to_num_(p.xy.grad, 0)
                         torch.nan_to_num_(p.z.grad, 0)
