@@ -148,13 +148,12 @@ class DetectorHeatMap(nn.Module):
 
         return z
 
-    # ToDo: does not work outside range atm?
-    def clamp_params(self, xyz_low: Tuple[float, float, float], xyz_high: Tuple[float, float, float]) -> None:
+    def clamp_params(self, musigz_low: Tuple[float, float, float], musigz_high: Tuple[float, float, float]) -> None:
         with torch.no_grad():
             eps = np.random.uniform(0, 1e-3)  # prevent hits at same z due to clamping
-            self.mu.clamp_(min=xyz_low[0], max=xyz_high[0])
-            self.z.clamp_(min=xyz_low[2] + eps, max=xyz_high[2] - eps)
-            self.sig.clamp_(min=xyz_high[0] / self.range_mult, max=self.range_mult * xyz_high[0])
+            self.mu.clamp_(min=musigz_low[0], max=musigz_high[0])
+            self.z.clamp_(min=musigz_low[2] + eps, max=musigz_high[2] - eps)
+            self.sig.clamp_(min=musigz_low[1] / self.range_mult, max=self.range_mult * musigz_high[1])
             self.norm.clamp_(min=0.01, max=1.2)
 
     @property

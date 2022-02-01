@@ -217,12 +217,21 @@ class PanelDetectorLayer(AbsDetectorLayer):
         lw = self.lw.detach().cpu().numpy()
         z = self.z.detach().cpu()[0]
         for p in self.panels:
-            # if self.type_label == "heatmap":
-            #     xy_low = p.xy_fix - p.range_mult * p.xy_span_fix
-            #     xy_high = p.xy_fix + p.range_mult * p.xy_span_fix
-            #     p.clamp_params(xyz_low=(xy_low, xy_low, z - self.size), xyz_high=(xy_high, xy_high, z))
-            # else:
-            p.clamp_params(xyz_low=(0, 0, z - self.size), xyz_high=(lw[0], lw[1], z))
+            if self.type_label == "heatmap":
+                xy_low = p.xy_fix[0] - p.range_mult * p.delta_xy
+                xy_high = p.xy_fix[1] + p.range_mult * p.delta_xy
+                xy_low = torch.max(torch.tensor(0.0), xy_low)
+                xy_high = torch.min(torch.tensor(lw[0]), xy_high)
+
+                p.clamp_params(
+                    musigz_low=(xy_low, 0.0, z - self.size),
+                    musigz_high=(xy_high, lw[1], z),
+                )
+            else:
+                p.clamp_params(
+                    xyz_low=(0, 0, z - self.size),
+                    xyz_high=(lw[0], lw[1], z),
+                )
 
     def forward(self, mu: MuonBatch) -> None:
         for p in self.yield_zordered_panels():
