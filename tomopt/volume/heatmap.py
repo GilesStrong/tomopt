@@ -48,11 +48,9 @@ class DetectorHeatMap(nn.Module):
         self.norm = self.gmm.norm
         self.z = nn.Parameter(torch.tensor(init_xyz[2:3], device=self.device))
         self.gmm.my_params.append(self.z)
-        # ToDo: range to consider outside xy_span_fix?
-        self.range_mult = 5
+        self.range_mult = 1.2
 
     def __repr__(self) -> str:
-        self.plot_map()
         return f"""{self.__class__} at av. xy={self.gmm.mu.T.mean(1)} with n_comp {self._n_cluster}, z={self.z.data}."""
 
     def get_xy_mask(self, xy: Tensor) -> Tensor:
@@ -98,7 +96,6 @@ class DetectorHeatMap(nn.Module):
     def get_hits(self, mu: MuonBatch) -> Dict[str, Tensor]:
         mask = mu.get_xy_mask(self.xy_fix - self.range_mult * self.delta_xy, self.xy_fix + self.range_mult * self.delta_xy)  # Muons in panel
 
-        # ToDo: check this!
         xy0 = self.xy_fix - (self.delta_xy / 2)  # aprox. Low-left of voxel
         rel_xy = mu.xy - xy0
         res = self.get_resolution(mu.xy, mask)
