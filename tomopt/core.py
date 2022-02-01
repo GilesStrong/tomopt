@@ -11,6 +11,8 @@ SCATTER_COEF_A = 0.0136
 
 SCATTER_COEF_B = 0.038
 
+# TODO: Update to numbers and materials used in scattering model
+
 X0 = {  # Is actually X0/density "inverse scaled scattering density"
     "beryllium": 0.3528,  # m
     "carbon": 0.1932,

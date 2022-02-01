@@ -27,7 +27,7 @@ setup(
     url="https://github.com/GilesStrong/mode_muon_tomography",
     keywords="deep learning, differential programming, physics, science, statistics, tomography, detector",
     packages=find_packages(),
-    package_data={"tomopt": ["py.typed"]},
+    package_data={"tomopt": ["py.typed", "volume/scatter_models/*"]},
     include_package_data=True,
     python_requires=">=3.8",
     install_requires=requirements,
