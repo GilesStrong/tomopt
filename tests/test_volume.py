@@ -64,14 +64,14 @@ def test_passive_layer_forwards(batch):
     # Small scattering
     pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=Z, size=1e-4)
     batch = start.copy()
-    pl(batch, 1)
+    pl(batch)
     assert torch.abs(batch.z - Tensor([Z])) <= 1e-3
     assert torch.all(batch.dtheta(start) < 1e-2)
     assert torch.all(torch.abs(batch.xy - start.xy) < 1e-3)
 
 
-@pytest.mark.parametrize("n", [(1), (2), (5)])
-def test_passive_layer_scattering(mocker, batch, n):  # noqa: F811
+@pytest.mark.parametrize("sz", [(0.01), (0.1), (0.2), (0.205)])
+def test_passive_layer_default_scattering(mocker, batch, sz):  # noqa: F811
     for m in ["propagate", "get_xy_mask"]:
         mocker.patch.object(MuonBatch, m)
     mock_getters = {}
@@ -79,8 +79,10 @@ def test_passive_layer_scattering(mocker, batch, n):  # noqa: F811
         mock_getters[m] = mocker.PropertyMock(return_value=getattr(batch, m))
         mocker.patch.object(MuonBatch, m, mock_getters[m])
 
-    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, size=SZ, z=Z)
-    pl(batch, n)
+    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, size=sz, z=Z)
+    pl(batch)
+    dz = 0.01
+    n = int(sz / dz)
     assert batch.propagate.call_count == n + 1
     assert batch.propagate.called_with(SZ / n)
     assert batch.get_xy_mask.call_count == n

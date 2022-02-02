@@ -71,11 +71,10 @@ class PassiveLayer(Layer):
     def load_rad_length(self, rad_length_func: Callable[..., Tensor]) -> None:
         self.rad_length = rad_length_func(z=self.z, lw=self.lw, size=self.size).to(self.device)
 
-    def forward(self, mu: MuonBatch, n: Optional[int] = None) -> None:
-        if n is None:
-            if not SCATTER_MODEL.initialised:
-                SCATTER_MODEL.load_data()  # Delay loading until requrired
-            n = int(self.size // SCATTER_MODEL.deltaz)
+    def forward(self, mu: MuonBatch) -> None:
+        if not SCATTER_MODEL.initialised:
+            SCATTER_MODEL.load_data()  # Delay loading until requrired
+        n = int(self.size / SCATTER_MODEL.deltaz)
         for _ in range(n):
             self.scatter_and_propagate(mu, deltaz=SCATTER_MODEL.deltaz)
         mu.propagate(mu.z - (self.z - self.size))  # In case of floating point-precision, ensure muons are at the bottom of the layer
