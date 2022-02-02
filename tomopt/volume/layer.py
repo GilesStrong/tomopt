@@ -76,7 +76,7 @@ class PassiveLayer(Layer):
 
     def forward(self, mu: MuonBatch, n: int = 2) -> None:
         for _ in range(n):
-            self.scatter_and_propagate(mu, deltaz=self.size)
+            self.scatter_and_propagate(mu, deltaz=self.size / n)
 
 
 class AbsDetectorLayer(Layer, metaclass=ABCMeta):
@@ -138,14 +138,14 @@ class VoxelDetectorLayer(AbsDetectorLayer):
         xy0 = torch.zeros((len(mu), 2), device=self.device)
         xy0[mask] = xy_idxs.float() * self.size  # Low-left of voxel
         rel_xy = mu.xy - xy0
-        reco_rel_xy = rel_xy + (torch.randn((len(mu), 2), device=self.device), res)
+        reco_rel_xy = rel_xy + (torch.randn((len(mu), 2), device=self.device) / res)
         reco_rel_xy = torch.clamp(reco_rel_xy, 0, self.size - 1e-7)  # Prevent reco hit from exiting triggering voxel
         reco_xy = xy0 + reco_rel_xy
 
         hits = {
             "reco_xy": reco_xy,
             "gen_xy": mu.xy.detach().clone(),
-            "z": self.z.expand_as(mu.x)[:, None] - (self.size, 2),
+            "z": self.z.expand_as(mu.x)[:, None] - (self.size / 2),
         }
         return hits
 
