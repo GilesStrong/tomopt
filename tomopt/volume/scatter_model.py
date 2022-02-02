@@ -1,15 +1,20 @@
 from typing import Dict, Optional, Union, Tuple
 import h5py
+import os
+from fastcore.all import Path
+import json
 
 import torch
 from torch import Tensor
+
+PKG_DIR = Path(os.path.dirname(os.path.abspath(__file__)))  # How robust is this? Could create hidden dir in home and download resources
 
 __all__ = ["SCATTER_MODEL"]
 
 
 class ScatterModel:
-    dtheta_params: Tensor  # (10000, 35, 8), (rnd, mom, x0)
-    dxy_params: Tensor  # (10000, 35, 8), (rnd, mom, x0)
+    dtheta_params: Tensor  # (8, 35, 10000), (x0, mom, rnd)
+    dxy_params: Tensor  # (8, 35, 10000), (x0, mom, rnd)
     deltaz: float
     x02id: Dict[float, int]
     mom_lookup: Tensor
@@ -17,25 +22,18 @@ class ScatterModel:
     n_bins: int
     _device: Optional[torch.device] = None
 
-    """
-    SCATTER_PARAMS: Tensor = torch.ones((2, 10000, 35, 8))  # Load params from ".scattering.file" (2, 10000, 35, 8), (dtheta|dxy, rnd, mom, x0)
-    X02ID = {X0[m]: i for i, m in enumerate(X0)}
-    MOM_LOOKUP = torch.tensor([0.6, 0.8, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10., 15., 20., 25., 30., 35., 40., 45., 50., 60., 70., 80., 90., 100., 150., 200., 250., 300., 350., 400.], device=DEVICE)
-    EXP_DISP_MODEL: float = 1.85
-    MODEL_DELTA_Z: float = 0.01
-    """
-
     def __init__(self) -> None:
         self.initialised = False
 
     def load_data(self, filename: str = "scatter_models/dt_dx_10mm.hdf5") -> None:
-        self.file = h5py.File(filename, "r")
+        self.file = h5py.File(PKG_DIR / filename, "r")
         self.dtheta_params = Tensor(self.file["model/dtheta"][()])
         self.dxy_params = Tensor(self.file["model/dxy"][()])
         self.deltaz = self.file["meta_data/deltaz"][()]
-        self.x02id
-        self.mom_lookup = Tensor(self.file["meta_data/mom_lookup"][1:-1])  # Exclude starting and end edges
+        self.x02id = {float(k): v for k, v in json.loads(self.file["meta_data/x02id"][()]).items()}
+        self.mom_lookup = Tensor(self.file["meta_data/mom_bins"][1:-1])  # Exclude starting and end edges
         self.exp_disp_model = self.file["meta_data/exp_disp_model"][()]
+        self.n_bins = self.file["meta_data/n_rnd"][()]
         self.initialised = True
 
     def extrapolate_dtheta(self, dtheta: Tensor, inv_costheta: Tensor) -> Tensor:
@@ -63,18 +61,19 @@ class ScatterModel:
 
         n = len(x0)
         rnds = (self.n_bins * torch.rand((n, 4), device=self.device)).long()  # dtheta_x, dtheta_x, dy, dy
-        mom_idxs = torch.bucketize(mom, self.mom_lookup)
+        mom_idxs = torch.bucketize(mom, self.mom_lookup).long()[:, None]
 
         x0_idxs = torch.zeros_like(mom, device=self.device) - 1
         for m in x0.detach().unique().cpu().numpy():
             x0_idxs[x0 == m] = self.x02id[min(self.x02id, key=lambda x: abs(x - m))]  # Get ID for closest X0 in model
         if (x0_idxs < 0).any():
             raise ValueError("Something went wrong in the x0 indexing")
+        x0_idxs = x0_idxs.long()[:, None]
 
         inv_costheta = 1 / (1e-17 + torch.cos(theta_xy))
-        dtheta = self.dtheta_params[rnds[:, 0:2], mom_idxs, x0_idxs]
+        dtheta = self.dtheta_params[x0_idxs, mom_idxs, rnds[:, 0:2]]
         dtheta = self.extrapolate_dtheta(dtheta, inv_costheta)
-        dxy = self.dxy_params[rnds[:, 2:4], mom_idxs, x0_idxs]
+        dxy = self.dxy_params[x0_idxs, mom_idxs, rnds[:, 0:2]]
         dxy = self.extrapolate_dxy(dxy, inv_costheta)
 
         return dtheta, dxy

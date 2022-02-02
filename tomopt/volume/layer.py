@@ -21,9 +21,6 @@ class Layer(nn.Module):
         self.rad_length: Optional[Tensor] = None
 
     def _compute_displacements(self, *, x0: Tensor, deltaz: Union[Tensor, float], theta_xy: Tensor, mom: Tensor) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-        if not SCATTER_MODEL.initialised:
-            SCATTER_MODEL.load_data()  # Delay loading until requrired
-
         dtheta, dxy = SCATTER_MODEL.compute_scattering(x0=x0, deltaz=deltaz, theta_xy=theta_xy, mom=mom)
         return dtheta[:, 0], dtheta[:, 1], dxy[:, 0], dxy[:, 1]
 
@@ -74,9 +71,14 @@ class PassiveLayer(Layer):
     def load_rad_length(self, rad_length_func: Callable[..., Tensor]) -> None:
         self.rad_length = rad_length_func(z=self.z, lw=self.lw, size=self.size).to(self.device)
 
-    def forward(self, mu: MuonBatch, n: int = 2) -> None:
+    def forward(self, mu: MuonBatch, n: Optional[int] = None) -> None:
+        if n is None:
+            if not SCATTER_MODEL.initialised:
+                SCATTER_MODEL.load_data()  # Delay loading until requrired
+            n = int(self.size // SCATTER_MODEL.deltaz)
         for _ in range(n):
-            self.scatter_and_propagate(mu, deltaz=self.size / n)
+            self.scatter_and_propagate(mu, deltaz=SCATTER_MODEL.deltaz)
+        mu.propagate(mu.z - (self.z - self.size))  # In case of floating point-precision, ensure muons are at the bottom of the layer
 
 
 class AbsDetectorLayer(Layer, metaclass=ABCMeta):
