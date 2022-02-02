@@ -1,4 +1,5 @@
-from typing import Dict, Union, Tuple
+from typing import Dict, Optional, Union, Tuple
+import h5py
 
 import torch
 from torch import Tensor
@@ -14,6 +15,7 @@ class ScatterModel:
     mom_lookup: Tensor
     exp_disp_model: float
     n_bins: int
+    _device: Optional[torch.device] = None
 
     """
     SCATTER_PARAMS: Tensor = torch.ones((2, 10000, 35, 8))  # Load params from ".scattering.file" (2, 10000, 35, 8), (dtheta|dxy, rnd, mom, x0)
@@ -26,13 +28,14 @@ class ScatterModel:
     def __init__(self) -> None:
         self.initialised = False
 
-    def load_data(self, filename: str = "scatter_params.hdf5") -> None:
-        # self.dtheta_params
-        # self.dxy_params
-        # self.deltaz
-        # self.x02id
-        # self.mom_lookup
-        # self.exp_disp_model
+    def load_data(self, filename: str = "scatter_models/dt_dx_10mm.hdf5") -> None:
+        self.file = h5py.File(filename, "r")
+        self.dtheta_params = Tensor(self.file["model/dtheta"][()])
+        self.dxy_params = Tensor(self.file["model/dxy"][()])
+        self.deltaz = self.file["meta_data/deltaz"][()]
+        self.x02id
+        self.mom_lookup = Tensor(self.file["meta_data/mom_lookup"][1:-1])  # Exclude starting and end edges
+        self.exp_disp_model = self.file["meta_data/exp_disp_model"][()]
         self.initialised = True
 
     def extrapolate_dtheta(self, dtheta: Tensor, inv_costheta: Tensor) -> Tensor:
@@ -41,15 +44,28 @@ class ScatterModel:
     def extrapolate_dxy(self, dxy: Tensor, inv_costheta: Tensor) -> Tensor:
         return dxy * (inv_costheta ** self.exp_disp_model)
 
+    @property
+    def device(self) -> Optional[torch.device]:
+        return self._device
+
+    @device.setter
+    def device(self, device: torch.device) -> None:
+        self._device = device
+        self.dtheta_params = self.dtheta_params.to(self._device)
+        self.dxy_params = self.dxy_params.to(self._device)
+        self.mom_lookup = self.mom_lookup.to(self._device)
+
     def compute_scattering(self, x0: Tensor, deltaz: Union[Tensor, float], theta_xy: Tensor, mom: Tensor) -> Tuple[Tensor, Tensor]:
         if deltaz != self.deltaz:
             raise ValueError(f"Model only works for a fixed delta z step of {self.deltaz}.")
+        if self._device is None:
+            self.device = theta_xy.device
 
         n = len(x0)
-        rnds = (self.n_bins * torch.rand((n, 4), device=theta_xy.device)).long()  # dtheta_x, dtheta_x, dy, dy
+        rnds = (self.n_bins * torch.rand((n, 4), device=self.device)).long()  # dtheta_x, dtheta_x, dy, dy
         mom_idxs = torch.bucketize(mom, self.mom_lookup)
 
-        x0_idxs = torch.zeros_like(mom, device=theta_xy.device) - 1
+        x0_idxs = torch.zeros_like(mom, device=self.device) - 1
         for m in x0.detach().unique().cpu().numpy():
             x0_idxs[x0 == m] = self.x02id[min(self.x02id, key=lambda x: abs(x - m))]  # Get ID for closest X0 in model
         if (x0_idxs < 0).any():
