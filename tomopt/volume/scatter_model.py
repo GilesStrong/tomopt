@@ -71,9 +71,9 @@ class ScatterModel:
         x0_idxs = x0_idxs.long()[:, None]
 
         inv_costheta = 1 / (1e-17 + torch.cos(theta_xy))
-        dtheta = self.dtheta_params[x0_idxs, mom_idxs, rnds[:, 0:2]]
+        dtheta = self.dtheta_params[x0_idxs, mom_idxs, rnds[:, :2]]
         dtheta = self.extrapolate_dtheta(dtheta, inv_costheta)
-        dxy = self.dxy_params[x0_idxs, mom_idxs, rnds[:, 0:2]]
+        dxy = self.dxy_params[x0_idxs, mom_idxs, rnds[:, 2:]]
         dxy = self.extrapolate_dxy(dxy, inv_costheta)
 
         return dtheta, dxy
