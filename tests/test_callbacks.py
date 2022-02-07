@@ -357,11 +357,11 @@ def test_cost_coef_warmup():
             ccw.on_epoch_begin()
             for v in range(3):
                 print(e, s, v)
-                loss.sub_losses["error"] = Tensor([((-1) ** s) * (2 ** e) * (3 ** v)])  # Unique value per epoch per volume
+                loss.sub_losses["error"] = Tensor([((-1) ** s) * (2**e) * (3**v)])  # Unique value per epoch per volume
                 ccw.on_volume_end()
             if e < 5:
                 if s == 0:
-                    assert ccw.v_sum.item() == ((2 ** e)) + ((2 ** e) * 3) + ((2 ** e) * 9)
+                    assert ccw.v_sum.item() == ((2**e)) + ((2**e) * 3) + ((2**e) * 9)
                     assert ccw.volume_cnt == 3
                 else:
                     assert ccw.v_sum.item() == 0.0
@@ -371,12 +371,12 @@ def test_cost_coef_warmup():
                 assert ccw.volume_cnt == 0
             ccw.on_epoch_end()
             if e < 5:
-                assert np.abs(ccw.e_sum.item() - np.sum([((2 ** i)) + ((2 ** i) * 3) + ((2 ** i) * 9) for i in range(0, e + 1)]) / 3) < 1e-4
+                assert np.abs(ccw.e_sum.item() - np.sum([((2**i)) + ((2**i) * 3) + ((2**i) * 9) for i in range(0, e + 1)]) / 3) < 1e-4
                 assert ccw.epoch_cnt == e + 1
             else:  # warm-up finished
                 assert ccw.tracking is False
                 assert opt.param_groups[0]["lr"] == 1e2
-                assert np.abs(ccw.e_sum.item() - (sum := np.sum([((2 ** i)) + ((2 ** i) * 3) + ((2 ** i) * 9) for i in range(0, 5)]) / 3)) < 1e-4
+                assert np.abs(ccw.e_sum.item() - (sum := np.sum([((2**i)) + ((2**i) * 3) + ((2**i) * 9) for i in range(0, 5)]) / 3)) < 1e-4
                 assert ccw.epoch_cnt == 5
                 assert np.abs(loss.cost_coef.item() - sum / 5) < 1e-4
 
