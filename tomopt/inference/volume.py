@@ -339,3 +339,17 @@ class DeepVolumeInferer(AbsVolumeInferer):
         pred = self.model(inputs[None])
         weight = self._get_weight()
         return pred, weight
+
+
+class WeightedDeepVolumeInferer(DeepVolumeInferer):
+    def get_prediction(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
+        self.in_var = torch.cat(self.in_vars, dim=0)
+        self.in_var_unc = torch.cat(self.in_var_uncs, dim=0)
+        self.efficiency = torch.cat(self.efficiencies, dim=0)
+
+        weight = self.efficiency[:, None] / ((self.in_var_unc[:, 4:5] / self.in_var[:, 4:5]) ** 2)
+        weighted_vars = torch.cat((weight, self.in_var), dim=1)
+        inputs = self._build_inputs(weighted_vars)
+        pred = self.model(inputs[None])
+        weight = self._get_weight()
+        return pred, weight

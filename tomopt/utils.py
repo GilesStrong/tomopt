@@ -9,7 +9,7 @@ from torch._vmap_internals import _vmap as vmap
 __all__ = ["jacobian", "class_to_x0preds", "x0targs_to_classtargs"]
 
 
-if ver := LooseVersion(torch.__version__) < LooseVersion("1.10.0"):
+if (ver := LooseVersion(torch.__version__)) < LooseVersion("1.10.0"):
     raise ImportError(
         f"jacobian function relies on PyTorch vmap, which is experimental and has only been tested for use in this repo using torch 1.8.1 & 1.10.0\
           your current version is {ver}, please install 1.10.0 or test in your version and update this error message."
