@@ -1,7 +1,9 @@
 import torch
 from torch import Tensor
+import numpy as np
+import pytest
 
-from tomopt.utils import jacobian
+from tomopt.utils import jacobian, class_to_x0preds, x0targs_to_classtargs
 
 
 def test_jacobian():
@@ -29,3 +31,24 @@ def test_jacobian():
         return torch.stack(jac).reshape(y.shape + x.shape)
 
     assert torch.all(jacobian(y, x) == non_vmap_jacobian(y, x))
+
+
+def test_class_to_x0preds():
+    id2x0 = {0: -1.5, 1: -2.0}
+    arr = np.array([0, 1, 1])
+    tarr = class_to_x0preds(arr, id2x0)
+    assert tarr[0] == -1.5
+    assert (tarr[1:] == -2.0).all()
+    assert (arr == np.array([0, 1, 1])).all()
+
+    with pytest.raises(KeyError):
+        class_to_x0preds(np.array([0, 1, 1, 2]), id2x0)
+
+
+def test_x0targs_to_classtargs():
+    id2x0 = {-1.5: 0, -2.0: 1}
+    arr = np.array([-1.5, -2.0, -3.0])
+    tarr = x0targs_to_classtargs(arr, id2x0)
+    assert tarr[0] == 0
+    assert (tarr[1:] == 1).all()  # -3 gets mapped to -2 ID to account for float precision
+    assert (arr == np.array([-1.5, -2.0, -3.0])).all()

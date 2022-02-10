@@ -1,5 +1,6 @@
 from tomopt.volume.layer import Layer
-from typing import Tuple, List, Callable
+from typing import Tuple, List, Callable, Optional
+import numpy as np
 
 import torch
 from torch import nn, Tensor
@@ -16,6 +17,34 @@ class Volume(nn.Module):
         self.layers = layers
         self._device = self._get_device()
         self._check_passives()
+        self._target: Optional[Tensor] = None
+        self._edges: Optional[Tensor] = None
+
+    @property
+    def edges(self) -> Tensor:
+        if self._edges is None:
+            self._edges = self.build_edges()
+        return self._edges
+
+    @property
+    def centres(self) -> Tensor:
+        if self._edges is None:
+            self._edges = self.build_edges()
+        return self._edges + (self.passive_size / 2)
+
+    def build_edges(self) -> Tensor:
+        bounds = (
+            self.passive_size
+            * np.mgrid[
+                0 : round(self.lw.detach().cpu().numpy()[0] / self.passive_size) : 1,
+                0 : round(self.lw.detach().cpu().numpy()[1] / self.passive_size) : 1,
+                round(self.get_passive_z_range()[0].detach().cpu().numpy()[0] / self.passive_size) : round(
+                    self.get_passive_z_range()[1].detach().cpu().numpy()[0] / self.passive_size
+                ) : 1,
+            ]
+        )
+        # bounds[2] = np.flip(bounds[2])  # z is reversed
+        return torch.tensor(bounds.reshape(3, -1).transpose(-1, -2), dtype=torch.float32, device=self.device)
 
     def _check_passives(self) -> None:
         lw, sz = None, None
@@ -32,6 +61,10 @@ class Volume(nn.Module):
     @property
     def device(self) -> torch.device:
         return self._device
+
+    @property
+    def target(self) -> Optional[Tensor]:
+        return self._target
 
     def _get_device(self) -> torch.device:
         device = self.layers[0].device
@@ -72,7 +105,8 @@ class Volume(nn.Module):
         xyz[:, 2] = xyz[:, 2] - self.get_passive_z_range()[0]
         return torch.floor(xyz / self.passive_size).long()
 
-    def load_rad_length(self, rad_length_func: Callable[..., Tensor]) -> None:
+    def load_rad_length(self, rad_length_func: Callable[..., Tensor], target: Optional[Tensor] = None) -> None:
+        self._target = target
         for p in self.get_passives():
             p.load_rad_length(rad_length_func)
 

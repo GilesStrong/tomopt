@@ -49,6 +49,14 @@ Install git-hooks:
 pre-commit install
 ```
 
+### Windows usage
+
+Apparently when using Windows, the environment must also be activated within ipython using:
+
+```
+python -m ipykernel install --user --name tomopt --display-name "Python (tomopt)" 
+```
+
 ## Testing
 
 Testing is handled by `pytest` and is set up to run during pull requests. Tests can be manually ran locally via:
@@ -62,6 +70,12 @@ to run all tests, or, e.g.:
 ```
 pytest tests/test_muon.py
 ```
+
+## External repos
+
+### GNN-driven inference
+
+[tomo_deepinfer](https://github.com/GilesStrong/mode_muon_tomo_inference) (contact @GilesStrong for access) separately handles training and model definition of GNNs used for passive volume inference. Models are exported as JIT-traced scripts, and loaded here using the `DeepVolumeInferer` class. We still need to find a good way to host the trained models for easy download.
 
 ## Description
 

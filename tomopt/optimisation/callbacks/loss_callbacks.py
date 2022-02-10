@@ -6,7 +6,7 @@ __all__ = ["CostCoefWarmup"]
 
 
 class CostCoefWarmup(Callback):
-    r"""Sets a more stable cost coeficient in the DetectorLoss by averaging the inference-error component for several epochs"""
+    r"""Sets a more stable cost coeficient in the AbsDetectorLoss by averaging the inference-error component for several epochs"""
 
     def __init__(self, n_warmup: int):
         self.n_warmup = n_warmup
@@ -17,6 +17,7 @@ class CostCoefWarmup(Callback):
         self.epoch_cnt = 0
         self.tracking = True
         self.lrs = {}
+        print(f"{type(self).__name__}: Freezing optimisation for {self.n_warmup} epochs")
         for o in self.wrapper.opts:  # Prevent updates during warmup (can't freeze due to grad in inference)
             self.lrs[o] = self.wrapper.get_opt_lr(o)
             self.wrapper.set_opt_lr(0.0, o)
@@ -36,7 +37,7 @@ class CostCoefWarmup(Callback):
             self.epoch_cnt += 1
             if self.epoch_cnt == self.n_warmup:
                 avg = self.e_sum / self.epoch_cnt
-                print(f"Warmed up, average error = {avg}")
+                print(f"{type(self).__name__}: Warmed up, average error = {avg}")
                 self.wrapper.loss_func.cost_coef = avg
                 self.tracking = False
                 for o in self.wrapper.opts:  # Allow optimisation
