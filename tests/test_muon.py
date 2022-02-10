@@ -3,7 +3,6 @@ import pytest
 import numpy as np
 
 import torch
-import tomopt
 from torch import Tensor
 
 from tomopt.muon import MuonGenerator, MuonBatch

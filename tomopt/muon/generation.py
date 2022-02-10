@@ -1,10 +1,9 @@
-import math
+import numpy as np
+from typing import Union, Tuple
+from particle import Particle
+
 import torch
 from torch import Tensor
-import numpy as np
-from torch import tensor
-from typing import Union, List, Tuple
-from particle import Particle
 
 __all__ = ["MuonGenerator"]
 
