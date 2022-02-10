@@ -17,14 +17,14 @@ class MuonGenerator:
         self._sample_momentum = sample_mom
         self._dimensions = (max_x, max_y)
         self._n_bins_energy = 200
-        self._n_bins_phi = 200
+        self._n_bins_theta = 200
         # Define intervals and centres
         energy_edges = np.geomspace(0.5, 500, self._n_bins_energy + 1)
-        phi_edges = np.linspace(-0.5 * np.pi, 0.5 * np.pi, self._n_bins_phi + 1)
+        theta_edges = np.linspace(0, 0.5 * np.pi, self._n_bins_theta + 1)
         self._energy_centres = np.mean(np.vstack([energy_edges[0:-1], energy_edges[1:]]), axis=0)
-        self._phi_centres = np.mean(np.vstack([phi_edges[0:-1], phi_edges[1:]]), axis=0)
+        self._theta_centres = np.mean(np.vstack([theta_edges[0:-1], theta_edges[1:]]), axis=0)
         # Calculate 2d flux function
-        xx, yy = np.meshgrid(self._energy_centres, self._phi_centres)
+        xx, yy = np.meshgrid(self._energy_centres, self._theta_centres)
         self._edges_1d = np.append(0, np.cumsum(self.flux(xx, yy)))
 
     def __call__(self, n_muons: int) -> Tensor:
@@ -66,14 +66,14 @@ class MuonGenerator:
         muon_sample = np.random.uniform(0.0, self._edges_1d[-1], n_muons)
         indices_1d = self._edges_1d.searchsorted(muon_sample)
         # Get corresponding values
-        phi_indices, energy_indices = [indices_1d // self._n_bins_energy, indices_1d % self._n_bins_energy]
+        theta_indices, energy_indices = [indices_1d // self._n_bins_energy, indices_1d % self._n_bins_energy]
         if self._sample_momentum is False:
-            momentum = torch.Tensor(np.ones(len(phi_indices))) * 5.0
+            momentum = torch.Tensor(np.ones(len(theta_indices))) * 5.0
         else:
             momentum = np.sqrt(np.square(self._energy_centres[energy_indices]).squeeze() - (self._muon_mass * self._muon_mass))  # Momentum [GeV/c]
-        phi = self._phi_centres[phi_indices]
+        theta = self._theta_centres[theta_indices]
         # Generate randomly theta in [-pi/2,pi/2]
-        theta = np.random.uniform(-0.5 * np.pi, 0.5 * np.pi, n_muons)
+        phi = np.random.uniform(0, 2 * np.pi, n_muons)
         # Get theta_x and theta_y from theta and phi
         theta_x = theta * np.cos(phi)
         theta_y = theta * np.sin(phi)
