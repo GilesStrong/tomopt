@@ -8,7 +8,7 @@ import torch.nn.functional as F
 
 from tomopt.volume.layer import Layer
 from tomopt.volume import PassiveLayer, VoxelDetectorLayer, Volume, PanelDetectorLayer, DetectorPanel
-from tomopt.muon import MuonBatch, generate_batch
+from tomopt.muon import MuonBatch, MuonGenerator
 from tomopt.core import X0
 from tomopt.utils import jacobian
 
@@ -21,7 +21,8 @@ Z = 1
 
 @pytest.fixture
 def batch():
-    return MuonBatch(generate_batch(N), init_z=1)
+    mg = MuonGenerator(x_range=(0, LW[0].item()), y_range=(0, LW[1].item()))
+    return MuonBatch(mg(N), init_z=1)
 
 
 def arb_rad_length(*, z: float, lw: Tensor, size: float) -> float:
@@ -458,7 +459,8 @@ def test_detector_panel_methods():
 
     # get_hits
     panel = DetectorPanel(res=10, eff=0.5, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[0.5, 0.5], area_cost_func=area_cost)
-    mu = MuonBatch(generate_batch(100), 1)
+    mg = MuonGenerator(x_range=(0, LW[0].item()), y_range=(0, LW[1].item()))
+    mu = MuonBatch(mg(100), 1)
     mu.xy = torch.ones_like(mu.xy) / 2
     hits = panel.get_hits(mu)
     assert (hits["gen_xy"] == mu.xy).all()
@@ -473,7 +475,7 @@ def test_detector_panel_methods():
     panel.eval()
     hits = panel.get_hits(mu)
     assert hits["reco_xy"].isinf().sum() == 2 * len(mu)
-    mu = MuonBatch(generate_batch(100), 1)
+    mu = MuonBatch(mg(100), 1)
     hits = panel.get_hits(mu)
     mask = hits["reco_xy"].isinf().prod(1) - 1 < 0
     # Reco hits can't leave panel

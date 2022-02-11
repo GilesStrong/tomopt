@@ -75,6 +75,12 @@ class MockWrapper:
 
 class MockVolume:
     device = torch.device("cpu")
+    lw = LW
+    h = Tensor([Z])
+    passive_size = SZ
+
+    def get_passive_z_range(self) -> Tensor:
+        return Tensor([0.2, 0.8])
 
 
 class MockLayer:
