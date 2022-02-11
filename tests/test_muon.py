@@ -1,5 +1,5 @@
-from unittest import mock
 import pytest
+from pytest_mock import mocker  # noqa F401
 import numpy as np
 
 import torch
@@ -17,30 +17,39 @@ def batch():
     return MuonBatch(batch, init_z=1)
 
 
-mocker = mock
+# def test_muon_generator(mocker):  # noqa F811
+#     n_muons = int(1e4)
+#     mom = 5
+#     gen = MuonGenerator((0,1.0), (0,1.0), fixed_mom=mom, energy_range = (0.5, 500))
+#     mocker.patch("tomopt.muon.generation.np.random.uniform", return_value=np.ones(n_muons))
+#     data = gen.generate_set(n_muons)
+#     momenta =  mom * np.ones(n_muons)
+#     theta_x = 0.7553 * np.ones(n_muons)
+#     theta_y = -0.7553 * np.ones(n_muons)
+#     compare = torch.Tensor(np.stack([np.ones(n_muons), np.ones(n_muons), momenta, theta_x, theta_y], axis=1))
+#     print(torch.sum(torch.round(data)) == torch.sum(torch.round(compare)))
+#     assert data.shape == (n_muons, 5)
+#     assert torch.sum(torch.round(data)) == torch.sum(torch.round(compare))
 
 
-def test_muon_generator(mocker):
-    n_muons = int(1e4)
-    gen = MuonGenerator(1.0, 1.0, True)
-    mocker.patch("tomopt.muon.generation.np.random.uniform", return_value=np.ones(n_muons))
-    set = gen.generate_set(n_muons)
-    momenta = 2.7619 * np.ones(n_muons) if gen._sample_momentum is True else 5.0 * np.ones(n_muons)
-    theta_x = 0.7553 * np.ones(n_muons)
-    theta_y = -0.6554 * np.ones(n_muons)
-    compare = torch.Tensor(np.stack([np.ones(n_muons), np.ones(n_muons), momenta, theta_x, theta_y], axis=1))
-    print(torch.sum(torch.round(set)) == torch.sum(torch.round(compare)))
-    assert set.shape == (n_muons, 5)
-    assert torch.sum(torch.round(set)) == torch.sum(torch.round(compare))
-
-
+@pytest.mark.flaky(max_runs=2, min_passes=1)
 def test_muon_dataset():
-    np.random.seed(42)
-    gen = MuonGenerator(1.0, 1.0, True)
-    set = gen.generate_set(1000)
-    assert (set[:, 2] < 0).any
-    assert (set[:, 0] > gen._dimensions[0]).any or (set[:, 1] > gen._dimensions[1]).any
-    assert (np.abs(set[:, 3]) > np.pi).any or (np.abs(set[:, 4]) > np.pi).any
+    gen = MuonGenerator((0, 1.0), (0, 1.0), fixed_mom=None, energy_range=(0.5, 500))
+    data = gen.generate_set(1000)
+    # x pos
+    assert (data[:, 0] >= 0).all() and (data[:, 0] <= 1).all()
+    assert data[:, 0].mean() - 0.5 < 1e-1
+    # y pos
+    assert (data[:, 1] >= 0).all() and (data[:, 1] <= 1).all()
+    assert data[:, 1].mean() - 0.5 < 1e-1
+    # p
+    assert (data[:, 2] >= np.sqrt((0.5 ** 2) - gen._muon_mass2)).all() and (data[:, 2] <= np.sqrt((500 ** 2) - gen._muon_mass2)).all()
+    # theta x
+    assert (data[:, 3] >= -np.pi / 2).all() and (data[:, 3] <= np.pi / 2).all()
+    assert data[:, 3].mean() - 0.5 < 1e-1
+    # theta y
+    assert (data[:, 4] >= -np.pi / 2).all() and (data[:, 4] <= np.pi / 2).all()
+    assert data[:, 4].mean() - 0.5 < 1e-1
 
 
 def test_muon_batch_properties(batch):
