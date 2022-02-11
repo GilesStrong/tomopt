@@ -17,25 +17,12 @@ def batch():
     return MuonBatch(batch, init_z=1)
 
 
-# def test_muon_generator(mocker):  # noqa F811
-#     n_muons = int(1e4)
-#     mom = 5
-#     gen = MuonGenerator((0,1.0), (0,1.0), fixed_mom=mom, energy_range = (0.5, 500))
-#     mocker.patch("tomopt.muon.generation.np.random.uniform", return_value=np.ones(n_muons))
-#     data = gen.generate_set(n_muons)
-#     momenta =  mom * np.ones(n_muons)
-#     theta_x = 0.7553 * np.ones(n_muons)
-#     theta_y = -0.7553 * np.ones(n_muons)
-#     compare = torch.Tensor(np.stack([np.ones(n_muons), np.ones(n_muons), momenta, theta_x, theta_y], axis=1))
-#     print(torch.sum(torch.round(data)) == torch.sum(torch.round(compare)))
-#     assert data.shape == (n_muons, 5)
-#     assert torch.sum(torch.round(data)) == torch.sum(torch.round(compare))
-
-
 @pytest.mark.flaky(max_runs=2, min_passes=1)
 def test_muon_dataset():
+    n_muons = 10000
     gen = MuonGenerator((0, 1.0), (0, 1.0), fixed_mom=None, energy_range=(0.5, 500))
-    data = gen.generate_set(1000)
+    data = gen.generate_set(n_muons)
+    assert data.shape == (n_muons, 5)
     # x pos
     assert (data[:, 0] >= 0).all() and (data[:, 0] <= 1).all()
     assert data[:, 0].mean() - 0.5 < 1e-1
@@ -44,6 +31,7 @@ def test_muon_dataset():
     assert data[:, 1].mean() - 0.5 < 1e-1
     # p
     assert (data[:, 2] >= np.sqrt((0.5 ** 2) - gen._muon_mass2)).all() and (data[:, 2] <= np.sqrt((500 ** 2) - gen._muon_mass2)).all()
+    assert data[:, 2].mean()-2 <= 1e-1
     # theta x
     assert (data[:, 3] >= -np.pi / 2).all() and (data[:, 3] <= np.pi / 2).all()
     assert data[:, 3].mean() - 0.5 < 1e-1
