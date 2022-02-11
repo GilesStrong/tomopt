@@ -1,9 +1,12 @@
+from __future__ import annotations
 import numpy as np
 from typing import Union, Tuple, Optional
 from particle import Particle
 
 import torch
 from torch import Tensor
+
+from ..volume import Volume
 
 __all__ = ["MuonGenerator"]
 
@@ -36,6 +39,20 @@ class MuonGenerator:
 
     def __call__(self, n_muons: int) -> Tensor:
         return self.generate_set(n_muons)
+
+    @classmethod
+    def from_volume(
+        cls, volume: Volume, min_angle: float = np.pi / 8, fixed_mom: Optional[float] = 5.0, energy_range: Tuple[float, float] = (0.5, 500)
+    ) -> MuonGenerator:
+        """
+        Rough scheme. Computes x,y generation range as (0-d,x+d), (0-d,y+d).
+        Where d is such that a muon generated at (0-d,1) will only hit the last layer of the passive volume if it's initial angle is at least min_angle.
+        This balances a trade-off between generation efficiency and generator realism.
+        """
+
+        x, y = volume.lw.detach().cpu().numpy().tolist()
+        d = np.tan(min_angle) * (volume.h.detach().cpu().item() - volume.get_passive_z_range()[0].detach().cpu().item() + volume.passive_size)
+        return cls(x_range=(0 - d, x + d), y_range=(0 - d, y + d), fixed_mom=fixed_mom, energy_range=energy_range)
 
     def flux(self, energy: Union[float, np.ndarray], theta: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
         """
