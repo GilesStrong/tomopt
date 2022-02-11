@@ -58,8 +58,8 @@ def get_voxel_layers(init_res: float = 1e3):
 
 
 def get_panel_layers(init_res: float = 1e3) -> nn.ModuleList:
-    def area_cost(x: Tensor) -> Tensor:
-        return F.relu(x) ** 2
+    def area_cost(a: Tensor) -> Tensor:
+        return F.relu(a)
 
     layers = []
     init_eff = 0.5

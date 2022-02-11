@@ -132,8 +132,8 @@ def test_voxel_detector_layer(batch):
     assert (dl.efficiency == 1).all()
 
 
-def area_cost(x: Tensor) -> Tensor:
-    return F.relu(x) ** 2
+def area_cost(a: Tensor) -> Tensor:
+    return F.relu(a)
 
 
 def test_panel_detector_layer(batch):

@@ -1,12 +1,13 @@
 from __future__ import annotations
 import numpy as np
-from typing import Union, Tuple, Optional
+from typing import Union, Tuple, Optional, TYPE_CHECKING
 from particle import Particle
 
 import torch
 from torch import Tensor
 
-from ..volume import Volume
+if TYPE_CHECKING:
+    from ..volume import Volume
 
 __all__ = ["MuonGenerator"]
 
@@ -42,10 +43,10 @@ class MuonGenerator:
 
     @classmethod
     def from_volume(
-        cls, volume: Volume, min_angle: float = np.pi / 8, fixed_mom: Optional[float] = 5.0, energy_range: Tuple[float, float] = (0.5, 500)
+        cls, volume: Volume, min_angle: float = np.pi / 12, fixed_mom: Optional[float] = 5.0, energy_range: Tuple[float, float] = (0.5, 500)
     ) -> MuonGenerator:
         """
-        Rough scheme. Computes x,y generation range as (0-d,x+d), (0-d,y+d).
+        Heuristically computes x,y generation range as (0-d,x+d), (0-d,y+d).
         Where d is such that a muon generated at (0-d,1) will only hit the last layer of the passive volume if it's initial angle is at least min_angle.
         This balances a trade-off between generation efficiency and generator realism.
         """

@@ -3,12 +3,62 @@ from pytest_mock import mocker  # noqa F401
 import numpy as np
 
 import torch
-from torch import Tensor
+from torch import Tensor, nn
+import torch.nn.functional as F
 
 from tomopt.muon import MuonGenerator, MuonBatch
-
+from tomopt.volume import PassiveLayer, Volume, PanelDetectorLayer, DetectorPanel
+from tomopt.core import X0
 
 N = 3
+LW = Tensor([1, 1])
+SZ = 0.1
+Z = 1
+
+
+def area_cost(a: Tensor) -> Tensor:
+    return F.relu(a)
+
+
+def arb_rad_length(*, z: float, lw: Tensor, size: float) -> float:
+    rad_length = torch.ones(list((lw / size).long())) * X0["aluminium"]
+    if z >= 0.5:
+        rad_length[3:7, 3:7] = X0["lead"]
+    return rad_length
+
+
+def get_panel_layers(init_res: float = 1e4, init_eff: float = 0.5, n_panels: int = 4) -> nn.ModuleList:
+    layers = []
+    layers.append(
+        PanelDetectorLayer(
+            pos="above",
+            lw=LW,
+            z=1,
+            size=2 * SZ,
+            panels=[
+                DetectorPanel(res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / n_panels)], init_xy_span=[0.5, 0.5], area_cost_func=area_cost)
+                for i in range(n_panels)
+            ],
+        )
+    )
+    for z in [0.8, 0.7, 0.6, 0.5, 0.4, 0.3]:
+        layers.append(PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=z, size=SZ))
+    layers.append(
+        PanelDetectorLayer(
+            pos="below",
+            lw=LW,
+            z=0.2,
+            size=2 * SZ,
+            panels=[
+                DetectorPanel(
+                    res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / n_panels)], init_xy_span=[0.5, 0.5], area_cost_func=area_cost
+                )
+                for i in range(n_panels)
+            ],
+        )
+    )
+
+    return nn.ModuleList(layers)
 
 
 @pytest.fixture
@@ -18,7 +68,7 @@ def batch():
 
 
 @pytest.mark.flaky(max_runs=2, min_passes=1)
-def test_muon_dataset():
+def test_muon_generator():
     n_muons = 10000
     gen = MuonGenerator((0, 1.0), (0, 1.0), fixed_mom=None, energy_range=(0.5, 500))
     data = gen.generate_set(n_muons)
@@ -31,13 +81,41 @@ def test_muon_dataset():
     assert data[:, 1].mean() - 0.5 < 1e-1
     # p
     assert (data[:, 2] >= np.sqrt((0.5 ** 2) - gen._muon_mass2)).all() and (data[:, 2] <= np.sqrt((500 ** 2) - gen._muon_mass2)).all()
-    assert data[:, 2].mean()-2 <= 1e-1
+    assert data[:, 2].mean() - 2 <= 1e-1
     # theta x
     assert (data[:, 3] >= -np.pi / 2).all() and (data[:, 3] <= np.pi / 2).all()
     assert data[:, 3].mean() - 0.5 < 1e-1
     # theta y
     assert (data[:, 4] >= -np.pi / 2).all() and (data[:, 4] <= np.pi / 2).all()
     assert data[:, 4].mean() - 0.5 < 1e-1
+
+
+@pytest.mark.flaky(max_runs=2, min_passes=1)
+def test_muon_generator_from_volume():
+    volume = Volume(get_panel_layers())
+    mg = MuonGenerator.from_volume(volume)
+    print(mg.x_range, mg.y_range)
+    assert mg.x_range[0] < LW[0] and mg.x_range[1] > LW[1]
+
+    n = 10000
+    mu = MuonBatch(mg(n), volume.h)
+    mu.propagate(volume.h - volume.get_passive_z_range()[1])
+    m1 = mu.get_xy_mask(
+        (
+            0,
+            0,
+        ),
+        LW.numpy().tolist(),
+    )
+    mu.propagate(volume.get_passive_z_range()[1] - volume.get_passive_z_range()[0])
+    m2 = mu.get_xy_mask(
+        (
+            0,
+            0,
+        ),
+        LW.numpy().tolist(),
+    )
+    assert (m1 + m2).sum() / n > 0.5
 
 
 def test_muon_batch_properties(batch):
