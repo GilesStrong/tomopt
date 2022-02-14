@@ -64,7 +64,7 @@ def get_panel_layers() -> nn.ModuleList:
             z=1,
             size=2 * SZ,
             panels=[
-                DetectorPanel(res=INIT_RES, eff=INIT_EFF, init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / N_PANELS)], init_xy_span=[0.5, 0.5], area_cost_func=area_cost)
+                DetectorPanel(res=INIT_RES, eff=INIT_EFF, init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / N_PANELS)], init_xy_span=[1.0, 1.0], area_cost_func=area_cost)
                 for i in range(N_PANELS)
             ],
         )
@@ -79,7 +79,7 @@ def get_panel_layers() -> nn.ModuleList:
             size=2 * SZ,
             panels=[
                 DetectorPanel(
-                    res=INIT_RES, eff=INIT_EFF, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / N_PANELS)], init_xy_span=[0.5, 0.5], area_cost_func=area_cost
+                    res=INIT_RES, eff=INIT_EFF, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / N_PANELS)], init_xy_span=[1.0, 1.0], area_cost_func=area_cost
                 )
                 for i in range(N_PANELS)
             ],

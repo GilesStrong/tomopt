@@ -358,7 +358,7 @@ def test_abs_volume_inferer_properties(voxel_scatter_batch):
     assert inferer.size == SZ
 
 
-@pytest.mark.flaky(max_runs=2, min_passes=1)
+@pytest.mark.flaky(max_runs=3, min_passes=1)
 def test_voxel_x0_inferer_methods():
     volume = Volume(get_voxel_layers(init_res=1e3))
     mu = MuonBatch(MuonGenerator.from_volume(volume)(N), init_z=1)

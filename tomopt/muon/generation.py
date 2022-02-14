@@ -13,7 +13,7 @@ __all__ = ["MuonGenerator"]
 
 
 class MuonGenerator:
-    _muon_mass2 = (Particle.from_pdgid(13).mass * 1e-3) ** 2
+    _muon_mass2 = (Particle.from_pdgid(13).mass * 1e-3) ** 2  # GeV^2
     _n_bins_energy = 200
     _n_bins_theta = 200
 
@@ -22,7 +22,7 @@ class MuonGenerator:
     ) -> None:
         """
         Initializer. Specify dimensions x,y of the impinging surface flag (True/False) for sampled vs uniform muon momenta respectively
-        Uses model defined in arXiv:1509.06176
+        Uses model defined in arXiv:1509.06176. Energy range is in GeV.
         """
 
         self.x_range, self.y_range = x_range, y_range
@@ -37,6 +37,14 @@ class MuonGenerator:
         # Calculate 2d flux function
         xx, yy = np.meshgrid(self._energy_centres, self._theta_centres)
         self._edges_1d = np.cumsum(self.flux(xx, yy))  # theta x energy --> e0t0, e1t0, ...
+
+    def __repr__(self) -> str:
+        rep = f"Muon generator: x,y range: {self.x_range}, {self.y_range}."
+        if self._fixed_mom is None:
+            rep += f" Energy sampled from {self._energy_centres[0]}-{self._energy_centres[-1]} GeV."
+        else:
+            rep += f" Momentum is fixed at {self._fixed_mom} GeV"
+        return rep
 
     def __call__(self, n_muons: int) -> Tensor:
         return self.generate_set(n_muons)
