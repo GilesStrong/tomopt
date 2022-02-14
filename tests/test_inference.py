@@ -56,7 +56,7 @@ def get_voxel_layers(init_res: float = 1e4, init_eff: float = 0.5) -> nn.ModuleL
     return nn.ModuleList(layers)
 
 
-def get_panel_layers(init_res: float = 1e4, init_eff: float = 0.5, n_panels: int = 4) -> nn.ModuleList:
+def get_panel_layers(init_res: float = 1e4, init_eff: float = 0.9, n_panels: int = 4) -> nn.ModuleList:
     layers = []
     layers.append(
         PanelDetectorLayer(

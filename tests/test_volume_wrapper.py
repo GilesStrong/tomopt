@@ -62,7 +62,7 @@ def get_panel_layers(init_res: float = 1e3) -> nn.ModuleList:
         return F.relu(a)
 
     layers = []
-    init_eff = 0.5
+    init_eff = 0.9
     n_panels = 4
     layers.append(
         PanelDetectorLayer(
@@ -71,7 +71,7 @@ def get_panel_layers(init_res: float = 1e3) -> nn.ModuleList:
             z=1,
             size=2 * SZ,
             panels=[
-                DetectorPanel(res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / n_panels)], init_xy_span=[0.5, 0.5], area_cost_func=area_cost)
+                DetectorPanel(res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / n_panels)], init_xy_span=[1.0, 1.0], area_cost_func=area_cost)
                 for i in range(n_panels)
             ],
         )
@@ -86,7 +86,7 @@ def get_panel_layers(init_res: float = 1e3) -> nn.ModuleList:
             size=2 * SZ,
             panels=[
                 DetectorPanel(
-                    res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / n_panels)], init_xy_span=[0.5, 0.5], area_cost_func=area_cost
+                    res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / n_panels)], init_xy_span=[1.0, 1.0], area_cost_func=area_cost
                 )
                 for i in range(n_panels)
             ],
@@ -247,6 +247,7 @@ def test_volume_wrapper_parameters():
     assert vw.get_opt_mom("eff_opt") == 0.7
 
 
+@pytest.mark.flaky(max_runs=2, min_passes=1)
 @pytest.mark.parametrize("state", ["train", "valid", "test"])
 def test_volume_wrapper_scan_volume(state, mocker):  # noqa F811
     volume = Volume(get_panel_layers())
@@ -292,6 +293,7 @@ def test_volume_wrapper_scan_volume(state, mocker):  # noqa F811
         assert loss1 < vw.fit_params.loss_val
 
 
+@pytest.mark.flaky(max_runs=2, min_passes=1)
 def test_volume_wrapper_scan_volume_mu_batch(mocker):  # noqa F811
     volume = Volume(get_panel_layers())
     volume.load_rad_length(arb_rad_length)
@@ -358,6 +360,7 @@ def test_volume_wrapper_scan_volume_mu_batch(mocker):  # noqa F811
     assert torch.abs((loss_1b - loss_10b) / loss_1b).sum() < 1e-4
 
 
+@pytest.mark.flaky(max_runs=2, min_passes=1)
 @pytest.mark.parametrize("state", ["train", "valid", "test"])
 def test_volume_wrapper_scan_volumes(state, mocker):  # noqa F811
     volume = Volume(get_panel_layers())
@@ -426,6 +429,7 @@ def test_volume_wrapper_scan_volumes(state, mocker):  # noqa F811
         assert vw.opts["xy_span_opt"].step.call_count == 0
 
 
+@pytest.mark.flaky(max_runs=2, min_passes=1)
 def test_volume_wrapper_fit_epoch(mocker):  # noqa F811
     volume = Volume(get_panel_layers())
     vw = PanelVolumeWrapper(
@@ -471,6 +475,7 @@ def test_volume_wrapper_sort_cbs():
     assert metric_cbs[0] == cbs[3]
 
 
+@pytest.mark.flaky(max_runs=2, min_passes=1)
 def test_volume_wrapper_fit(mocker):  # noqa F811
     volume = Volume(get_panel_layers())
     vw = PanelVolumeWrapper(
@@ -496,6 +501,7 @@ def test_volume_wrapper_fit(mocker):  # noqa F811
     assert vw._fit_epoch.call_count == 2
 
 
+@pytest.mark.flaky(max_runs=2, min_passes=1)
 def test_volume_wrapper_predict(mocker):  # noqa F811
     volume = Volume(get_panel_layers())
     vw = PanelVolumeWrapper(

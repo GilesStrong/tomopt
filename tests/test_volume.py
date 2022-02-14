@@ -331,7 +331,7 @@ def get_panel_layers(init_res: float = 1e4, init_eff: float = 0.5, n_panels: int
             z=1,
             size=2 * SZ,
             panels=[
-                DetectorPanel(res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / n_panels)], init_xy_span=[0.5, 0.5], area_cost_func=area_cost)
+                DetectorPanel(res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / n_panels)], init_xy_span=[1.0, 1.0], area_cost_func=area_cost)
                 for i in range(n_panels)
             ],
         )
@@ -346,7 +346,7 @@ def get_panel_layers(init_res: float = 1e4, init_eff: float = 0.5, n_panels: int
             size=2 * SZ,
             panels=[
                 DetectorPanel(
-                    res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / n_panels)], init_xy_span=[0.5, 0.5], area_cost_func=area_cost
+                    res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / n_panels)], init_xy_span=[1.0, 1.0], area_cost_func=area_cost
                 )
                 for i in range(n_panels)
             ],
@@ -379,8 +379,9 @@ def test_volume_forward_panel(batch):
         for j, p in enumerate(l.yield_zordered_panels()):
             for v in [p.xy, p.xy_span]:
                 grad = jacobian(hits["above" if l.z > 0.5 else "below"]["reco_xy"][:, j], v).sum((-1))
-                assert (grad == grad).sum() == 2 * len(grad)
-                assert ((grad == grad) * (grad != 0)).sum() > 0
+                assert grad.isnan().sum() == 0
+                assert (grad == 0).sum() == 0
+                # assert ((grad == grad) * (grad != 0)).sum() > 0
 
 
 def test_detector_panel_properties():
