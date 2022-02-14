@@ -363,10 +363,10 @@ def test_volume_wrapper_scan_volumes(state, mocker):  # noqa F811
     volume = Volume(get_panel_layers())
     vw = PanelVolumeWrapper(
         volume,
-        xy_pos_opt=partial(optim.SGD, lr=2e0, momentum=0.95),
-        z_pos_opt=partial(optim.Adam, lr=2e-2),
-        xy_span_opt=partial(optim.Adam, lr=2e-0),
-        loss_func=VoxelX0Loss(target_budget=1, cost_coef=0.15),
+        xy_pos_opt=partial(optim.SGD, lr=0),
+        z_pos_opt=partial(optim.SGD, lr=0),
+        xy_span_opt=partial(optim.SGD, lr=0),
+        loss_func=VoxelX0Loss(target_budget=None),
     )
     cb = Callback()
     cb.set_wrapper(vw)
@@ -430,10 +430,10 @@ def test_volume_wrapper_fit_epoch(mocker):  # noqa F811
     volume = Volume(get_panel_layers())
     vw = PanelVolumeWrapper(
         volume,
-        xy_pos_opt=partial(optim.SGD, lr=2e0, momentum=0.95),
-        z_pos_opt=partial(optim.Adam, lr=2e-2),
-        xy_span_opt=partial(optim.Adam, lr=2e-0),
-        loss_func=VoxelX0Loss(target_budget=1, cost_coef=0.15),
+        xy_pos_opt=partial(optim.SGD, lr=0),
+        z_pos_opt=partial(optim.SGD, lr=0),
+        xy_span_opt=partial(optim.SGD, lr=0),
+        loss_func=VoxelX0Loss(target_budget=None),
     )
     cb = NoMoreNaNs()
     cb.set_wrapper(vw)
@@ -475,10 +475,10 @@ def test_volume_wrapper_fit(mocker):  # noqa F811
     volume = Volume(get_panel_layers())
     vw = PanelVolumeWrapper(
         volume,
-        xy_pos_opt=partial(optim.SGD, lr=2e0, momentum=0.95),
-        z_pos_opt=partial(optim.Adam, lr=2e-2),
-        xy_span_opt=partial(optim.Adam, lr=2e-0),
-        loss_func=VoxelX0Loss(target_budget=1, cost_coef=0.15),
+        xy_pos_opt=partial(optim.SGD, lr=0),
+        z_pos_opt=partial(optim.SGD, lr=0),
+        xy_span_opt=partial(optim.SGD, lr=0),
+        loss_func=VoxelX0Loss(target_budget=None),
     )
     trn_py = PassiveYielder([arb_rad_length, arb_rad_length, arb_rad_length])
     val_py = PassiveYielder([arb_rad_length, arb_rad_length])
