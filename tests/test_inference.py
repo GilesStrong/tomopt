@@ -15,6 +15,7 @@ from tomopt.muon import MuonBatch, MuonGenerator
 from tomopt.core import X0
 from tomopt.inference import VoxelScatterBatch, VoxelX0Inferer, PanelX0Inferer, PanelScatterBatch, GenScatterBatch, DeepVolumeInferer
 from tomopt.volume.layer import Layer
+from tomopt.optimisation import MuonResampler
 
 LW = Tensor([1, 1])
 SZ = 0.1
@@ -102,7 +103,9 @@ def voxel_scatter_batch() -> Tuple[MuonBatch, Volume, VoxelScatterBatch]:
 @pytest.fixture
 def panel_scatter_batch() -> Tuple[MuonBatch, Volume, PanelScatterBatch]:
     volume = Volume(get_voxel_layers())
-    mu = MuonBatch(MuonGenerator.from_volume(volume)(N), init_z=1)
+    gen = MuonGenerator.from_volume(volume)
+    mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
+    mu = MuonBatch(mus, init_z=1)
     volume = Volume(get_panel_layers())
     volume(mu)
     sb = PanelScatterBatch(mu=mu, volume=volume)
@@ -176,7 +179,7 @@ def test_panel_scatter_batch(mock_show, panel_scatter_batch):
         assert (sb.below_gen_hits[:, i, :2] == hits["below"]["gen_xy"][:, i]).all()
 
     assert (loc_xy_unc := sb.location_unc[:, :2].mean()) < 2.0
-    assert (loc_z_unc := sb.location_unc[:, 2].mean()) < 1.5
+    assert (loc_z_unc := sb.location_unc[:, 2].mean()) < 2.5
     assert (dxy_unc := sb.dxy_unc.mean()) < 1.0
     assert (dtheta_unc := (sb.dtheta_unc / sb.dtheta).mean()) < 10
     assert (theta_out_unc := sb.theta_out_unc.mean() / sb.theta_out.abs().mean()) < 10
