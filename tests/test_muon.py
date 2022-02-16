@@ -80,7 +80,7 @@ def test_muon_generator():
     assert (data[:, 1] >= 0).all() and (data[:, 1] <= 1).all()
     assert data[:, 1].mean() - 0.5 < 1e-1
     # p
-    assert (data[:, 2] >= np.sqrt((0.5 ** 2) - gen._muon_mass2)).all() and (data[:, 2] <= np.sqrt((500 ** 2) - gen._muon_mass2)).all()
+    assert (data[:, 2] >= np.sqrt((0.5**2) - gen._muon_mass2)).all() and (data[:, 2] <= np.sqrt((500**2) - gen._muon_mass2)).all()
     assert data[:, 2].mean() - 2 <= 1e-1
     # theta x
     assert (data[:, 3] >= -np.pi / 2).all() and (data[:, 3] <= np.pi / 2).all()

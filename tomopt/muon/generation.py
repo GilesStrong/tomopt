@@ -75,10 +75,10 @@ class MuonGenerator:
         P3 = 0.958633
         P4 = 0.0407253
         P5 = 0.817285
-        cosine = np.sqrt((cosTheta ** 2 + P1 ** 2 + P2 * cosTheta ** P3 + P4 * cosTheta ** P5) / (1 + P1 ** 2 + P2 + P4))
+        cosine = np.sqrt((cosTheta**2 + P1**2 + P2 * cosTheta**P3 + P4 * cosTheta**P5) / (1 + P1**2 + P2 + P4))
         flux = (
             0.14
-            * (energy * (1 + 3.64 / (energy * cosine ** 1.29))) ** (-2.7)
+            * (energy * (1 + 3.64 / (energy * cosine**1.29))) ** (-2.7)
             * ((1 / (1 + (1.1 * energy * cosine) / 115)) + (0.054 / (1 + (1.1 * energy * cosine) / 850)))
         )
         return flux
