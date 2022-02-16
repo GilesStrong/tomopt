@@ -66,9 +66,9 @@ def test_passive_layer_forwards(batch):
     pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=Z, size=1e-4)
     batch = start.copy()
     pl(batch, 1)
-    assert torch.abs(batch.z - Tensor([Z])) <= 1e-3
-    assert torch.all(batch.dtheta(start) < 1e-2)
-    assert torch.all(torch.abs(batch.xy - start.xy) < 1e-3)
+    assert torch.abs(batch.z - Tensor([Z - 1e-4])) <= 1e-3
+    assert (batch.dtheta(start) < 1e-2).sum() / len(batch) > 0.9
+    assert (torch.abs(batch.xy - start.xy) < 1e-3).sum() / len(batch) > 0.9
 
 
 @pytest.mark.parametrize("n", [(1), (2), (5)])
