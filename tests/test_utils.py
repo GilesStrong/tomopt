@@ -8,7 +8,7 @@ from tomopt.utils import jacobian, class_to_x0preds, x0targs_to_classtargs
 
 def test_jacobian():
     def y1(x):
-        return x ** 2
+        return x**2
 
     x = torch.randn((10), requires_grad=True)
     y = y1(x)
