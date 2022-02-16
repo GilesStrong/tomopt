@@ -1,6 +1,5 @@
 from abc import ABCMeta, abstractmethod
 from typing import Tuple, Optional, Dict, List, Union
-import numpy as np
 
 import torch
 from torch import Tensor, nn

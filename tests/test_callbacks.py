@@ -21,11 +21,12 @@ from tomopt.optimisation.callbacks import (
     HitRecord,
     CostCoefWarmup,
     PanelOptConfig,
+    MuonResampler,
 )
 from tomopt.optimisation.loss import VoxelX0Loss
 from tomopt.optimisation.wrapper.volume_wrapper import AbsVolumeWrapper, FitParams, PanelVolumeWrapper
 from tomopt.volume import VoxelDetectorLayer, PanelDetectorLayer, DetectorPanel
-from tomopt.volume.volume import Volume
+from tomopt.muon import MuonBatch, MuonGenerator
 
 LW = Tensor([1, 1])
 SZ = 0.1
@@ -435,3 +436,47 @@ def test_panel_opt_config():
                 assert vw.get_opt_lr("xy_pos_opt") == xy_pos_rate / (xy_pos_mult / 2)
                 assert vw.get_opt_lr("z_pos_opt") == np.abs(z_pos_rate / (z_pos_mult / 2))
                 assert vw.get_opt_lr("xy_span_opt") == xy_span_rate / (xy_span_mult / 2)
+
+
+def test_data_callback():
+    # Check checker
+    volume = MockVolume()
+    l = MockLayer()
+    l.z = 0.5
+    volume.get_passives = lambda: [l]
+    mu = MuonBatch(Tensor([[0.5, 0.5, 5, 0, 0], [-0.4, -0.4, 5, np.pi / 4, np.pi / 4], [-1, 1, 5, 0, 0]]), volume.h)
+    assert (MuonResampler.check_mu_batch(mu, volume) == Tensor([1, 1, 0]).bool()).all()
+
+    # Check resampler
+    gen = MuonGenerator.from_volume(volume)
+    mus = gen(1000)
+    while MuonResampler.check_mu_batch(MuonBatch(mus, volume.h), volume).sum() == 1000:
+        mus = gen(1000)
+    mus = MuonResampler.resample(mus, volume=volume, gen=gen)
+    mu = MuonBatch(mus, volume.h)
+    assert MuonResampler.check_mu_batch(mu, volume).sum() == 1000
+    assert mu.z == volume.h
+
+    # Check callback
+    volume.parameters = []
+    panel_det = get_panel_detector()
+    volume.get_detectors = lambda: [panel_det]
+    vw = PanelVolumeWrapper(
+        volume,
+        xy_pos_opt=partial(torch.optim.SGD, lr=5e4),
+        z_pos_opt=partial(torch.optim.SGD, lr=5e3),
+        xy_span_opt=partial(torch.optim.SGD, lr=1e4),
+        loss_func=VoxelX0Loss(target_budget=0),
+    )
+
+    mus = gen(1000)
+    while MuonResampler.check_mu_batch(MuonBatch(mus, volume.h), volume).sum() == 1000:
+        mus = gen(1000)
+    vw.fit_params = FitParams(mu=MuonBatch(mus, volume.h))
+    vw.mu_generator = gen
+
+    mr = MuonResampler()
+    mr.set_wrapper(vw)
+    mr.on_mu_batch_begin()
+    assert vw.fit_params.mu.z == volume.h
+    assert mr.check_mu_batch(vw.fit_params.mu, volume).sum() == 1000
