@@ -12,7 +12,7 @@ prettytable
 
 # Dev requirements
 pre-commit
-black
+black==22.1.0
 flake8
 pytest
 mypy
