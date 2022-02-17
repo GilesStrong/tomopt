@@ -66,7 +66,7 @@ def get_panel_detector() -> VoxelDetectorLayer:
         lw=LW,
         z=1,
         size=2 * SZ,
-        panels=[DetectorPanel(res=1, eff=1, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[0.5, 0.5], area_cost_func=area_cost)],
+        panels=[DetectorPanel(res=1, eff=1, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[1.0, 1.0], area_cost_func=area_cost)],
     )
 
 
