@@ -178,12 +178,12 @@ def test_panel_scatter_batch(mock_show, panel_scatter_batch):
         assert (sb.above_gen_hits[:, i, :2] == hits["above"]["gen_xy"][:, i]).all()
         assert (sb.below_gen_hits[:, i, :2] == hits["below"]["gen_xy"][:, i]).all()
 
-    assert (loc_xy_unc := sb.location_unc[:, :2].mean()) < 2.0
-    assert (loc_z_unc := sb.location_unc[:, 2].mean()) < 2.5
-    assert (dxy_unc := sb.dxy_unc.mean()) < 1.0
-    assert (dtheta_unc := (sb.dtheta_unc / sb.dtheta).mean()) < 10
-    assert (theta_out_unc := sb.theta_out_unc.mean() / sb.theta_out.abs().mean()) < 10
-    assert (theta_in_unc := sb.theta_in_unc.mean() / sb.theta_in.abs().mean()) < 10
+    assert (loc_xy_unc := sb.location_unc[:, :2].nanmedian()) < 2.0
+    assert (loc_z_unc := sb.location_unc[:, 2].nanmedian()) < 2.5
+    assert (dxy_unc := sb.dxy_unc.nanmedian()) < 1.0
+    assert (dtheta_unc := (sb.dtheta_unc / sb.dtheta).nanmedian()) < 10
+    assert (theta_out_unc := sb.theta_out_unc.nanmedian() / sb.theta_out.abs().nanmedian()) < 10
+    assert (theta_in_unc := sb.theta_in_unc.nanmedian() / sb.theta_in.abs().nanmedian()) < 10
 
     # uncertainties
     panel = next(volume.get_detectors()[0].yield_zordered_panels())
@@ -212,12 +212,12 @@ def test_panel_scatter_batch(mock_show, panel_scatter_batch):
     mu = MuonBatch(MuonGenerator.from_volume(volume)(N), init_z=1)
     volume(mu)
     sb = PanelScatterBatch(mu=mu, volume=volume)
-    assert sb.location_unc[:, :2].mean() < loc_xy_unc
-    assert sb.location_unc[:, 2].mean() < loc_z_unc
-    assert sb.dxy_unc.mean() < dxy_unc
-    assert sb.dtheta_unc.mean() / sb.dtheta.abs().mean() < dtheta_unc
-    assert sb.theta_out_unc.mean() / sb.theta_out.abs().mean() < theta_out_unc
-    assert sb.theta_in_unc.mean() / sb.theta_in.abs().mean() < theta_in_unc
+    assert sb.location_unc[:, :2].nanmedian() < loc_xy_unc
+    assert sb.location_unc[:, 2].nanmedian() < loc_z_unc
+    assert sb.dxy_unc.nanmedian() < dxy_unc
+    assert sb.dtheta_unc.nanmedian() / sb.dtheta.abs().nanmedian() < dtheta_unc
+    assert sb.theta_out_unc.nanmedian() / sb.theta_out.abs().nanmedian() < theta_out_unc
+    assert sb.theta_in_unc.nanmedian() / sb.theta_in.abs().nanmedian() < theta_in_unc
 
 
 def test_scatter_batch_trajectory_fit():
