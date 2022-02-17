@@ -143,7 +143,7 @@ def test_panel_detector_layer(batch):
         lw=LW,
         z=1,
         size=2 * SZ,
-        panels=[DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[0.5, 0.5], area_cost_func=area_cost)],
+        panels=[DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[1.0, 1.0], area_cost_func=area_cost)],
     )
     for p in dl.panels:
         assert p.resolution == Tensor([1e3])
@@ -173,8 +173,8 @@ def test_panel_detector_layer(batch):
         size=2 * SZ,
         panels=[
             DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[0.5, 5.0], area_cost_func=area_cost),
-            DetectorPanel(res=1e3, eff=1, init_xyz=[3.0, 0.5, 2.0], init_xy_span=[0.5, 0.5], area_cost_func=area_cost),
-            DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, -0.5, -0.3], init_xy_span=[0.5, 0.5], area_cost_func=area_cost),
+            DetectorPanel(res=1e3, eff=1, init_xyz=[3.0, 0.5, 2.0], init_xy_span=[1.0, 1.0], area_cost_func=area_cost),
+            DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, -0.5, -0.3], init_xy_span=[1.0, 1.0], area_cost_func=area_cost),
             DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, 0.5, 0.4], init_xy_span=[0.0, 0.5], area_cost_func=area_cost),
         ],
     )
@@ -403,7 +403,7 @@ def test_detector_panel_methods():
 
     # get_gauss
     with pytest.raises(ValueError):
-        DetectorPanel(res=1, eff=0.5, init_xyz=[np.NaN, 0.0, 0.9], init_xy_span=[0.5, 0.5], area_cost_func=area_cost).get_gauss()
+        DetectorPanel(res=1, eff=0.5, init_xyz=[np.NaN, 0.0, 0.9], init_xy_span=[1.0, 1.0], area_cost_func=area_cost).get_gauss()
     with pytest.raises(ValueError):
         DetectorPanel(res=1, eff=0.5, init_xyz=[0.0, 0.0, 0.9], init_xy_span=[0.5, np.NaN], area_cost_func=area_cost).get_gauss()
     gauss = panel.get_gauss()
