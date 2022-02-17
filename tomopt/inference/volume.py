@@ -1,6 +1,5 @@
 from abc import ABCMeta, abstractmethod
 from typing import Tuple, Optional, Dict, List, Union
-import numpy as np
 
 import torch
 from torch import Tensor, nn
@@ -81,11 +80,6 @@ class AbsX0Inferer(AbsVolumeInferer):
         cos_mean = (cos_theta_in + cos_theta_out) / 2
 
         pred = delta_z / (n_x0 * cos_mean)
-
-        if pred.isnan().sum() > 0:
-            print(pred)
-            raise ValueError("Prediction contains NaN values")
-
         return pred
 
     @staticmethod
@@ -97,11 +91,6 @@ class AbsX0Inferer(AbsVolumeInferer):
         unc_2 = (jac[:, idxs] * uncs[:, idxs]).prod(-1)
 
         pred_unc = unc_2.sum(-1).sqrt()
-
-        if pred_unc.isnan().sum() > 0:
-            print(pred_unc)
-            raise ValueError("Prediction uncertainties contains NaN values")
-
         return pred_unc
 
     def x0_from_dtheta(self, scatters: AbsScatterBatch) -> Tuple[Optional[Tensor], Optional[Tensor]]:
@@ -171,6 +160,14 @@ class AbsX0Inferer(AbsVolumeInferer):
         """
 
         loc, loc_unc = scatters.location, scatters.location_unc  # loc is (x,y,z)
+        # Only consider non-NaN predictions
+        mask = ((loc == loc).prod(1) * (loc_unc == loc_unc).prod(1)).bool()
+        if x0_dtheta is not None and x0_dtheta_unc is not None:
+            mask = (mask * (x0_dtheta == x0_dtheta) * (x0_dtheta_unc == x0_dtheta_unc)).bool()
+        if x0_dxy is not None and x0_dxy_unc is not None:
+            mask = (mask * (x0_dxy == x0_dxy) * (x0_dxy_unc == x0_dxy_unc)).bool()
+
+        loc, loc_unc, efficiency = loc[mask], loc_unc[mask], efficiency[mask]
         shp_xyz = (
             len(loc),
             round(self.volume.lw.cpu().numpy()[0] / self.volume.passive_size),
@@ -183,6 +180,7 @@ class AbsX0Inferer(AbsVolumeInferer):
         for x0, unc in ((x0_dtheta, x0_dtheta_unc), (x0_dxy, x0_dxy_unc)):
             if x0 is None or unc is None:
                 continue
+            x0, unc = x0[mask], unc[mask]
             x0 = x0[:, None, None, None].expand(shp_zxy).clone()
             coef = efficiency[:, None, None, None].expand(shp_zxy).clone() / ((1e-17) + (unc[:, None, None, None].expand(shp_zxy).clone() ** 2))
 

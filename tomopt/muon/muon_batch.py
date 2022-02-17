@@ -16,7 +16,6 @@ class MuonBatch:
         r"""
         coords = (0:x~Uniform[0,1], 1:y~Uniform[0,1], 2:p=100GeV, 3:theta_x~cos2(a) a~Uniform[0,0.5pi], 4:theta_y~cos2(a) a~Uniform[0,0.5pi]
         """
-
         self.device = device
         self.muons = muons.to(self.device)
         if not isinstance(init_z, Tensor):
