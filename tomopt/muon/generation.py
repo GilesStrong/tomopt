@@ -103,8 +103,8 @@ class MuonGenerator:
 
         # Get theta_x and theta_y from theta and phi
         phi = np.random.uniform(0, 2 * np.pi, n_muons)
-        theta_x = theta * np.cos(phi)
-        theta_y = theta * np.sin(phi)
+        theta_x = np.arcsin(np.sin(theta) * np.cos(phi))
+        theta_y = np.arcsin(np.sin(theta) * np.sin(phi))
 
         # Generate x and y randomly
         coord_x = np.random.uniform(self.x_range[0], self.x_range[1], n_muons)
