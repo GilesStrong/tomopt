@@ -104,10 +104,10 @@ class MuonBatch:
 
     @property
     def theta(self) -> Tensor:
-        return torch.sqrt(((self.theta_x) ** 2) + ((self.theta_y) ** 2))
+        return self.theta_xy.sin().square().sum(-1).sqrt().arcsin()
 
     @theta.setter
-    def theta(self, theta: Tensor) -> None:
+    def theta(self, theta: Tensor, phi: Tensor) -> None:
         raise NotImplementedError()
 
     def propagate(self, dz: Union[Tensor, float]) -> None:
