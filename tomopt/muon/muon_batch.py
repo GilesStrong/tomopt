@@ -262,7 +262,7 @@ class MuonBatch:
 
         # Remove muons and hits
         self._muons = self._muons[mask]
-        for pos in self._hits:
+        for pos in self._hits:  # TODO: Make a HitBatch class to make this easier?
             for var in self._hits[pos]:
                 for det in self._hits[pos][var]:
                     self._hits[pos][var][det] = self._hits[pos][var][det][mask]
