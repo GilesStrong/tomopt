@@ -12,12 +12,15 @@ __all__ = ["MuonBatch"]
 
 
 class MuonBatch:
-    def __init__(self, muons: Tensor, init_z: Union[Tensor, float], device: torch.device = DEVICE):
-        r"""
-        coords = (0:x~Uniform[0,1], 1:y~Uniform[0,1], 2:p=100GeV, 3:theta_x~cos2(a) a~Uniform[0,0.5pi], 4:theta_y~cos2(a) a~Uniform[0,0.5pi]
-        """
+    x_dim = 0
+    y_dim = 1
+    p_dim = 2
+    th_dim = 3
+    ph_dim = 4
+
+    def __init__(self, xy_p_theta_phi: Tensor, init_z: Union[Tensor, float], device: torch.device = DEVICE):
         self.device = device
-        self.muons = muons.to(self.device)
+        self.muons = xy_p_theta_phi.to(self.device)
         if not isinstance(init_z, Tensor):
             init_z = Tensor([init_z])
         self.z = init_z.to(self.device)
@@ -40,35 +43,35 @@ class MuonBatch:
 
     @property
     def x(self) -> Tensor:
-        return self._muons[:, 0]
+        return self._muons[:, self.x_dim]
 
     @x.setter
     def x(self, x: Tensor) -> None:
-        self._muons[:, 0] = x
+        self._muons[:, self.x_dim] = x
 
     @property
     def y(self) -> Tensor:
-        return self._muons[:, 1]
+        return self._muons[:, self.y_dim]
 
     @y.setter
     def y(self, y: Tensor) -> None:
-        self._muons[:, 1] = y
+        self._muons[:, self.y_dim] = y
 
     @property
     def xy(self) -> Tensor:
-        return self._muons[:, :2]
+        return self._muons[:, : self.y_dim + 1]
 
     @xy.setter
     def xy(self, xy: Tensor) -> None:
-        self._muons[:, :2] = xy
+        self._muons[:, : self.y_dim + 1] = xy
 
     @property
     def mom(self) -> Tensor:
-        return self._muons[:, 2]
+        return self._muons[:, self.p_dim]
 
     @mom.setter
     def mom(self, mom: Tensor) -> None:
-        self._muons[:, 2] = mom
+        self._muons[:, self.p_dim] = mom
 
     @property
     def reco_mom(self) -> Tensor:
@@ -80,40 +83,55 @@ class MuonBatch:
 
     @property
     def theta_x(self) -> Tensor:
-        return self._muons[:, 3]
+        return (self.theta.sin() * self.phi.cos()).arcsin()
 
     @theta_x.setter
     def theta_x(self, theta_x: Tensor) -> None:
-        self._muons[:, 3] = theta_x
+        raise NotImplementedError()
 
     @property
     def theta_y(self) -> Tensor:
-        return self._muons[:, 4]
+        return (self.theta.sin() * self.phi.sin()).arcsin()
 
     @theta_y.setter
     def theta_y(self, theta_y: Tensor) -> None:
-        self._muons[:, 4] = theta_y
-
-    @property
-    def theta_xy(self) -> Tensor:
-        return self._muons[:, 3:5]
-
-    @theta_xy.setter
-    def theta_xy(self, theta_xy: Tensor) -> None:
-        self._muons[:, 3:5] = theta_xy
+        raise NotImplementedError()
 
     @property
     def theta(self) -> Tensor:
-        return self.theta_xy.sin().square().sum(-1).sqrt().arcsin()
+        return self._muons[:, self.th_dim]
 
     @theta.setter
-    def theta(self, theta: Tensor, phi: Tensor) -> None:
-        raise NotImplementedError()
+    def theta(self, theta: Tensor) -> None:
+        self._muons[:, self.th_dim] = theta
+
+    @property
+    def phi(self) -> Tensor:
+        return self._muons[:, self.ph_dim]
+
+    @phi.setter
+    def phi(self, phi: Tensor) -> None:
+        self._muons[:, self.ph_dim] = phi
+
+    @staticmethod
+    def phi_from_theta_xy(theta_x: Tensor, theta_y: Tensor) -> Tensor:
+        phi = torch.arctan(theta_y.sin() / theta_x.sin())  # (-pi/2, pi/2)
+        m = theta_x < 0
+        phi[m] = phi[m] + torch.pi
+        m = ((theta_x > 0) * (theta_y < 0)).bool()
+        phi[m] = phi[m] + (2 * torch.pi)  # (0, 2pi)
+        return phi
+
+    @staticmethod
+    def theta_from_theta_xy(theta_x: Tensor, theta_y: Tensor) -> Tensor:
+        return (theta_x.sin().square() + theta_y.sin().square()).sqrt().arcsin()
 
     def propagate(self, dz: Union[Tensor, float]) -> None:
         with torch.no_grad():
-            self.x = self.x + (dz * torch.tan(self.theta_x))
-            self.y = self.y + (dz * torch.tan(self.theta_y))
+            r = dz / self.theta.cos()
+            rst = r * self.theta.sin()
+            self.x = self.x + (rst * self.phi.cos())
+            self.y = self.y + (rst * self.phi.sin())
             self.z = self.z - dz
 
     def get_xy_mask(self, xy_low: Optional[Union[Tuple[float, float], Tensor]], xy_high: Optional[Union[Tuple[float, float], Tensor]]) -> Tensor:
@@ -148,7 +166,7 @@ class MuonBatch:
         return torch.abs(self.theta_y - mu.theta_y)
 
     def dtheta(self, mu: MuonBatch) -> Tensor:
-        return torch.sqrt((self.dtheta_x(mu) ** 2) + (self.dtheta_y(mu) ** 2))
+        return torch.abs(self.theta - mu.theta)
 
     def copy(self) -> MuonBatch:
         return MuonBatch(self._muons.detach().clone(), init_z=self.z.detach().clone(), device=self.device)
