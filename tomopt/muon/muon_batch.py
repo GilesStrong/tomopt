@@ -19,11 +19,15 @@ class MuonBatch:
     ph_dim = 4
 
     def __init__(self, xy_p_theta_phi: Tensor, init_z: Union[Tensor, float], device: torch.device = DEVICE):
+        r"""
+        N.B. xy [m], p [GeV], theta [r] (0, pi/2) defined w.r.t z axis, phi [r] (0, 2pi) defined anticlockwise from x axis
+        """
+
         self.device = device
         self.muons = xy_p_theta_phi.to(self.device)
         if not isinstance(init_z, Tensor):
             init_z = Tensor([init_z])
-        self.z = init_z.to(self.device)
+        self._z = init_z.to(self.device)
         self.hits: Dict[str, Dict[str, List[Tensor]]] = defaultdict(lambda: defaultdict(list))
         self.xy_hist: Dict[Tensor, Tensor] = OrderedDict({})
 
@@ -43,34 +47,80 @@ class MuonBatch:
 
     @property
     def x(self) -> Tensor:
-        return self._muons[:, self.x_dim]
+        return self._x
 
     @x.setter
     def x(self, x: Tensor) -> None:
+        raise AttributeError(
+            "Please use the scatter_dxy function to modify the x,y position of muons. Or modify the _muons attribute if you know what you're doing"
+        )
+
+    @property
+    def _x(self) -> Tensor:
+        return self._muons[:, self.x_dim]
+
+    @_x.setter
+    def _x(self, x: Tensor) -> None:
         self._muons[:, self.x_dim] = x
 
     @property
     def y(self) -> Tensor:
-        return self._muons[:, self.y_dim]
+        return self._y
 
     @y.setter
     def y(self, y: Tensor) -> None:
+        raise AttributeError(
+            "Please use the scatter_dxy or propagate methods to modify the x,y position of muons. Or modify the _muons attribute if you know what you're doing"
+        )
+
+    @property
+    def _y(self) -> Tensor:
+        return self._muons[:, self.y_dim]
+
+    @_y.setter
+    def _y(self, y: Tensor) -> None:
         self._muons[:, self.y_dim] = y
 
     @property
     def xy(self) -> Tensor:
-        return self._muons[:, : self.y_dim + 1]
+        return self._xy
 
     @xy.setter
     def xy(self, xy: Tensor) -> None:
+        raise AttributeError(
+            "Please use the scatter_dxy or propagate methods to modify the x,y position of muons. Or modify the _muons attribute if you know what you're doing"
+        )
+
+    @property
+    def _xy(self) -> Tensor:
+        return self._muons[:, : self.y_dim + 1]
+
+    @_xy.setter
+    def _xy(self, xy: Tensor) -> None:
         self._muons[:, : self.y_dim + 1] = xy
 
     @property
+    def z(self) -> Tensor:
+        return self._z
+
+    @z.setter
+    def z(self, z: Tensor) -> None:
+        raise AttributeError("Please use the propagate method to modify z. Or modify the _muons attribute if you know what you're doing")
+
+    @property
     def mom(self) -> Tensor:
-        return self._muons[:, self.p_dim]
+        return self._mom
 
     @mom.setter
     def mom(self, mom: Tensor) -> None:
+        raise NotImplementedError()
+
+    @property
+    def _mom(self) -> Tensor:
+        return self._muons[:, self.p_dim]
+
+    @_mom.setter
+    def _mom(self, mom: Tensor) -> None:
         self._muons[:, self.p_dim] = mom
 
     @property
@@ -82,12 +132,50 @@ class MuonBatch:
         raise NotImplementedError()
 
     @property
+    def theta(self) -> Tensor:
+        return self._theta
+
+    @theta.setter
+    def theta(self, theta: Tensor) -> None:
+        raise AttributeError(
+            "Please use the scatter_dtheta_dphi method to modify the direction of muons. Or modify the _muons attribute if you really know what you're doing"
+        )
+
+    @property
+    def _theta(self) -> Tensor:
+        return self._muons[:, self.th_dim]
+
+    @_theta.setter
+    def _theta(self, theta: Tensor) -> None:
+        self._muons[:, self.th_dim] = theta
+
+    @property
+    def phi(self) -> Tensor:
+        return self._phi
+
+    @phi.setter
+    def phi(self, phi: Tensor) -> None:
+        raise AttributeError(
+            "Please use the scatter_dtheta_dphi method to modify the direction of muons. Or modify the _muons attribute if you really know what you're doing"
+        )
+
+    @property
+    def _phi(self) -> Tensor:
+        return self._muons[:, self.ph_dim]
+
+    @_phi.setter
+    def _phi(self, phi: Tensor) -> None:
+        self._muons[:, self.ph_dim] = phi
+
+    @property
     def theta_x(self) -> Tensor:
         return (self.theta.sin() * self.phi.cos()).arcsin()
 
     @theta_x.setter
     def theta_x(self, theta_x: Tensor) -> None:
-        raise NotImplementedError()
+        raise AttributeError(
+            "Please use the scatter_dtheta_xy method to modify the direction of muons. Or modify the _muons attribute if you really know what you're doing"
+        )
 
     @property
     def theta_y(self) -> Tensor:
@@ -95,23 +183,54 @@ class MuonBatch:
 
     @theta_y.setter
     def theta_y(self, theta_y: Tensor) -> None:
-        raise NotImplementedError()
+        raise AttributeError(
+            "Please use the scatter_dtheta_xy method to modify the direction of muons. Or modify the _muons attribute if you really know what you're doing"
+        )
 
-    @property
-    def theta(self) -> Tensor:
-        return self._muons[:, self.th_dim]
+    def scatter_dxy(self, dx: Optional[Tensor] = None, dy: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
+        if mask is None:
+            mask = torch.ones(len(self._muons), device=self.device).bool()
+        if dx is not None:
+            self._x[mask] = self._x[mask] + dx
+        if dy is not None:
+            self._y[mask] = self._y[mask] + dy
 
-    @theta.setter
-    def theta(self, theta: Tensor) -> None:
-        self._muons[:, self.th_dim] = theta
+    def scatter_dtheta_dphi(self, dtheta: Optional[Tensor] = None, dphi: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
+        if mask is None:
+            mask = torch.ones(len(self._muons), device=self.device).bool()
+        if dphi is not None:
+            self._phi[mask] = (self._phi[mask] + dphi) % (2 * torch.pi)
+        if dtheta is not None:
+            theta = (self._theta[mask] + dtheta) % (2 * torch.pi)
+            phi = self._phi[mask]
+            # Correct theta, must avoid double Bool mask
+            m = theta > torch.pi
+            phi[m] = (phi[m] + torch.pi) % (2 * torch.pi)  # rotate in phi
+            theta[m] = (2 * torch.pi) - theta[m]  # theta (0,pi)
+            self._phi[mask] = phi
+            self._theta[mask] = theta
 
-    @property
-    def phi(self) -> Tensor:
-        return self._muons[:, self.ph_dim]
+    def scatter_dtheta_xy(self, dtheta_x: Optional[Tensor] = None, dtheta_y: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
+        if mask is None:
+            mask = torch.ones(len(self._muons), device=self.device).bool()
 
-    @phi.setter
-    def phi(self, phi: Tensor) -> None:
-        self._muons[:, self.ph_dim] = phi
+        tx = self.theta_x[mask]
+        ty = self.theta_y[mask]
+
+        def add_theta(t: Tensor, dt: Tensor) -> Tensor:
+            t = (t + dt) % (2 * torch.pi)  # Add in (0,2pi)
+            # Convert to (-pi,pi)
+            m = t > torch.pi
+            t[m] = t[m] - (2 * torch.pi)
+            return t
+
+        if dtheta_x is not None:
+            tx = add_theta(tx, dtheta_x)
+        if dtheta_y is not None:
+            ty = add_theta(ty, dtheta_y)
+
+        self._theta[mask] = self.theta_from_theta_xy(tx, ty)
+        self._phi[mask] = self.phi_from_theta_xy(tx, ty)
 
     @staticmethod
     def phi_from_theta_xy(theta_x: Tensor, theta_y: Tensor) -> Tensor:
@@ -127,12 +246,11 @@ class MuonBatch:
         return (theta_x.sin().square() + theta_y.sin().square()).sqrt().arcsin()
 
     def propagate(self, dz: Union[Tensor, float]) -> None:
-        with torch.no_grad():
-            r = dz / self.theta.cos()
-            rst = r * self.theta.sin()
-            self.x = self.x + (rst * self.phi.cos())
-            self.y = self.y + (rst * self.phi.sin())
-            self.z = self.z - dz
+        r = dz / self._theta.cos()
+        rst = r * self._theta.sin()
+        self._x = self._x + (rst * self._phi.cos())
+        self._y = self._y + (rst * self._phi.sin())
+        self._z = self._z - dz
 
     def get_xy_mask(self, xy_low: Optional[Union[Tuple[float, float], Tensor]], xy_high: Optional[Union[Tuple[float, float], Tensor]]) -> Tensor:
         if xy_low is None:
