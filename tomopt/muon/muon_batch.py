@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Dict, List, Union, Tuple, Optional
 import math
 from collections import defaultdict, OrderedDict
+import numpy as np
 
 import torch
 from torch import Tensor
@@ -24,12 +25,13 @@ class MuonBatch:
         """
 
         self.device = device
-        self.muons = xy_p_theta_phi.to(self.device)
+        self._muons = xy_p_theta_phi.to(self.device)
+        self._upwards_muons: Optional[Tensor] = None
         if not isinstance(init_z, Tensor):
             init_z = Tensor([init_z])
         self._z = init_z.to(self.device)
-        self.hits: Dict[str, Dict[str, List[Tensor]]] = defaultdict(lambda: defaultdict(list))
-        self.xy_hist: Dict[Tensor, Tensor] = OrderedDict({})
+        self._hits: Dict[str, Dict[str, List[Tensor]]] = defaultdict(lambda: defaultdict(list))
+        self._xy_hist: Dict[Tensor, Tensor] = OrderedDict({})
 
     def __repr__(self) -> str:
         return f"Batch of {len(self)} muons"
@@ -44,6 +46,14 @@ class MuonBatch:
     @muons.setter
     def muons(self, muons: Tensor) -> None:
         self._muons = muons
+
+    @property
+    def upwards_muons(self) -> Tensor:
+        return self._upwards_muons
+
+    @property
+    def xy_hist(self) -> Dict[Tensor, Tensor]:
+        return self._xy_hist
 
     @property
     def x(self) -> Tensor:
@@ -210,6 +220,8 @@ class MuonBatch:
             self._phi[mask] = phi
             self._theta[mask] = theta
 
+        self.remove_upwards_muons()
+
     def scatter_dtheta_xy(self, dtheta_x: Optional[Tensor] = None, dtheta_y: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
         if mask is None:
             mask = torch.ones(len(self._muons), device=self.device).bool()
@@ -231,6 +243,29 @@ class MuonBatch:
 
         self._theta[mask] = self.theta_from_theta_xy(tx, ty)
         self._phi[mask] = self.phi_from_theta_xy(tx, ty)
+
+        self.remove_upwards_muons()
+
+    def remove_upwards_muons(self) -> None:
+        r"""
+        Remove muons, and their hits, if their theta >= pi/2, i.e. they are travelling upwards after a large scattering.
+        Should be run after any changes to theta, but make sure that references (e.g. masks) to the complete set of muons are no longer required
+        """
+
+        mask = self._theta >= torch.pi
+
+        # Save muons, just in case they're usefl for diagnostics
+        if self._upwards_muons is None:
+            self._upwards_muons = self._muons[mask].detach().cpu().numpy()
+        else:
+            self._upwards_muons = np.concatenate((self._upwards_muons, self._muons[mask].detach().cpu().numpy()), axis=0)
+
+        # Remove muons and hits
+        self._muons = self._muons[mask]
+        for pos in self._hits:
+            for var in self._hits[pos]:
+                for det in self._hits[pos][var]:
+                    self._hits[pos][var][det] = self._hits[pos][var][det][mask]
 
     @staticmethod
     def phi_from_theta_xy(theta_x: Tensor, theta_y: Tensor) -> Tensor:
@@ -264,18 +299,18 @@ class MuonBatch:
 
     def append_hits(self, hits: Dict[str, Tensor], pos: str) -> None:
         for k in hits:
-            self.hits[pos][k].append(hits[k])
+            self._hits[pos][k].append(hits[k])
 
     def get_hits(
         self, xy_low: Optional[Union[Tuple[float, float], Tensor]] = None, xy_high: Optional[Union[Tuple[float, float], Tensor]] = None
     ) -> Dict[str, Dict[str, Tensor]]:
-        if len(self.hits) == 0:
+        if len(self._hits) == 0:
             raise ValueError("MuonBatch has no recorded hits")
         if xy_low is None and xy_high is None:
-            return {p: {c: torch.stack(self.hits[p][c], dim=1) for c in self.hits[p]} for p in self.hits}
+            return {p: {c: torch.stack(self._hits[p][c], dim=1) for c in self._hits[p]} for p in self._hits}
         else:
             m = self.get_xy_mask(xy_low, xy_high)
-            return {p: {c: torch.stack(self.hits[p][c], dim=1)[m] for c in self.hits[p]} for p in self.hits}
+            return {p: {c: torch.stack(self._hits[p][c], dim=1)[m] for c in self._hits[p]} for p in self._hits}
 
     def dtheta_x(self, mu: MuonBatch) -> Tensor:
         return torch.abs(self.theta_x - mu.theta_x)
