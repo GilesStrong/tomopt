@@ -70,17 +70,9 @@ class AbsX0Inferer(AbsVolumeInferer):
         self.weights.append(w)
 
     @staticmethod
-    def _x0_from_dtheta(delta_z: float, mom: Tensor, dtheta: Tensor, theta_xy_in: Tensor, theta_xy_out: Tensor) -> Tensor:
-        theta2 = dtheta.pow(2).sum(1)
-        n_x0 = 0.5 * theta2 * ((mom / SCATTER_COEF_A) ** 2)
-        theta_in = theta_xy_in.pow(2).sum(1).sqrt()
-        theta_out = theta_xy_out.pow(2).sum(1).sqrt()
-        cos_theta_in = torch.cos(theta_in)
-        cos_theta_out = torch.cos(theta_out)
-        cos_mean = (cos_theta_in + cos_theta_out) / 2
-
-        pred = delta_z / (n_x0 * cos_mean)
-        return pred
+    def _x0_from_dtheta(delta_z: float, mom: Tensor, dtheta: Tensor, theta_in: Tensor, theta_out: Tensor) -> Tensor:
+        cos_theta = (theta_in.cos() + theta_out.cos()) / 2
+        return 2 * ((SCATTER_COEF_A / mom) ** 2) * delta_z / (dtheta.pow(2) * cos_theta)
 
     @staticmethod
     def _x0_from_dtheta_unc(pred: Tensor, in_vars: Tensor, uncs: Tensor) -> Tensor:
@@ -114,23 +106,23 @@ class AbsX0Inferer(AbsVolumeInferer):
         in_vars = torch.cat(
             [
                 (mu.reco_mom if self.mask_muons is False else mu.reco_mom[muon_mask])[:, None],  # 0
-                scatters.dtheta,  # 1,2
-                scatters.theta_in,  # 3,4
-                scatters.theta_out,  # 5,6
+                scatters.dtheta,  # 1
+                scatters.theta_in,  # 2
+                scatters.theta_out,  # 3
             ],
             dim=-1,
         )
         mom = in_vars[:, 0]
-        dtheta = in_vars[:, 1:3]
-        theta_xy_in = in_vars[:, 3:5]
-        theta_xy_out = in_vars[:, 5:7]
+        dtheta = in_vars[:, 1]
+        theta_in = in_vars[:, 2]
+        theta_out = in_vars[:, 3]
 
         uncs = torch.cat(
             [torch.zeros_like(mom)[:, None], scatters.dtheta_unc, scatters.theta_in_unc, scatters.theta_out_unc],
             dim=-1,
         )
 
-        pred = self._x0_from_dtheta(delta_z=self.size, mom=mom, dtheta=dtheta, theta_xy_in=theta_xy_in, theta_xy_out=theta_xy_out)
+        pred = self._x0_from_dtheta(delta_z=self.size, mom=mom, dtheta=dtheta, theta_in=theta_in, theta_out=theta_out)
         pred_unc = self._x0_from_dtheta_unc(pred=pred, in_vars=in_vars, uncs=uncs)
 
         return pred, pred_unc
