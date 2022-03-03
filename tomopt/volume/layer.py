@@ -210,7 +210,7 @@ class PanelDetectorLayer(AbsDetectorLayer):
 
     def forward(self, mu: MuonBatch) -> None:
         for p in self.yield_zordered_panels():
-            self.scatter_and_propagate(mu, mu.z - p.z)  # Move to panel
+            self.scatter_and_propagate(mu, mu.z - p.z.detach())  # Move to panel
             mu.append_hits(p.get_hits(mu), self.pos)
         self.scatter_and_propagate(mu, mu.z - (self.z - self.size))  # Move to bottom of layer
 

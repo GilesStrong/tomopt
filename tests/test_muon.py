@@ -61,12 +61,6 @@ def get_panel_layers(init_res: float = 1e4, init_eff: float = 0.5, n_panels: int
     return nn.ModuleList(layers)
 
 
-@pytest.fixture
-def batch():
-    batch = Tensor([range(5) for _ in range(N)])
-    return MuonBatch(batch, init_z=1)
-
-
 @pytest.mark.flaky(max_runs=2, min_passes=1)
 def test_muon_generator():
     n_muons = 10000
@@ -82,12 +76,11 @@ def test_muon_generator():
     # p
     assert (data[:, 2] >= np.sqrt((0.5**2) - gen._muon_mass2)).all() and (data[:, 2] <= np.sqrt((500**2) - gen._muon_mass2)).all()
     assert data[:, 2].mean() - 2 <= 1e-1
-    # theta x
-    assert (data[:, 3] >= -np.pi / 2).all() and (data[:, 3] <= np.pi / 2).all()
-    assert data[:, 3].mean() - 0.5 < 1e-1
-    # theta y
-    assert (data[:, 4] >= -np.pi / 2).all() and (data[:, 4] <= np.pi / 2).all()
-    assert data[:, 4].mean() - 0.5 < 1e-1
+    # theta
+    assert (data[:, 3] >= 0).all() and (data[:, 3] <= np.pi / 2).all()
+    # phi
+    assert (data[:, 4] >= 0).all() and (data[:, 4] <= 2 * np.pi).all()
+    assert data[:, 4].mean() - np.pi < 1e-1
 
 
 @pytest.mark.flaky(max_runs=2, min_passes=1)
@@ -118,7 +111,8 @@ def test_muon_generator_from_volume():
     assert (m1 + m2).sum() / n > 0.5
 
 
-def test_muon_batch_properties(batch):
+def test_muon_batch_properties():
+    batch = MuonBatch(Tensor([range(5) for _ in range(N)]), init_z=1)
     # shape
     assert len(batch) == N
     assert batch.muons.shape == torch.Size([N, 5])
@@ -128,36 +122,45 @@ def test_muon_batch_properties(batch):
     assert batch.y[0] == Tensor([1])
     assert torch.all(batch.xy[0] == Tensor([0, 1]))
     assert batch.mom[0] == Tensor([2])
-    assert batch.theta_x[0] == Tensor([3])
-    assert batch.theta_y[0] == Tensor([4])
-    assert batch.theta[0] == Tensor([5])
+    assert batch.reco_mom[0] == Tensor([2])
+    assert batch.theta[0] == Tensor([3])
+    assert batch.phi[0] == Tensor([4])
     assert batch.z == Tensor([1])
 
     # Setters
     new_coords = Tensor([range(5, 10) for _ in range(N)])
-    batch.x = new_coords[:, 0]
-    assert torch.all(batch.x == new_coords[:, 0])
-    batch.y = new_coords[:, 1]
-    assert torch.all(batch.y == new_coords[:, 1])
-    batch.mom = new_coords[:, 2]
-    assert torch.all(batch.mom == new_coords[:, 2])
-    batch.theta_x = new_coords[:, 3]
-    assert torch.all(batch.theta_x == new_coords[:, 3])
-    batch.theta_y = new_coords[:, 4]
-    assert torch.all(batch.theta_y == new_coords[:, 4])
-    assert torch.all(batch.xy == new_coords[:, :2])
-    assert torch.all(batch.theta == new_coords[:, 3:].pow(2).sum(1).sqrt())
+    with pytest.raises(AttributeError):
+        batch.x = new_coords[:, 0]
+    with pytest.raises(AttributeError):
+        batch.y = new_coords[:, 1]
+    with pytest.raises(AttributeError):
+        batch.xy = new_coords[:, :1]
+    with pytest.raises(AttributeError):
+        batch.z = 0.2
+    with pytest.raises(NotImplementedError):
+        batch.mom = new_coords[:, 2]
+    with pytest.raises(NotImplementedError):
+        batch.reco_mom = new_coords[:, 2]
+    with pytest.raises(AttributeError):
+        batch.theta = new_coords[:, 3]
+    with pytest.raises(AttributeError):
+        batch.phi = new_coords[:, 4]
+    with pytest.raises(AttributeError):
+        batch.theta_x = new_coords[:, 3]
+    with pytest.raises(AttributeError):
+        batch.theta_y = new_coords[:, 3]
 
 
-def test_muon_batch_methods(batch):
+def test_muon_batch_methods():
+    batch = MuonBatch(Tensor([[1, 0, 0, 1, 6]]), init_z=1)
     # copy & propagate
     start = batch.copy()
     batch.propagate(0.1)
     assert batch.z == Tensor([0.9])
     assert start.z == Tensor([1.0])
     assert torch.all(start.xy != batch.xy)
-    assert torch.all(batch.x == start.x + (0.1 * torch.tan(start.theta_x)))
-    assert torch.all(batch.y == start.y + (0.1 * torch.tan(start.theta_y)))
+    assert torch.all(batch.x >= start.x)
+    assert torch.all(batch.y <= start.y)
 
     # snapshot
     batch.snapshot_xyz()
@@ -167,9 +170,9 @@ def test_muon_batch_methods(batch):
     # mask
     lw = Tensor([1, 1])
     assert batch.get_xy_mask((0, 0), lw).sum() == 0
-    batch.x = torch.zeros(N) + 0.5
-    batch.y = torch.zeros(N) + 0.5
-    assert batch.get_xy_mask((0, 0), lw).sum() == N
+    batch._x = torch.zeros(1) + 0.5
+    batch._y = torch.zeros(1) + 0.5
+    assert batch.get_xy_mask((0, 0), lw).sum() == 1
 
     # hits
     above_hits = {"xy": Tensor([[0, 0], [0, 0], [0, 0]]), "z": Tensor([[1], [1], [1]])}
@@ -184,6 +187,5 @@ def test_muon_batch_methods(batch):
 
     # deltas
     assert torch.all(batch.dtheta(start) == 0)
-    batch.theta_x = batch.theta_x + 2
-    batch.theta_y = batch.theta_y + 3
-    assert batch.dtheta(start)[0] == Tensor([np.sqrt(13)])
+    batch._theta = batch.theta + 2
+    assert batch.dtheta(start)[0] == Tensor([2])

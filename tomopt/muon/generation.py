@@ -101,7 +101,6 @@ class MuonGenerator:
             momentum = np.ones(len(theta_indices)) * self._fixed_mom
         theta = self._theta_centres[theta_indices]
 
-        # Get theta_x and theta_y from theta and phi
         phi = np.random.uniform(0, 2 * np.pi, n_muons)
 
         # Generate x and y randomly

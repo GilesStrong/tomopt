@@ -254,7 +254,7 @@ class MuonBatch:
 
         mask = self._theta < torch.pi
         if mask.sum() < len(self):
-            # Save muons, just in case they're usefl for diagnostics
+            # Save muons, just in case they're useful for diagnostics
             if self._upwards_muons is None:
                 self._upwards_muons = self._muons[mask].detach().cpu().numpy()
             else:
