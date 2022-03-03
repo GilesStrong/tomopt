@@ -252,20 +252,21 @@ class MuonBatch:
         Should be run after any changes to theta, but make sure that references (e.g. masks) to the complete set of muons are no longer required
         """
 
-        mask = self._theta >= torch.pi
+        mask = self._theta < torch.pi
+        if mask.sum() < len(self):
+            # Save muons, just in case they're usefl for diagnostics
+            if self._upwards_muons is None:
+                self._upwards_muons = self._muons[mask].detach().cpu().numpy()
+            else:
+                self._upwards_muons = np.concatenate((self._upwards_muons, self._muons[mask].detach().cpu().numpy()), axis=0)
 
-        # Save muons, just in case they're usefl for diagnostics
-        if self._upwards_muons is None:
-            self._upwards_muons = self._muons[mask].detach().cpu().numpy()
-        else:
-            self._upwards_muons = np.concatenate((self._upwards_muons, self._muons[mask].detach().cpu().numpy()), axis=0)
-
-        # Remove muons and hits
-        self._muons = self._muons[mask]
-        for pos in self._hits:  # TODO: Make a HitBatch class to make this easier?
-            for var in self._hits[pos]:
-                for det in self._hits[pos][var]:
-                    self._hits[pos][var][det] = self._hits[pos][var][det][mask]
+            # Remove muons and hits
+            self._muons = self._muons[mask]
+            print(mask.sum())
+            for pos in self._hits:  # TODO: Make a HitBatch class to make this easier?
+                for var in self._hits[pos]:
+                    for det, xy_pos in enumerate(self._hits[pos][var]):
+                        self._hits[pos][var][det] = xy_pos[mask]
 
     @staticmethod
     def phi_from_theta_xy(theta_x: Tensor, theta_y: Tensor) -> Tensor:
