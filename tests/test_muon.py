@@ -189,3 +189,43 @@ def test_muon_batch_methods():
     assert torch.all(batch.dtheta(start) == 0)
     batch._theta = batch.theta + 2
     assert batch.dtheta(start)[0] == Tensor([2])
+
+    # Angle calculations
+    tx, ty = 2 * torch.pi * (torch.rand(100) - 0.5), 2 * torch.pi * (torch.rand(100) - 0.5)
+    phi = MuonBatch.phi_from_theta_xy(tx, ty)
+    assert (phi < 2 * torch.pi).all() and (phi > 0).all() and (phi.max() > torch.pi) and (phi.min() < torch.pi)
+    theta = MuonBatch.theta_from_theta_xy(tx, ty)
+    theta = theta[~theta.isnan()]
+    assert (theta < torch.pi).all() and (theta > 0).all()
+
+
+def test_muon_batch_scatter_dxy():
+    batch = MuonBatch(Tensor([[1, 0, 0, 1, 6], [1, 0, 0, 1, 6]]), init_z=1)
+    # copy & propagate
+    start = batch.copy()
+
+    batch.scatter_dxy()
+    assert (batch.xy == start.xy).all()
+
+    batch.scatter_dxy(dx=Tensor([1, -1]))
+    assert (batch.x != start.x).all()
+    assert (batch.y == start.y).all()
+
+    batch = start.copy()
+    batch.scatter_dxy(dy=Tensor([1, -1]))
+    assert (batch.y != start.y).all()
+    assert (batch.x == start.x).all()
+
+    batch = start.copy()
+    batch.scatter_dxy(dx=Tensor([1, -1]), dy=Tensor([1, -1]))
+    assert (batch.xy != start.xy).all()
+
+    batch = start.copy()
+    batch.scatter_dxy(dx=Tensor([1]), dy=Tensor([1]), mask=Tensor([1, 0]).bool())
+    assert batch.y[0] != start.y[0]
+    assert batch.y[1] == start.y[1]
+    assert batch.y[0] != start.y[0]
+    assert batch.y[1] == start.y[1]
+
+    assert (batch.theta == start.theta).all()
+    assert (batch.phi == start.phi).all()
