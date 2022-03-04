@@ -31,7 +31,7 @@ class Layer(nn.Module):
 
         theta0 = (SCATTER_COEF_A / mom) * torch.sqrt(n_x0) * (1 + (SCATTER_COEF_B * torch.log(n_x0)))
         dtheta = math.sqrt(2) * z2 * theta0
-        dphi = torch.rand(n, device=self.device) * 2 * math.pi
+        dphi = (torch.rand(n, device=self.device) - 0.5) * 2 * math.pi
         dh = math.sqrt(2) * deltaz * torch.sin(theta0) * ((z1 / math.sqrt(12)) + (z2 / 2))
 
         # Note that if a track incides on a layer
