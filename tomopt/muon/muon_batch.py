@@ -278,7 +278,13 @@ class MuonBatch:
 
     @staticmethod
     def theta_from_theta_xy(theta_x: Tensor, theta_y: Tensor) -> Tensor:
-        return (theta_x.sin().square() + theta_y.sin().square()).sqrt().arcsin()
+        stheta = (theta_x.sin().square() + theta_y.sin().square()).sqrt()
+        theta = stheta.arcsin()
+        m = stheta > 1
+        theta[m] = (stheta[m] - 1).arcsin() + (torch.pi / 2)
+        m = (((theta_x.abs() > torch.pi / 2) + (theta_y.abs() > torch.pi / 2)) * (stheta < 1)).bool()
+        theta[m] = theta[m] + (torch.pi / 2)
+        return theta
 
     def propagate(self, dz: Union[Tensor, float]) -> None:
         r = dz / self._theta.cos()
