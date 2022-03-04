@@ -252,7 +252,7 @@ class MuonBatch:
         Should be run after any changes to theta, but make sure that references (e.g. masks) to the complete set of muons are no longer required
         """
 
-        mask = self._theta < torch.pi
+        mask = self._theta < torch.pi / 2
         if mask.sum() < len(self):
             # Save muons, just in case they're useful for diagnostics
             if self._upwards_muons is None:
@@ -262,7 +262,6 @@ class MuonBatch:
 
             # Remove muons and hits
             self._muons = self._muons[mask]
-            print(mask.sum())
             for pos in self._hits:  # TODO: Make a HitBatch class to make this easier?
                 for var in self._hits[pos]:
                     for det, xy_pos in enumerate(self._hits[pos][var]):

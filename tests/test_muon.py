@@ -152,7 +152,7 @@ def test_muon_batch_properties():
 
 
 def test_muon_batch_methods():
-    batch = MuonBatch(Tensor([[1, 0, 0, 1, 6]]), init_z=1)
+    batch = MuonBatch(Tensor([[1, 0, 0, 1, 6], [1, 0, 0, 1, 6], [1, 0, 0, 1, 6]]), init_z=1)
     # copy & propagate
     start = batch.copy()
     batch.propagate(0.1)
@@ -172,7 +172,7 @@ def test_muon_batch_methods():
     assert batch.get_xy_mask((0, 0), lw).sum() == 0
     batch._x = torch.zeros(1) + 0.5
     batch._y = torch.zeros(1) + 0.5
-    assert batch.get_xy_mask((0, 0), lw).sum() == 1
+    assert batch.get_xy_mask((0, 0), lw).sum() == 3
 
     # hits
     above_hits = {"xy": Tensor([[0, 0], [0, 0], [0, 0]]), "z": Tensor([[1], [1], [1]])}
@@ -183,6 +183,7 @@ def test_muon_batch_methods():
     batch.append_hits(below_hits, "below")
     hits = batch.get_hits()
     assert len(hits) == 2
+    assert len(hits["above"]["xy"]) == 3
     assert torch.all(hits["above"]["xy"][:, 0] == above_hits["xy"])
 
     # deltas
@@ -197,6 +198,14 @@ def test_muon_batch_methods():
     theta = MuonBatch.theta_from_theta_xy(tx, ty)
     theta = theta[~theta.isnan()]
     assert (theta < torch.pi).all() and (theta > 0).all()
+
+    # Remove upward muons
+    batch._theta = Tensor([2, 1, 1])
+    batch.remove_upwards_muons()
+    assert len(batch) == 2
+    assert (batch.theta < torch.pi / 2).all()
+    hits = batch.get_hits()
+    assert len(hits["above"]["xy"]) == 2
 
 
 def test_muon_batch_scatter_dxy():
@@ -222,10 +231,49 @@ def test_muon_batch_scatter_dxy():
 
     batch = start.copy()
     batch.scatter_dxy(dx=Tensor([1]), dy=Tensor([1]), mask=Tensor([1, 0]).bool())
-    assert batch.y[0] != start.y[0]
-    assert batch.y[1] == start.y[1]
+    assert batch.x[0] != start.x[0]
+    assert batch.x[1] == start.x[1]
     assert batch.y[0] != start.y[0]
     assert batch.y[1] == start.y[1]
 
     assert (batch.theta == start.theta).all()
     assert (batch.phi == start.phi).all()
+    assert len(batch) == len(start)
+
+
+def test_muon_batch_scatter_dtheta_dphi():
+    batch = MuonBatch(Tensor([[1, 0, 0, 1, 6], [1, 0, 0, 1, 6], [1, 0, 0, 1, 6]]), init_z=1)
+    # copy & propagate
+    start = batch.copy()
+
+    batch.scatter_dtheta_dphi()
+    assert (batch.theta == start.theta).all()
+    assert (batch.phi == start.phi).all()
+
+    batch.scatter_dtheta_dphi(dtheta=Tensor([1, -0.9, -2]))
+    print(batch.theta)
+    assert len(batch) == len(start) - 1  # upwards muon removed
+    assert (batch.theta >= 0).all() and (batch.theta < torch.pi / 2).all()
+    assert batch.theta[0] != start.theta[1]
+    assert batch.theta[1] == start.theta[2]
+    assert batch.phi[0] == start.phi[1]
+    assert batch.phi[1] == (start.phi[2] + torch.pi) % (2 * torch.pi)
+
+    batch = start.copy()
+    batch.scatter_dtheta_dphi(dphi=Tensor([1, -1, 3]))
+    assert (batch.phi != start.phi).all()
+    assert (batch.theta == start.theta).all()
+
+    batch = start.copy()
+    batch.scatter_dtheta_dphi(dtheta=Tensor([0.1, -0.9, -0.2]), dphi=Tensor([1, -1, 3]))
+    assert (batch.theta != start.theta).all()
+    assert (batch.phi != start.phi).all()
+
+    batch = start.copy()
+    batch.scatter_dtheta_dphi(dtheta=Tensor([-0.5]), dphi=Tensor([1]), mask=Tensor([1, 0, 0]).bool())
+    assert batch.theta[0] != start.theta[0]
+    assert batch.theta[1] == start.theta[1]
+    assert batch.phi[0] != start.phi[0]
+    assert batch.phi[1] == start.phi[1]
+
+    assert (batch.xy == start.xy).all()
