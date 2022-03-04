@@ -267,12 +267,10 @@ class AbsScatterBatch(metaclass=ABCMeta):
 
         # xy impact-exit points of volume
         dz_in = self.volume.get_passive_z_range()[1] - self._track_start_in[:, 2:3]  # last panel to volume start
-        # self._xyz_in = self._track_start_in[:,:2] + (dz_in*torch.tan(self._theta_in)*torch.cat((torch.cos(self._phi_in), torch.sin(self._phi_in)), dim=-1))
         self._xyz_in = self._track_start_in + ((dz_in / self._track_in[:, 2:3]) * self._track_in)
         self._xyz_in_unc = None
 
         dz_out = self._track_start_out[:, 2:3] - self.volume.get_passive_z_range()[0]  # volume end to first panel
-        # self._xyz_out = self._track_start_out[:,:2] - (dz_out*torch.tan(self._theta_out)*torch.cat((torch.cos(self._phi_out), torch.sin(self._phi_out)), dim=-1))
         self._xyz_out = self._track_start_out - ((dz_out / self._track_out[:, 2:3]) * self._track_out)
         self._xyz_out_unc = None
 

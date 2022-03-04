@@ -311,9 +311,15 @@ def test_scatter_batch_compute(mocker, voxel_scatter_batch):  # noqa F811
     sb = VoxelScatterBatch(mu=mu, volume=volume)
     assert (sb.location - Tensor([[0.5, 0.5, 0.5]])).sum().abs() < 1e-3
     assert (sb.dxy - Tensor([[0.0, 0.0]])).sum().abs() < 1e-3
-    assert (sb.theta_in - Tensor([[-math.pi / 4, -math.pi / 4]])).sum().abs() < 1e-3
-    assert (sb.theta_out - Tensor([[math.pi / 4, math.pi / 4]])).sum().abs() < 1e-3
-    assert (sb.dtheta - Tensor([[math.pi / 2, math.pi / 2]])).sum().abs() < 1e-3
+    print(sb.dphi)
+    assert (sb.phi_in - 0.25 * torch.pi).sum().abs() < 1e-3
+    assert (sb.phi_out - 1.25 * torch.pi).sum().abs() < 1e-3
+    assert (sb.dphi - torch.pi).sum().abs() < 1e-3
+
+    t = Tensor([[1 / math.sqrt(3)]]).arccos()
+    assert (sb.theta_in - t).sum().abs() < 1e-3
+    assert (sb.theta_out - t).sum().abs() < 1e-3
+    assert sb.dtheta.sum().abs() < 1e-3
 
 
 def test_gen_scatter_batch_compute(mocker, voxel_scatter_batch):  # noqa F811
@@ -527,15 +533,16 @@ def test_x0_inferer_scatter_inversion(mocker, voxel_scatter_batch):  # noqa F811
     x0 = X0["lead"]
     n_x0 = layer._compute_n_x0(x0=x0, deltaz=SZ, theta=mu.theta)
     mocker.patch("tomopt.volume.layer.torch.randn", lambda n, device: torch.ones(n, device=device))  # remove randomness
-    dx, dy, dtheta_x, dtheta_y = layer._compute_displacements(n_x0=n_x0, deltaz=SZ, theta_x=mu.theta_x, theta_y=mu.theta_y, mom=mu.mom)
-    dtheta = torch.stack([dtheta_x, dtheta_y], dim=1)
+    dx, dy, dtheta, dphi = layer._compute_displacements(n_x0=n_x0, deltaz=SZ, theta=mu.theta, mom=mu.mom)
 
-    sb._dtheta = dtheta
-    sb._dtheta_unc = torch.ones_like(dtheta)
-    sb._theta_in = mu.theta_xy
-    sb._theta_in_unc = torch.ones_like(dtheta)
-    sb._theta_out = mu.theta_xy + dtheta
-    sb._theta_out_unc = torch.ones_like(dtheta)
+    sb._dtheta = dtheta[:, None]
+    sb._dtheta_unc = torch.ones_like(sb._dtheta)
+    sb._dphi = dphi[:, None]
+    sb._dphi_unc = torch.ones_like(sb._dtheta)
+    sb._theta_in = mu.theta[:, None]
+    sb._theta_in_unc = torch.ones_like(sb._dtheta)
+    sb._theta_out = mu.theta[:, None] + dtheta[:, None]
+    sb._theta_out_unc = torch.ones_like(sb._dtheta)
 
     mask = torch.ones_like(n_x0) > 0
     mocker.patch.object(sb, "get_scatter_mask", lambda: mask)
