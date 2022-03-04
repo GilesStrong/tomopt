@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+from ipaddress import collapse_addresses
 from typing import Optional, List, Tuple, Dict
 import numpy as np
 import matplotlib.pyplot as plt
@@ -393,20 +394,54 @@ class AbsScatterBatch(metaclass=ABCMeta):
         return self._xyz_out_unc
 
     def plot_scatter(self, idx: int) -> None:
-        x = np.hstack([self.hits["above"]["reco_xy"][idx, :, 0].detach().cpu().numpy(), self.hits["below"]["reco_xy"][idx, :, 0].detach().cpu().numpy()])
-        y = np.hstack([self.hits["above"]["reco_xy"][idx, :, 1].detach().cpu().numpy(), self.hits["below"]["reco_xy"][idx, :, 1].detach().cpu().numpy()])
-        z = np.hstack([self.hits["above"]["z"][idx, :, 0].detach().cpu().numpy(), self.hits["below"]["z"][idx, :, 0].detach().cpu().numpy()])
+        xin, xout = self.hits["above"]["reco_xy"][idx, :, 0].detach().cpu().numpy(), self.hits["below"]["reco_xy"][idx, :, 0].detach().cpu().numpy()
+        yin, yout = self.hits["above"]["reco_xy"][idx, :, 1].detach().cpu().numpy(), self.hits["below"]["reco_xy"][idx, :, 1].detach().cpu().numpy()
+        zin, zout = self.hits["above"]["z"][idx, :, 0].detach().cpu().numpy(), self.hits["below"]["z"][idx, :, 0].detach().cpu().numpy()
         scatter = self.location[idx].detach().cpu().numpy()
         fig, axs = plt.subplots(1, 2, figsize=(8, 4))
-        axs[0].scatter(x, z)
-        axs[0].scatter(scatter[0], scatter[2], label=r"$\Delta\theta=" + f"{self.dtheta[idx,0]:.1e}$")
-        axs[0].set_xlim(0, 1)
+        dtheta_x = (self.dtheta[idx, 0].sin() * self.dphi[idx, 0].cos()).arcsin().detach().cpu().numpy()
+        dtheta_y = (self.dtheta[idx, 0].sin() * self.dphi[idx, 0].sin()).arcsin().detach().cpu().numpy()
+
+        track_start_in, track_start_out = self.track_start_in[idx].detach().cpu().numpy(), self.track_start_out[idx].detach().cpu().numpy()
+        track_in, track_out = self.track_in[idx].detach().cpu().numpy(), self.track_out[idx].detach().cpu().numpy()
+
+        axs[0].plot(
+            [
+                track_start_in[0] + ((zin.max() - track_start_in[2]) * track_in[0] / track_in[2]),
+                track_start_in[0] + ((zout.min() - track_start_in[2]) * track_in[0] / track_in[2]),
+            ],
+            [zin.max(), zout.min()],
+        )
+        axs[0].plot(
+            [
+                track_start_out[0] + ((zin.max() - track_start_out[2]) * track_out[0] / track_out[2]),
+                track_start_out[0] + ((zout.min() - track_start_out[2]) * track_out[0] / track_out[2]),
+            ],
+            [zin.max(), zout.min()],
+        )
+        axs[0].scatter(xin, zin)
+        axs[0].scatter(xout, zout)
+        axs[0].scatter(scatter[0], scatter[2], label=r"$\Delta\theta_x=" + f"{dtheta_x:.1e}$")
         axs[0].set_xlabel("x")
         axs[0].set_ylabel("z")
         axs[0].legend()
-        axs[1].scatter(y, z)
-        axs[1].scatter(scatter[1], scatter[2], label=r"$\Delta\theta=" + f"{self.dtheta[idx,1]:.1e}$")
-        axs[1].set_xlim(0, 1)
+        axs[1].plot(
+            [
+                track_start_in[1] + ((zin.max() - track_start_in[2]) * track_in[1] / track_in[2]),
+                track_start_in[1] + ((zout.min() - track_start_in[2]) * track_in[1] / track_in[2]),
+            ],
+            [zin.max(), zout.min()],
+        )
+        axs[1].plot(
+            [
+                track_start_out[1] + ((zin.max() - track_start_out[2]) * track_out[1] / track_out[2]),
+                track_start_out[1] + ((zout.min() - track_start_out[2]) * track_out[1] / track_out[2]),
+            ],
+            [zin.max(), zout.min()],
+        )
+        axs[1].scatter(yin, zin)
+        axs[1].scatter(yout, zout)
+        axs[1].scatter(scatter[1], scatter[2], label=r"$\Delta\theta_y=" + f"{dtheta_y:.1e}$")
         axs[1].set_xlabel("y")
         axs[1].set_ylabel("z")
         axs[1].legend()

@@ -558,7 +558,7 @@ def test_deep_volume_inferer():
     class MockModel(nn.Module):
         def __init__(self) -> None:
             super().__init__()
-            self.layer = nn.Linear(600 * 9, 1)
+            self.layer = nn.Linear(600 * 8, 1)
             self.act = nn.Sigmoid()
 
         def forward(self, x: Tensor) -> Tensor:
@@ -577,12 +577,12 @@ def test_deep_volume_inferer():
     assert len(inferer.in_vars) == 1
     assert len(inferer.in_var_uncs) == 1
     assert len(inferer.efficiencies) == 1
-    assert inferer.in_vars[-1].shape == torch.Size((N, 8))
-    assert inferer.in_var_uncs[-1].shape == torch.Size((N, 8))
+    assert inferer.in_vars[-1].shape == torch.Size((N, 7))
+    assert inferer.in_var_uncs[-1].shape == torch.Size((N, 7))
     assert len(inferer.efficiencies[-1]) == N
 
     inputs = inferer._build_inputs(inferer.in_vars[0])
-    assert inputs.shape == torch.Size((600, N, 9))
+    assert inputs.shape == torch.Size((600, N, 8))
 
     pred, weight = inferer.get_prediction()
     assert pred.shape == torch.Size((1, 1))
