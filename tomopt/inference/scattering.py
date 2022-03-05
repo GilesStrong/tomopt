@@ -343,7 +343,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
     @property
     def theta_xy_in(self) -> Tensor:
         if self._theta_xy_in is None:
-            self._theta_xy_in = torch.stack([(self.theta_in.sin() * self.phi_in.cos()).arcsin(), (self.theta_in.sin() * self.phi_in.sin()).arcsin()], dim=-1)
+            self._theta_xy_in = torch.cat([(self.theta_in.sin() * self.phi_in.cos()).arcsin(), (self.theta_in.sin() * self.phi_in.sin()).arcsin()], dim=-1)
             self._theta_xy_in_unc = None
         return self._theta_xy_in
 
@@ -356,9 +356,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
     @property
     def theta_xy_out(self) -> Tensor:
         if self._theta_xy_out is None:
-            self._theta_xy_out = torch.stack(
-                [(self.theta_out.sin() * self.phi_out.cos()).arcsin(), (self.theta_out.sin() * self.phi_out.sin()).arcsin()], dim=-1
-            )
+            self._theta_xy_out = torch.cat([(self.theta_out.sin() * self.phi_out.cos()).arcsin(), (self.theta_out.sin() * self.phi_out.sin()).arcsin()], dim=-1)
             self._theta_xy_out_unc = None
         return self._theta_xy_out
 
@@ -378,7 +376,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
     @property
     def dtheta_xy_unc(self) -> Tensor:
         if self._dtheta_xy_unc is None:
-            self._dtheta_xy_unc = self._compute_out_var_unc(self.dtheta_xy_unc)
+            self._dtheta_xy_unc = self._compute_out_var_unc(self.dtheta_xy)
         return self._dtheta_xy_unc
 
     @property

@@ -75,10 +75,6 @@ def test_passive_layer_forwards(batch):
 def test_passive_layer_scattering(mocker, batch, n):  # noqa: F811
     for m in ["propagate", "get_xy_mask", "scatter_dxy", "scatter_dtheta_dphi", "scatter_dtheta_xy"]:
         mocker.patch.object(MuonBatch, m)
-    mock_getters = {}
-    for m in ["theta", "phi", "x", "y", "mom"]:
-        mock_getters[m] = mocker.PropertyMock(return_value=getattr(batch, m))
-        mocker.patch.object(MuonBatch, m, mock_getters[m])
 
     pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, size=SZ, z=Z)
     pl(batch, n)
@@ -87,10 +83,6 @@ def test_passive_layer_scattering(mocker, batch, n):  # noqa: F811
     assert batch.scatter_dtheta_dphi.call_count + batch.scatter_dtheta_xy.call_count == n
     assert batch.propagate.called_with(SZ / n)
     assert batch.get_xy_mask.call_count == n
-    assert mock_getters["mom"].call_count == n
-    for m in ["x", "y", "phi"]:
-        assert mock_getters[m].call_count == 0
-    assert mock_getters["theta"].call_count == 2 * n
 
 
 def eff_cost(x: Tensor) -> Tensor:
