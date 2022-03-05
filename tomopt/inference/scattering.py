@@ -396,7 +396,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
     @property
     def xyz_out(self) -> Tensor:
         if self._xyz_out is None:
-            dz = self._track_start_out[:, 2:3] - self.volume.get_passive_z_range()[0]  # volume end to first panel
+            dz = self._track_start_out[:, 2:3] - (self.volume.get_passive_z_range()[0])  # volume end to first panel
             self._xyz_out = self._track_start_out - ((dz / self._track_out[:, 2:3]) * self._track_out)
             self._xyz_out_unc = None
         return self._xyz_out

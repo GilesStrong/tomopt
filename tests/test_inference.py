@@ -136,6 +136,15 @@ def test_voxel_scatter_batch(mock_show, voxel_scatter_batch):
     assert (theta_out_unc := sb.theta_out_unc.mean() / sb.theta_out.abs().mean()) < 10
     assert (theta_in_unc := sb.theta_in_unc.mean() / sb.theta_in.abs().mean()) < 10
 
+    # range check
+    assert (sb.theta_in >= 0).all() and (sb.theta_in < torch.pi / 2).all()
+    assert (sb.theta_out >= 0).all() and (sb.theta_out < torch.pi / 2).all()
+    assert (sb.phi_in >= 0).all() and (sb.phi_in < 2 * torch.pi).all() and (sb.phi_in.min() < torch.pi) and (sb.phi_in.max() > torch.pi)
+    assert (sb.phi_out >= 0).all() and (sb.phi_out < 2 * torch.pi).all() and (sb.phi_out.min() < torch.pi) and (sb.phi_out.max() > torch.pi)
+    assert (sb.theta_xy_in > -torch.pi / 2).all() and (sb.theta_xy_in < torch.pi / 2).all() and (sb.theta_xy_in.min() < 0) and (sb.theta_xy_in.max() > 0)
+    assert (sb.theta_xy_out > -torch.pi / 2).all() and (sb.theta_xy_out < torch.pi / 2).all() and (sb.theta_xy_out.min() < 0) and (sb.theta_xy_out.max() > 0)
+    assert (sb.dtheta_xy >= 0).all() and (sb.dtheta_xy < torch.pi).all()
+
     # uncertainties
     uncs = sb._get_hit_uncs(volume.get_detectors(), sb.reco_hits)
     assert (uncs[:, 0].mean(0) - Tensor([1e-4, 1e-4, 0])).abs().sum() < 1e-5
@@ -187,6 +196,15 @@ def test_panel_scatter_batch(mock_show, panel_scatter_batch):
     assert (dtheta_xy_unc := (sb.dtheta_xy_unc / sb.dtheta_xy).nanmedian()) < 10
     assert (theta_out_unc := sb.theta_out_unc.nanmedian() / sb.theta_out.abs().nanmedian()) < 10
     assert (theta_in_unc := sb.theta_in_unc.nanmedian() / sb.theta_in.abs().nanmedian()) < 10
+
+    # range check
+    assert (sb.theta_in >= 0).all() and (sb.theta_in < torch.pi / 2).all()
+    assert (sb.theta_out >= 0).all() and (sb.theta_out < torch.pi / 2).all()
+    assert (sb.phi_in >= 0).all() and (sb.phi_in < 2 * torch.pi).all() and (sb.phi_in.min() < torch.pi) and (sb.phi_in.max() > torch.pi)
+    assert (sb.phi_out >= 0).all() and (sb.phi_out < 2 * torch.pi).all() and (sb.phi_out.min() < torch.pi) and (sb.phi_out.max() > torch.pi)
+    assert (sb.theta_xy_in > -torch.pi / 2).all() and (sb.theta_xy_in < torch.pi / 2).all() and (sb.theta_xy_in.min() < 0) and (sb.theta_xy_in.max() > 0)
+    assert (sb.theta_xy_out > -torch.pi / 2).all() and (sb.theta_xy_out < torch.pi / 2).all() and (sb.theta_xy_out.min() < 0) and (sb.theta_xy_out.max() > 0)
+    assert (sb.dtheta_xy >= 0).all() and (sb.dtheta_xy < torch.pi).all()
 
     # uncertainties
     panel = next(volume.get_detectors()[0].yield_zordered_panels())
@@ -360,6 +378,14 @@ def test_gen_scatter_batch_compute(mocker, voxel_scatter_batch):  # noqa F811
     assert (sb.phi_in).sum().abs() < 1e-3
     assert (sb.phi_out - torch.pi).sum().abs() < 1e-3
     assert (sb.dtheta_xy - Tensor([[0, torch.pi / 2]])).sum().abs() < 1e-3
+
+    # Entry exit points
+    assert sb.xyz_in[:, 0].sum().abs() < 1e-3
+    assert sb.xyz_out[:, 0].sum().abs() < 1e-3
+    assert (sb.xyz_in[:, 1] - Tensor([0.2])).sum().abs() < 1e-3
+    assert (sb.xyz_out[:, 1] - Tensor([0.2])).sum().abs() < 1e-3
+    assert (sb.xyz_in[:, 2] - Tensor([0.8])).sum().abs() < 1e-3
+    assert (sb.xyz_out[:, 2] - Tensor([0.2])).sum().abs() < 1e-3
 
 
 def test_abs_volume_inferer_properties(voxel_scatter_batch):
