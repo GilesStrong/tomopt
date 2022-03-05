@@ -70,9 +70,9 @@ class AbsX0Inferer(AbsVolumeInferer):
         self.weights.append(w)
 
     @staticmethod
-    def _x0_from_dtheta(delta_z: float, mom: Tensor, dtheta: Tensor, theta_in: Tensor, theta_out: Tensor) -> Tensor:
+    def _x0_from_dtheta(delta_z: float, mom: Tensor, dtheta_xy: Tensor, theta_in: Tensor, theta_out: Tensor) -> Tensor:
         cos_theta = (theta_in.cos() + theta_out.cos()) / 2
-        return 2 * ((SCATTER_COEF_A / mom) ** 2) * delta_z / (dtheta.pow(2) * cos_theta)
+        return 2 * ((SCATTER_COEF_A / mom) ** 2) * delta_z / (dtheta_xy.pow(2).sum(1) * cos_theta)
 
     @staticmethod
     def _x0_from_dtheta_unc(pred: Tensor, in_vars: Tensor, uncs: Tensor) -> Tensor:
@@ -106,23 +106,23 @@ class AbsX0Inferer(AbsVolumeInferer):
         in_vars = torch.cat(
             [
                 (mu.reco_mom if self.mask_muons is False else mu.reco_mom[muon_mask])[:, None],  # 0
-                scatters.dtheta,  # 1
-                scatters.theta_in,  # 2
-                scatters.theta_out,  # 3
+                scatters.dtheta_xy,  # 1,2
+                scatters.theta_in,  # 3
+                scatters.theta_out,  # 4
             ],
             dim=-1,
         )
         mom = in_vars[:, 0]
-        dtheta = in_vars[:, 1]
-        theta_in = in_vars[:, 2]
-        theta_out = in_vars[:, 3]
+        dtheta_xy = in_vars[:, 1:3]
+        theta_in = in_vars[:, 3]
+        theta_out = in_vars[:, 4]
 
         uncs = torch.cat(
-            [torch.zeros_like(mom)[:, None], scatters.dtheta_unc, scatters.theta_in_unc, scatters.theta_out_unc],
+            [torch.zeros_like(mom)[:, None], scatters.dtheta_xy_unc, scatters.theta_in_unc, scatters.theta_out_unc],
             dim=-1,
         )
 
-        pred = self._x0_from_dtheta(delta_z=self.size, mom=mom, dtheta=dtheta, theta_in=theta_in, theta_out=theta_out)
+        pred = self._x0_from_dtheta(delta_z=self.size, mom=mom, dtheta_xy=dtheta_xy, theta_in=theta_in, theta_out=theta_out)
         pred_unc = self._x0_from_dtheta_unc(pred=pred, in_vars=in_vars, uncs=uncs)
 
         return pred, pred_unc
@@ -306,8 +306,8 @@ class DeepVolumeInferer(AbsVolumeInferer):
     def add_scatters(self, scatters: AbsScatterBatch) -> None:
         self.scatter_batches.append(scatters)
         x0, x0_unc = self.get_base_predictions(scatters)
-        self.in_vars.append(torch.cat((scatters.dtheta, scatters.dxy, x0, scatters.location), dim=-1))
-        self.in_var_uncs.append(torch.cat((scatters.dtheta_unc, scatters.dxy_unc, x0_unc, scatters.location_unc), dim=-1))
+        self.in_vars.append(torch.cat((scatters.dtheta_xy, scatters.dxy, x0, scatters.location), dim=-1))
+        self.in_var_uncs.append(torch.cat((scatters.dtheta_xy_unc, scatters.dxy_unc, x0_unc, scatters.location_unc), dim=-1))
         self.efficiencies.append(self.compute_efficiency(scatters=scatters))
 
     def _build_inputs(self, in_var: Tensor) -> Tensor:

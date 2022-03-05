@@ -22,6 +22,7 @@ class MuonBatch:
     def __init__(self, xy_p_theta_phi: Tensor, init_z: Union[Tensor, float], device: torch.device = DEVICE):
         r"""
         N.B. xy [m], p [GeV], theta [r] (0, pi/2) defined w.r.t z axis, phi [r] (0, 2pi) defined anticlockwise from x axis
+        Muon trajectories (theta & phi) and positions (x,y,z) are in the reference frame of the volume.
         """
 
         self.device = device
@@ -198,6 +199,10 @@ class MuonBatch:
         )
 
     def scatter_dxy(self, dx: Optional[Tensor] = None, dy: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
+        r"""
+        dx & dy are expected to be the volume reference fram, not the muons'
+        """
+
         if mask is None:
             mask = torch.ones(len(self._muons), device=self.device).bool()
         if dx is not None:
@@ -206,6 +211,10 @@ class MuonBatch:
             self._y[mask] = self._y[mask] + dy
 
     def scatter_dtheta_dphi(self, dtheta: Optional[Tensor] = None, dphi: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
+        r"""
+        dtheta & dphi are expected to be the volume reference fram, not the muons'
+        """
+
         if mask is None:
             mask = torch.ones(len(self._muons), device=self.device).bool()
         if dphi is not None:
@@ -223,6 +232,10 @@ class MuonBatch:
         self.remove_upwards_muons()
 
     def scatter_dtheta_xy(self, dtheta_x: Optional[Tensor] = None, dtheta_y: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
+        r"""
+        dtheta_x & dtheta_y are expected to be the volume reference fram, not the muons'
+        """
+
         if mask is None:
             mask = torch.ones(len(self._muons), device=self.device).bool()
 

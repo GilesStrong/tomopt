@@ -24,23 +24,29 @@ class Layer(nn.Module):
     def _compute_n_x0(*, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor) -> Tensor:
         return deltaz / (x0 * torch.cos(theta))
 
-    def _compute_displacements(self, *, n_x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor, mom: Tensor) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+    def _compute_displacements(
+        self, *, n_x0: Tensor, deltaz: Union[Tensor, float], theta_x: Tensor, theta_y: Tensor, mom: Tensor
+    ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
         n = len(n_x0)
         z1 = torch.randn(n, device=self.device)
         z2 = torch.randn(n, device=self.device)
 
         theta0 = (SCATTER_COEF_A / mom) * torch.sqrt(n_x0) * (1 + (SCATTER_COEF_B * torch.log(n_x0)))
-        dtheta = math.sqrt(2) * z2 * theta0
-        dphi = (torch.rand(n, device=self.device) - 0.5) * 2 * math.pi
-        dh = math.sqrt(2) * deltaz * torch.sin(theta0) * ((z1 / math.sqrt(12)) + (z2 / 2))
+        # These are in the muons' reference frames NOT the volume's!!!
+        theta_msc = math.sqrt(2) * z2 * theta0
+        phi_msc = (torch.rand(n, device=self.device) - 0.5) * 2 * math.pi
+        dh_msc = math.sqrt(2) * deltaz * torch.sin(theta0) * ((z1 / math.sqrt(12)) + (z2 / 2))
 
         # Note that if a track incides on a layer
         # with angle theta_mu, the dx and dy displacements are relative to zero angle
         # (generation of MSC formulas are oblivious of angle of incidence) so we need
         # to rescale them by cos of thetax and thetay.
-        dx = dh * torch.cos(dphi) * torch.sin(theta)  # we need to account for direction of incident particle!
-        dy = dh * torch.sin(dphi) * torch.sin(theta)  # ... so we project onto the surface of the layer
-        return dx, dy, dtheta, dphi
+        dtheta_x = theta_msc * torch.cos(phi_msc)
+        dtheta_y = theta_msc * torch.sin(phi_msc)
+
+        dx = dh_msc * torch.cos(phi_msc) * torch.cos(theta_x)
+        dy = dh_msc * torch.sin(phi_msc) * torch.cos(theta_y)
+        return dx, dy, dtheta_x, dtheta_y
 
     def scatter_and_propagate(self, mu: MuonBatch, deltaz: Union[Tensor, float]) -> None:
         """
@@ -56,12 +62,14 @@ class Layer(nn.Module):
 
             x0 = self.rad_length[xy_idx[:, 0], xy_idx[:, 1]]
             n_x0 = self._compute_n_x0(x0=x0, deltaz=deltaz, theta=mu.theta[mask])
-            dx, dy, dtheta, dphi = self._compute_displacements(n_x0=n_x0, deltaz=deltaz, theta=mu.theta[mask], mom=mu.mom[mask])
+            dx, dy, dtheta_x, dtheta_y = self._compute_displacements(
+                n_x0=n_x0, deltaz=deltaz, theta_x=mu.theta_x[mask], theta_y=mu.theta_y[mask], mom=mu.mom[mask]
+            )
 
             # Update to position at scattering.
             mu.scatter_dxy(dx=dx, dy=dy, mask=mask)
             mu.propagate(deltaz)
-            mu.scatter_dtheta_dphi(dtheta=dtheta, dphi=dphi, mask=mask)
+            mu.scatter_dtheta_xy(dtheta_x=dtheta_x, dtheta_y=dtheta_y, mask=mask)
         else:
             mu.propagate(deltaz)
 

@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from ipaddress import collapse_addresses
+from re import T
 from typing import Optional, List, Tuple, Dict
 import numpy as np
 import matplotlib.pyplot as plt
@@ -25,26 +26,30 @@ class AbsScatterBatch(metaclass=ABCMeta):
     _track_out: Optional[Tensor] = None
     _track_start_in: Optional[Tensor] = None
     _track_start_out: Optional[Tensor] = None
+    _cross_track: Optional[Tensor] = None
+    _track_coefs: Optional[Tensor] = None
     # Inferred variables
-    _loc: Tensor
+    _loc: Optional[Tensor] = None
     _loc_unc: Optional[Tensor] = None
-    _theta_in: Tensor
+    _theta_in: Optional[Tensor] = None
     _theta_in_unc: Optional[Tensor] = None
-    _theta_out: Tensor
+    _theta_out: Optional[Tensor] = None
     _theta_out_unc: Optional[Tensor] = None
-    _dtheta: Tensor
-    _dtheta_unc: Optional[Tensor] = None
-    _phi_in: Tensor
+    _theta_xy_in: Optional[Tensor] = None
+    _theta_xy_in_unc: Optional[Tensor] = None
+    _theta_xy_out: Optional[Tensor] = None
+    _theta_xy_out_unc: Optional[Tensor] = None
+    _dtheta_xy: Optional[Tensor] = None
+    _dtheta_xy_unc: Optional[Tensor] = None
+    _phi_in: Optional[Tensor] = None
     _phi_in_unc: Optional[Tensor] = None
-    _phi_out: Tensor
+    _phi_out: Optional[Tensor] = None
     _phi_out_unc: Optional[Tensor] = None
-    _dphi: Tensor
-    _dphi_unc: Optional[Tensor] = None
-    _xyz_in: Tensor
+    _xyz_in: Optional[Tensor] = None
     _xyz_in_unc: Optional[Tensor] = None
-    _xyz_out: Tensor
+    _xyz_out: Optional[Tensor] = None
     _xyz_out_unc: Optional[Tensor] = None
-    _dxy: Tensor
+    _dxy: Optional[Tensor] = None
     _dxy_unc: Optional[Tensor] = None
 
     def __init__(self, mu: MuonBatch, volume: Volume):
@@ -224,55 +229,22 @@ class AbsScatterBatch(metaclass=ABCMeta):
         self.extract_hits()
         self.compute_tracks()
 
-        # scatter locations
-        cross = torch.cross(self.track_in, self.track_out, dim=1)  # connecting vector perpendicular to both lines
+        # Track computations
+        self._cross_track = torch.cross(self.track_in, self.track_out, dim=1)  # connecting vector perpendicular to both lines
 
         rhs = self.track_start_out - self.track_start_in
-        lhs = torch.stack([self.track_in, -self.track_out, cross], dim=1).transpose(2, 1)
+        lhs = torch.stack([self.track_in, -self.track_out, self._cross_track], dim=1).transpose(2, 1)
         # coefs = torch.linalg.solve(lhs, rhs)  # solve p1+t1*v1 + t3*v3 = p2+t2*v2 => p2-p1 = t1*v1 - t2*v2 + t3*v3
-        coefs = (lhs.inverse() @ rhs[:, :, None]).squeeze(-1)
-        q1 = self.track_start_in + (coefs[:, 0:1] * self.track_in)  # closest point on v1
-        self._loc = q1 + (coefs[:, 2:3] * cross / 2)  # Move halfway along v3 from q1
-        self._loc_unc = None
+        self._track_coefs = (lhs.inverse() @ rhs[:, :, None]).squeeze(-1)
 
-        # Theta deviations
-        r_in, r_out = self.track_in.norm(dim=-1, keepdim=True), self.track_out.norm(dim=-1, keepdim=True)
-
-        self._theta_in = torch.arccos(-self.track_in[:, 2:3] / r_in)
-        self._theta_out = torch.arccos(-self.track_out[:, 2:3] / r_out)
-        self._dtheta = torch.abs(self._theta_out - self._theta_in)  # Only care about magnitude not direction
-        self._theta_in_unc = None
-        self._theta_out_unc = None
-        self._dtheta_unc = None
-
-        # Phi deviations
-        def compute_phi(x: Tensor, y: Tensor) -> Tensor:
-            phi = torch.arctan(y / x)  # (-pi/2, pi/2)
-            m = x < 0
-            phi[m] = phi[m] + torch.pi
-            m = ((x > 0) * (y < 0)).bool()
-            phi[m] = phi[m] + (2 * torch.pi)  # (0, 2pi)
-            return phi
-
-        self._phi_in = compute_phi(self.track_in[:, 1:2], self.track_in[:, 0:1])
-        self._phi_out = compute_phi(self.track_out[:, 1:2], self.track_out[:, 0:1])
-        self._dphi = torch.abs(self._phi_out - self._phi_in) % torch.pi  # Only care about magnitude not direction
-        self._phi_in_unc = None
-        self._phi_out_unc = None
-        self._dphi_unc = None
-
-        # xy deviations
-        self._dxy = coefs[:, 2:3] * cross[:, :2]
-        self._dxy_unc = None
-
-        # xy impact-exit points of volume
-        dz_in = self.volume.get_passive_z_range()[1] - self._track_start_in[:, 2:3]  # last panel to volume start
-        self._xyz_in = self._track_start_in + ((dz_in / self._track_in[:, 2:3]) * self._track_in)
-        self._xyz_in_unc = None
-
-        dz_out = self._track_start_out[:, 2:3] - self.volume.get_passive_z_range()[0]  # volume end to first panel
-        self._xyz_out = self._track_start_out - ((dz_out / self._track_out[:, 2:3]) * self._track_out)
-        self._xyz_out_unc = None
+    @staticmethod
+    def _compute_phi(x: Tensor, y: Tensor) -> Tensor:
+        phi = torch.arctan(y / x)  # (-pi/2, pi/2)
+        m = x < 0
+        phi[m] = phi[m] + torch.pi
+        m = ((x > 0) * (y < 0)).bool()
+        phi[m] = phi[m] + (2 * torch.pi)  # (0, 2pi)
+        return phi
 
     def _compute_out_var_unc(self, var: Tensor) -> Tensor:
         r"""
@@ -291,104 +263,150 @@ class AbsScatterBatch(metaclass=ABCMeta):
 
     @property
     def location(self) -> Tensor:
+        if self._loc is None:
+            q1 = self.track_start_in + (self._track_coefs[:, 0:1] * self.track_in)  # closest point on v1
+            self._loc = q1 + (self._track_coefs[:, 2:3] * self._cross_track / 2)  # Move halfway along v3 from q1
+            self._loc_unc = None
         return self._loc
 
     @property
     def location_unc(self) -> Tensor:
         if self._loc_unc is None:
-            self._loc_unc = self._compute_out_var_unc(self._loc)
+            self._loc_unc = self._compute_out_var_unc(self.location)
         return self._loc_unc
 
     @property
-    def dtheta(self) -> Tensor:
-        return self._dtheta
-
-    @property
-    def dtheta_unc(self) -> Tensor:
-        if self._dtheta_unc is None:
-            self._dtheta_unc = self._compute_out_var_unc(self._dtheta)
-        return self._dtheta_unc
-
-    @property
     def dxy(self) -> Tensor:
+        if self._dxy is None:
+            self._dxy = self._track_coefs[:, 2:3] * self._cross_track[:, :2]
+            self._dxy_unc = None
         return self._dxy
 
     @property
     def dxy_unc(self) -> Tensor:
         if self._dxy_unc is None:
-            self._dxy_unc = self._compute_out_var_unc(
-                self._dxy,
-            )
+            self._dxy_unc = self._compute_out_var_unc(self.dxy)
         return self._dxy_unc
 
     @property
-    def dphi(self) -> Tensor:
-        return self._dphi
-
-    @property
-    def dphi_unc(self) -> Tensor:
-        if self._dphi_unc is None:
-            self._dphi_unc = self._compute_out_var_unc(self._dphi)
-        return self._dphi_unc
-
-    @property
     def theta_in(self) -> Tensor:
+        if self._theta_in is None:
+            self._theta_in = torch.arccos(-self.track_in[:, 2:3] / self.track_in.norm(dim=-1, keepdim=True))
+            self._theta_in_unc = None
         return self._theta_in
 
     @property
     def theta_in_unc(self) -> Tensor:
         if self._theta_in_unc is None:
-            self._theta_in_unc = self._compute_out_var_unc(self._theta_in)
+            self._theta_in_unc = self._compute_out_var_unc(self.theta_in)
         return self._theta_in_unc
 
     @property
     def theta_out(self) -> Tensor:
+        if self._theta_out is None:
+            self._theta_out = torch.arccos(-self.track_out[:, 2:3] / self.track_out.norm(dim=-1, keepdim=True))
+            self._theta_out_unc = None
         return self._theta_out
 
     @property
     def theta_out_unc(self) -> Tensor:
         if self._theta_out_unc is None:
-            self._theta_out_unc = self._compute_out_var_unc(self._theta_out)
+            self._theta_out_unc = self._compute_out_var_unc(self.theta_out)
         return self._theta_out_unc
 
     @property
     def phi_in(self) -> Tensor:
+        if self._phi_in is None:
+            self._phi_in = self._compute_phi(self.track_in[:, 1:2], self.track_in[:, 0:1])
+            self._phi_in_unc = None
         return self._phi_in
 
     @property
     def phi_in_unc(self) -> Tensor:
         if self._phi_in_unc is None:
-            self._phi_in_unc = self._compute_out_var_unc(self._phi_in)
+            self._phi_in_unc = self._compute_out_var_unc(self.phi_in)
         return self._phi_in_unc
 
     @property
     def phi_out(self) -> Tensor:
+        if self._phi_out is None:
+            self._phi_out = self._compute_phi(self.track_out[:, 1:2], self.track_out[:, 0:1])
+            self._phi_out_unc = None
         return self._phi_out
 
     @property
     def phi_out_unc(self) -> Tensor:
         if self._phi_out_unc is None:
-            self._phi_out_unc = self._compute_out_var_unc(self._phi_out)
+            self._phi_out_unc = self._compute_out_var_unc(self.phi_out)
         return self._phi_out_unc
 
     @property
+    def theta_xy_in(self) -> Tensor:
+        if self._theta_xy_in is None:
+            self._theta_xy_in = torch.stack([(self.theta_in.sin() * self.phi_in.cos()).arcsin(), (self.theta_in.sin() * self.phi_in.sin()).arcsin()], dim=-1)
+            self._theta_xy_in_unc = None
+        return self._theta_xy_in
+
+    @property
+    def theta_xy_in_unc(self) -> Tensor:
+        if self._theta_xy_in_unc is None:
+            self._theta_xy_in_unc = self._compute_out_var_unc(self.theta_xy_in)
+        return self._theta_xy_in_unc
+
+    @property
+    def theta_xy_out(self) -> Tensor:
+        if self._theta_xy_out is None:
+            self._theta_xy_out = torch.stack(
+                [(self.theta_out.sin() * self.phi_out.cos()).arcsin(), (self.theta_out.sin() * self.phi_out.sin()).arcsin()], dim=-1
+            )
+            self._theta_xy_out_unc = None
+        return self._theta_xy_out
+
+    @property
+    def theta_xy_out_unc(self) -> Tensor:
+        if self._theta_xy_out_unc is None:
+            self._theta_xy_out_unc = self._compute_out_var_unc(self.theta_xy_out)
+        return self._theta_xy_out_unc
+
+    @property
+    def dtheta_xy(self) -> Tensor:
+        if self._dtheta_xy is None:
+            self._dtheta_xy = torch.abs(self.theta_xy_in - self.theta_xy_out)
+            self._dtheta_xy_unc = None
+        return self._dtheta_xy
+
+    @property
+    def dtheta_xy_unc(self) -> Tensor:
+        if self._dtheta_xy_unc is None:
+            self._dtheta_xy_unc = self._compute_out_var_unc(self.dtheta_xy_unc)
+        return self._dtheta_xy_unc
+
+    @property
     def xyz_in(self) -> Tensor:
+        if self._xyz_in is None:
+            dz = self.volume.get_passive_z_range()[1] - self._track_start_in[:, 2:3]  # last panel to volume start
+            self._xyz_in = self._track_start_in + ((dz / self._track_in[:, 2:3]) * self._track_in)
+            self._xyz_in_unc = None
         return self._xyz_in
 
     @property
     def xyz_in_unc(self) -> Tensor:
         if self._xyz_in_unc is None:
-            self._xyz_in_unc = self._compute_out_var_unc(self._xyz_in)
+            self._xyz_in_unc = self._compute_out_var_unc(self.xyz_in)
         return self._xyz_in_unc
 
     @property
     def xyz_out(self) -> Tensor:
+        if self._xyz_out is None:
+            dz = self._track_start_out[:, 2:3] - self.volume.get_passive_z_range()[0]  # volume end to first panel
+            self._xyz_out = self._track_start_out - ((dz / self._track_out[:, 2:3]) * self._track_out)
+            self._xyz_out_unc = None
         return self._xyz_out
 
     @property
     def xyz_out_unc(self) -> Tensor:
         if self._xyz_out_unc is None:
-            self._xyz_out_unc = self._compute_out_var_unc(self._xyz_out)
+            self._xyz_out_unc = self._compute_out_var_unc(self.xyz_out)
         return self._xyz_out_unc
 
     def plot_scatter(self, idx: int) -> None:
@@ -397,8 +415,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
         zin, zout = self.hits["above"]["z"][idx, :, 0].detach().cpu().numpy(), self.hits["below"]["z"][idx, :, 0].detach().cpu().numpy()
         scatter = self.location[idx].detach().cpu().numpy()
         fig, axs = plt.subplots(1, 2, figsize=(8, 4))
-        dtheta_x = (self.dtheta[idx, 0].sin() * self.dphi[idx, 0].cos()).arcsin().detach().cpu().numpy()
-        dtheta_y = (self.dtheta[idx, 0].sin() * self.dphi[idx, 0].sin()).arcsin().detach().cpu().numpy()
+        dtheta_xy = self.dtheta_xy[idx].detach().cpu().numpy()
 
         track_start_in, track_start_out = self.track_start_in[idx].detach().cpu().numpy(), self.track_start_out[idx].detach().cpu().numpy()
         track_in, track_out = self.track_in[idx].detach().cpu().numpy(), self.track_out[idx].detach().cpu().numpy()
@@ -419,7 +436,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
         )
         axs[0].scatter(xin, zin)
         axs[0].scatter(xout, zout)
-        axs[0].scatter(scatter[0], scatter[2], label=r"$\Delta\theta_x=" + f"{dtheta_x:.1e}$")
+        axs[0].scatter(scatter[0], scatter[2], label=r"$\Delta\theta_x=" + f"{dtheta_xy[0]:.1e}$")
         axs[0].set_xlabel("x")
         axs[0].set_ylabel("z")
         axs[0].legend()
@@ -439,7 +456,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
         )
         axs[1].scatter(yin, zin)
         axs[1].scatter(yout, zout)
-        axs[1].scatter(scatter[1], scatter[2], label=r"$\Delta\theta_y=" + f"{dtheta_y:.1e}$")
+        axs[1].scatter(scatter[1], scatter[2], label=r"$\Delta\theta_y=" + f"{dtheta_xy[1]:.1e}$")
         axs[1].set_xlabel("y")
         axs[1].set_ylabel("z")
         axs[1].legend()
