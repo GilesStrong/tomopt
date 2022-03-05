@@ -445,7 +445,7 @@ def test_data_callback():
     l.z = 0.5
     volume.get_passives = lambda: [l]
     mu = MuonBatch(Tensor([[0.5, 0.5, 5, 0, 0], [-0.4, -0.4, 5, np.pi / 4, np.pi / 4], [-1, 1, 5, 0, 0]]), volume.h)
-    assert (MuonResampler.check_mu_batch(mu, volume) == Tensor([1, 1, 0]).bool()).all()
+    assert (MuonResampler.check_mu_batch(mu, volume) == Tensor([1, 0, 0]).bool()).all()
 
     # Check resampler
     gen = MuonGenerator.from_volume(volume)

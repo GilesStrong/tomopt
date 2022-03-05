@@ -34,8 +34,8 @@ def arb_rad_length(*, z: float, lw: Tensor, size: float) -> float:
 
 def test_layer(batch):
     l = Layer(lw=LW, z=1, size=SZ)
-    batch.x = 0.5
-    batch.y = 0.7
+    batch._x = 0.5
+    batch._y = 0.7
     assert torch.all(l.mu_abs2idx(batch)[0] == Tensor([5, 7]))
 
 
@@ -73,23 +73,16 @@ def test_passive_layer_forwards(batch):
 
 @pytest.mark.parametrize("n", [(1), (2), (5)])
 def test_passive_layer_scattering(mocker, batch, n):  # noqa: F811
-    for m in ["propagate", "get_xy_mask"]:
+    for m in ["propagate", "get_xy_mask", "scatter_dxy", "scatter_dtheta_dphi", "scatter_dtheta_xy"]:
         mocker.patch.object(MuonBatch, m)
-    mock_getters = {}
-    for m in ["theta_x", "theta_y", "x", "y", "mom"]:
-        mock_getters[m] = mocker.PropertyMock(return_value=getattr(batch, m))
-        mocker.patch.object(MuonBatch, m, mock_getters[m])
 
     pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, size=SZ, z=Z)
     pl(batch, n)
     assert batch.propagate.call_count == n
+    assert batch.scatter_dxy.call_count == n
+    assert batch.scatter_dtheta_dphi.call_count + batch.scatter_dtheta_xy.call_count == n
     assert batch.propagate.called_with(SZ / n)
     assert batch.get_xy_mask.call_count == n
-    assert mock_getters["mom"].call_count == n
-    for m in ["x", "y"]:
-        assert mock_getters[m].call_count == 2 * n
-    for m in ["theta_x", "theta_y"]:
-        assert mock_getters[m].call_count == 4 * n
 
 
 def eff_cost(x: Tensor) -> Tensor:
@@ -460,14 +453,14 @@ def test_detector_panel_methods():
     panel = DetectorPanel(res=10, eff=0.5, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[0.5, 0.5], area_cost_func=area_cost)
     mg = MuonGenerator(x_range=(0, LW[0].item()), y_range=(0, LW[1].item()))
     mu = MuonBatch(mg(100), 1)
-    mu.xy = torch.ones_like(mu.xy) / 2
+    mu._xy = torch.ones_like(mu.xy) / 2
     hits = panel.get_hits(mu)
     assert (hits["gen_xy"] == mu.xy).all()
     assert (hits["z"].mean() - 0.9).abs() < 1e-5
     assert (hits["reco_xy"].mean(0) - Tensor([0.5, 0.5]) < 0.25).all()
 
     panel.realistic_validation = True
-    mu.xy = torch.zeros_like(mu.xy)
+    mu._xy = torch.zeros_like(mu.xy)
     hits = panel.get_hits(mu)
     assert hits["reco_xy"].isinf().sum() == 0
 

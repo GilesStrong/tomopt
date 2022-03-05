@@ -8,7 +8,7 @@ import torch
 from torch import nn, Tensor
 import torch.nn.functional as F
 
-from ..core import DEVICE, SCATTER_COEF_A
+from ..core import DEVICE, SCATTER_COEF_A, SCATTER_COEF_B
 from ..muon import MuonBatch
 
 __all__ = ["PassiveLayer", "VoxelDetectorLayer", "PanelDetectorLayer"]
@@ -31,19 +31,21 @@ class Layer(nn.Module):
         z1 = torch.randn(n, device=self.device)
         z2 = torch.randn(n, device=self.device)
 
-        theta0 = (SCATTER_COEF_A / mom) * torch.sqrt(n_x0)  # Ignore due to inversion problems * (1+(SCATTER_COEF_B*torch.log(x0)))
+        theta0 = (SCATTER_COEF_A / mom) * torch.sqrt(n_x0) * (1 + (SCATTER_COEF_B * torch.log(n_x0)))
+        # These are in the muons' reference frames NOT the volume's!!!
         theta_msc = math.sqrt(2) * z2 * theta0
-        phi_msc = torch.rand(n, device=self.device) * 2 * math.pi
-        dh_msc = deltaz * torch.sin(theta0) * ((z1 / math.sqrt(12)) + (z2 / 2))
+        phi_msc = (torch.rand(n, device=self.device) - 0.5) * 2 * math.pi
+        dh_msc = math.sqrt(2) * deltaz * torch.sin(theta0) * ((z1 / math.sqrt(12)) + (z2 / 2))
 
         # Note that if a track incides on a layer
         # with angle theta_mu, the dx and dy displacements are relative to zero angle
         # (generation of MSC formulas are oblivious of angle of incidence) so we need
         # to rescale them by cos of thetax and thetay.
-        dx = math.sqrt(2) * dh_msc * torch.cos(phi_msc) * torch.cos(theta_x)  # we need to account for direction of incident particle!
-        dy = math.sqrt(2) * dh_msc * torch.sin(phi_msc) * torch.cos(theta_y)  # ... so we project onto the surface of the layer
         dtheta_x = theta_msc * torch.cos(phi_msc)
         dtheta_y = theta_msc * torch.sin(phi_msc)
+
+        dx = dh_msc * torch.cos(phi_msc) * torch.cos(theta_x)
+        dy = dh_msc * torch.sin(phi_msc) * torch.cos(theta_y)
         return dx, dy, dtheta_x, dtheta_y
 
     def scatter_and_propagate(self, mu: MuonBatch, deltaz: Union[Tensor, float]) -> None:
@@ -65,11 +67,9 @@ class Layer(nn.Module):
             )
 
             # Update to position at scattering.
-            mu.x[mask] = mu.x[mask] + dx
-            mu.y[mask] = mu.y[mask] + dy
+            mu.scatter_dxy(dx=dx, dy=dy, mask=mask)
             mu.propagate(deltaz)
-            mu.theta_x[mask] = mu.theta_x[mask] + dtheta_x
-            mu.theta_y[mask] = mu.theta_y[mask] + dtheta_y
+            mu.scatter_dtheta_xy(dtheta_x=dtheta_x, dtheta_y=dtheta_y, mask=mask)
         else:
             mu.propagate(deltaz)
 
@@ -218,7 +218,7 @@ class PanelDetectorLayer(AbsDetectorLayer):
 
     def forward(self, mu: MuonBatch) -> None:
         for p in self.yield_zordered_panels():
-            self.scatter_and_propagate(mu, mu.z - p.z)  # Move to panel
+            self.scatter_and_propagate(mu, mu.z - p.z.detach())  # Move to panel
             mu.append_hits(p.get_hits(mu), self.pos)
         self.scatter_and_propagate(mu, mu.z - (self.z - self.size))  # Move to bottom of layer
 
