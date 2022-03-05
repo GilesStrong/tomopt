@@ -170,8 +170,8 @@ def test_muon_batch_methods():
     # mask
     lw = Tensor([1, 1])
     assert batch.get_xy_mask((0, 0), lw).sum() == 0
-    batch._x = torch.zeros(1) + 0.5
-    batch._y = torch.zeros(1) + 0.5
+    batch._x = torch.zeros(3) + 0.5
+    batch._y = torch.zeros(3) + 0.5
     assert batch.get_xy_mask((0, 0), lw).sum() == 3
 
     # hits
