@@ -180,7 +180,7 @@ class MuonBatch:
 
     @property
     def theta_x(self) -> Tensor:
-        return (self.theta.sin() * self.phi.cos()).arcsin()
+        return self.theta_x_from_theta_phi(self.theta, self.phi)
 
     @theta_x.setter
     def theta_x(self, theta_x: Tensor) -> None:
@@ -190,7 +190,7 @@ class MuonBatch:
 
     @property
     def theta_y(self) -> Tensor:
-        return (self.theta.sin() * self.phi.sin()).arcsin()
+        return self.theta_y_from_theta_phi(self.theta, self.phi)
 
     @theta_y.setter
     def theta_y(self, theta_y: Tensor) -> None:
@@ -221,15 +221,15 @@ class MuonBatch:
             self._phi[mask] = (self._phi[mask] + dphi) % (2 * torch.pi)
         if dtheta is not None:
             theta = (self._theta[mask] + dtheta) % (2 * torch.pi)
-            phi = self._phi[mask]
             # Correct theta, must avoid double Bool mask
+            phi = self._phi[mask]
             m = theta > torch.pi
             phi[m] = (phi[m] + torch.pi) % (2 * torch.pi)  # rotate in phi
             theta[m] = (2 * torch.pi) - theta[m]  # theta (0,pi)
             self._phi[mask] = phi
             self._theta[mask] = theta
 
-        self.remove_upwards_muons()
+        # self.remove_upwards_muons()
 
     def scatter_dtheta_xy(self, dtheta_x: Optional[Tensor] = None, dtheta_y: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
         r"""
@@ -254,10 +254,13 @@ class MuonBatch:
         if dtheta_y is not None:
             ty = add_theta(ty, dtheta_y)
 
+        print("tx", tx)
+        print("ty", ty)
+
         self._theta[mask] = self.theta_from_theta_xy(tx, ty)
         self._phi[mask] = self.phi_from_theta_xy(tx, ty)
 
-        self.remove_upwards_muons()
+        # self.remove_upwards_muons()
 
     def remove_upwards_muons(self) -> None:
         r"""
@@ -265,13 +268,13 @@ class MuonBatch:
         Should be run after any changes to theta, but make sure that references (e.g. masks) to the complete set of muons are no longer required
         """
 
-        mask = self._theta < torch.pi / 2
+        mask = self._theta < torch.pi / 2  # To keep
         if mask.sum() < len(self):
             # Save muons, just in case they're useful for diagnostics
             if self._upwards_muons is None:
-                self._upwards_muons = self._muons[mask].detach().cpu().numpy()
+                self._upwards_muons = self._muons[~mask].detach().cpu().numpy()
             else:
-                self._upwards_muons = np.concatenate((self._upwards_muons, self._muons[mask].detach().cpu().numpy()), axis=0)
+                self._upwards_muons = np.concatenate((self._upwards_muons, self._muons[~mask].detach().cpu().numpy()), axis=0)
 
             # Remove muons and hits
             self._muons = self._muons[mask]
@@ -291,13 +294,38 @@ class MuonBatch:
 
     @staticmethod
     def theta_from_theta_xy(theta_x: Tensor, theta_y: Tensor) -> Tensor:
+        r"""
+        This expects that 0<=theta<=pi, i.e. theta_x annd theta_y are never both greater than pi/4
+        """
+
         stheta = (theta_x.sin().square() + theta_y.sin().square()).sqrt()
         theta = stheta.arcsin()
-        m = stheta > 1
-        theta[m] = (stheta[m] - 1).arcsin() + (torch.pi / 2)
-        m = (((theta_x.abs() > torch.pi / 2) + (theta_y.abs() > torch.pi / 2)) * (stheta < 1)).bool()
-        theta[m] = theta[m] + (torch.pi / 2)
+
+        pib2 = torch.pi / 2
+        m = theta_x.abs() > pib2
+        r = theta_x[m].sign() * pib2
+        theta[m] = ((theta_x[m] - r).sin().square() + theta_y[m].sin().square()).sqrt().arcsin() + r
+
+        m = theta_y.abs() > pib2
+        r = theta_y[m].sign() * pib2
+        theta[m] = (theta_x[m].sin().square() + (theta_y[m] - r).sin().square()).sqrt().arcsin() + r
         return theta
+
+    @staticmethod
+    def theta_x_from_theta_phi(theta: Tensor, phi: Tensor) -> Tensor:
+        tx = (theta.sin() * phi.cos()).arcsin()
+        pib2 = torch.pi / 2
+        m = theta.abs() > pib2
+        tx[m] = (torch.sin(theta[m] - pib2) * phi[m].cos()).arcsin() + (phi[m].cos()).arcsin()
+        return tx
+
+    @staticmethod
+    def theta_y_from_theta_phi(theta: Tensor, phi: Tensor) -> Tensor:
+        ty = (theta.sin() * phi.sin()).arcsin()
+        pib2 = torch.pi / 2
+        m = theta.abs() > pib2
+        ty[m] = (torch.sin(theta[m] - pib2) * phi[m].sin()).arcsin() + (phi[m].sin()).arcsin()
+        return ty
 
     def propagate(self, dz: Union[Tensor, float]) -> None:
         r = dz / self._theta.cos()

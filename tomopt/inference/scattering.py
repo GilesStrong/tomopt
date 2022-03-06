@@ -1,6 +1,5 @@
 from abc import ABCMeta, abstractmethod
 from typing import Optional, List, Tuple, Dict
-import numpy as np
 import matplotlib.pyplot as plt
 
 import torch

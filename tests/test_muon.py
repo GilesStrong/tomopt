@@ -87,7 +87,6 @@ def test_muon_generator():
 def test_muon_generator_from_volume():
     volume = Volume(get_panel_layers())
     mg = MuonGenerator.from_volume(volume)
-    print(mg.x_range, mg.y_range)
     assert mg.x_range[0] < LW[0] and mg.x_range[1] > LW[1]
 
     n = 10000
@@ -313,3 +312,59 @@ def test_muon_batch_scatter_dtheta_xy():
     assert batch.phi[1] == start.phi[1]
 
     assert (batch.xy == start.xy).all()
+
+
+def test_muon_batch_angle_consistency():
+    volume = Volume(get_panel_layers())
+    mg = MuonGenerator.from_volume(volume)
+    n = 10000
+    mu_orig = MuonBatch(mg(n), volume.h)
+
+    # mu_orig._theta = torch.pi*torch.rand(n)
+    # mu_orig._phi = 2*torch.pi*torch.rand(n)
+
+    # Angle conversion
+    tx, ty = mu_orig.theta_x, mu_orig.theta_y
+    t, p = mu_orig.theta_from_theta_xy(tx, ty), mu_orig.phi_from_theta_xy(tx, ty)
+    assert (t - mu_orig.theta).sum().abs() < 1e-3
+    assert (p - mu_orig.phi).sum().abs() < 1e-3
+    tx_n, ty_n = mu_orig.theta_x_from_theta_phi(t, p), mu_orig.theta_y_from_theta_phi(t, p)
+    assert (tx - tx_n).sum().abs() < 1e-3
+    assert (ty - ty_n).sum().abs() < 1e-3
+
+    # Scattering dtheta dphi -> dtheta_xy
+    dtheta, dphi = torch.pi * torch.rand(n), 2 * torch.pi * torch.rand(n)
+    dtheta_x, dtheta_y = mu_orig.theta_x_from_theta_phi(dtheta, dphi), mu_orig.theta_y_from_theta_phi(dtheta, dphi)
+    print(dtheta.min(), dtheta.max())
+    print(dphi.min(), dphi.max())
+    print(dtheta_x.min(), dtheta_x.max())
+    print(dtheta_y.min(), dtheta_y.max())
+    assert dtheta_x.mean().abs() < 1e-2
+    assert dtheta_y.mean().abs() < 1e2
+    mu_dtp = mu_orig.copy()
+    mu_dtxy = mu_orig.copy()
+    mu_dtp.scatter_dtheta_dphi(dtheta=dtheta, dphi=dphi)
+    mu_dtxy.scatter_dtheta_xy(dtheta_x=dtheta_x, dtheta_y=dtheta_y)
+    assert len(mu_dtxy) == len(mu_dtp)
+    assert (mu_dtxy.theta - mu_dtp.theta).sum().abs() < 1e-5
+    assert (mu_dtxy.phi - mu_dtp.phi).sum().abs() < 1e-5
+    assert (mu_dtxy.theta_x - mu_dtp.theta_x).sum().abs() < 1e-5
+    assert (mu_dtxy.theta_y - mu_dtp.theta_y).sum().abs() < 1e-5
+
+    # Scattering dtheta_xy -> dtheta dphi
+    dtheta_x, dtheta_y = 2 * torch.pi * (torch.rand(n) - 0.5), 2 * torch.pi * (torch.rand(n) - 0.5)
+    dtheta, dphi = mu_orig.theta_from_theta_xy(dtheta_x, dtheta_y), mu_orig.phi_from_theta_xy(dtheta_x, dtheta_y)
+    print(dtheta.min(), dtheta.max())
+    print(dphi.min(), dphi.max())
+    print(dtheta_x.min(), dtheta_x.max())
+    print(dtheta_y.min(), dtheta_y.max())
+    assert (dphi.mean() - torch.pi).abs() < 1e-2
+    mu_dtp = mu_orig.copy()
+    mu_dtxy = mu_orig.copy()
+    mu_dtp.scatter_dtheta_dphi(dtheta=dtheta, dphi=dphi)
+    mu_dtxy.scatter_dtheta_xy(dtheta_x=dtheta_x, dtheta_y=dtheta_y)
+    assert len(mu_dtxy) == len(mu_dtp)
+    assert (mu_dtxy.theta - mu_dtp.theta).sum().abs() < 1e-5
+    assert (mu_dtxy.phi - mu_dtp.phi).sum().abs() < 1e-5
+    assert (mu_dtxy.theta_x - mu_dtp.theta_x).sum().abs() < 1e-5
+    assert (mu_dtxy.theta_y - mu_dtp.theta_y).sum().abs() < 1e-5
