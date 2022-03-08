@@ -149,7 +149,7 @@ class MuonBatch:
     @theta.setter
     def theta(self, theta: Tensor) -> None:
         raise AttributeError(
-            "Please use the scatter_dtheta_dphi method to modify the direction of muons. Or modify the _muons attribute if you really know what you're doing"
+            "Please use the scatter_dtheta_xy method to modify the direction of muons. Or modify the _muons attribute if you really know what you're doing"
         )
 
     @property
@@ -167,7 +167,7 @@ class MuonBatch:
     @phi.setter
     def phi(self, phi: Tensor) -> None:
         raise AttributeError(
-            "Please use the scatter_dtheta_dphi method to modify the direction of muons. Or modify the _muons attribute if you really know what you're doing"
+            "Please use the scatter_dtheta_xy method to modify the direction of muons. Or modify the _muons attribute if you really know what you're doing"
         )
 
     @property
@@ -210,23 +210,6 @@ class MuonBatch:
         if dy is not None:
             self._y[mask] = self._y[mask] + dy
 
-    def scatter_dtheta_dphi(self, dtheta: Optional[Tensor] = None, dphi: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
-        if mask is None:
-            mask = torch.ones(len(self._muons), device=self.device).bool()
-        if dphi is not None:
-            self._phi[mask] = (self._phi[mask] + dphi) % (2 * torch.pi)
-        if dtheta is not None:
-            theta = (self._theta[mask] + dtheta) % (2 * torch.pi)
-            # Correct theta, must avoid double Bool mask
-            phi = self._phi[mask]
-            m = theta > torch.pi
-            phi[m] = (phi[m] + torch.pi) % (2 * torch.pi)  # rotate in phi
-            theta[m] = (2 * torch.pi) - theta[m]  # theta (0,pi)
-            self._phi[mask] = phi
-            self._theta[mask] = theta
-
-        # self.remove_upwards_muons()
-
     def scatter_dtheta_xy(self, dtheta_x: Optional[Tensor] = None, dtheta_y: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
         if mask is None:
             mask = torch.ones(len(self._muons), device=self.device).bool()
@@ -246,13 +229,10 @@ class MuonBatch:
         if dtheta_y is not None:
             ty = add_theta(ty, dtheta_y)
 
-        print("tx", tx)
-        print("ty", ty)
-
         self._theta[mask] = self.theta_from_theta_xy(tx, ty)
         self._phi[mask] = self.phi_from_theta_xy(tx, ty)
 
-        # self.remove_upwards_muons()
+        self.remove_upwards_muons()
 
     def remove_upwards_muons(self) -> None:
         r"""
