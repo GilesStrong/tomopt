@@ -320,8 +320,8 @@ def test_muon_batch_angle_consistency():
     n = 10000
     mu_orig = MuonBatch(mg(n), volume.h)
 
-    # mu_orig._theta = torch.pi*torch.rand(n)
-    # mu_orig._phi = 2*torch.pi*torch.rand(n)
+    mu_orig._theta = torch.pi * torch.rand(n) / 2
+    mu_orig._phi = 2 * torch.pi * torch.rand(n)
 
     # Angle conversion
     tx, ty = mu_orig.theta_x, mu_orig.theta_y
@@ -333,14 +333,14 @@ def test_muon_batch_angle_consistency():
     assert (ty - ty_n).sum().abs() < 1e-3
 
     # Scattering dtheta dphi -> dtheta_xy
-    dtheta, dphi = torch.pi * torch.rand(n), 2 * torch.pi * torch.rand(n)
+    dtheta, dphi = torch.pi * torch.rand(n) / 2, 2 * torch.pi * torch.rand(n)
     dtheta_x, dtheta_y = mu_orig.theta_x_from_theta_phi(dtheta, dphi), mu_orig.theta_y_from_theta_phi(dtheta, dphi)
     print(dtheta.min(), dtheta.max())
     print(dphi.min(), dphi.max())
     print(dtheta_x.min(), dtheta_x.max())
     print(dtheta_y.min(), dtheta_y.max())
-    assert dtheta_x.mean().abs() < 1e-2
-    assert dtheta_y.mean().abs() < 1e2
+    assert dtheta_x.nanmean().abs() < 1e-2
+    assert dtheta_y.nanmean().abs() < 1e2
     mu_dtp = mu_orig.copy()
     mu_dtxy = mu_orig.copy()
     mu_dtp.scatter_dtheta_dphi(dtheta=dtheta, dphi=dphi)
@@ -352,13 +352,13 @@ def test_muon_batch_angle_consistency():
     assert (mu_dtxy.theta_y - mu_dtp.theta_y).sum().abs() < 1e-5
 
     # Scattering dtheta_xy -> dtheta dphi
-    dtheta_x, dtheta_y = 2 * torch.pi * (torch.rand(n) - 0.5), 2 * torch.pi * (torch.rand(n) - 0.5)
+    dtheta_x, dtheta_y = torch.pi * (torch.rand(n) - 0.5), torch.pi * (torch.rand(n) - 0.5)  # ±pi/2
     dtheta, dphi = mu_orig.theta_from_theta_xy(dtheta_x, dtheta_y), mu_orig.phi_from_theta_xy(dtheta_x, dtheta_y)
     print(dtheta.min(), dtheta.max())
     print(dphi.min(), dphi.max())
     print(dtheta_x.min(), dtheta_x.max())
     print(dtheta_y.min(), dtheta_y.max())
-    assert (dphi.mean() - torch.pi).abs() < 1e-2
+    assert (dphi.nanmean() - torch.pi).abs() < 1e-2
     mu_dtp = mu_orig.copy()
     mu_dtxy = mu_orig.copy()
     mu_dtp.scatter_dtheta_dphi(dtheta=dtheta, dphi=dphi)

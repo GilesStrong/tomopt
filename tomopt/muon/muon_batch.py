@@ -211,10 +211,6 @@ class MuonBatch:
             self._y[mask] = self._y[mask] + dy
 
     def scatter_dtheta_dphi(self, dtheta: Optional[Tensor] = None, dphi: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
-        r"""
-        dtheta & dphi are expected to be the volume reference fram, not the muons'
-        """
-
         if mask is None:
             mask = torch.ones(len(self._muons), device=self.device).bool()
         if dphi is not None:
@@ -232,10 +228,6 @@ class MuonBatch:
         # self.remove_upwards_muons()
 
     def scatter_dtheta_xy(self, dtheta_x: Optional[Tensor] = None, dtheta_y: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
-        r"""
-        dtheta_x & dtheta_y are expected to be the volume reference fram, not the muons'
-        """
-
         if mask is None:
             mask = torch.ones(len(self._muons), device=self.device).bool()
 
@@ -285,46 +277,47 @@ class MuonBatch:
 
     @staticmethod
     def phi_from_theta_xy(theta_x: Tensor, theta_y: Tensor) -> Tensor:
-        phi = torch.arctan(theta_y.sin() / theta_x.sin())  # (-pi/2, pi/2)
+        r"""
+        N.B. this function does NOT work if theta is > pi/2
+        """
+
+        phi = torch.arctan(theta_y.tan() / theta_x.tan())  # (-pi/2, pi/2)
         m = theta_x < 0
         phi[m] = phi[m] + torch.pi
         m = ((theta_x > 0) * (theta_y < 0)).bool()
         phi[m] = phi[m] + (2 * torch.pi)  # (0, 2pi)
+
+        phi[(theta_x.abs() >= torch.pi / 2) + (theta_y.abs() >= torch.pi / 2)] = torch.nan
         return phi
 
     @staticmethod
     def theta_from_theta_xy(theta_x: Tensor, theta_y: Tensor) -> Tensor:
         r"""
-        This expects that 0<=theta<=pi, i.e. theta_x annd theta_y are never both greater than pi/4
+        N.B. this function does NOT work if theta is > pi/2
         """
 
-        stheta = (theta_x.sin().square() + theta_y.sin().square()).sqrt()
-        theta = stheta.arcsin()
-
-        pib2 = torch.pi / 2
-        m = theta_x.abs() > pib2
-        r = theta_x[m].sign() * pib2
-        theta[m] = ((theta_x[m] - r).sin().square() + theta_y[m].sin().square()).sqrt().arcsin() + r
-
-        m = theta_y.abs() > pib2
-        r = theta_y[m].sign() * pib2
-        theta[m] = (theta_x[m].sin().square() + (theta_y[m] - r).sin().square()).sqrt().arcsin() + r
+        theta = (theta_x.tan().square() + theta_y.tan().square()).sqrt().arctan()
+        theta[(theta_x.abs() >= torch.pi / 2) + (theta_y.abs() >= torch.pi / 2)] = torch.nan
         return theta
 
     @staticmethod
     def theta_x_from_theta_phi(theta: Tensor, phi: Tensor) -> Tensor:
-        tx = (theta.sin() * phi.cos()).arcsin()
-        pib2 = torch.pi / 2
-        m = theta.abs() > pib2
-        tx[m] = (torch.sin(theta[m] - pib2) * phi[m].cos()).arcsin() + (phi[m].cos()).arcsin()
+        r"""
+        N.B. this function does NOT work if theta is > pi/2
+        """
+
+        tx = (theta.tan() * phi.cos()).arctan()
+        tx[(theta >= torch.pi / 2)] = torch.nan
         return tx
 
     @staticmethod
     def theta_y_from_theta_phi(theta: Tensor, phi: Tensor) -> Tensor:
-        ty = (theta.sin() * phi.sin()).arcsin()
-        pib2 = torch.pi / 2
-        m = theta.abs() > pib2
-        ty[m] = (torch.sin(theta[m] - pib2) * phi[m].sin()).arcsin() + (phi[m].sin()).arcsin()
+        r"""
+        N.B. this function does NOT work if theta is > pi/2
+        """
+
+        ty = (theta.tan() * phi.sin()).arctan()
+        ty[(theta >= torch.pi / 2)] = torch.nan
         return ty
 
     def propagate(self, dz: Union[Tensor, float]) -> None:
