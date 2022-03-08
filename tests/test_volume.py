@@ -73,14 +73,14 @@ def test_passive_layer_forwards(batch):
 
 @pytest.mark.parametrize("n", [(1), (2), (5)])
 def test_passive_layer_scattering(mocker, batch, n):  # noqa: F811
-    for m in ["propagate", "get_xy_mask", "scatter_dxy", "scatter_dtheta_dphi", "scatter_dtheta_xy"]:
+    for m in ["propagate", "get_xy_mask", "scatter_dxy", "scatter_dtheta_xy"]:
         mocker.patch.object(MuonBatch, m)
 
     pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, size=SZ, z=Z)
     pl(batch, n)
     assert batch.propagate.call_count == n
     assert batch.scatter_dxy.call_count == n
-    assert batch.scatter_dtheta_dphi.call_count + batch.scatter_dtheta_xy.call_count == n
+    assert batch.scatter_dtheta_xy.call_count == n
     assert batch.propagate.called_with(SZ / n)
     assert batch.get_xy_mask.call_count == n
 
