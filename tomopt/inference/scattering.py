@@ -383,7 +383,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
     @property
     def dphi_unc(self) -> Tensor:
         if self._dphi_unc is None:
-            self._dphi_unc = self._compute_out_var_unc(self._dphi)
+            self._dphi_unc = self._compute_out_var_unc(self.dphi)
         return self._dphi_unc
 
     @property
