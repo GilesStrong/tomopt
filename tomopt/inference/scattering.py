@@ -32,16 +32,14 @@ class AbsScatterBatch(metaclass=ABCMeta):
     _theta_in_unc: Optional[Tensor] = None
     _theta_out: Optional[Tensor] = None
     _theta_out_unc: Optional[Tensor] = None
-    _theta_xy_in: Optional[Tensor] = None
-    _theta_xy_in_unc: Optional[Tensor] = None
-    _theta_xy_out: Optional[Tensor] = None
-    _theta_xy_out_unc: Optional[Tensor] = None
-    _dtheta_xy: Optional[Tensor] = None
-    _dtheta_xy_unc: Optional[Tensor] = None
+    _dtheta: Optional[Tensor] = None
+    _dtheta_unc: Optional[Tensor] = None
     _phi_in: Optional[Tensor] = None
     _phi_in_unc: Optional[Tensor] = None
     _phi_out: Optional[Tensor] = None
     _phi_out_unc: Optional[Tensor] = None
+    _dphi: Optional[Tensor] = None
+    _dphi_unc: Optional[Tensor] = None
     _xyz_in: Optional[Tensor] = None
     _xyz_in_unc: Optional[Tensor] = None
     _xyz_out: Optional[Tensor] = None
@@ -338,43 +336,37 @@ class AbsScatterBatch(metaclass=ABCMeta):
         return self._phi_out_unc
 
     @property
-    def theta_xy_in(self) -> Tensor:
-        if self._theta_xy_in is None:
-            self._theta_xy_in = torch.cat([(self.theta_in.sin() * self.phi_in.cos()).arcsin(), (self.theta_in.sin() * self.phi_in.sin()).arcsin()], dim=-1)
-            self._theta_xy_in_unc = None
-        return self._theta_xy_in
+    def dtheta(self) -> Tensor:
+        if self._dtheta is None:
+            self._dtheta = torch.abs(self.theta_in - self.theta_out)
+            self._dtheta_unc = None
+        return self._dtheta
 
     @property
-    def theta_xy_in_unc(self) -> Tensor:
-        if self._theta_xy_in_unc is None:
-            self._theta_xy_in_unc = self._compute_out_var_unc(self.theta_xy_in)
-        return self._theta_xy_in_unc
+    def dtheta_unc(self) -> Tensor:
+        if self._dtheta_unc is None:
+            self._dtheta_unc = self._compute_out_var_unc(self.dtheta)
+        return self._dtheta_unc
 
     @property
-    def theta_xy_out(self) -> Tensor:
-        if self._theta_xy_out is None:
-            self._theta_xy_out = torch.cat([(self.theta_out.sin() * self.phi_out.cos()).arcsin(), (self.theta_out.sin() * self.phi_out.sin()).arcsin()], dim=-1)
-            self._theta_xy_out_unc = None
-        return self._theta_xy_out
+    def dphi(self) -> Tensor:
+        if self._dphi is None:
+            # Is there a simpler formular?
+            self._dphi = torch.min(
+                (
+                    ((2 * torch.pi) - self.theta_in) + self.theta_out,
+                    ((2 * torch.pi) - self.theta_out) + self.theta_in,
+                    torch.abs(self.theta_in - self.theta_out),
+                )
+            )
+            self._dphi_unc = None
+        return self._dphi
 
     @property
-    def theta_xy_out_unc(self) -> Tensor:
-        if self._theta_xy_out_unc is None:
-            self._theta_xy_out_unc = self._compute_out_var_unc(self.theta_xy_out)
-        return self._theta_xy_out_unc
-
-    @property
-    def dtheta_xy(self) -> Tensor:
-        if self._dtheta_xy is None:
-            self._dtheta_xy = torch.abs(self.theta_xy_in - self.theta_xy_out)
-            self._dtheta_xy_unc = None
-        return self._dtheta_xy
-
-    @property
-    def dtheta_xy_unc(self) -> Tensor:
-        if self._dtheta_xy_unc is None:
-            self._dtheta_xy_unc = self._compute_out_var_unc(self.dtheta_xy)
-        return self._dtheta_xy_unc
+    def dphi_unc(self) -> Tensor:
+        if self._dphi_unc is None:
+            self._dphi_unc = self._compute_out_var_unc(self._dphi_unc)
+        return self._dphi_unc
 
     @property
     def xyz_in(self) -> Tensor:
