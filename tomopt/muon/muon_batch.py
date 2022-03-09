@@ -150,7 +150,7 @@ class MuonBatch:
     @theta.setter
     def theta(self, theta: Tensor) -> None:
         raise AttributeError(
-            "Please use the scatter_dtheta_xy method to modify the direction of muons. Or modify the _muons attribute if you really know what you're doing"
+            "Please use the scatter_dtheta_dphi method to modify the direction of muons. Or modify the _muons attribute if you really know what you're doing"
         )
 
     @property
@@ -168,7 +168,7 @@ class MuonBatch:
     @phi.setter
     def phi(self, phi: Tensor) -> None:
         raise AttributeError(
-            "Please use the scatter_dtheta_xy method to modify the direction of muons. Or modify the _muons attribute if you really know what you're doing"
+            "Please use the scatter_dtheta_dphi method to modify the direction of muons. Or modify the _muons attribute if you really know what you're doing"
         )
 
     @property
@@ -186,7 +186,7 @@ class MuonBatch:
     @theta_x.setter
     def theta_x(self, theta_x: Tensor) -> None:
         raise AttributeError(
-            "Please use the scatter_dtheta_xy method to modify the direction of muons. Or modify the _muons attribute if you really know what you're doing"
+            "Please use the scatter_dtheta_dphi method to modify the direction of muons. Or modify the _muons attribute if you really know what you're doing"
         )
 
     @property
@@ -196,7 +196,7 @@ class MuonBatch:
     @theta_y.setter
     def theta_y(self, theta_y: Tensor) -> None:
         raise AttributeError(
-            "Please use the scatter_dtheta_xy method to modify the direction of muons. Or modify the _muons attribute if you really know what you're doing"
+            "Please use the scatter_dtheta_dphi method to modify the direction of muons. Or modify the _muons attribute if you really know what you're doing"
         )
 
     def scatter_dxy(self, dx: Optional[Tensor] = None, dy: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
@@ -326,14 +326,14 @@ class MuonBatch:
             m = self.get_xy_mask(xy_low, xy_high)
             return {p: {c: torch.stack(self._hits[p][c], dim=1)[m] for c in self._hits[p]} for p in self._hits}
 
-    def dtheta_x(self, mu: MuonBatch) -> Tensor:
-        return torch.abs(self.theta_x - mu.theta_x)
+    def dtheta_x(self, theta_ref: Tensor) -> Tensor:
+        return torch.abs(self.theta_x - theta_ref)
 
-    def dtheta_y(self, mu: MuonBatch) -> Tensor:
-        return torch.abs(self.theta_y - mu.theta_y)
+    def dtheta_y(self, theta_ref: Tensor) -> Tensor:
+        return torch.abs(self.theta_y - theta_ref)
 
-    def dtheta(self, mu: MuonBatch) -> Tensor:
-        return torch.abs(self.theta - mu.theta)
+    def dtheta(self, theta_ref: Tensor) -> Tensor:
+        return torch.abs(self.theta - theta_ref)
 
     def copy(self) -> MuonBatch:
         return MuonBatch(self._muons.detach().clone(), init_z=self.z.detach().clone(), device=self.device)
