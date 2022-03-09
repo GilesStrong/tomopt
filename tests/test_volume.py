@@ -53,22 +53,22 @@ def test_passive_layer_forwards(batch):
     start = batch.copy()
     pl(batch)
     assert torch.abs(batch.z - Tensor([Z - SZ])) < 1e-5
-    assert torch.all(batch.dtheta(start) > 0)
-    assert torch.all(batch.xy != start.xy)
+    assert torch.all(batch.dtheta(start[batch._keep_mask]) > 0)
+    assert torch.all(batch.xy != start[batch._keep_mask].xy)
 
     # X0 affects scattering
     pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=0, size=SZ)
     batch2 = start.copy()
     pl(batch2)
-    assert batch2.dtheta(start).mean() < batch.dtheta(start).mean()
+    assert batch2.dtheta(start[batch._keep_mask]).mean() < batch.dtheta(start[batch._keep_mask]).mean()
 
     # Small scattering
     pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=Z, size=1e-4)
     batch = start.copy()
     pl(batch, 1)
     assert torch.abs(batch.z - Tensor([Z - 1e-4])) <= 1e-3
-    assert (batch.dtheta(start) < 1e-2).sum() / len(batch) > 0.9
-    assert (torch.abs(batch.xy - start.xy) < 1e-3).sum() / len(batch) > 0.9
+    assert (batch.dtheta(start[batch._keep_mask]) < 1e-2).sum() / len(batch) > 0.9
+    assert (torch.abs(batch.xy - start[batch._keep_mask].xy) < 1e-3).sum() / len(batch) > 0.9
 
 
 @pytest.mark.parametrize("n", [(1), (2), (5)])
