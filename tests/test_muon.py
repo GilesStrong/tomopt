@@ -186,9 +186,9 @@ def test_muon_batch_methods():
     assert torch.all(hits["above"]["xy"][:, 0] == above_hits["xy"])
 
     # deltas
-    assert torch.all(batch.dtheta(start) == 0)
+    assert torch.all(batch.dtheta(start.theta) == 0)
     batch._theta = batch.theta + 2
-    assert batch.dtheta(start)[0] == Tensor([2])
+    assert batch.dtheta(start.theta)[0] == Tensor([2])
 
     # Angle calculations
     tx, ty = torch.pi * (torch.rand(100) - 0.5), torch.pi * (torch.rand(100) - 0.5)
