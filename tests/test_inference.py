@@ -407,7 +407,7 @@ def test_voxel_x0_inferer_methods():
     sb = VoxelScatterBatch(mu=mu, volume=volume)
     inferer = VoxelX0Inferer(volume=volume)
 
-    pt, pt_unc = inferer.x0_from_dtheta(scatters=sb)
+    pt, pt_unc = inferer.x0_from_scatter(scatters=sb)
     assert len(pt) == len(sb.location)
     assert pt.shape == pt_unc.shape
 
@@ -418,14 +418,11 @@ def test_voxel_x0_inferer_methods():
         assert torch.autograd.grad(pt[mask].abs().sum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().nansum() > 0
         assert torch.autograd.grad(pt_unc[mask].abs().sum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().nansum() > 0
 
-    pxy, pxy_unc = inferer.x0_from_dxy(scatters=sb)
-    assert pxy is None and pxy_unc is None  # modify tests when dxy predictions implemented
-
     eff = inferer.compute_efficiency(scatters=sb)
     assert eff.shape == pt.shape
     assert (eff - 0.0625).abs().mean() < 1e-5
 
-    p, w = inferer.get_voxel_x0_preds(x0_dtheta=pt, x0_dtheta_unc=pt_unc, x0_dxy=pxy, x0_dxy_unc=pxy_unc, efficiency=eff, scatters=sb)
+    p, w = inferer.get_voxel_x0_preds(muon_preds=pt, muon_pred_uncs=pt_unc, efficiency=eff, scatters=sb)
     true = volume.get_rad_cube()
     assert p.shape == true.shape
     assert w.shape == true.shape
@@ -440,8 +437,8 @@ def test_voxel_x0_inferer_methods():
 
     inferer.add_scatters(sb)
     assert len(inferer.scatter_batches) == 1
-    assert (inferer.preds[0] - p).abs().sum() < 1e-5
-    assert (inferer.weights[0] - w).abs().sum() < 1e-5
+    assert (inferer.voxel_preds[0] - p).abs().sum() < 1e-5
+    assert (inferer.voxel_weights[0] - w).abs().sum() < 1e-5
 
     pi, wi = inferer.get_prediction()
     assert (pi - p).abs().sum() < 1e-5
@@ -455,8 +452,8 @@ def test_voxel_x0_inferer_methods():
     inferer.add_scatters(sb)
 
     assert len(inferer.scatter_batches) == 2
-    assert len(inferer.preds) == 2
-    assert len(inferer.weights) == 2
+    assert len(inferer.voxel_preds) == 2
+    assert len(inferer.voxel_weights) == 2
 
     pi, wi = inferer.get_prediction()  # Averaged prediction slightly changes with new batch
     assert (pi - p).abs().sum() > 1e-2
@@ -473,7 +470,7 @@ def test_panel_x0_inferer_methods():
     sb = PanelScatterBatch(mu=mu, volume=volume)
     inferer = PanelX0Inferer(volume=volume)
 
-    pt, pt_unc = inferer.x0_from_dtheta(scatters=sb)
+    pt, pt_unc = inferer.x0_from_scatter(scatters=sb)
     assert len(pt) == len(sb.location)
     assert pt.shape == pt_unc.shape
 
@@ -485,14 +482,11 @@ def test_panel_x0_inferer_methods():
             assert torch.autograd.grad(pt[mask].abs().sum(), p.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
             assert torch.autograd.grad(pt_unc[mask].abs().sum(), p.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
 
-    pxy, pxy_unc = inferer.x0_from_dxy(scatters=sb)
-    assert pxy is None and pxy_unc is None  # modify tests when dxy predictions implemented
-
     eff = inferer.compute_efficiency(scatters=sb)
     assert eff.shape == pt.shape
     assert (eff > 0).all()
 
-    p, w = inferer.get_voxel_x0_preds(x0_dtheta=pt, x0_dtheta_unc=pt_unc, x0_dxy=pxy, x0_dxy_unc=pxy_unc, efficiency=eff, scatters=sb)
+    p, w = inferer.get_voxel_x0_preds(muon_preds=pt, muon_pred_uncs=pt_unc, efficiency=eff, scatters=sb)
     true = volume.get_rad_cube()
     assert p.shape == true.shape
     assert w.shape == true.shape
@@ -510,8 +504,8 @@ def test_panel_x0_inferer_methods():
 
     inferer.add_scatters(sb)
     assert len(inferer.scatter_batches) == 1
-    assert (inferer.preds[0] - p).abs().sum() < 1e-5
-    assert (inferer.weights[0] - w).abs().sum() < 1e-5
+    assert (inferer.voxel_preds[0] - p).abs().sum() < 1e-5
+    assert (inferer.voxel_weights[0] - w).abs().sum() < 1e-5
 
     pi, wi = inferer.get_prediction()
     assert (pi - p).abs().sum() < 1e-5
@@ -525,8 +519,8 @@ def test_panel_x0_inferer_methods():
     inferer.add_scatters(sb)
 
     assert len(inferer.scatter_batches) == 2
-    assert len(inferer.preds) == 2
-    assert len(inferer.weights) == 2
+    assert len(inferer.voxel_preds) == 2
+    assert len(inferer.voxel_weights) == 2
 
     pi, wi = inferer.get_prediction()  # Averaged prediction slightly changes with new batch
     assert (pi - p).abs().sum() > 1e-2
@@ -560,22 +554,22 @@ def test_x0_inferer_scatter_inversion(mocker, voxel_scatter_batch):  # noqa F811
     mocker.patch("tomopt.volume.layer.torch.randn", lambda n, device: torch.ones(n, device=device))  # remove randomness
     dx, dy, dtheta, dphi = layer._compute_displacements(n_x0=n_x0, deltaz=SZ, theta_x=mu.theta_x, theta_y=mu.theta_y, mom=mu.mom)
 
-    sb._dtheta = dtheta
-    sb._dphi = dphi
+    sb._dtheta = dtheta[:, None]
+    sb._dphi = dphi[:, None]
     sb._dtheta_unc = torch.ones_like(sb._dtheta)
     sb._dphi_unc = torch.ones_like(sb._dphi)
     sb._theta_in = mu.theta[:, None]
     sb._theta_in_unc = torch.ones_like(sb._dtheta)
     mu.scatter_dtheta_dphi(dtheta=dtheta, dphi=dphi)
     sb._theta_out = mu.theta[:, None]
-    sb._theta_out_unc = torch.ones_like(sb._dtheta_xy)
+    sb._theta_out_unc = torch.ones_like(sb._dtheta)
 
     mask = torch.ones_like(n_x0) > 0
     mocker.patch.object(sb, "get_scatter_mask", lambda: mask)
     inferer.mask_muons = False
 
     mocker.patch("tomopt.inference.volume.jacobian", lambda i, j: torch.ones((len(i), 1, 7), device=i.device))  # remove randomness
-    pred, _ = inferer.x0_from_dtheta(scatters=sb)
+    pred, _ = inferer.x0_from_scatter(scatters=sb)
     assert (pred.mean() - x0) < 1e-5
 
 

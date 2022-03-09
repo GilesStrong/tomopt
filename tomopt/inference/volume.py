@@ -45,7 +45,7 @@ class AbsX0Inferer(AbsVolumeInferer):
     def add_scatters(self, scatters: AbsScatterBatch) -> None:
         super().add_scatters(scatters=scatters)
         # Compute muon-wise X0 predictions & efficiencies
-        x, u = self.x0_from_scattering(scatters=scatters)
+        x, u = self.x0_from_scatter(scatters=scatters)
         self.muon_preds.append(x)
         self.muon_pred_uncs.append(u)
 
@@ -62,7 +62,7 @@ class AbsX0Inferer(AbsVolumeInferer):
         self.voxel_weights.append(w)
 
     @staticmethod
-    def _x0_from_scattering(delta_z: float, mom: Tensor, dtheta: Tensor, dphi: Tensor, theta_in: Tensor, theta_out: Tensor) -> Tensor:
+    def _x0_from_scatter(delta_z: float, mom: Tensor, dtheta: Tensor, dphi: Tensor, theta_in: Tensor, theta_out: Tensor) -> Tensor:
         r"""
         Angles are in volume reference frame
         """
@@ -72,7 +72,7 @@ class AbsX0Inferer(AbsVolumeInferer):
         return 2 * ((SCATTER_COEF_A / mom) ** 2) * delta_z / (theta2_msc * cos_theta)
 
     @staticmethod
-    def _x0_from_scattering_unc(pred: Tensor, in_vars: Tensor, uncs: Tensor) -> Tensor:
+    def _x0_from_scatter_unc(pred: Tensor, in_vars: Tensor, uncs: Tensor) -> Tensor:
         jac = torch.nan_to_num(jacobian(pred, in_vars)).sum(1)  # Compute dvar/dhit_x
 
         # Compute unc^2 = unc_x*unc_y*dvar/dhit_x*dvar/dhit_y summing over all x,y inclusive combinations
@@ -82,7 +82,7 @@ class AbsX0Inferer(AbsVolumeInferer):
         pred_unc = unc_2.sum(-1).sqrt()
         return pred_unc
 
-    def x0_from_scattering(self, scatters: AbsScatterBatch) -> Tuple[Optional[Tensor], Optional[Tensor]]:
+    def x0_from_scatter(self, scatters: AbsScatterBatch) -> Tuple[Optional[Tensor], Optional[Tensor]]:
         mu = scatters.mu
 
         if self.mask_muons:  # Scatter mask assumes that muons are prefiltered to only include those which stay inside the volume
@@ -109,8 +109,8 @@ class AbsX0Inferer(AbsVolumeInferer):
             dim=-1,
         )
 
-        pred = self._x0_from_scattering(delta_z=self.size, mom=mom, dtheta=dtheta, dphi=dphi, theta_in=theta_in, theta_out=theta_out)
-        pred_unc = self._x0_from_scattering_unc(pred=pred, in_vars=in_vars, uncs=uncs)
+        pred = self._x0_from_scatter(delta_z=self.size, mom=mom, dtheta=dtheta, dphi=dphi, theta_in=theta_in, theta_out=theta_out)
+        pred_unc = self._x0_from_scatter_unc(pred=pred, in_vars=in_vars, uncs=uncs)
 
         return pred, pred_unc
 
@@ -163,8 +163,8 @@ class AbsX0Inferer(AbsVolumeInferer):
         prob = prob + 1e-15  # Sometimes probability is zero
         coef = coef * prob
 
-        wpred = x0 * coef
-        weight = coef
+        wpred = (x0 * coef).sum(0)
+        weight = coef.sum(0)
         pred = wpred / weight
 
         if weight.isnan().sum() > 0:
@@ -265,7 +265,7 @@ class DeepVolumeInferer(AbsVolumeInferer):
         return self.base_inferer.compute_efficiency(scatters=scatters)
 
     def get_base_predictions(self, scatters: AbsScatterBatch) -> Tuple[Tensor, Tensor]:
-        x, u = self.base_inferer.x0_from_scattering(scatters=scatters)
+        x, u = self.base_inferer.x0_from_scatter(scatters=scatters)
         return x[:, None], u[:, None]
 
     def add_scatters(self, scatters: AbsScatterBatch) -> None:
