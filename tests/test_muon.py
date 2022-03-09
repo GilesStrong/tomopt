@@ -239,36 +239,35 @@ def test_muon_batch_scatter_dxy():
     assert len(batch) == len(start)
 
 
-def test_muon_batch_scatter_dtheta_xy():
-    batch = MuonBatch(Tensor([[1, 0, 0, 1, 0], [1, 0, 0, 1, 0], [1, 0, 0, 1, 0]]), init_z=1)
+def test_muon_batch_scatter_dtheta_dphi():
+    batch = MuonBatch(Tensor([[1, 0, 0, 1, 6], [1, 0, 0, 1, 6], [1, 0, 0, 1, 6]]), init_z=1)
     # copy & propagate
     start = batch.copy()
 
-    batch.scatter_dtheta_xy()
-    assert (batch.theta - start.theta).abs().sum() < 1e-5
-    assert (batch.phi - start.phi).abs().sum() < 1e-5
+    batch.scatter_dtheta_dphi()
+    assert (batch.theta == start.theta).all()
+    assert (batch.phi == start.phi).all()
 
-    batch.scatter_dtheta_xy(dtheta_x=Tensor([3, -0.9, -2]))
-    print(batch.theta)
+    batch.scatter_dtheta_dphi(dtheta=Tensor([1, -0.9, -2]))
     assert len(batch) == len(start) - 1  # upwards muon removed
     assert (batch.theta >= 0).all() and (batch.theta < torch.pi / 2).all()
-    assert (batch.theta[0] - start.theta[1]).abs().sum() > 1e-2
-    assert (batch.theta[1] - start.theta[2]).abs().sum() < 1e-5
-    assert (batch.phi[0] - start.phi[1]).abs().sum() < 1e-5
-    assert (batch.phi[1] - (start.phi[2] + torch.pi) % (2 * torch.pi)).abs().sum() < 1e-5
+    assert batch.theta[0] != start.theta[1]
+    assert batch.theta[1] == start.theta[2]
+    assert batch.phi[0] == start.phi[1]
+    assert batch.phi[1] == (start.phi[2] + torch.pi) % (2 * torch.pi)
 
     batch = start.copy()
-    batch.scatter_dtheta_xy(dtheta_y=Tensor([0.1, -0.9, -1]))
+    batch.scatter_dtheta_dphi(dphi=Tensor([1, -1, 3]))
     assert (batch.phi != start.phi).all()
-    assert (batch.theta >= start.theta).all()
+    assert (batch.theta == start.theta).all()
 
     batch = start.copy()
-    batch.scatter_dtheta_xy(dtheta_x=Tensor([0.1, -0.9, -0.2]), dtheta_y=Tensor([0.1, -1, 0.1]))
+    batch.scatter_dtheta_dphi(dtheta=Tensor([0.1, -0.9, -0.2]), dphi=Tensor([1, -1, 3]))
     assert (batch.theta != start.theta).all()
     assert (batch.phi != start.phi).all()
 
     batch = start.copy()
-    batch.scatter_dtheta_xy(dtheta_x=Tensor([-0.5]), dtheta_y=Tensor([1]), mask=Tensor([1, 0, 0]).bool())
+    batch.scatter_dtheta_dphi(dtheta=Tensor([-0.5]), dphi=Tensor([1]), mask=Tensor([1, 0, 0]).bool())
     assert batch.theta[0] != start.theta[0]
     assert batch.theta[1] == start.theta[1]
     assert batch.phi[0] != start.phi[0]

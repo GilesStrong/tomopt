@@ -211,27 +211,20 @@ class MuonBatch:
         if dy is not None:
             self._y[mask] = self._y[mask] + dy
 
-    def scatter_dtheta_xy(self, dtheta_x: Optional[Tensor] = None, dtheta_y: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
+    def scatter_dtheta_dphi(self, dtheta: Optional[Tensor] = None, dphi: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
         if mask is None:
             mask = torch.ones(len(self._muons), device=self.device).bool()
-
-        tx = self.theta_x[mask]
-        ty = self.theta_y[mask]
-
-        def add_theta(t: Tensor, dt: Tensor) -> Tensor:
-            t = (t + dt) % (2 * torch.pi)  # Add in (0,2pi)
-            # Convert to (-pi,pi)
-            m = t > torch.pi
-            t[m] = t[m] - (2 * torch.pi)
-            return t
-
-        if dtheta_x is not None:
-            tx = add_theta(tx, dtheta_x)
-        if dtheta_y is not None:
-            ty = add_theta(ty, dtheta_y)
-
-        self._theta[mask] = self.theta_from_theta_xy(tx, ty)
-        self._phi[mask] = self.phi_from_theta_xy(tx, ty)
+        if dphi is not None:
+            self._phi[mask] = (self._phi[mask] + dphi) % (2 * torch.pi)
+        if dtheta is not None:
+            theta = (self._theta[mask] + dtheta) % (2 * torch.pi)
+            # Correct theta, must avoid double Bool mask
+            phi = self._phi[mask]
+            m = theta > torch.pi
+            phi[m] = (phi[m] + torch.pi) % (2 * torch.pi)  # rotate in phi
+            theta[m] = (2 * torch.pi) - theta[m]  # theta (0,pi)
+            self._phi[mask] = phi
+            self._theta[mask] = theta
 
         self.remove_upwards_muons()
 
@@ -278,7 +271,7 @@ class MuonBatch:
         """
 
         theta = (theta_x.tan().square() + theta_y.tan().square()).sqrt().arctan()
-        theta[(theta_x.abs() >= torch.pi / 2) + (theta_y.abs() >= torch.pi / 2)] = torch.nan
+        # theta[(theta_x.abs() >= torch.pi / 2) + (theta_y.abs() >= torch.pi / 2)] = torch.nan
         return theta
 
     @staticmethod
