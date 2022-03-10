@@ -369,9 +369,9 @@ class AbsScatterBatch(metaclass=ABCMeta):
             self._dphi = torch.min(
                 torch.stack(
                     (
-                        ((2 * torch.pi) - self.theta_in) + self.theta_out,
-                        ((2 * torch.pi) - self.theta_out) + self.theta_in,
-                        torch.abs(self.theta_in - self.theta_out),
+                        ((2 * torch.pi) - self.phi_in) + self.phi_out,
+                        ((2 * torch.pi) - self.phi_out) + self.phi_in,
+                        torch.abs(self.phi_in - self.phi_out),
                     ),
                     dim=0,
                 ),
