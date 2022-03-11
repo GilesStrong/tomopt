@@ -357,7 +357,7 @@ def test_gen_scatter_batch_compute(mocker, voxel_scatter_batch):  # noqa F811
     hits = {
         "above": {
             "reco_xy": Tensor([[[10.0, -2.0], [1, 0.3]]]),
-            "gen_xy": Tensor([[[0.0, 0.0], [0.0, 0.1]]]),
+            "gen_xy": Tensor([[[0.0, 0.0], [0.1, 0.0]]]),
             "z": Tensor(
                 [
                     [[1.0], [0.9]],
@@ -372,7 +372,7 @@ def test_gen_scatter_batch_compute(mocker, voxel_scatter_batch):  # noqa F811
             ),
             "gen_xy": Tensor(
                 [
-                    [[0.0, 0.1], [0.0, 0.0]],
+                    [[0.1, 0.0], [0.0, 0.0]],
                 ]
             ),
             "z": Tensor(
@@ -386,19 +386,24 @@ def test_gen_scatter_batch_compute(mocker, voxel_scatter_batch):  # noqa F811
     mocker.patch("tomopt.volume.layer.Layer.abs2idx", return_value=torch.zeros((1, 3), dtype=torch.long))
 
     sb = GenScatterBatch(mu=mu, volume=volume)
+
+    print(sb.track_in)
+    print(sb.track_out)
     assert (sb.location - Tensor([[0.0, 0.5, 0.5]])).sum().abs() < 1e-3
     assert (sb.dxy - Tensor([[0.0, 0.0]])).sum().abs() < 1e-3
     assert (sb.theta_in - (torch.pi / 4)).sum().abs() < 1e-3
     assert (sb.theta_out - (torch.pi / 4)).sum().abs() < 1e-3
+    assert (sb.dtheta).sum().abs() < 1e-3
     assert (sb.phi_in).sum().abs() < 1e-3
     assert (sb.phi_out - torch.pi).sum().abs() < 1e-3
+    assert (sb.dphi - torch.pi).sum().abs() < 1e-3
     assert (sb.dtheta_xy - Tensor([[0, torch.pi / 2]])).sum().abs() < 1e-3
 
     # Entry exit points
-    assert sb.xyz_in[:, 0].sum().abs() < 1e-3
-    assert sb.xyz_out[:, 0].sum().abs() < 1e-3
-    assert (sb.xyz_in[:, 1] - Tensor([0.2])).sum().abs() < 1e-3
-    assert (sb.xyz_out[:, 1] - Tensor([0.2])).sum().abs() < 1e-3
+    assert sb.xyz_in[:, 1].sum().abs() < 1e-3
+    assert sb.xyz_out[:, 1].sum().abs() < 1e-3
+    assert (sb.xyz_in[:, 0] - Tensor([0.2])).sum().abs() < 1e-3
+    assert (sb.xyz_out[:, 0] - Tensor([0.2])).sum().abs() < 1e-3
     assert (sb.xyz_in[:, 2] - Tensor([0.8])).sum().abs() < 1e-3
     assert (sb.xyz_out[:, 2] - Tensor([0.2])).sum().abs() < 1e-3
 
