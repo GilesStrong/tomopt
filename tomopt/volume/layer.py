@@ -93,6 +93,9 @@ class PassiveLayer(Layer):
         if rad_length_func is not None:
             self.load_rad_length(rad_length_func)
 
+    def __repr__(self) -> str:
+        return f"PassiveLayer at z={self.z}, lw={self.lw}, voxel size={self.size}"
+
     def load_rad_length(self, rad_length_func: Callable[..., Tensor]) -> None:
         self.rad_length = rad_length_func(z=self.z, lw=self.lw, size=self.size).to(self.device)
 
