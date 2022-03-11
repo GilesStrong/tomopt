@@ -19,6 +19,7 @@ class AbsPassiveGenerator(metaclass=ABCMeta):
         materials: Optional[List[str]] = None,
     ) -> None:
         self.volume = volume
+        self.device = self.volume.device
         if materials is None:
             materials = [m for m in X0]
         self.materials = materials
