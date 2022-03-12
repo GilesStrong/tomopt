@@ -70,9 +70,10 @@ class AbsX0Inferer(AbsVolumeInferer):
         self.weights.append(w)
 
     @staticmethod
-    def _x0_from_dtheta(delta_z: float, mom: Tensor, dtheta_xy: Tensor, theta_in: Tensor, theta_out: Tensor) -> Tensor:
+    def _x0_from_dtheta(delta_z: float, mom: Tensor, dtheta: Tensor, dphi: Tensor, theta_in: Tensor, theta_out: Tensor) -> Tensor:
+        theta2_msc = (dtheta**2) + (dphi**2)
         cos_theta = (theta_in.cos() + theta_out.cos()) / 2
-        return 2 * ((SCATTER_COEF_A / mom) ** 2) * delta_z / (dtheta_xy.pow(2).sum(1) * cos_theta)
+        return 2 * ((SCATTER_COEF_A / mom) ** 2) * delta_z / (theta2_msc * cos_theta)
 
     @staticmethod
     def _x0_from_dtheta_unc(pred: Tensor, in_vars: Tensor, uncs: Tensor) -> Tensor:
@@ -106,23 +107,25 @@ class AbsX0Inferer(AbsVolumeInferer):
         in_vars = torch.cat(
             [
                 (mu.reco_mom if self.mask_muons is False else mu.reco_mom[muon_mask])[:, None],  # 0
-                scatters.dtheta_xy,  # 1,2
+                scatters.dtheta,  # 1
+                scatters.dphi,  # 2
                 scatters.theta_in,  # 3
                 scatters.theta_out,  # 4
             ],
             dim=-1,
         )
         mom = in_vars[:, 0]
-        dtheta_xy = in_vars[:, 1:3]
+        dtheta = in_vars[:, 1]
+        dphi = in_vars[:, 1]
         theta_in = in_vars[:, 3]
         theta_out = in_vars[:, 4]
 
         uncs = torch.cat(
-            [torch.zeros_like(mom)[:, None], scatters.dtheta_xy_unc, scatters.theta_in_unc, scatters.theta_out_unc],
+            [torch.zeros_like(mom)[:, None], scatters.dtheta_unc, scatters.dphi_unc, scatters.theta_in_unc, scatters.theta_out_unc],
             dim=-1,
         )
 
-        pred = self._x0_from_dtheta(delta_z=self.size, mom=mom, dtheta_xy=dtheta_xy, theta_in=theta_in, theta_out=theta_out)
+        pred = self._x0_from_dtheta(delta_z=self.size, mom=mom, dtheta=dtheta, dphi=dphi, theta_in=theta_in, theta_out=theta_out)
         pred_unc = self._x0_from_dtheta_unc(pred=pred, in_vars=in_vars, uncs=uncs)
 
         return pred, pred_unc
@@ -155,9 +158,9 @@ class AbsX0Inferer(AbsVolumeInferer):
         # Only consider non-NaN predictions
         mask = ((loc == loc).prod(1) * (loc_unc == loc_unc).prod(1)).bool()
         if x0_dtheta is not None and x0_dtheta_unc is not None:
-            mask = (mask * (x0_dtheta == x0_dtheta) * (x0_dtheta_unc == x0_dtheta_unc)).bool()
+            mask = (mask * (~x0_dtheta.isnan()) * (~x0_dtheta.isinf()) * (~x0_dtheta_unc.isnan()) * (~x0_dtheta_unc.isinf())).bool()
         if x0_dxy is not None and x0_dxy_unc is not None:
-            mask = (mask * (x0_dxy == x0_dxy) * (x0_dxy_unc == x0_dxy_unc)).bool()
+            mask = (mask * (~x0_dxy.isnan()) * (~x0_dxy.isinf()) * (~x0_dxy_unc.isnan()) * (~x0_dxy_unc.isinf())).bool()
 
         loc, loc_unc, efficiency = loc[mask], loc_unc[mask], efficiency[mask]
         shp_xyz = (
