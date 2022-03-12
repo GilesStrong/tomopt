@@ -54,7 +54,7 @@ class Layer(nn.Module):
         # to rescale them by cos of thetax and thetay
         dx = dh_msc * torch.cos(phi_msc) * torch.cos(theta_x)
         dy = dh_msc * torch.sin(phi_msc) * torch.cos(theta_y)
-        return dx, dy, dtheta, dphi, theta_msc, theta0
+        return dx, dy, dtheta, dphi
 
     def scatter_and_propagate(self, mu: MuonBatch, deltaz: Union[Tensor, float]) -> None:
         """

@@ -598,7 +598,7 @@ class PanelScatterBatch(AbsScatterBatch):
                 panels += [det.panels[j] for j in det.get_panel_zorder()]
             return panels
 
-        self._hit_uncs = self._get_hit_uncs(_get_panels(), self.gen_hits)
+        self._hit_uncs = torch.ones_like(self._gen_hits)
         self._track_in, self._track_start_in = self.get_muon_trajectory(self.above_hits, self.above_hit_uncs, self.volume.lw)
         self._track_out, self._track_start_out = self.get_muon_trajectory(self.below_hits, self.below_hit_uncs, self.volume.lw)
 
