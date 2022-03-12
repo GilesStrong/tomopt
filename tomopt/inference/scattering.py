@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from typing import Optional, List, Tuple, Dict
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 import torch
 from torch import Tensor
@@ -33,16 +33,20 @@ class AbsScatterBatch(metaclass=ABCMeta):
     _theta_in_unc: Optional[Tensor] = None
     _theta_out: Optional[Tensor] = None
     _theta_out_unc: Optional[Tensor] = None
+    _dtheta: Optional[Tensor] = None
+    _dtheta_unc: Optional[Tensor] = None
+    _phi_in: Optional[Tensor] = None
+    _phi_in_unc: Optional[Tensor] = None
+    _phi_out: Optional[Tensor] = None
+    _phi_out_unc: Optional[Tensor] = None
+    _dphi: Optional[Tensor] = None
+    _dphi_unc: Optional[Tensor] = None
     _theta_xy_in: Optional[Tensor] = None
     _theta_xy_in_unc: Optional[Tensor] = None
     _theta_xy_out: Optional[Tensor] = None
     _theta_xy_out_unc: Optional[Tensor] = None
     _dtheta_xy: Optional[Tensor] = None
     _dtheta_xy_unc: Optional[Tensor] = None
-    _phi_in: Optional[Tensor] = None
-    _phi_in_unc: Optional[Tensor] = None
-    _phi_out: Optional[Tensor] = None
-    _phi_out_unc: Optional[Tensor] = None
     _xyz_in: Optional[Tensor] = None
     _xyz_in_unc: Optional[Tensor] = None
     _xyz_out: Optional[Tensor] = None
@@ -315,7 +319,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
     @property
     def phi_in(self) -> Tensor:
         if self._phi_in is None:
-            self._phi_in = self._compute_phi(self.track_in[:, 0:1], self.track_in[:, 1:2])
+            self._phi_in = self._compute_phi(x=self.track_in[:, 0:1], y=self.track_in[:, 1:2])
             self._phi_in_unc = None
         return self._phi_in
 
@@ -328,7 +332,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
     @property
     def phi_out(self) -> Tensor:
         if self._phi_out is None:
-            self._phi_out = self._compute_phi(self.track_out[:, 0:1], self.track_out[:, 1:2])
+            self._phi_out = self._compute_phi(x=self.track_out[:, 0:1], y=self.track_out[:, 1:2])
             self._phi_out_unc = None
         return self._phi_out
 
@@ -337,6 +341,51 @@ class AbsScatterBatch(metaclass=ABCMeta):
         if self._phi_out_unc is None:
             self._phi_out_unc = self._compute_out_var_unc(self.phi_out)
         return self._phi_out_unc
+
+    @property
+    def dtheta(self) -> Tensor:
+        r"""
+        Volume ref frame
+        """
+
+        if self._dtheta is None:
+            self._dtheta = torch.abs(self.theta_in - self.theta_out)
+            self._dtheta_unc = None
+        return self._dtheta
+
+    @property
+    def dtheta_unc(self) -> Tensor:
+        if self._dtheta_unc is None:
+            self._dtheta_unc = self._compute_out_var_unc(self.dtheta)
+        return self._dtheta_unc
+
+    @property
+    def dphi(self) -> Tensor:
+        r"""
+        Volume ref frame
+        """
+
+        if self._dphi is None:
+            # Is there a simpler formular?
+            self._dphi = torch.min(
+                torch.stack(
+                    (
+                        ((2 * torch.pi) - self.phi_in) + self.phi_out,
+                        ((2 * torch.pi) - self.phi_out) + self.phi_in,
+                        torch.abs(self.phi_in - self.phi_out),
+                    ),
+                    dim=0,
+                ),
+                dim=0,
+            ).values
+            self._dphi_unc = None
+        return self._dphi
+
+    @property
+    def dphi_unc(self) -> Tensor:
+        if self._dphi_unc is None:
+            self._dphi_unc = self._compute_out_var_unc(self.dphi)
+        return self._dphi_unc
 
     @property
     def theta_xy_in(self) -> Tensor:
@@ -366,6 +415,10 @@ class AbsScatterBatch(metaclass=ABCMeta):
 
     @property
     def dtheta_xy(self) -> Tensor:
+        r"""
+        Volume ref frame
+        """
+
         if self._dtheta_xy is None:
             self._dtheta_xy = torch.abs(self.theta_xy_in - self.theta_xy_out)
             self._dtheta_xy_unc = None
@@ -410,18 +463,23 @@ class AbsScatterBatch(metaclass=ABCMeta):
         yin, yout = self.hits["above"]["reco_xy"][idx, :, 1].detach().cpu().numpy(), self.hits["below"]["reco_xy"][idx, :, 1].detach().cpu().numpy()
         zin, zout = self.hits["above"]["z"][idx, :, 0].detach().cpu().numpy(), self.hits["below"]["z"][idx, :, 0].detach().cpu().numpy()
         scatter = self.location[idx].detach().cpu().numpy()
-        fig, axs = plt.subplots(1, 2, figsize=(8, 4))
         dtheta_xy = self.dtheta_xy[idx].detach().cpu().numpy()
-
+        dphi = self.dphi[idx].detach().cpu().numpy()
+        phi_in = self.phi_in[idx].detach().cpu().numpy()
+        phi_out = self.phi_out[idx].detach().cpu().numpy()
+        theta_xy_in = self.theta_xy_in[idx].detach().cpu().numpy()
+        theta_xy_out = self.theta_xy_out[idx].detach().cpu().numpy()
         track_start_in, track_start_out = self.track_start_in[idx].detach().cpu().numpy(), self.track_start_out[idx].detach().cpu().numpy()
         track_in, track_out = self.track_in[idx].detach().cpu().numpy(), self.track_out[idx].detach().cpu().numpy()
 
+        fig, axs = plt.subplots(1, 3, figsize=(12, 4))
         axs[0].plot(
             [
                 track_start_in[0] + ((zin.max() - track_start_in[2]) * track_in[0] / track_in[2]),
                 track_start_in[0] + ((zout.min() - track_start_in[2]) * track_in[0] / track_in[2]),
             ],
             [zin.max(), zout.min()],
+            label=r"$\theta_{x,in}=" + f"{theta_xy_in[0]:.2}$",
         )
         axs[0].plot(
             [
@@ -429,6 +487,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
                 track_start_out[0] + ((zout.min() - track_start_out[2]) * track_out[0] / track_out[2]),
             ],
             [zin.max(), zout.min()],
+            label=r"$\theta_{x,out}=" + f"{theta_xy_out[0]:.2}$",
         )
         axs[0].scatter(xin, zin)
         axs[0].scatter(xout, zout)
@@ -436,12 +495,14 @@ class AbsScatterBatch(metaclass=ABCMeta):
         axs[0].set_xlabel("x")
         axs[0].set_ylabel("z")
         axs[0].legend()
+
         axs[1].plot(
             [
                 track_start_in[1] + ((zin.max() - track_start_in[2]) * track_in[1] / track_in[2]),
                 track_start_in[1] + ((zout.min() - track_start_in[2]) * track_in[1] / track_in[2]),
             ],
             [zin.max(), zout.min()],
+            label=r"$\theta_{y,in}=" + f"{theta_xy_in[1]:.2}$",
         )
         axs[1].plot(
             [
@@ -449,6 +510,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
                 track_start_out[1] + ((zout.min() - track_start_out[2]) * track_out[1] / track_out[2]),
             ],
             [zin.max(), zout.min()],
+            label=r"$\theta_{y,out}=" + f"{theta_xy_out[1]:.2}$",
         )
         axs[1].scatter(yin, zin)
         axs[1].scatter(yout, zout)
@@ -456,6 +518,29 @@ class AbsScatterBatch(metaclass=ABCMeta):
         axs[1].set_xlabel("y")
         axs[1].set_ylabel("z")
         axs[1].legend()
+
+        axs[2].plot(
+            [
+                track_start_in[0],
+                track_start_in[0] + np.cos(phi_in),
+            ],
+            [track_start_in[1], track_start_in[1] + np.sin(phi_in)],
+            label=r"$\phi_{in}=" + f"{phi_in[0]:.3}$",
+        )
+        axs[2].plot(
+            [
+                track_start_out[0],
+                track_start_out[0] - np.cos(phi_out),
+            ],
+            [track_start_out[1], track_start_out[1] - np.sin(phi_out)],
+            label=r"$\phi_{out}=" + f"{phi_out[0]:.3}$",
+        )
+        axs[2].scatter(xin, yin)
+        axs[2].scatter(xout, yout)
+        axs[2].scatter(scatter[0], scatter[1], label=r"$\Delta\phi=" + f"{dphi[0]:.1e}$")
+        axs[2].set_xlabel("x")
+        axs[2].set_ylabel("y")
+        axs[2].legend()
         plt.show()
 
     def get_scatter_mask(self) -> Tensor:
