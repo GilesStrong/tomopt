@@ -315,7 +315,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
     @property
     def phi_in(self) -> Tensor:
         if self._phi_in is None:
-            self._phi_in = self._compute_phi(self.track_in[:, 1:2], self.track_in[:, 0:1])
+            self._phi_in = self._compute_phi(self.track_in[:, 0:1], self.track_in[:, 1:2])
             self._phi_in_unc = None
         return self._phi_in
 
@@ -328,7 +328,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
     @property
     def phi_out(self) -> Tensor:
         if self._phi_out is None:
-            self._phi_out = self._compute_phi(self.track_out[:, 1:2], self.track_out[:, 0:1])
+            self._phi_out = self._compute_phi(self.track_out[:, 0:1], self.track_out[:, 1:2])
             self._phi_out_unc = None
         return self._phi_out
 
