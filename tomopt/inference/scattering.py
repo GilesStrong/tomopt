@@ -76,6 +76,26 @@ class AbsScatterBatch(metaclass=ABCMeta):
         hits = torch.where(torch.isinf(hits), lw.mean().type(hits.type()) / 2, hits)
         uncs = torch.nan_to_num(uncs)  # Set Infs to large number
 
+        # stars, angles = [], []
+        # for i in range(2):  # seperate x and y resolutions
+        #     inv_unc2 = uncs[:, :, i : i + 1] ** -2
+        #     sum_inv_unc2 = inv_unc2.sum(dim=1)
+        #     mean_xz = torch.sum(hits[:, :, [i, 2]] * inv_unc2, dim=1) / sum_inv_unc2
+        #     mean_xz_z = torch.sum(hits[:, :, [i, 2]] * hits[:, :, 2:3] * inv_unc2, dim=1) / sum_inv_unc2
+        #     mean_x = mean_xz[:, :1]
+        #     mean_z = mean_xz[:, 1:]
+        #     mean_x_z = mean_xz_z[:, :1]
+        #     mean_z2 = mean_xz_z[:, 1:]
+
+        #     stars.append((mean_x - ((mean_z * mean_x_z) / mean_z2)) / (1 - (mean_z.square() / mean_z2)))
+        #     angles.append((mean_x_z - (stars[-1] * mean_z)) / mean_z2)
+
+        # xy_star = torch.cat(stars, dim=-1)
+        # angle = torch.cat(angles, dim=-1)
+
+        # def _calc_xyz(z: Tensor) -> Tensor:
+        #     return torch.cat([xy_star + (angle * z), z], dim=-1)
+
         slopes, inters = [], []
         for i in range(2):  # seperate x and y resolutions
             inv_unc2 = uncs[:, :, i : i + 1] ** -2
@@ -598,7 +618,7 @@ class PanelScatterBatch(AbsScatterBatch):
                 panels += [det.panels[j] for j in det.get_panel_zorder()]
             return panels
 
-        self._hit_uncs = torch.ones_like(self._gen_hits)
+        self._hit_uncs = self._get_hit_uncs(_get_panels(), self.gen_hits)
         self._track_in, self._track_start_in = self.get_muon_trajectory(self.above_hits, self.above_hit_uncs, self.volume.lw)
         self._track_out, self._track_start_out = self.get_muon_trajectory(self.below_hits, self.below_hit_uncs, self.volume.lw)
 
