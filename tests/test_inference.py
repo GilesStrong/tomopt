@@ -132,9 +132,12 @@ def test_voxel_scatter_batch(mock_show, voxel_scatter_batch):
     assert (loc_xy_unc := sb.location_unc[:, :2].mean()) < 0.5
     assert (loc_z_unc := sb.location_unc[:, 2].mean()) < 1.5
     assert (dxy_unc := sb.dxy_unc.mean()) < 1.0
-    assert (dtheta_xy_unc := (sb.dtheta_xy_unc / sb.dtheta_xy).mean()) < 10
+    assert (dtheta_unc := (sb.dtheta_unc / sb.dtheta).mean()) < 10
+    assert (dphi_unc := (sb.dphi_unc / sb.dphi).mean()) < 10
     assert (theta_out_unc := sb.theta_out_unc.mean() / sb.theta_out.abs().mean()) < 10
     assert (theta_in_unc := sb.theta_in_unc.mean() / sb.theta_in.abs().mean()) < 10
+    assert (phi_out_unc := sb.phi_out_unc.mean() / sb.phi_out.abs().mean()) < 10
+    assert (phi_in_unc := sb.phi_in_unc.mean() / sb.phi_in.abs().mean()) < 10
 
     # range check
     assert (sb.theta_in >= 0).all() and (sb.theta_in < torch.pi / 2).all()
@@ -144,6 +147,8 @@ def test_voxel_scatter_batch(mock_show, voxel_scatter_batch):
     assert (sb.theta_xy_in > -torch.pi / 2).all() and (sb.theta_xy_in < torch.pi / 2).all() and (sb.theta_xy_in.min() < 0) and (sb.theta_xy_in.max() > 0)
     assert (sb.theta_xy_out > -torch.pi / 2).all() and (sb.theta_xy_out < torch.pi / 2).all() and (sb.theta_xy_out.min() < 0) and (sb.theta_xy_out.max() > 0)
     assert (sb.dtheta_xy >= 0).all() and (sb.dtheta_xy < torch.pi).all()
+    assert (sb.dtheta >= 0).all() and (sb.dtheta < torch.pi).all()
+    assert (sb.dphi >= 0).all() and (sb.dphi < torch.pi).all()
 
     # uncertainties
     uncs = sb._get_hit_uncs(volume.get_detectors(), sb.reco_hits)
@@ -169,7 +174,10 @@ def test_voxel_scatter_batch(mock_show, voxel_scatter_batch):
     assert sb.location_unc[:, :2].mean() < loc_xy_unc
     assert sb.location_unc[:, 2].mean() < loc_z_unc
     assert sb.dxy_unc.mean() < dxy_unc
-    assert sb.dtheta_xy_unc.mean() / sb.dtheta_xy.abs().mean() < dtheta_xy_unc
+    assert sb.dtheta_unc.mean() / sb.dtheta.abs().mean() < dtheta_unc
+    assert sb.dphi_unc.mean() / sb.dphi.abs().mean() < dphi_unc
+    assert sb.phi_out_unc.mean() / sb.phi_out.abs().mean() < phi_out_unc
+    assert sb.phi_in_unc.mean() / sb.phi_in.abs().mean() < phi_in_unc
     assert sb.theta_out_unc.mean() / sb.theta_out.abs().mean() < theta_out_unc
     assert sb.theta_in_unc.mean() / sb.theta_in.abs().mean() < theta_in_unc
 
@@ -190,12 +198,15 @@ def test_panel_scatter_batch(mock_show, panel_scatter_batch):
         assert (sb.above_gen_hits[:, i, :2] == hits["above"]["gen_xy"][:, i]).all()
         assert (sb.below_gen_hits[:, i, :2] == hits["below"]["gen_xy"][:, i]).all()
 
-    assert (loc_xy_unc := sb.location_unc[:, :2].nanmedian()) < 2.0
-    assert (loc_z_unc := sb.location_unc[:, 2].nanmedian()) < 2.5
-    assert (dxy_unc := sb.dxy_unc.nanmedian()) < 1.0
-    assert (dtheta_xy_unc := (sb.dtheta_xy_unc / sb.dtheta_xy).nanmedian()) < 10
-    assert (theta_out_unc := sb.theta_out_unc.nanmedian() / sb.theta_out.abs().nanmedian()) < 10
-    assert (theta_in_unc := sb.theta_in_unc.nanmedian() / sb.theta_in.abs().nanmedian()) < 10
+    assert (loc_xy_unc := sb.location_unc[:, :2].mean()) < 0.5
+    assert (loc_z_unc := sb.location_unc[:, 2].mean()) < 1.5
+    assert (dxy_unc := sb.dxy_unc.mean()) < 1.0
+    assert (dtheta_unc := (sb.dtheta_unc / sb.dtheta).mean()) < 10
+    assert (dphi_unc := (sb.dphi_unc / sb.dphi).mean()) < 10
+    assert (theta_out_unc := sb.theta_out_unc.mean() / sb.theta_out.abs().mean()) < 10
+    assert (theta_in_unc := sb.theta_in_unc.mean() / sb.theta_in.abs().mean()) < 10
+    assert (phi_out_unc := sb.phi_out_unc.mean() / sb.phi_out.abs().mean()) < 10
+    assert (phi_in_unc := sb.phi_in_unc.mean() / sb.phi_in.abs().mean()) < 10
 
     # range check
     assert (sb.theta_in >= 0).all() and (sb.theta_in < torch.pi / 2).all()
@@ -205,7 +216,8 @@ def test_panel_scatter_batch(mock_show, panel_scatter_batch):
     assert (sb.theta_xy_in > -torch.pi / 2).all() and (sb.theta_xy_in < torch.pi / 2).all() and (sb.theta_xy_in.min() < 0) and (sb.theta_xy_in.max() > 0)
     assert (sb.theta_xy_out > -torch.pi / 2).all() and (sb.theta_xy_out < torch.pi / 2).all() and (sb.theta_xy_out.min() < 0) and (sb.theta_xy_out.max() > 0)
     assert (sb.dtheta_xy >= 0).all() and (sb.dtheta_xy < torch.pi).all()
-
+    assert (sb.dtheta >= 0).all() and (sb.dtheta < torch.pi).all()
+    assert (sb.dphi >= 0).all() and (sb.dphi < torch.pi).all()
     # uncertainties
     panel = next(volume.get_detectors()[0].yield_zordered_panels())
     uncs = sb._get_hit_uncs([panel], sb.reco_hits[:, 0:1])
@@ -235,12 +247,15 @@ def test_panel_scatter_batch(mock_show, panel_scatter_batch):
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
     sb = PanelScatterBatch(mu=mu, volume=volume)
-    assert sb.location_unc[:, :2].nanmedian() < loc_xy_unc
-    assert sb.location_unc[:, 2].nanmedian() < loc_z_unc
-    assert sb.dxy_unc.nanmedian() < dxy_unc
-    assert sb.dtheta_xy_unc.nanmedian() / sb.dtheta_xy.abs().nanmedian() < dtheta_xy_unc
-    assert sb.theta_out_unc.nanmedian() / sb.theta_out.abs().nanmedian() < theta_out_unc
-    assert sb.theta_in_unc.nanmedian() / sb.theta_in.abs().nanmedian() < theta_in_unc
+    assert sb.location_unc[:, :2].mean() < loc_xy_unc
+    assert sb.location_unc[:, 2].mean() < loc_z_unc
+    assert sb.dxy_unc.mean() < dxy_unc
+    assert sb.dtheta_unc.mean() / sb.dtheta.abs().mean() < dtheta_unc
+    assert sb.dphi_unc.mean() / sb.dphi.abs().mean() < dphi_unc
+    assert sb.phi_out_unc.mean() / sb.phi_out.abs().mean() < phi_out_unc
+    assert sb.phi_in_unc.mean() / sb.phi_in.abs().mean() < phi_in_unc
+    assert sb.theta_out_unc.mean() / sb.theta_out.abs().mean() < theta_out_unc
+    assert sb.theta_in_unc.mean() / sb.theta_in.abs().mean() < theta_in_unc
 
 
 def test_scatter_batch_trajectory_fit():
@@ -342,7 +357,7 @@ def test_gen_scatter_batch_compute(mocker, voxel_scatter_batch):  # noqa F811
     hits = {
         "above": {
             "reco_xy": Tensor([[[10.0, -2.0], [1, 0.3]]]),
-            "gen_xy": Tensor([[[0.0, 0.0], [0.0, 0.1]]]),
+            "gen_xy": Tensor([[[0.0, 0.0], [0.1, 0.0]]]),
             "z": Tensor(
                 [
                     [[1.0], [0.9]],
@@ -357,7 +372,7 @@ def test_gen_scatter_batch_compute(mocker, voxel_scatter_batch):  # noqa F811
             ),
             "gen_xy": Tensor(
                 [
-                    [[0.0, 0.1], [0.0, 0.0]],
+                    [[0.1, 0.0], [0.0, 0.0]],
                 ]
             ),
             "z": Tensor(
@@ -371,19 +386,24 @@ def test_gen_scatter_batch_compute(mocker, voxel_scatter_batch):  # noqa F811
     mocker.patch("tomopt.volume.layer.Layer.abs2idx", return_value=torch.zeros((1, 3), dtype=torch.long))
 
     sb = GenScatterBatch(mu=mu, volume=volume)
+
+    print(sb.track_in)
+    print(sb.track_out)
     assert (sb.location - Tensor([[0.0, 0.5, 0.5]])).sum().abs() < 1e-3
     assert (sb.dxy - Tensor([[0.0, 0.0]])).sum().abs() < 1e-3
     assert (sb.theta_in - (torch.pi / 4)).sum().abs() < 1e-3
     assert (sb.theta_out - (torch.pi / 4)).sum().abs() < 1e-3
+    assert (sb.dtheta).sum().abs() < 1e-3
     assert (sb.phi_in).sum().abs() < 1e-3
     assert (sb.phi_out - torch.pi).sum().abs() < 1e-3
+    assert (sb.dphi - torch.pi).sum().abs() < 1e-3
     assert (sb.dtheta_xy - Tensor([[0, torch.pi / 2]])).sum().abs() < 1e-3
 
     # Entry exit points
-    assert sb.xyz_in[:, 0].sum().abs() < 1e-3
-    assert sb.xyz_out[:, 0].sum().abs() < 1e-3
-    assert (sb.xyz_in[:, 1] - Tensor([0.2])).sum().abs() < 1e-3
-    assert (sb.xyz_out[:, 1] - Tensor([0.2])).sum().abs() < 1e-3
+    assert sb.xyz_in[:, 1].sum().abs() < 1e-3
+    assert sb.xyz_out[:, 1].sum().abs() < 1e-3
+    assert (sb.xyz_in[:, 0] - Tensor([0.2])).sum().abs() < 1e-3
+    assert (sb.xyz_out[:, 0] - Tensor([0.2])).sum().abs() < 1e-3
     assert (sb.xyz_in[:, 2] - Tensor([0.8])).sum().abs() < 1e-3
     assert (sb.xyz_out[:, 2] - Tensor([0.2])).sum().abs() < 1e-3
 
@@ -440,8 +460,8 @@ def test_voxel_x0_inferer_methods():
 
     inferer.add_scatters(sb)
     assert len(inferer.scatter_batches) == 1
-    assert (inferer.preds[0] - p).abs().sum() < 1e-5
-    assert (inferer.weights[0] - w).abs().sum() < 1e-5
+    assert (inferer.voxel_preds[0] - p).abs().sum() < 1e-5
+    assert (inferer.voxel_weights[0] - w).abs().sum() < 1e-5
 
     pi, wi = inferer.get_prediction()
     assert (pi - p).abs().sum() < 1e-5
@@ -455,8 +475,8 @@ def test_voxel_x0_inferer_methods():
     inferer.add_scatters(sb)
 
     assert len(inferer.scatter_batches) == 2
-    assert len(inferer.preds) == 2
-    assert len(inferer.weights) == 2
+    assert len(inferer.voxel_preds) == 2
+    assert len(inferer.voxel_weights) == 2
 
     pi, wi = inferer.get_prediction()  # Averaged prediction slightly changes with new batch
     assert (pi - p).abs().sum() > 1e-2
@@ -510,8 +530,8 @@ def test_panel_x0_inferer_methods():
 
     inferer.add_scatters(sb)
     assert len(inferer.scatter_batches) == 1
-    assert (inferer.preds[0] - p).abs().sum() < 1e-5
-    assert (inferer.weights[0] - w).abs().sum() < 1e-5
+    assert (inferer.voxel_preds[0] - p).abs().sum() < 1e-5
+    assert (inferer.voxel_weights[0] - w).abs().sum() < 1e-5
 
     pi, wi = inferer.get_prediction()
     assert (pi - p).abs().sum() < 1e-5
@@ -525,8 +545,8 @@ def test_panel_x0_inferer_methods():
     inferer.add_scatters(sb)
 
     assert len(inferer.scatter_batches) == 2
-    assert len(inferer.preds) == 2
-    assert len(inferer.weights) == 2
+    assert len(inferer.voxel_preds) == 2
+    assert len(inferer.voxel_weights) == 2
 
     pi, wi = inferer.get_prediction()  # Averaged prediction slightly changes with new batch
     assert (pi - p).abs().sum() > 1e-2
@@ -558,15 +578,17 @@ def test_x0_inferer_scatter_inversion(mocker, voxel_scatter_batch):  # noqa F811
     x0 = X0["lead"]
     n_x0 = layer._compute_n_x0(x0=x0, deltaz=SZ, theta=mu.theta)
     mocker.patch("tomopt.volume.layer.torch.randn", lambda n, device: torch.ones(n, device=device))  # remove randomness
-    dx, dy, dtheta_x, dtheta_y = layer._compute_displacements(n_x0=n_x0, deltaz=SZ, theta_x=mu.theta_x, theta_y=mu.theta_y, mom=mu.mom)
+    dx, dy, dtheta, dphi = layer._compute_displacements(n_x0=n_x0, deltaz=SZ, theta_x=mu.theta_x, theta_y=mu.theta_y, mom=mu.mom)
 
-    sb._dtheta_xy = torch.stack([dtheta_x, dtheta_y], dim=-1)
-    sb._dtheta_xy_unc = torch.ones_like(sb._dtheta_xy)
+    sb._dtheta = dtheta[:, None]
+    sb._dphi = dphi[:, None]
+    sb._dtheta_unc = torch.ones_like(sb._dtheta)
+    sb._dphi_unc = torch.ones_like(sb._dphi)
     sb._theta_in = mu.theta[:, None]
-    sb._theta_in_unc = torch.ones_like(sb._dtheta_xy)
-    mu.scatter_dtheta_xy(dtheta_x=dtheta_x, dtheta_y=dtheta_y)
+    sb._theta_in_unc = torch.ones_like(sb._dtheta)
+    mu.scatter_dtheta_dphi(dtheta=dtheta, dphi=dphi)
     sb._theta_out = mu.theta[:, None]
-    sb._theta_out_unc = torch.ones_like(sb._dtheta_xy)
+    sb._theta_out_unc = torch.ones_like(sb._dtheta)
 
     mask = torch.ones_like(n_x0) > 0
     mocker.patch.object(sb, "get_scatter_mask", lambda: mask)

@@ -41,8 +41,8 @@ class AbsX0Inferer(AbsVolumeInferer):
         self.x0_dxys: List[Optional[Tensor]] = []
         self.x0_dxy_uncs: List[Optional[Tensor]] = []
         self.efficiencies: List[Tensor] = []
-        self.preds: List[Tensor] = []
-        self.weights: List[Tensor] = []
+        self.voxel_preds: List[Tensor] = []
+        self.voxel_weights: List[Tensor] = []
 
     def add_scatters(self, scatters: AbsScatterBatch) -> None:
         super().add_scatters(scatters=scatters)
@@ -66,8 +66,8 @@ class AbsX0Inferer(AbsVolumeInferer):
             efficiency=self.efficiencies[-1],
             scatters=scatters,
         )
-        self.preds.append(p)
-        self.weights.append(w)
+        self.voxel_preds.append(p)
+        self.voxel_weights.append(w)
 
     @staticmethod
     def _x0_from_dtheta(delta_z: float, mom: Tensor, dtheta: Tensor, dphi: Tensor, theta_in: Tensor, theta_out: Tensor) -> Tensor:
@@ -223,10 +223,10 @@ class AbsX0Inferer(AbsVolumeInferer):
             print("Warning: unable to scan volume with prescribed number of muons.")
             return None, None
         elif len(self.scatter_batches) == 1:
-            return self.preds[0], self.weights[0]
+            return self.voxel_preds[0], self.voxel_weights[0]
         else:
-            preds = torch.stack(self.preds, dim=0)
-            weights = torch.stack(self.weights, dim=0)
+            preds = torch.stack(self.voxel_preds, dim=0)
+            weights = torch.stack(self.voxel_weights, dim=0)
             wpred = (preds * weights).sum(0)
             weight = weights.sum(0)
             pred = wpred / weight
