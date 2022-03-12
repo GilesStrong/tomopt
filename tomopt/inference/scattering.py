@@ -76,25 +76,25 @@ class AbsScatterBatch(metaclass=ABCMeta):
         hits = torch.where(torch.isinf(hits), lw.mean().type(hits.type()) / 2, hits)
         uncs = torch.nan_to_num(uncs)  # Set Infs to large number
 
-        stars, angles = [], []
+        slopes, inters = [], []
         for i in range(2):  # seperate x and y resolutions
             inv_unc2 = uncs[:, :, i : i + 1] ** -2
             sum_inv_unc2 = inv_unc2.sum(dim=1)
-            mean_xz = torch.sum(hits[:, :, [i, 2]] * inv_unc2, dim=1) / sum_inv_unc2
-            mean_xz_z = torch.sum(hits[:, :, [i, 2]] * hits[:, :, 2:3] * inv_unc2, dim=1) / sum_inv_unc2
-            mean_x = mean_xz[:, :1]
-            mean_z = mean_xz[:, 1:]
-            mean_x_z = mean_xz_z[:, :1]
-            mean_z2 = mean_xz_z[:, 1:]
+            sum_xz = torch.sum(inv_unc2 * hits[:, :, [i, 2]], dim=1)
+            sum_xz_z = torch.sum(inv_unc2 * hits[:, :, [i, 2]] * hits[:, :, 2:3], dim=1)
+            sum_x = sum_xz[:, :1]
+            sum_z = sum_xz[:, 1:]
+            sum_x_z = sum_xz_z[:, :1]
+            sum_z_z = sum_xz_z[:, 1:]
 
-            stars.append((mean_x - ((mean_z * mean_x_z) / mean_z2)) / (1 - (mean_z.square() / mean_z2)))
-            angles.append((mean_x_z - (stars[-1] * mean_z)) / mean_z2)
+            slopes.append(((sum_inv_unc2 * sum_x_z) - (sum_x * sum_z)) / ((sum_inv_unc2 * sum_z_z) - (sum_z * sum_z)))
+            inters.append((sum_x - (slopes[-1] * sum_x)) / sum_inv_unc2)
 
-        xy_star = torch.cat(stars, dim=-1)
-        angle = torch.cat(angles, dim=-1)
+        inter = torch.cat(inters, dim=-1)
+        slope = torch.cat(slopes, dim=-1)
 
         def _calc_xyz(z: Tensor) -> Tensor:
-            return torch.cat([xy_star + (angle * z), z], dim=-1)
+            return torch.cat([inter + (slope * z), z], dim=-1)
 
         start = _calc_xyz(hits[:, 0, 2:3])  # Upper & lower hits. Only z coord is used therefore ok if xy were NaN/Inf
         end = _calc_xyz(hits[:, 1, 2:3])
