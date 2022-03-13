@@ -1,3 +1,4 @@
+from cmath import log
 import pytest
 from pytest_mock import mocker  # noqa F401
 import numpy as np
@@ -578,7 +579,7 @@ def test_x0_inferer_scatter_inversion(mocker, voxel_scatter_batch):  # noqa F811
     x0 = X0["lead"]
     n_x0 = layer._compute_n_x0(x0=x0, deltaz=SZ, theta=mu.theta)
     mocker.patch("tomopt.volume.layer.torch.randn", lambda n, device: torch.ones(n, device=device))  # remove randomness
-    dx, dy, dtheta, dphi = layer._compute_displacements(n_x0=n_x0, deltaz=SZ, theta_x=mu.theta_x, theta_y=mu.theta_y, mom=mu.mom)
+    dx, dy, dtheta, dphi = layer._compute_displacements(n_x0=n_x0, deltaz=SZ, theta_x=mu.theta_x, theta_y=mu.theta_y, mom=mu.mom, log_term=False)
 
     sb._dtheta = dtheta[:, None]
     sb._dphi = dphi[:, None]
@@ -596,7 +597,7 @@ def test_x0_inferer_scatter_inversion(mocker, voxel_scatter_batch):  # noqa F811
 
     mocker.patch("tomopt.inference.volume.jacobian", lambda i, j: torch.ones((len(i), 1, 7), device=i.device))  # remove randomness
     pred, _ = inferer.x0_from_dtheta(scatters=sb)
-    assert (pred.mean() - x0) < 1e-5
+    assert (pred.mean() - x0).abs() < 1e-5
 
 
 @pytest.mark.flaky(max_runs=2, min_passes=1)

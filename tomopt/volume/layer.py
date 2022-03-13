@@ -25,7 +25,7 @@ class Layer(nn.Module):
         return deltaz / (x0 * torch.cos(theta))
 
     def _compute_displacements(
-        self, *, n_x0: Tensor, deltaz: Union[Tensor, float], theta_x: Tensor, theta_y: Tensor, mom: Tensor
+        self, *, n_x0: Tensor, deltaz: Union[Tensor, float], theta_x: Tensor, theta_y: Tensor, mom: Tensor, log_term: bool = True
     ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
         r"""
         Returns dx, dy, dtheta, dphi of the muons in the refernce frame of the volume
@@ -35,7 +35,9 @@ class Layer(nn.Module):
         z1 = torch.randn(n, device=self.device)
         z2 = torch.randn(n, device=self.device)
 
-        theta0 = (SCATTER_COEF_A / mom) * torch.sqrt(n_x0) * (1 + (SCATTER_COEF_B * torch.log(n_x0)))
+        theta0 = (SCATTER_COEF_A / mom) * torch.sqrt(n_x0)
+        if log_term:
+            theta0 = theta0 * (1 + (SCATTER_COEF_B * torch.log(n_x0)))
         # These are in the muons' reference frames NOT the volume's!!!
         theta_msc = math.sqrt(2) * z2 * theta0
         phi_msc = torch.rand(n, device=self.device) * 2 * math.pi
