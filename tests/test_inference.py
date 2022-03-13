@@ -345,8 +345,8 @@ def test_scatter_batch_compute(mocker, voxel_scatter_batch):  # noqa F811
     sb = VoxelScatterBatch(mu=mu, volume=volume)
     assert (sb.location - Tensor([[0.0, 0.5, 0.5]])).sum().abs() < 1e-3
     assert (sb.dxy - Tensor([[0.0, 0.0]])).sum().abs() < 1e-3
-    assert (sb.phi_in).sum().abs() < 1e-3
-    assert (sb.phi_out - torch.pi).sum().abs() < 1e-3
+    assert (sb.phi_in - (torch.pi / 2)).sum().abs() < 1e-3
+    assert (sb.phi_out - (3 * torch.pi / 2)).sum().abs() < 1e-3
 
     assert (sb.theta_in - (torch.pi / 4)).sum().abs() < 1e-3
     assert (sb.theta_out - (torch.pi / 4)).sum().abs() < 1e-3
@@ -418,7 +418,7 @@ def test_abs_volume_inferer_properties(voxel_scatter_batch):
     assert inferer.size == SZ
 
 
-@pytest.mark.flaky(max_runs=3, min_passes=1)
+@pytest.mark.flaky(max_runs=4, min_passes=1)
 def test_voxel_x0_inferer_methods():
     volume = Volume(get_voxel_layers(init_res=1e3))
     gen = MuonGenerator.from_volume(volume)

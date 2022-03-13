@@ -244,7 +244,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
         phi = torch.arctan(y / x)  # (-pi/2, pi/2)
         m = x < 0
         phi[m] = phi[m] + torch.pi
-        m = ((x > 0) * (y < 0)).bool()
+        m = ((x >= 0) * (y < 0)).bool()
         phi[m] = phi[m] + (2 * torch.pi)  # (0, 2pi)
         return phi
 

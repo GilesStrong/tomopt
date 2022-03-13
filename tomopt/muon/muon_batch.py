@@ -258,7 +258,7 @@ class MuonBatch:
         phi = torch.arctan(theta_y.tan() / theta_x.tan())  # (-pi/2, pi/2)
         m = theta_x < 0
         phi[m] = phi[m] + torch.pi
-        m = ((theta_x > 0) * (theta_y < 0)).bool()
+        m = ((theta_x >= 0) * (theta_y < 0)).bool()
         phi[m] = phi[m] + (2 * torch.pi)  # (0, 2pi)
 
         phi[(theta_x.abs() >= torch.pi / 2) + (theta_y.abs() >= torch.pi / 2)] = torch.nan
