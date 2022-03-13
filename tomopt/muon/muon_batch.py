@@ -18,6 +18,7 @@ class MuonBatch:
     p_dim = 2
     th_dim = 3
     ph_dim = 4
+    _keep_mask: Optional[Tensor] = None  # After a scattering, this will be a Boolean mask of muons kept, to help with testing
 
     def __init__(self, xy_p_theta_phi: Tensor, init_z: Union[Tensor, float], device: torch.device = DEVICE):
         r"""
@@ -180,22 +181,22 @@ class MuonBatch:
 
     @property
     def theta_x(self) -> Tensor:
-        return (self.theta.sin() * self.phi.cos()).arcsin()
+        return self.theta_x_from_theta_phi(self.theta, self.phi)
 
     @theta_x.setter
     def theta_x(self, theta_x: Tensor) -> None:
         raise AttributeError(
-            "Please use the scatter_dtheta_xy method to modify the direction of muons. Or modify the _muons attribute if you really know what you're doing"
+            "Please use the scatter_dtheta_dphi method to modify the direction of muons. Or modify the _muons attribute if you really know what you're doing"
         )
 
     @property
     def theta_y(self) -> Tensor:
-        return (self.theta.sin() * self.phi.sin()).arcsin()
+        return self.theta_y_from_theta_phi(self.theta, self.phi)
 
     @theta_y.setter
     def theta_y(self, theta_y: Tensor) -> None:
         raise AttributeError(
-            "Please use the scatter_dtheta_xy method to modify the direction of muons. Or modify the _muons attribute if you really know what you're doing"
+            "Please use the scatter_dtheta_dphi method to modify the direction of muons. Or modify the _muons attribute if you really know what you're doing"
         )
 
     def scatter_dxy(self, dx: Optional[Tensor] = None, dy: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
@@ -211,51 +212,19 @@ class MuonBatch:
             self._y[mask] = self._y[mask] + dy
 
     def scatter_dtheta_dphi(self, dtheta: Optional[Tensor] = None, dphi: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
-        r"""
-        dtheta & dphi are expected to be the volume reference fram, not the muons'
-        """
-
         if mask is None:
             mask = torch.ones(len(self._muons), device=self.device).bool()
         if dphi is not None:
             self._phi[mask] = (self._phi[mask] + dphi) % (2 * torch.pi)
         if dtheta is not None:
             theta = (self._theta[mask] + dtheta) % (2 * torch.pi)
-            phi = self._phi[mask]
             # Correct theta, must avoid double Bool mask
+            phi = self._phi[mask]
             m = theta > torch.pi
             phi[m] = (phi[m] + torch.pi) % (2 * torch.pi)  # rotate in phi
             theta[m] = (2 * torch.pi) - theta[m]  # theta (0,pi)
             self._phi[mask] = phi
             self._theta[mask] = theta
-
-        self.remove_upwards_muons()
-
-    def scatter_dtheta_xy(self, dtheta_x: Optional[Tensor] = None, dtheta_y: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
-        r"""
-        dtheta_x & dtheta_y are expected to be the volume reference fram, not the muons'
-        """
-
-        if mask is None:
-            mask = torch.ones(len(self._muons), device=self.device).bool()
-
-        tx = self.theta_x[mask]
-        ty = self.theta_y[mask]
-
-        def add_theta(t: Tensor, dt: Tensor) -> Tensor:
-            t = (t + dt) % (2 * torch.pi)  # Add in (0,2pi)
-            # Convert to (-pi,pi)
-            m = t > torch.pi
-            t[m] = t[m] - (2 * torch.pi)
-            return t
-
-        if dtheta_x is not None:
-            tx = add_theta(tx, dtheta_x)
-        if dtheta_y is not None:
-            ty = add_theta(ty, dtheta_y)
-
-        self._theta[mask] = self.theta_from_theta_xy(tx, ty)
-        self._phi[mask] = self.phi_from_theta_xy(tx, ty)
 
         self.remove_upwards_muons()
 
@@ -265,39 +234,65 @@ class MuonBatch:
         Should be run after any changes to theta, but make sure that references (e.g. masks) to the complete set of muons are no longer required
         """
 
-        mask = self._theta < torch.pi / 2
-        if mask.sum() < len(self):
+        self._keep_mask = self._theta < torch.pi / 2  # To keep
+        if self._keep_mask.sum() < len(self):
             # Save muons, just in case they're useful for diagnostics
             if self._upwards_muons is None:
-                self._upwards_muons = self._muons[mask].detach().cpu().numpy()
+                self._upwards_muons = self._muons[~self._keep_mask].detach().cpu().numpy()
             else:
-                self._upwards_muons = np.concatenate((self._upwards_muons, self._muons[mask].detach().cpu().numpy()), axis=0)
+                self._upwards_muons = np.concatenate((self._upwards_muons, self._muons[~self._keep_mask].detach().cpu().numpy()), axis=0)
 
             # Remove muons and hits
-            self._muons = self._muons[mask]
+            self._muons = self._muons[self._keep_mask]
             for pos in self._hits:  # TODO: Make a HitBatch class to make this easier?
                 for var in self._hits[pos]:
                     for det, xy_pos in enumerate(self._hits[pos][var]):
-                        self._hits[pos][var][det] = xy_pos[mask]
+                        self._hits[pos][var][det] = xy_pos[self._keep_mask]
 
     @staticmethod
     def phi_from_theta_xy(theta_x: Tensor, theta_y: Tensor) -> Tensor:
-        phi = torch.arctan(theta_y.sin() / theta_x.sin())  # (-pi/2, pi/2)
+        r"""
+        N.B. this function does NOT work if theta is > pi/2
+        """
+
+        phi = torch.arctan(theta_y.tan() / theta_x.tan())  # (-pi/2, pi/2)
         m = theta_x < 0
         phi[m] = phi[m] + torch.pi
-        m = ((theta_x > 0) * (theta_y < 0)).bool()
+        m = ((theta_x >= 0) * (theta_y < 0)).bool()
         phi[m] = phi[m] + (2 * torch.pi)  # (0, 2pi)
+
+        phi[(theta_x.abs() >= torch.pi / 2) + (theta_y.abs() >= torch.pi / 2)] = torch.nan
         return phi
 
     @staticmethod
     def theta_from_theta_xy(theta_x: Tensor, theta_y: Tensor) -> Tensor:
-        stheta = (theta_x.sin().square() + theta_y.sin().square()).sqrt()
-        theta = stheta.arcsin()
-        m = stheta > 1
-        theta[m] = (stheta[m] - 1).arcsin() + (torch.pi / 2)
-        m = (((theta_x.abs() > torch.pi / 2) + (theta_y.abs() > torch.pi / 2)) * (stheta < 1)).bool()
-        theta[m] = theta[m] + (torch.pi / 2)
+        r"""
+        N.B. this function does NOT work if theta is > pi/2
+        """
+
+        theta = (theta_x.tan().square() + theta_y.tan().square()).sqrt().arctan()
+        # theta[(theta_x.abs() >= torch.pi / 2) + (theta_y.abs() >= torch.pi / 2)] = torch.nan
         return theta
+
+    @staticmethod
+    def theta_x_from_theta_phi(theta: Tensor, phi: Tensor) -> Tensor:
+        r"""
+        N.B. this function does NOT work if theta is > pi/2
+        """
+
+        tx = (theta.tan() * phi.cos()).arctan()
+        tx[(theta >= torch.pi / 2)] = torch.nan
+        return tx
+
+    @staticmethod
+    def theta_y_from_theta_phi(theta: Tensor, phi: Tensor) -> Tensor:
+        r"""
+        N.B. this function does NOT work if theta is > pi/2
+        """
+
+        ty = (theta.tan() * phi.sin()).arctan()
+        ty[(theta >= torch.pi / 2)] = torch.nan
+        return ty
 
     def propagate(self, dz: Union[Tensor, float]) -> None:
         r = dz / self._theta.cos()
@@ -331,14 +326,14 @@ class MuonBatch:
             m = self.get_xy_mask(xy_low, xy_high)
             return {p: {c: torch.stack(self._hits[p][c], dim=1)[m] for c in self._hits[p]} for p in self._hits}
 
-    def dtheta_x(self, mu: MuonBatch) -> Tensor:
-        return torch.abs(self.theta_x - mu.theta_x)
+    def dtheta_x(self, theta_ref: Tensor) -> Tensor:
+        return torch.abs(self.theta_x - theta_ref)
 
-    def dtheta_y(self, mu: MuonBatch) -> Tensor:
-        return torch.abs(self.theta_y - mu.theta_y)
+    def dtheta_y(self, theta_ref: Tensor) -> Tensor:
+        return torch.abs(self.theta_y - theta_ref)
 
-    def dtheta(self, mu: MuonBatch) -> Tensor:
-        return torch.abs(self.theta - mu.theta)
+    def dtheta(self, theta_ref: Tensor) -> Tensor:
+        return torch.abs(self.theta - theta_ref)
 
     def copy(self) -> MuonBatch:
         return MuonBatch(self._muons.detach().clone(), init_z=self.z.detach().clone(), device=self.device)
