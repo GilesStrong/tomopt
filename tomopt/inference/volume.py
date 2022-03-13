@@ -72,7 +72,7 @@ class AbsX0Inferer(AbsVolumeInferer):
     @staticmethod
     def _x0_from_dtheta(delta_z: float, mom: Tensor, dtheta: Tensor, dphi: Tensor, theta_in: Tensor, theta_out: Tensor) -> Tensor:
         theta2_msc = (dtheta**2) + (dphi**2)
-        cos_theta = theta_in.cos()  # theta_in.cos() + theta_out.cos()) / 2
+        cos_theta = (theta_in.cos() + theta_out.cos()) / 2
         return 2 * ((SCATTER_COEF_A / mom) ** 2) * delta_z / (theta2_msc * cos_theta)
 
     @staticmethod
@@ -124,6 +124,10 @@ class AbsX0Inferer(AbsVolumeInferer):
             [torch.zeros_like(mom)[:, None], scatters.dtheta_unc, scatters.dphi_unc, scatters.theta_in_unc, scatters.theta_out_unc],
             dim=-1,
         )
+        # uncs = torch.cat(
+        #     [torch.zeros_like(mom)[:, None], scatters.dtheta_unc, scatters.dtheta_unc, scatters.theta_in_unc, scatters.theta_out_unc],
+        #     dim=-1,
+        # )
 
         pred = self._x0_from_dtheta(delta_z=self.size, mom=mom, dtheta=dtheta, dphi=dphi, theta_in=theta_in, theta_out=theta_out)
         pred_unc = self._x0_from_dtheta_unc(pred=pred, in_vars=in_vars, uncs=uncs)
