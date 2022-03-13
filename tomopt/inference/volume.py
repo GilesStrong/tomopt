@@ -72,7 +72,7 @@ class AbsX0Inferer(AbsVolumeInferer):
     @staticmethod
     def _x0_from_dtheta(delta_z: float, mom: Tensor, dtheta: Tensor, dphi: Tensor, theta_in: Tensor, theta_out: Tensor) -> Tensor:
         theta2_msc = (dtheta**2) + (dphi**2)
-        cos_theta = (theta_in.cos() + theta_out.cos()) / 2
+        cos_theta = theta_in.cos()  # theta_in.cos() + theta_out.cos()) / 2
         return 2 * ((SCATTER_COEF_A / mom) ** 2) * delta_z / (theta2_msc * cos_theta)
 
     @staticmethod
@@ -116,7 +116,7 @@ class AbsX0Inferer(AbsVolumeInferer):
         )
         mom = in_vars[:, 0]
         dtheta = in_vars[:, 1]
-        dphi = in_vars[:, 1]
+        dphi = in_vars[:, 2]
         theta_in = in_vars[:, 3]
         theta_out = in_vars[:, 4]
 
