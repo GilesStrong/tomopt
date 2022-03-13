@@ -130,15 +130,15 @@ def test_voxel_scatter_batch(mock_show, voxel_scatter_batch):
         assert (sb.above_gen_hits[:, i, :2] == hits["above"]["gen_xy"][:, i]).all()
         assert (sb.below_gen_hits[:, i, :2] == hits["below"]["gen_xy"][:, i]).all()
 
-    assert (loc_xy_unc := sb.location_unc[:, :2].mean()) < 0.5
-    assert (loc_z_unc := sb.location_unc[:, 2].mean()) < 1.5
-    assert (dxy_unc := sb.dxy_unc.mean()) < 1.0
-    assert (dtheta_unc := (sb.dtheta_unc / sb.dtheta).mean()) < 10
-    assert (dphi_unc := (sb.dphi_unc / sb.dphi).mean()) < 10
-    assert (theta_out_unc := sb.theta_out_unc.mean() / sb.theta_out.abs().mean()) < 10
-    assert (theta_in_unc := sb.theta_in_unc.mean() / sb.theta_in.abs().mean()) < 10
-    assert (phi_out_unc := sb.phi_out_unc.mean() / sb.phi_out.abs().mean()) < 10
-    assert (phi_in_unc := sb.phi_in_unc.mean() / sb.phi_in.abs().mean()) < 10
+    assert (loc_xy_unc := sb.location_unc[:, :2].nanmean()) < 0.5
+    assert (loc_z_unc := sb.location_unc[:, 2].nanmean()) < 1.5
+    assert (dxy_unc := sb.dxy_unc.nanmean()) < 1.0
+    assert (dtheta_unc := (sb.dtheta_unc / sb.dtheta).nanmean()) < 10
+    assert (dphi_unc := (sb.dphi_unc / sb.dphi).nanmean()) < 10
+    assert (theta_out_unc := sb.theta_out_unc.nanmean() / sb.theta_out.abs().nanmean()) < 10
+    assert (theta_in_unc := sb.theta_in_unc.nanmean() / sb.theta_in.abs().nanmean()) < 10
+    assert (phi_out_unc := sb.phi_out_unc.nanmean() / sb.phi_out.abs().nanmean()) < 10
+    assert (phi_in_unc := sb.phi_in_unc.nanmean() / sb.phi_in.abs().nanmean()) < 10
 
     # range check
     assert (sb.theta_in >= 0).all() and (sb.theta_in < torch.pi / 2).all()
@@ -153,7 +153,7 @@ def test_voxel_scatter_batch(mock_show, voxel_scatter_batch):
 
     # uncertainties
     uncs = sb._get_hit_uncs(volume.get_detectors(), sb.reco_hits)
-    assert (uncs[:, 0].mean(0) - Tensor([1e-4, 1e-4, 0])).abs().sum() < 1e-5
+    assert (uncs[:, 0].nanmean(0) - Tensor([1e-4, 1e-4, 0])).abs().sum() < 1e-5
 
     sb.plot_scatter(0)
 
@@ -172,15 +172,15 @@ def test_voxel_scatter_batch(mock_show, voxel_scatter_batch):
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
     sb = VoxelScatterBatch(mu=mu, volume=volume)
-    assert sb.location_unc[:, :2].mean() < loc_xy_unc
-    assert sb.location_unc[:, 2].mean() < loc_z_unc
-    assert sb.dxy_unc.mean() < dxy_unc
-    assert sb.dtheta_unc.mean() / sb.dtheta.abs().mean() < dtheta_unc
-    assert sb.dphi_unc.mean() / sb.dphi.abs().mean() < dphi_unc
-    assert sb.phi_out_unc.mean() / sb.phi_out.abs().mean() < phi_out_unc
-    assert sb.phi_in_unc.mean() / sb.phi_in.abs().mean() < phi_in_unc
-    assert sb.theta_out_unc.mean() / sb.theta_out.abs().mean() < theta_out_unc
-    assert sb.theta_in_unc.mean() / sb.theta_in.abs().mean() < theta_in_unc
+    assert sb.location_unc[:, :2].nanmean() < loc_xy_unc
+    assert sb.location_unc[:, 2].nanmean() < loc_z_unc
+    assert sb.dxy_unc.nanmean() < dxy_unc
+    assert sb.dtheta_unc.nanmean() / sb.dtheta.abs().nanmean() < dtheta_unc
+    assert sb.dphi_unc.nanmean() / sb.dphi.abs().nanmean() < dphi_unc
+    assert sb.phi_out_unc.nanmean() / sb.phi_out.abs().nanmean() < phi_out_unc
+    assert sb.phi_in_unc.nanmean() / sb.phi_in.abs().nanmean() < phi_in_unc
+    assert sb.theta_out_unc.nanmean() / sb.theta_out.abs().nanmean() < theta_out_unc
+    assert sb.theta_in_unc.mean() / sb.theta_in.abs().nanmean() < theta_in_unc
 
 
 @pytest.mark.flaky(max_runs=3, min_passes=2)
@@ -426,7 +426,7 @@ def test_voxel_x0_inferer_methods():
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
     sb = VoxelScatterBatch(mu=mu, volume=volume)
-    inferer = VoxelX0Inferer(volume=volume)
+    inferer = VoxelX0Inferer(volume=volume, use_low_res_trick=False)
 
     pt, pt_unc = inferer.x0_from_dtheta(scatters=sb)
     assert len(pt) == len(sb.location)
@@ -575,8 +575,9 @@ def test_panel_x0_inferer_efficiency(mocker, panel_scatter_batch):  # noqa F811
 def test_x0_inferer_scatter_inversion(mocker, voxel_scatter_batch):  # noqa F811
     layer = Layer(LW, Z, SZ)
     mu, volume, sb = voxel_scatter_batch
-    inferer = VoxelX0Inferer(volume=volume)
+    inferer = VoxelX0Inferer(volume=volume, use_low_res_trick=False)
     inferer.size = SZ
+    inferer.use_low_res_trick = False
     x0 = X0["lead"]
     n_x0 = layer._compute_n_x0(x0=x0, deltaz=SZ, theta=mu.theta)
     mocker.patch("tomopt.volume.layer.torch.randn", lambda n, device: torch.ones(n, device=device))  # remove randomness
