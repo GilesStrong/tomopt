@@ -1,4 +1,5 @@
 from __future__ import annotations
+from abc import abstractmethod
 import numpy as np
 from typing import Union, Tuple, Optional, TYPE_CHECKING
 from particle import Particle
@@ -9,10 +10,10 @@ from torch import Tensor
 if TYPE_CHECKING:
     from ..volume import Volume
 
-__all__ = ["MuonGenerator"]
+__all__ = ["ChineseMuonGenerator", "HaithamMuonGenerator"]
 
 
-class MuonGenerator:
+class AbsMuonGenerator:
     _muon_mass2 = (Particle.from_pdgid(13).mass * 1e-3) ** 2  # GeV^2
     _n_bins_energy = 200
     _n_bins_theta = 200
@@ -52,7 +53,7 @@ class MuonGenerator:
     @classmethod
     def from_volume(
         cls, volume: Volume, min_angle: float = np.pi / 12, fixed_mom: Optional[float] = 5.0, energy_range: Tuple[float, float] = (0.5, 500)
-    ) -> MuonGenerator:
+    ) -> AbsMuonGenerator:
         """
         Heuristically computes x,y generation range as (0-d,x+d), (0-d,y+d).
         Where d is such that a muon generated at (0-d,1) will only hit the last layer of the passive volume if it's initial angle is at least min_angle.
@@ -63,25 +64,9 @@ class MuonGenerator:
         d = np.tan(min_angle) * (volume.h.detach().cpu().item() - volume.get_passive_z_range()[0].detach().cpu().item() + volume.passive_size)
         return cls(x_range=(0 - d, x + d), y_range=(0 - d, y + d), fixed_mom=fixed_mom, energy_range=energy_range)
 
+    @abstractmethod
     def flux(self, energy: Union[float, np.ndarray], theta: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
-        """
-        Function returning modified Gaisser formula for cosmic muon flux given energy (float/np.array) and incidence angle (float/np.array)
-        Uses model defined in arXiv:1509.06176
-        """
-
-        cosTheta = np.cos(theta)
-        P1 = 0.102573
-        P2 = -0.068287
-        P3 = 0.958633
-        P4 = 0.0407253
-        P5 = 0.817285
-        cosine = np.sqrt((cosTheta**2 + P1**2 + P2 * cosTheta**P3 + P4 * cosTheta**P5) / (1 + P1**2 + P2 + P4))
-        flux = (
-            0.14
-            * (energy * (1 + 3.64 / (energy * cosine**1.29))) ** (-2.7)
-            * ((1 / (1 + (1.1 * energy * cosine) / 115)) + (0.054 / (1 + (1.1 * energy * cosine) / 850)))
-        )
-        return flux
+        pass
 
     def generate_set(self, n_muons: int) -> Tensor:
         """
@@ -108,3 +93,49 @@ class MuonGenerator:
         coord_y = np.random.uniform(self.y_range[0], self.y_range[1], n_muons)
 
         return torch.Tensor(np.stack([coord_x, coord_y, momentum, theta, phi], axis=1))
+
+
+class ChineseMuonGenerator(AbsMuonGenerator):
+    P1 = 0.102573
+    P2 = -0.068287
+    P3 = 0.958633
+    P4 = 0.0407253
+    P5 = 0.817285
+
+    def flux(self, energy: Union[float, np.ndarray], theta: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+        """
+        Function returning modified Gaisser formula for cosmic muon flux given energy (float/np.array) and incidence angle (float/np.array)
+        Uses model defined in arXiv:1509.06176
+        """
+
+        cosTheta = np.cos(theta)
+        cosine = np.sqrt(
+            (cosTheta**2 + self.P1**2 + self.P2 * cosTheta**self.P3 + self.P4 * cosTheta**self.P5) / (1 + self.P1**2 + self.P2 + self.P4)
+        )
+        flux = (
+            0.14
+            * (energy * (1 + 3.64 / (energy * cosine**1.29))) ** (-2.7)
+            * ((1 / (1 + (1.1 * energy * cosine) / 115)) + (0.054 / (1 + (1.1 * energy * cosine) / 850)))
+        )
+        return flux
+
+
+class HaithamMuonGenerator(AbsMuonGenerator):
+    I_0 = 88.0
+    n = 3
+    E_0 = 3.87
+    E_c = 0.5
+    epinv = 1 / 854.0
+    Rod = 174.0
+    N = (n - 1) * (E_0 + E_c) ** (n - 1)
+
+    def flux(self, energy: Union[float, np.ndarray], theta: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+        """
+        Function returning modified Gaisser formula for cosmic muon flux given energy (float/np.array) and incidence angle (float/np.array)
+        Uses model defined in arXiv:1606.06907
+        """
+        #  initialize cosmic variables
+
+        Cosine = (np.sqrt(self.Rod**2 * np.cos(theta) ** 2 + 2 * self.Rod + 1) - self.Rod * np.cos(theta)) ** (-(self.n - 1))
+        flux = self.I_0 * self.N * (self.E_0 + energy) ** (-self.n) * (1 + energy * self.epinv) ** (-1) * Cosine
+        return flux

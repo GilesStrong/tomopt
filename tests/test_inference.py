@@ -1,4 +1,3 @@
-from cmath import log
 import pytest
 from pytest_mock import mocker  # noqa F401
 import numpy as np
