@@ -8,6 +8,7 @@ import torch.nn.functional as F
 
 from tomopt.volume.layer import Layer
 from tomopt.volume import PassiveLayer, VoxelDetectorLayer, Volume, PanelDetectorLayer, DetectorPanel
+from tomopt.optimisation import MuonResampler
 from tomopt.muon import MuonBatch, MuonGenerator2018
 from tomopt.core import X0
 from tomopt.utils import jacobian
@@ -349,9 +350,12 @@ def get_panel_layers(init_res: float = 1e4, init_eff: float = 0.5, n_panels: int
 
 
 @pytest.mark.flaky(max_runs=3, min_passes=2)
-def test_volume_forward_panel(batch):
+def test_volume_forward_panel():
     layers = get_panel_layers(n_panels=4)
     volume = Volume(layers=layers)
+    gen = MuonGenerator2018.from_volume(volume)
+    mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
+    batch = MuonBatch(mus, init_z=volume.h)
     start = batch.copy()
     volume(batch)
 
