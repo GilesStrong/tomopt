@@ -8,7 +8,7 @@ import torch.nn.functional as F
 
 from tomopt.volume.layer import Layer
 from tomopt.volume import PassiveLayer, VoxelDetectorLayer, Volume, PanelDetectorLayer, DetectorPanel
-from tomopt.muon import MuonBatch, MuonGenerator
+from tomopt.muon import MuonBatch, HaithamMuonGenerator
 from tomopt.core import X0
 from tomopt.utils import jacobian
 
@@ -21,7 +21,7 @@ Z = 1
 
 @pytest.fixture
 def batch():
-    mg = MuonGenerator(x_range=(0, LW[0].item()), y_range=(0, LW[1].item()))
+    mg = HaithamMuonGenerator(x_range=(0, LW[0].item()), y_range=(0, LW[1].item()))
     return MuonBatch(mg(N), init_z=1)
 
 
@@ -451,7 +451,7 @@ def test_detector_panel_methods():
 
     # get_hits
     panel = DetectorPanel(res=10, eff=0.5, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[0.5, 0.5], area_cost_func=area_cost)
-    mg = MuonGenerator(x_range=(0, LW[0].item()), y_range=(0, LW[1].item()))
+    mg = HaithamMuonGenerator(x_range=(0, LW[0].item()), y_range=(0, LW[1].item()))
     mu = MuonBatch(mg(100), 1)
     mu._xy = torch.ones_like(mu.xy) / 2
     hits = panel.get_hits(mu)

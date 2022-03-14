@@ -19,7 +19,8 @@ from ...optimisation.loss.loss import AbsDetectorLoss
 from ...volume import Volume, VoxelDetectorLayer, PanelDetectorLayer
 from ...volume.layer import AbsDetectorLayer
 from ...core import PartialOpt, DEVICE
-from ...muon import MuonGenerator, MuonBatch
+from ...muon import HaithamMuonGenerator, MuonBatch
+from ...muon.generation import AbsMuonGenerator
 from ...inference.scattering import AbsScatterBatch, VoxelScatterBatch, PanelScatterBatch
 from ...inference.volume import AbsVolumeInferer, VoxelX0Inferer, PanelX0Inferer
 
@@ -90,11 +91,11 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
         loss_func: Optional[AbsDetectorLoss],
         partial_scatter_inferer: Type[AbsScatterBatch],
         partial_volume_inferer: Type[AbsVolumeInferer],
-        mu_generator: Optional[MuonGenerator] = None,
+        mu_generator: Optional[AbsMuonGenerator] = None,
     ):
         self.volume, self.loss_func = volume, loss_func
         if mu_generator is None:
-            mu_generator = MuonGenerator.from_volume(volume)
+            mu_generator = HaithamMuonGenerator.from_volume(volume)
         self.mu_generator = mu_generator
         self.partial_scatter_inferer, self.partial_volume_inferer = partial_scatter_inferer, partial_volume_inferer
         self.device = self.volume.device
@@ -360,7 +361,7 @@ class VoxelVolumeWrapper(AbsVolumeWrapper):
         res_opt: PartialOpt,
         eff_opt: PartialOpt,
         loss_func: Optional[AbsDetectorLoss],
-        mu_generator: Optional[MuonGenerator] = None,
+        mu_generator: Optional[AbsMuonGenerator] = None,
         partial_scatter_inferer: Type[AbsScatterBatch] = VoxelScatterBatch,
         partial_volume_inferer: Type[AbsVolumeInferer] = VoxelX0Inferer,
     ):
@@ -393,7 +394,7 @@ class VoxelVolumeWrapper(AbsVolumeWrapper):
         res_opt: PartialOpt,
         eff_opt: PartialOpt,
         loss_func: Optional[AbsDetectorLoss],
-        mu_generator: Optional[MuonGenerator] = None,
+        mu_generator: Optional[AbsMuonGenerator] = None,
     ) -> AbsVolumeWrapper:
         vw = cls(volume=volume, res_opt=res_opt, eff_opt=eff_opt, loss_func=loss_func, mu_generator=mu_generator)
         vw.load(name)
@@ -409,7 +410,7 @@ class PanelVolumeWrapper(AbsVolumeWrapper):
         z_pos_opt: PartialOpt,
         xy_span_opt: PartialOpt,
         loss_func: Optional[AbsDetectorLoss],
-        mu_generator: Optional[MuonGenerator] = None,
+        mu_generator: Optional[AbsMuonGenerator] = None,
         partial_scatter_inferer: Type[AbsScatterBatch] = PanelScatterBatch,
         partial_volume_inferer: Type[AbsVolumeInferer] = PanelX0Inferer,
     ):
@@ -444,7 +445,7 @@ class PanelVolumeWrapper(AbsVolumeWrapper):
         z_pos_opt: PartialOpt,
         xy_span_opt: PartialOpt,
         loss_func: Optional[AbsDetectorLoss],
-        mu_generator: Optional[MuonGenerator] = None,
+        mu_generator: Optional[AbsMuonGenerator] = None,
     ) -> AbsVolumeWrapper:
         vw = cls(
             volume=volume,
