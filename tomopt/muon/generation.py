@@ -85,7 +85,7 @@ class MuonGenerator:
 
     def generate_set(self, n_muons: int) -> Tensor:
         """
-        Function to generate a set of muons [x, y, momentum, theta_x, theta_y] distributed according to the modified Gaisser formula given the size of the sample set.
+        Function to generate a set of muons [x, y, momentum, theta, phi] distributed according to the modified Gaisser formula given the size of the sample set.
         Note: optimized for log binning in (0.5,500)GeV
         """
 
@@ -101,13 +101,10 @@ class MuonGenerator:
             momentum = np.ones(len(theta_indices)) * self._fixed_mom
         theta = self._theta_centres[theta_indices]
 
-        # Get theta_x and theta_y from theta and phi
         phi = np.random.uniform(0, 2 * np.pi, n_muons)
-        theta_x = theta * np.cos(phi)
-        theta_y = theta * np.sin(phi)
 
         # Generate x and y randomly
         coord_x = np.random.uniform(self.x_range[0], self.x_range[1], n_muons)
         coord_y = np.random.uniform(self.y_range[0], self.y_range[1], n_muons)
 
-        return torch.Tensor(np.stack([coord_x, coord_y, momentum, theta_x, theta_y], axis=1))
+        return torch.Tensor(np.stack([coord_x, coord_y, momentum, theta, phi], axis=1))

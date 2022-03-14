@@ -19,8 +19,8 @@ X0 = {  # Is actually X0/density "inverse scaled scattering density"
     "iron": 0.01757,
     "copper": 0.01436,
     "lead": 0.005612,
-    "uranium": 3.141e-3
-    # 'air':312.22
+    "uranium": 3.141e-3,
+    "air": 312.22,
 }
 
 PartialOpt = Callable[[Iterator[nn.Parameter]], torch.optim.Optimizer]
