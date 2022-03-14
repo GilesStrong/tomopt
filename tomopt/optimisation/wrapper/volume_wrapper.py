@@ -19,7 +19,7 @@ from ...optimisation.loss.loss import AbsDetectorLoss
 from ...volume import Volume, VoxelDetectorLayer, PanelDetectorLayer
 from ...volume.layer import AbsDetectorLayer
 from ...core import PartialOpt, DEVICE
-from ...muon import HaithamMuonGenerator, MuonBatch
+from ...muon import MuonGenerator2018, MuonBatch
 from ...muon.generation import AbsMuonGenerator
 from ...inference.scattering import AbsScatterBatch, VoxelScatterBatch, PanelScatterBatch
 from ...inference.volume import AbsVolumeInferer, VoxelX0Inferer, PanelX0Inferer
@@ -95,7 +95,7 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
     ):
         self.volume, self.loss_func = volume, loss_func
         if mu_generator is None:
-            mu_generator = HaithamMuonGenerator.from_volume(volume)
+            mu_generator = MuonGenerator2018.from_volume(volume)
         self.mu_generator = mu_generator
         self.partial_scatter_inferer, self.partial_volume_inferer = partial_scatter_inferer, partial_volume_inferer
         self.device = self.volume.device

@@ -10,7 +10,7 @@ from torch import Tensor
 if TYPE_CHECKING:
     from ..volume import Volume
 
-__all__ = ["ChineseMuonGenerator", "HaithamMuonGenerator"]
+__all__ = ["MuonGenerator2015", "MuonGenerator2018"]
 
 
 class AbsMuonGenerator:
@@ -23,7 +23,6 @@ class AbsMuonGenerator:
     ) -> None:
         """
         Initializer. Specify dimensions x,y of the impinging surface flag (True/False) for sampled vs uniform muon momenta respectively
-        Uses model defined in arXiv:1509.06176. Energy range is in GeV.
         """
 
         self.x_range, self.y_range = x_range, y_range
@@ -95,7 +94,7 @@ class AbsMuonGenerator:
         return torch.Tensor(np.stack([coord_x, coord_y, momentum, theta, phi], axis=1))
 
 
-class ChineseMuonGenerator(AbsMuonGenerator):
+class MuonGenerator2015(AbsMuonGenerator):
     P1 = 0.102573
     P2 = -0.068287
     P3 = 0.958633
@@ -105,7 +104,7 @@ class ChineseMuonGenerator(AbsMuonGenerator):
     def flux(self, energy: Union[float, np.ndarray], theta: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
         """
         Function returning modified Gaisser formula for cosmic muon flux given energy (float/np.array) and incidence angle (float/np.array)
-        Uses model defined in arXiv:1509.06176
+        Uses model defined in Guan et al. 2015 (arXiv:1509.06176)
         """
 
         cosTheta = np.cos(theta)
@@ -120,7 +119,7 @@ class ChineseMuonGenerator(AbsMuonGenerator):
         return flux
 
 
-class HaithamMuonGenerator(AbsMuonGenerator):
+class MuonGenerator2018(AbsMuonGenerator):
     I_0 = 88.0
     n = 3
     E_0 = 3.87
@@ -132,7 +131,7 @@ class HaithamMuonGenerator(AbsMuonGenerator):
     def flux(self, energy: Union[float, np.ndarray], theta: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
         """
         Function returning modified Gaisser formula for cosmic muon flux given energy (float/np.array) and incidence angle (float/np.array)
-        Uses model defined in arXiv:1606.06907
+        Uses model defined in Shukla and Sanskrith 2018 arXiv:1606.06907
         """
         #  initialize cosmic variables
 
