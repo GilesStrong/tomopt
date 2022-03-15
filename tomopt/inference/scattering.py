@@ -242,10 +242,16 @@ class AbsScatterBatch(metaclass=ABCMeta):
     @staticmethod
     def _compute_phi(x: Tensor, y: Tensor) -> Tensor:
         phi = torch.arctan(y / x)  # (-pi/2, pi/2)
+
+        # Account for quadrants
         m = x < 0
         phi[m] = phi[m] + torch.pi
-        m = ((x >= 0) * (y < 0)).bool()
+        m = ((x > 0) * (y < 0)).bool()
         phi[m] = phi[m] + (2 * torch.pi)  # (0, 2pi)
+
+        # Case when x == 0
+        m = x == 0
+        phi[m] = torch.pi / 2 * y[m].sign()
         return phi
 
     def _compute_out_var_unc(self, var: Tensor) -> Tensor:
