@@ -246,12 +246,13 @@ class AbsScatterBatch(metaclass=ABCMeta):
         # Account for quadrants
         m = x < 0
         phi[m] = phi[m] + torch.pi
-        m = ((x > 0) * (y < 0)).bool()
+        m = (x > 0) * (y < 0)
         phi[m] = phi[m] + (2 * torch.pi)  # (0, 2pi)
 
         # Case when x == 0
-        m = x == 0
-        phi[m] = torch.pi / 2 * y[m].sign()
+        phi[(x == 0) * (y > 0)] = torch.pi / 2
+        phi[(x == 0) * (y < 0)] = 3 * torch.pi / 2
+
         return phi
 
     def _compute_out_var_unc(self, var: Tensor) -> Tensor:
