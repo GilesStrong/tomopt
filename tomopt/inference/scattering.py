@@ -41,6 +41,8 @@ class AbsScatterBatch(metaclass=ABCMeta):
     _phi_out_unc: Optional[Tensor] = None
     _dphi: Optional[Tensor] = None
     _dphi_unc: Optional[Tensor] = None
+    _theta_msc: Optional[Tensor] = None
+    _theta_msc_unc: Optional[Tensor] = None
     _theta_xy_in: Optional[Tensor] = None
     _theta_xy_in_unc: Optional[Tensor] = None
     _theta_xy_out: Optional[Tensor] = None
@@ -393,6 +395,22 @@ class AbsScatterBatch(metaclass=ABCMeta):
         if self._dphi_unc is None:
             self._dphi_unc = self._compute_out_var_unc(self.dphi)
         return self._dphi_unc
+
+    @property
+    def theta_msc(self) -> Tensor:
+        if self._theta_msc is None:
+            # self._theta_msc = torch.arccos((self.track_in*self.track_out)/(self.track_in.norm(dim=-1, keepdim=True)*self.track_out.norm(dim=-1, keepdim=True)))
+            self._theta_msc = torch.arccos(
+                (self.track_in * self.track_out).sum(-1, keepdim=True) / (self.track_in.norm(dim=-1, keepdim=True) * self.track_out.norm(dim=-1, keepdim=True))
+            )
+            self._theta_msc_unc = None
+        return self._theta_msc
+
+    @property
+    def theta_msc_unc(self) -> Tensor:
+        if self._theta_msc_unc is None:
+            self._theta_msc_unc = self._compute_out_var_unc(self.theta_msc)
+        return self._theta_msc_unc
 
     @property
     def theta_xy_in(self) -> Tensor:
