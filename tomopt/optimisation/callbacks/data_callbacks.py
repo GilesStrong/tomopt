@@ -33,7 +33,7 @@ class MuonResampler(Callback):
         while ok_mask.sum() < n:
             # Check muons
             check_mask = ~ok_mask
-            mu = MuonBatch(mus[check_mask], init_z=volume.h)
+            mu = MuonBatch(mus[check_mask], init_z=volume.h, device=volume.device)
             tmp_ok_mask = MuonResampler.check_mu_batch(mu, volume=volume)
 
             # Update and resample N.B. Have to assign to masked tensor rather than double masking full tensor
