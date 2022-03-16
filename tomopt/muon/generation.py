@@ -80,7 +80,7 @@ class AbsMuonGenerator:
         # Get corresponding values
         theta_indices, energy_indices = [indices_1d // self._n_bins_energy, indices_1d % self._n_bins_energy]
         if self._fixed_mom is None:
-            momentum = np.sqrt(np.square(self._energy_centres[energy_indices]).squeeze() - self._muon_mass2)  # Momentum [GeV/c]
+            momentum = np.sqrt(np.square(self._energy_centres[energy_indices]) - self._muon_mass2)  # Momentum [GeV/c]
         else:
             momentum = np.ones(len(theta_indices)) * self._fixed_mom
         theta = self._theta_centres[theta_indices]
