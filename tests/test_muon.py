@@ -6,7 +6,7 @@ import torch
 from torch import Tensor, nn
 import torch.nn.functional as F
 
-from tomopt.muon import MuonGenerator2018, MuonGenerator2015, MuonBatch
+from tomopt.muon import MuonGenerator2016, MuonGenerator2015, MuonBatch
 from tomopt.volume import PassiveLayer, Volume, PanelDetectorLayer, DetectorPanel
 from tomopt.core import X0
 
@@ -62,7 +62,7 @@ def get_panel_layers(init_res: float = 1e4, init_eff: float = 0.5, n_panels: int
 
 
 @pytest.mark.flaky(max_runs=2, min_passes=1)
-@pytest.mark.parametrize("generator", [MuonGenerator2018, MuonGenerator2015])
+@pytest.mark.parametrize("generator", [MuonGenerator2016, MuonGenerator2015])
 def test_muon_generator(generator):
     n_muons = 10000
     gen = generator((0, 1.0), (0, 1.0), fixed_mom=None, energy_range=(0.5, 500))
@@ -85,7 +85,7 @@ def test_muon_generator(generator):
 
 
 @pytest.mark.flaky(max_runs=2, min_passes=1)
-@pytest.mark.parametrize("generator", [MuonGenerator2018, MuonGenerator2015])
+@pytest.mark.parametrize("generator", [MuonGenerator2016, MuonGenerator2015])
 def test_muon_generator_from_volume(generator):
     volume = Volume(get_panel_layers())
     mg = generator.from_volume(volume)
@@ -280,7 +280,7 @@ def test_muon_batch_scatter_dtheta_dphi():
 
 def test_muon_batch_angle_consistency():
     volume = Volume(get_panel_layers())
-    mg = MuonGenerator2018.from_volume(volume)
+    mg = MuonGenerator2016.from_volume(volume)
     n = 10000
     mu_orig = MuonBatch(mg(n), volume.h)
 

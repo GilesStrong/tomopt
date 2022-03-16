@@ -9,7 +9,7 @@ import torch.nn.functional as F
 from tomopt.volume.layer import Layer
 from tomopt.volume import PassiveLayer, VoxelDetectorLayer, Volume, PanelDetectorLayer, DetectorPanel
 from tomopt.optimisation import MuonResampler
-from tomopt.muon import MuonBatch, MuonGenerator2018
+from tomopt.muon import MuonBatch, MuonGenerator2016
 from tomopt.core import X0
 from tomopt.utils import jacobian
 
@@ -22,7 +22,7 @@ Z = 1
 
 @pytest.fixture
 def batch():
-    mg = MuonGenerator2018(x_range=(0, LW[0].item()), y_range=(0, LW[1].item()))
+    mg = MuonGenerator2016(x_range=(0, LW[0].item()), y_range=(0, LW[1].item()))
     return MuonBatch(mg(N), init_z=1)
 
 
@@ -353,7 +353,7 @@ def get_panel_layers(init_res: float = 1e4, init_eff: float = 0.5, n_panels: int
 def test_volume_forward_panel():
     layers = get_panel_layers(n_panels=4)
     volume = Volume(layers=layers)
-    gen = MuonGenerator2018.from_volume(volume)
+    gen = MuonGenerator2016.from_volume(volume)
     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
     batch = MuonBatch(mus, init_z=volume.h)
     start = batch.copy()
@@ -455,7 +455,7 @@ def test_detector_panel_methods():
 
     # get_hits
     panel = DetectorPanel(res=10, eff=0.5, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[0.5, 0.5], area_cost_func=area_cost)
-    mg = MuonGenerator2018(x_range=(0, LW[0].item()), y_range=(0, LW[1].item()))
+    mg = MuonGenerator2016(x_range=(0, LW[0].item()), y_range=(0, LW[1].item()))
     mu = MuonBatch(mg(100), 1)
     mu._xy = torch.ones_like(mu.xy) / 2
     hits = panel.get_hits(mu)

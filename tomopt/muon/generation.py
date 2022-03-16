@@ -10,7 +10,7 @@ from torch import Tensor
 if TYPE_CHECKING:
     from ..volume import Volume
 
-__all__ = ["MuonGenerator2015", "MuonGenerator2018"]
+__all__ = ["MuonGenerator2015", "MuonGenerator2016"]
 
 
 class AbsMuonGenerator:
@@ -119,7 +119,7 @@ class MuonGenerator2015(AbsMuonGenerator):
         return flux
 
 
-class MuonGenerator2018(AbsMuonGenerator):
+class MuonGenerator2016(AbsMuonGenerator):
     I_0 = 88.0
     n = 3
     E_0 = 3.87

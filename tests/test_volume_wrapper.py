@@ -20,7 +20,7 @@ from tomopt.optimisation.loss import VoxelX0Loss
 from tomopt.optimisation.callbacks.grad_callbacks import NoMoreNaNs
 from tomopt.optimisation.callbacks.eval_metric import EvalMetric
 from tomopt.optimisation.callbacks.data_callbacks import MuonResampler
-from tomopt.muon.generation import MuonGenerator2018
+from tomopt.muon.generation import MuonGenerator2016
 from tomopt.optimisation.callbacks.pred_callbacks import PredHandler
 
 LW = Tensor([1, 1])
@@ -306,7 +306,7 @@ def test_volume_wrapper_scan_volume_mu_batch(mocker):  # noqa F811
         loss_func=VoxelX0Loss(target_budget=1, cost_coef=0.15),
     )
     vw.fit_params = FitParams(n_mu_per_volume=100, mu_bs=100, state="train")
-    gen = MuonGenerator2018.from_volume(volume)
+    gen = MuonGenerator2016.from_volume(volume)
     mu = MuonResampler.resample(gen(100), volume=volume, gen=gen)
 
     # Fix scattering
