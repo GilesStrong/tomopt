@@ -1,4 +1,3 @@
-from cmath import log
 import pytest
 from pytest_mock import mocker  # noqa F401
 import numpy as np
@@ -12,7 +11,7 @@ from torch import Tensor, nn
 import torch.nn.functional as F
 
 from tomopt.volume import PassiveLayer, VoxelDetectorLayer, Volume, PanelDetectorLayer, DetectorPanel
-from tomopt.muon import MuonBatch, MuonGenerator
+from tomopt.muon import MuonBatch, MuonGenerator2016
 from tomopt.core import X0
 from tomopt.inference import VoxelScatterBatch, VoxelX0Inferer, PanelX0Inferer, PanelScatterBatch, GenScatterBatch, DeepVolumeInferer
 from tomopt.volume.layer import Layer
@@ -43,7 +42,7 @@ def area_cost(a: Tensor) -> Tensor:
     return F.relu(a)
 
 
-def get_voxel_layers(init_res: float = 1e4, init_eff: float = 0.5) -> nn.ModuleList:
+def get_voxel_layers(init_res: float = 1e5, init_eff: float = 0.9) -> nn.ModuleList:
     layers = []
     pos = "above"
     for z, d in zip(np.arange(Z, 0, -SZ), [1, 1, 0, 0, 0, 0, 0, 0, 1, 1]):
@@ -58,7 +57,7 @@ def get_voxel_layers(init_res: float = 1e4, init_eff: float = 0.5) -> nn.ModuleL
     return nn.ModuleList(layers)
 
 
-def get_panel_layers(init_res: float = 1e4, init_eff: float = 0.9, n_panels: int = 4) -> nn.ModuleList:
+def get_panel_layers(init_res: float = 1e5, init_eff: float = 0.9, n_panels: int = 4) -> nn.ModuleList:
     layers = []
     layers.append(
         PanelDetectorLayer(
@@ -95,7 +94,7 @@ def get_panel_layers(init_res: float = 1e4, init_eff: float = 0.9, n_panels: int
 @pytest.fixture
 def voxel_scatter_batch() -> Tuple[MuonBatch, Volume, VoxelScatterBatch]:
     volume = Volume(get_voxel_layers())
-    gen = MuonGenerator(x_range=(0.25, 0.75), y_range=(0.25, 0.75))
+    gen = MuonGenerator2016(x_range=(0.25, 0.75), y_range=(0.25, 0.75))
     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
@@ -106,7 +105,7 @@ def voxel_scatter_batch() -> Tuple[MuonBatch, Volume, VoxelScatterBatch]:
 @pytest.fixture
 def panel_scatter_batch() -> Tuple[MuonBatch, Volume, PanelScatterBatch]:
     volume = Volume(get_panel_layers())
-    gen = MuonGenerator.from_volume(volume)
+    gen = MuonGenerator2016.from_volume(volume)
     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
@@ -167,7 +166,7 @@ def test_voxel_scatter_batch(mock_show, voxel_scatter_batch):
 
     # Resolution increase improves location uncertainty
     volume = Volume(get_voxel_layers(init_res=1e7))
-    gen = MuonGenerator.from_volume(volume)
+    gen = MuonGenerator2016.from_volume(volume)
     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
@@ -243,7 +242,7 @@ def test_panel_scatter_batch(mock_show, panel_scatter_batch):
 
     # Resolution increase improves location uncertainty
     volume = Volume(get_panel_layers(init_res=1e7))
-    gen = MuonGenerator.from_volume(volume)
+    gen = MuonGenerator2016.from_volume(volume)
     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
@@ -421,7 +420,7 @@ def test_abs_volume_inferer_properties(voxel_scatter_batch):
 @pytest.mark.flaky(max_runs=4, min_passes=1)
 def test_voxel_x0_inferer_methods():
     volume = Volume(get_voxel_layers(init_res=1e3))
-    gen = MuonGenerator.from_volume(volume)
+    gen = MuonGenerator2016.from_volume(volume)
     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
@@ -433,7 +432,7 @@ def test_voxel_x0_inferer_methods():
     assert pt.shape == pt_unc.shape
 
     mask = ((~pt.isnan()) * (~pt_unc.isnan())).bool()
-    assert (pt_unc[mask] / pt[mask]).mean() < 10
+    assert (pt_unc[mask] / pt[mask]).mean() < 100
 
     for l in volume.get_detectors():
         assert torch.autograd.grad(pt[mask].abs().sum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().nansum() > 0
@@ -487,7 +486,7 @@ def test_voxel_x0_inferer_methods():
 @pytest.mark.flaky(max_runs=2, min_passes=1)
 def test_panel_x0_inferer_methods():
     volume = Volume(get_panel_layers(init_res=1e3))
-    gen = MuonGenerator.from_volume(volume)
+    gen = MuonGenerator2016.from_volume(volume)
     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
@@ -607,7 +606,7 @@ def test_x0_inferer_scatter_inversion(mocker, voxel_scatter_batch):  # noqa F811
 @pytest.mark.flaky(max_runs=2, min_passes=1)
 def test_deep_volume_inferer():
     volume = Volume(get_panel_layers(init_res=1e3))
-    gen = MuonGenerator.from_volume(volume)
+    gen = MuonGenerator2016.from_volume(volume)
     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)

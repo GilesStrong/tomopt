@@ -8,7 +8,8 @@ import torch.nn.functional as F
 
 from tomopt.volume.layer import Layer
 from tomopt.volume import PassiveLayer, VoxelDetectorLayer, Volume, PanelDetectorLayer, DetectorPanel
-from tomopt.muon import MuonBatch, MuonGenerator
+from tomopt.optimisation import MuonResampler
+from tomopt.muon import MuonBatch, MuonGenerator2016
 from tomopt.core import X0
 from tomopt.utils import jacobian
 
@@ -21,7 +22,7 @@ Z = 1
 
 @pytest.fixture
 def batch():
-    mg = MuonGenerator(x_range=(0, LW[0].item()), y_range=(0, LW[1].item()))
+    mg = MuonGenerator2016(x_range=(0, LW[0].item()), y_range=(0, LW[1].item()))
     return MuonBatch(mg(N), init_z=1)
 
 
@@ -51,7 +52,7 @@ def test_passive_layer_forwards(batch):
     # Normal scattering
     pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=Z, size=SZ)
     start = batch.copy()
-    pl(batch)
+    pl(batch, n=1)
     assert torch.abs(batch.z - Tensor([Z - SZ])) < 1e-5
     assert torch.all(batch.dtheta(start.theta[batch._keep_mask]) > 0)
     assert torch.all(batch.xy != start.xy[batch._keep_mask])
@@ -59,13 +60,13 @@ def test_passive_layer_forwards(batch):
     # X0 affects scattering
     pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=0, size=SZ)
     batch2 = start.copy()
-    pl(batch2)
+    pl(batch2, n=1)
     assert batch2.dtheta(start.theta[batch._keep_mask]).mean() < batch.dtheta(start.theta[batch._keep_mask]).mean()
 
     # Small scattering
     pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=Z, size=1e-4)
     batch = start.copy()
-    pl(batch, 1)
+    pl(batch, n=1)
     assert torch.abs(batch.z - Tensor([Z - 1e-4])) <= 1e-3
     assert (batch.dtheta(start.theta[batch._keep_mask]) < 1e-2).sum() / len(batch) > 0.9
     assert (torch.abs(batch.xy - start.xy[batch._keep_mask]) < 1e-3).sum() / len(batch) > 0.9
@@ -349,9 +350,12 @@ def get_panel_layers(init_res: float = 1e4, init_eff: float = 0.5, n_panels: int
 
 
 @pytest.mark.flaky(max_runs=3, min_passes=2)
-def test_volume_forward_panel(batch):
+def test_volume_forward_panel():
     layers = get_panel_layers(n_panels=4)
     volume = Volume(layers=layers)
+    gen = MuonGenerator2016.from_volume(volume)
+    mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
+    batch = MuonBatch(mus, init_z=volume.h)
     start = batch.copy()
     volume(batch)
 
@@ -370,9 +374,9 @@ def test_volume_forward_panel(batch):
     for i, l in enumerate(volume.get_detectors()):
         for j, p in enumerate(l.yield_zordered_panels()):
             for v in [p.xy, p.xy_span]:
-                grad = jacobian(hits["above" if l.z > 0.5 else "below"]["reco_xy"][:, j], v).sum((-1))
+                grad = jacobian(hits["above" if l.z > 0.5 else "below"]["reco_xy"][:, j], v).nansum((-1))
                 assert grad.isnan().sum() == 0
-                assert (grad == 0).sum() == 0
+                assert (grad != 0).sum() > 0
 
 
 def test_detector_panel_properties():
@@ -451,7 +455,7 @@ def test_detector_panel_methods():
 
     # get_hits
     panel = DetectorPanel(res=10, eff=0.5, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[0.5, 0.5], area_cost_func=area_cost)
-    mg = MuonGenerator(x_range=(0, LW[0].item()), y_range=(0, LW[1].item()))
+    mg = MuonGenerator2016(x_range=(0, LW[0].item()), y_range=(0, LW[1].item()))
     mu = MuonBatch(mg(100), 1)
     mu._xy = torch.ones_like(mu.xy) / 2
     hits = panel.get_hits(mu)

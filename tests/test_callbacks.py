@@ -26,7 +26,7 @@ from tomopt.optimisation.callbacks import (
 from tomopt.optimisation.loss import VoxelX0Loss
 from tomopt.optimisation.wrapper.volume_wrapper import AbsVolumeWrapper, FitParams, PanelVolumeWrapper
 from tomopt.volume import VoxelDetectorLayer, PanelDetectorLayer, DetectorPanel
-from tomopt.muon import MuonBatch, MuonGenerator
+from tomopt.muon import MuonBatch, MuonGenerator2016
 
 LW = Tensor([1, 1])
 SZ = 0.1
@@ -448,7 +448,7 @@ def test_data_callback():
     assert (MuonResampler.check_mu_batch(mu, volume) == Tensor([1, 0, 0]).bool()).all()
 
     # Check resampler
-    gen = MuonGenerator.from_volume(volume)
+    gen = MuonGenerator2016.from_volume(volume)
     mus = gen(1000)
     while MuonResampler.check_mu_batch(MuonBatch(mus, volume.h), volume).sum() == 1000:
         mus = gen(1000)
