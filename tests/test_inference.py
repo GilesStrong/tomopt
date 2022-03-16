@@ -42,7 +42,7 @@ def area_cost(a: Tensor) -> Tensor:
     return F.relu(a)
 
 
-def get_voxel_layers(init_res: float = 1e4, init_eff: float = 0.5) -> nn.ModuleList:
+def get_voxel_layers(init_res: float = 1e5, init_eff: float = 0.9) -> nn.ModuleList:
     layers = []
     pos = "above"
     for z, d in zip(np.arange(Z, 0, -SZ), [1, 1, 0, 0, 0, 0, 0, 0, 1, 1]):
@@ -57,7 +57,7 @@ def get_voxel_layers(init_res: float = 1e4, init_eff: float = 0.5) -> nn.ModuleL
     return nn.ModuleList(layers)
 
 
-def get_panel_layers(init_res: float = 1e4, init_eff: float = 0.9, n_panels: int = 4) -> nn.ModuleList:
+def get_panel_layers(init_res: float = 1e5, init_eff: float = 0.9, n_panels: int = 4) -> nn.ModuleList:
     layers = []
     layers.append(
         PanelDetectorLayer(
