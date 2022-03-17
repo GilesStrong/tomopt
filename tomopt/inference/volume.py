@@ -34,16 +34,8 @@ class AbsVolumeInferer(metaclass=ABCMeta):
 
 
 class AbsX0Inferer(AbsVolumeInferer):
-    def __init__(self, volume: Volume, use_low_res_trick: bool = True):
-        r"""
-        use_low_res_trick can be used to mitigate the impact of low-resolution detectors (~1.0-0.1 mm),
-        in which the scattering in the xy-plane has high imprecision. When true, the total scattering is computed using the scattering in the z plane twice.
-        This adds a furtheh bias to the X0 computation per muon, but improves teh contrast is X0 predictions, making it useful for methods that are only
-        sensitive to the relative differences in X0s. Snce the majority of detectors are expected to be around (~1.0-0.1 mm) in resolution, the defaults to true
-        """
-
+    def __init__(self, volume: Volume):
         super().__init__(volume=volume)
-        self.use_low_res_trick = use_low_res_trick
         self.x0_dthetas: List[Optional[Tensor]] = []
         self.x0_dtheta_uncs: List[Optional[Tensor]] = []
         self.x0_dxys: List[Optional[Tensor]] = []

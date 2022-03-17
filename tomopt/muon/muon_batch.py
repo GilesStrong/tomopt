@@ -235,19 +235,22 @@ class MuonBatch:
         """
 
         self._keep_mask = self._theta < torch.pi / 2  # To keep
-        if self._keep_mask.sum() < len(self):
+        self.filter_muons(self._keep_mask)
+
+    def filter_muons(self, keep_mask: Tensor) -> None:
+        if keep_mask.sum() < len(self):
             # Save muons, just in case they're useful for diagnostics
             if self._upwards_muons is None:
-                self._upwards_muons = self._muons[~self._keep_mask].detach().cpu().numpy()
+                self._upwards_muons = self._muons[~keep_mask].detach().cpu().numpy()
             else:
                 self._upwards_muons = np.concatenate((self._upwards_muons, self._muons[~self._keep_mask].detach().cpu().numpy()), axis=0)
 
             # Remove muons and hits
-            self._muons = self._muons[self._keep_mask]
+            self._muons = self._muons[keep_mask]
             for pos in self._hits:  # TODO: Make a HitBatch class to make this easier?
                 for var in self._hits[pos]:
                     for det, xy_pos in enumerate(self._hits[pos][var]):
-                        self._hits[pos][var][det] = xy_pos[self._keep_mask]
+                        self._hits[pos][var][det] = xy_pos[keep_mask]
 
     @staticmethod
     def phi_from_theta_xy(theta_x: Tensor, theta_y: Tensor) -> Tensor:
