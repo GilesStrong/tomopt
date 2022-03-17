@@ -50,9 +50,16 @@ class ScatterRecord(Callback):
 
 class HitRecord(ScatterRecord):
     def on_scatter_end(self) -> None:
-        hits = (torch.stack([*self.wrapper.fit_params.sb.above_hits, *self.wrapper.fit_params.sb.below_hits], dim=1,).detach().cpu().clone()).transpose(
-            0, 1
-        )  # May have different number of hits per batch
+        hits = (
+            torch.stack(
+                [*self.wrapper.fit_params.sb.above_hits, *self.wrapper.fit_params.sb.below_hits],
+                dim=1,
+            )
+            .detach()
+            .cpu()
+            .clone()
+        )
+        hits = hits.transpose(0, 1)  # May have different number of hits per batch
         self.record.append(hits)
 
     def _to_df(self, record: Tensor) -> pd.DataFrame:
