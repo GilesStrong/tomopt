@@ -132,9 +132,9 @@ def test_voxel_scatter_batch(mock_show, voxel_scatter_batch):
     assert (loc_xy_unc := sb.location_unc[:, :2].mean()) < 1.0
     assert (loc_z_unc := sb.location_unc[:, 2].mean()) < 1.5
     assert (dxy_unc := sb.dxy_unc.mean()) < 1.0
-    assert (dtheta_unc := (sb.dtheta_unc / sb.dtheta).mean()) < 10
-    assert (dphi_unc := (sb.dphi_unc / sb.dphi).mean()) < 10
-    assert (theta_msc_unc := (sb.theta_msc_unc / sb.theta_msc).mean()) < 10
+    assert (dtheta_unc := sb.dtheta_unc.mean() / sb.dtheta.mean()) < 10
+    assert (dphi_unc := sb.dphi_unc.mean() / sb.dphi.mean()) < 10
+    assert (theta_msc_unc := sb.theta_msc_unc.mean() / sb.theta_msc.abs().mean()) < 10
     assert (theta_out_unc := sb.theta_out_unc.mean() / sb.theta_out.abs().mean()) < 10
     assert (theta_in_unc := sb.theta_in_unc.mean() / sb.theta_in.abs().mean()) < 10
     assert (phi_out_unc := sb.phi_out_unc.mean() / sb.phi_out.abs().mean()) < 10
@@ -204,8 +204,8 @@ def test_panel_scatter_batch(mock_show, panel_scatter_batch):
     assert (loc_xy_unc := sb.location_unc[:, :2].mean()) < 1.0
     assert (loc_z_unc := sb.location_unc[:, 2].mean()) < 1.5
     assert (dxy_unc := sb.dxy_unc.mean()) < 1.0
-    assert (dtheta_unc := (sb.dtheta_unc / sb.dtheta).mean()) < 10
-    assert (dphi_unc := (sb.dphi_unc / sb.dphi).mean()) < 10
+    assert (dtheta_unc := sb.dtheta_unc.mean() / sb.dtheta.mean()) < 10
+    assert (dphi_unc := sb.dphi_unc.mean() / sb.dphi.mean()) < 10
     assert (theta_msc_unc := (sb.theta_msc_unc / sb.theta_msc).mean()) < 10
     assert (theta_out_unc := sb.theta_out_unc.mean() / sb.theta_out.abs().mean()) < 10
     assert (theta_in_unc := sb.theta_in_unc.mean() / sb.theta_in.abs().mean()) < 10
@@ -451,8 +451,8 @@ def test_voxel_x0_inferer_methods():
     assert (pt_unc[mask] / pt[mask]).mean() < 100
 
     for l in volume.get_detectors():
-        assert torch.autograd.grad(pt[mask].abs().sum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-        assert torch.autograd.grad(pt_unc[mask].abs().sum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+        assert torch.autograd.grad(pt[mask].abs().nansum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().nansum() > 0
+        assert torch.autograd.grad(pt_unc[mask].abs().nansum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().nansum() > 0
 
     pxy, pxy_unc = inferer.x0_from_dxy(scatters=sb)
     assert pxy is None and pxy_unc is None  # modify tests when dxy predictions implemented
@@ -469,10 +469,10 @@ def test_voxel_x0_inferer_methods():
     assert (((p - true)).abs() / true).mean() < 100
 
     for l in volume.get_detectors():
-        assert torch.autograd.grad(p.abs().sum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-        assert torch.autograd.grad(p.abs().sum(), l.efficiency, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-        assert torch.autograd.grad(w.abs().sum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-        assert torch.autograd.grad(w.abs().sum(), l.efficiency, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+        assert torch.autograd.grad(p.abs().nansum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().nansum() > 0
+        assert torch.autograd.grad(p.abs().nansum(), l.efficiency, retain_graph=True, allow_unused=True)[0].abs().nansum() > 0
+        assert torch.autograd.grad(w.abs().nansum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().nansum() > 0
+        assert torch.autograd.grad(w.abs().nansum(), l.efficiency, retain_graph=True, allow_unused=True)[0].abs().nansum() > 0
 
     inferer.add_scatters(sb)
     assert len(inferer.scatter_batches) == 1
