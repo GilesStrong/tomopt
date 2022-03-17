@@ -132,13 +132,13 @@ def test_voxel_scatter_batch(mock_show, voxel_scatter_batch):
     assert (loc_xy_unc := sb.location_unc[:, :2].mean()) < 1.0
     assert (loc_z_unc := sb.location_unc[:, 2].mean()) < 1.5
     assert (dxy_unc := sb.dxy_unc.mean()) < 1.0
-    assert (dtheta_unc := sb.dtheta_unc.mean() / sb.dtheta.mean()) < 10
-    assert (dphi_unc := sb.dphi_unc.mean() / sb.dphi.mean()) < 10
+    assert sb.dtheta_unc.mean() / sb.dtheta.mean() < 10
+    assert sb.dphi_unc.mean() / sb.dphi.mean() < 10
     assert (theta_msc_unc := sb.theta_msc_unc.mean() / sb.theta_msc.abs().mean()) < 10
     assert (theta_out_unc := sb.theta_out_unc.mean() / sb.theta_out.abs().mean()) < 10
     assert (theta_in_unc := sb.theta_in_unc.mean() / sb.theta_in.abs().mean()) < 10
-    assert (phi_out_unc := sb.phi_out_unc.mean() / sb.phi_out.abs().mean()) < 10
-    assert (phi_in_unc := sb.phi_in_unc.mean() / sb.phi_in.abs().mean()) < 10
+    assert sb.phi_out_unc.mean() / sb.phi_out.abs().mean() < 10
+    assert sb.phi_in_unc.mean() / sb.phi_in.abs().mean() < 10
 
     # range check
     assert (sb.theta_in >= 0).all() and (sb.theta_in < torch.pi / 2).all()
@@ -176,11 +176,7 @@ def test_voxel_scatter_batch(mock_show, voxel_scatter_batch):
     assert sb.location_unc[:, :2].mean() < loc_xy_unc
     assert sb.location_unc[:, 2].mean() < loc_z_unc
     assert sb.dxy_unc.mean() < dxy_unc
-    assert sb.dtheta_unc.mean() / sb.dtheta.abs().mean() < dtheta_unc
-    assert sb.dphi_unc.mean() / sb.dphi.abs().mean() < dphi_unc
     assert sb.theta_msc_unc.mean() / sb.theta_msc.abs().mean() < theta_msc_unc
-    assert sb.phi_out_unc.mean() / sb.phi_out.abs().mean() < phi_out_unc
-    assert sb.phi_in_unc.mean() / sb.phi_in.abs().mean() < phi_in_unc
     assert sb.theta_out_unc.mean() / sb.theta_out.abs().mean() < theta_out_unc
     assert sb.theta_in_unc.mean() / sb.theta_in.abs().mean() < theta_in_unc
 
@@ -204,13 +200,13 @@ def test_panel_scatter_batch(mock_show, panel_scatter_batch):
     assert (loc_xy_unc := sb.location_unc[:, :2].mean()) < 1.0
     assert (loc_z_unc := sb.location_unc[:, 2].mean()) < 1.5
     assert (dxy_unc := sb.dxy_unc.mean()) < 1.0
-    assert (dtheta_unc := sb.dtheta_unc.mean() / sb.dtheta.mean()) < 10
-    assert (dphi_unc := sb.dphi_unc.mean() / sb.dphi.mean()) < 10
+    assert sb.dtheta_unc.mean() / sb.dtheta.mean() < 10
+    assert sb.dphi_unc.mean() / sb.dphi.mean() < 10
     assert (theta_msc_unc := (sb.theta_msc_unc / sb.theta_msc).mean()) < 10
     assert (theta_out_unc := sb.theta_out_unc.mean() / sb.theta_out.abs().mean()) < 10
     assert (theta_in_unc := sb.theta_in_unc.mean() / sb.theta_in.abs().mean()) < 10
-    assert (phi_out_unc := sb.phi_out_unc.mean() / sb.phi_out.abs().mean()) < 10
-    assert (phi_in_unc := sb.phi_in_unc.mean() / sb.phi_in.abs().mean()) < 10
+    assert sb.phi_out_unc.mean() / sb.phi_out.abs().mean() < 10
+    assert sb.phi_in_unc.mean() / sb.phi_in.abs().mean() < 10
 
     # range check
     assert (sb.theta_in >= 0).all() and (sb.theta_in < torch.pi / 2).all()
@@ -256,11 +252,7 @@ def test_panel_scatter_batch(mock_show, panel_scatter_batch):
     assert sb.location_unc[:, :2].mean() < loc_xy_unc
     assert sb.location_unc[:, 2].mean() < loc_z_unc
     assert sb.dxy_unc.mean() < dxy_unc
-    assert sb.dtheta_unc.mean() / sb.dtheta.abs().mean() < dtheta_unc
-    assert sb.dphi_unc.mean() / sb.dphi.abs().mean() < dphi_unc
     assert sb.theta_msc_unc.mean() / sb.theta_msc.abs().mean() < theta_msc_unc
-    assert sb.phi_out_unc.mean() / sb.phi_out.abs().mean() < phi_out_unc
-    assert sb.phi_in_unc.mean() / sb.phi_in.abs().mean() < phi_in_unc
     assert sb.theta_out_unc.mean() / sb.theta_out.abs().mean() < theta_out_unc
     assert sb.theta_in_unc.mean() / sb.theta_in.abs().mean() < theta_in_unc
 
