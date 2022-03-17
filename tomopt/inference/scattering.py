@@ -417,7 +417,6 @@ class AbsScatterBatch(metaclass=ABCMeta):
     @property
     def theta_msc(self) -> Tensor:
         if self._theta_msc is None:
-            # self._theta_msc = torch.arccos((self.track_in*self.track_out)/(self.track_in.norm(dim=-1, keepdim=True)*self.track_out.norm(dim=-1, keepdim=True)))
             self._theta_msc = self._compute_theta_msc(self.track_in, self.track_out)
             self._theta_msc_unc = None
         return self._theta_msc
