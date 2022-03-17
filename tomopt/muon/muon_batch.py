@@ -28,7 +28,7 @@ class MuonBatch:
 
         self.device = device
         self._muons = xy_p_theta_phi.to(self.device)
-        self._upwards_muons: Optional[Tensor] = None
+        self._removed_muons: Optional[Tensor] = None
         if not isinstance(init_z, Tensor):
             init_z = Tensor([init_z])
         self._z = init_z.to(self.device)
@@ -51,7 +51,7 @@ class MuonBatch:
 
     @property
     def upwards_muons(self) -> Tensor:
-        return self._upwards_muons
+        return self._removed_muons
 
     @property
     def xy_hist(self) -> Dict[Tensor, Tensor]:
@@ -235,19 +235,22 @@ class MuonBatch:
         """
 
         self._keep_mask = self._theta < torch.pi / 2  # To keep
-        if self._keep_mask.sum() < len(self):
+        self.filter_muons(self._keep_mask)
+
+    def filter_muons(self, keep_mask: Tensor) -> None:
+        if keep_mask.sum() < len(self):
             # Save muons, just in case they're useful for diagnostics
-            if self._upwards_muons is None:
-                self._upwards_muons = self._muons[~self._keep_mask].detach().cpu().numpy()
+            if self._removed_muons is None:
+                self._removed_muons = self._muons[~keep_mask].detach().cpu().numpy()
             else:
-                self._upwards_muons = np.concatenate((self._upwards_muons, self._muons[~self._keep_mask].detach().cpu().numpy()), axis=0)
+                self._removed_muons = np.concatenate((self._removed_muons, self._muons[~keep_mask].detach().cpu().numpy()), axis=0)
 
             # Remove muons and hits
-            self._muons = self._muons[self._keep_mask]
+            self._muons = self._muons[keep_mask]
             for pos in self._hits:  # TODO: Make a HitBatch class to make this easier?
                 for var in self._hits[pos]:
                     for det, xy_pos in enumerate(self._hits[pos][var]):
-                        self._hits[pos][var][det] = xy_pos[self._keep_mask]
+                        self._hits[pos][var][det] = xy_pos[keep_mask]
 
     @staticmethod
     def phi_from_theta_xy(theta_x: Tensor, theta_y: Tensor) -> Tensor:

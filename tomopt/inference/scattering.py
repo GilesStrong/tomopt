@@ -19,6 +19,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
     _reco_hits: Optional[Tensor] = None
     _gen_hits: Optional[Tensor] = None
     _hit_uncs: Optional[Tensor] = None
+
     # Tracks
     _track_in: Optional[Tensor] = None
     _track_out: Optional[Tensor] = None
@@ -41,6 +42,8 @@ class AbsScatterBatch(metaclass=ABCMeta):
     _phi_out_unc: Optional[Tensor] = None
     _dphi: Optional[Tensor] = None
     _dphi_unc: Optional[Tensor] = None
+    _theta_msc: Optional[Tensor] = None
+    _theta_msc_unc: Optional[Tensor] = None
     _theta_xy_in: Optional[Tensor] = None
     _theta_xy_in_unc: Optional[Tensor] = None
     _theta_xy_out: Optional[Tensor] = None
@@ -57,8 +60,11 @@ class AbsScatterBatch(metaclass=ABCMeta):
     def __init__(self, mu: MuonBatch, volume: Volume):
         self.mu, self.volume = mu, volume
         self.device = self.mu.device
-        self._hits = self.mu.get_hits()
+        self._hits = self._get_hits()
         self.compute_scatters()
+
+    def _get_hits(self) -> Dict[str, Dict[str, Tensor]]:
+        return self.mu.get_hits()
 
     @staticmethod
     def get_muon_trajectory(hits: Tensor, uncs: Tensor, lw: Tensor) -> Tuple[Tensor, Tensor]:
@@ -231,6 +237,16 @@ class AbsScatterBatch(metaclass=ABCMeta):
         self.extract_hits()
         self.compute_tracks()
 
+        # Filter to remove same tracks: only include muons that scatter
+        # This might seem heavy-handed, but tracks with theta_msc = 0 have NaN gradients, which can spoil the grads of all other muons.
+        theta_msc = self._compute_theta_msc(self.track_in, self.track_out)
+        keep_mask = ((theta_msc != 0) * (~theta_msc.isnan()) * (~theta_msc.isinf())).squeeze()
+        if not keep_mask.all():  # Recompute tracks and hits
+            self.mu.filter_muons(keep_mask)
+            self._hits = self._get_hits()
+            self.extract_hits()
+            self.compute_tracks()
+
         # Track computations
         self._cross_track = torch.cross(self.track_in, self.track_out, dim=1)  # connecting vector perpendicular to both lines
 
@@ -254,6 +270,10 @@ class AbsScatterBatch(metaclass=ABCMeta):
         phi[(x == 0) * (y < 0)] = 3 * torch.pi / 2
 
         return phi
+
+    @staticmethod
+    def _compute_theta_msc(p: Tensor, q: Tensor) -> Tensor:
+        return torch.arccos((p * q).sum(-1, keepdim=True) / (p.norm(dim=-1, keepdim=True) * q.norm(dim=-1, keepdim=True)))
 
     def _compute_out_var_unc(self, var: Tensor) -> Tensor:
         r"""
@@ -393,6 +413,19 @@ class AbsScatterBatch(metaclass=ABCMeta):
         if self._dphi_unc is None:
             self._dphi_unc = self._compute_out_var_unc(self.dphi)
         return self._dphi_unc
+
+    @property
+    def theta_msc(self) -> Tensor:
+        if self._theta_msc is None:
+            self._theta_msc = self._compute_theta_msc(self.track_in, self.track_out)
+            self._theta_msc_unc = None
+        return self._theta_msc
+
+    @property
+    def theta_msc_unc(self) -> Tensor:
+        if self._theta_msc_unc is None:
+            self._theta_msc_unc = self._compute_out_var_unc(self.theta_msc)
+        return self._theta_msc_unc
 
     @property
     def theta_xy_in(self) -> Tensor:
@@ -563,11 +596,9 @@ class AbsScatterBatch(metaclass=ABCMeta):
 
 
 class VoxelScatterBatch(AbsScatterBatch):
-    def __init__(self, mu: MuonBatch, volume: Volume):
-        self.mu, self.volume = mu, volume
-        self.device = self.mu.device
-        self._hits = self.mu.get_hits((0, 0), self.volume.lw)
-        self.compute_scatters()
+    def _get_hits(self) -> Dict[str, Dict[str, Tensor]]:
+        self.mu.filter_muons(self.mu.get_xy_mask((0, 0), self.volume.lw))
+        return self.mu.get_hits()
 
     @staticmethod
     def _get_hit_uncs(dets: List[AbsDetectorLayer], hits: Tensor) -> Tensor:
