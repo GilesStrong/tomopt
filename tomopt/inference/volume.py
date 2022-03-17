@@ -14,8 +14,6 @@ __all__ = ["VoxelX0Inferer", "PanelX0Inferer", "DeepVolumeInferer"]
 
 
 class AbsVolumeInferer(metaclass=ABCMeta):
-    mask_muons = False
-
     def __init__(self, volume: Volume):
         self.scatter_batches: List[AbsScatterBatch] = []
         self.volume = volume
@@ -100,11 +98,8 @@ class AbsX0Inferer(AbsVolumeInferer):
 
         mu = scatters.mu
 
-        if self.mask_muons:  # Scatter mask assumes that muons are prefiltered to only include those which stay inside the volume
-            muon_mask = mu.get_xy_mask((0, 0), self.lw)
-
         scatter_vars, scatter_uncs = [], []
-        scatter_vars.append((mu.reco_mom if self.mask_muons is False else mu.reco_mom[muon_mask])[:, None])  # 0
+        scatter_vars.append((mu.reco_mom)[:, None])  # 0
         scatter_uncs.append(torch.zeros(len(scatter_vars[0]), 1))
 
         scatter_vars.append(scatters.theta_msc)  # 1
@@ -240,8 +235,6 @@ class AbsX0Inferer(AbsVolumeInferer):
 
 
 class VoxelX0Inferer(AbsX0Inferer):
-    mask_muons = True
-
     def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
         r"""
         Does not yet handle more than two detectors per position

@@ -598,7 +598,8 @@ class AbsScatterBatch(metaclass=ABCMeta):
 
 class VoxelScatterBatch(AbsScatterBatch):
     def _get_hits(self) -> Dict[str, Dict[str, Tensor]]:
-        return self.mu.get_hits((0, 0), self.volume.lw)
+        self.mu.filter_muons(self.mu.get_xy_mask((0, 0), self.volume.lw))
+        return self.mu.get_hits()
 
     @staticmethod
     def _get_hit_uncs(dets: List[AbsDetectorLayer], hits: Tensor) -> Tensor:
