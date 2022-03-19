@@ -10,7 +10,7 @@ from ..volume import VoxelDetectorLayer, PanelDetectorLayer, Volume
 from ..core import SCATTER_COEF_A
 from ..utils import jacobian
 
-__all__ = ["VoxelX0Inferer", "PanelX0Inferer", "DeepVolumeInferer"]
+__all__ = ["VoxelX0Inferer", "PanelX0Inferer", "DeepVolumeInferer", "WeightedDeepVolumeInferer"]
 
 
 class AbsVolumeInferer(metaclass=ABCMeta):
@@ -286,9 +286,16 @@ class PanelX0Inferer(AbsX0Inferer):
 
 
 class DeepVolumeInferer(AbsVolumeInferer):
-    def __init__(self, model: Union[torch.jit._script.RecursiveScriptModule, nn.Module], base_inferer: AbsX0Inferer, volume: Volume):
+    def __init__(
+        self,
+        model: Union[torch.jit._script.RecursiveScriptModule, nn.Module],
+        base_inferer: AbsX0Inferer,
+        volume: Volume,
+        grp_feats: List[str],
+        include_unc: bool = False,
+    ):
         super().__init__(volume=volume)
-        self.model, self.base_inferer = model, base_inferer
+        self.model, self.base_inferer, self.include_unc = model, base_inferer, include_unc
         self.voxel_centres = self.volume.centres
 
         self.in_vars: List[Tensor] = []
@@ -297,6 +304,25 @@ class DeepVolumeInferer(AbsVolumeInferer):
         self.in_var: Optional[Tensor] = None
         self.in_var_unc: Optional[Tensor] = None
         self.efficiency: Optional[Tensor] = None
+
+        self.grp_feats = grp_feats
+        self.in_feats = []
+        if "pred_x0" in self.grp_feats:
+            self.in_feats += ["pred_x0"]
+        if "deleta_angles" in self.grp_feats:
+            self.in_feats += ["dtheta", "dphi"]
+        if "theta_msc" in self.grp_feats:
+            self.in_feats += ["theta_msc"]
+        if "track_angles" in self.grp_feats:
+            self.in_feats += ["theta_x_in", "theta_y_in", "theta_x_out", "theta_y_out"]
+        if "track_xyz" in self.grp_feats:
+            self.in_feats += ["x_in", "y_in", "z_in", "x_out", "y_out", "z_out"]
+        if "poca" in self.grp_feats:
+            self.in_feats += ["poca_x", "poca_y", "pocaz"]
+        if "dpoca" in self.grp_feats:
+            self.in_feats += ["dpoca_x", "dpoca_y", "dpocaz", "dpoca_r"]
+        if "voxel" in self.grp_feats:
+            self.in_feats += ["vox_x", "vox_y", "vox_z"]
 
     def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
         return self.base_inferer.compute_efficiency(scatters=scatters)
@@ -307,37 +333,40 @@ class DeepVolumeInferer(AbsVolumeInferer):
 
     def add_scatters(self, scatters: AbsScatterBatch) -> None:
         self.scatter_batches.append(scatters)
-        x0, x0_unc = self.get_base_predictions(scatters)
-        self.in_vars.append(
-            torch.cat(
-                (
-                    scatters.dtheta,
-                    scatters.dphi,
-                    scatters.theta_xy_in,
-                    scatters.theta_xy_out,
-                    x0,
-                    #                     scatters.location,
-                    scatters.xyz_in,
-                    scatters.xyz_out,
-                ),
-                dim=-1,
-            )
-        )
-        self.in_var_uncs.append(
-            torch.cat(
-                (
-                    scatters.dtheta_unc,
-                    scatters.dphi_unc,
-                    scatters.theta_xy_in_unc,
-                    scatters.theta_xy_out_unc,
-                    x0_unc,
-                    #                     scatters.location_unc,
-                    scatters.xyz_in_unc,
-                    scatters.xyz_out_unc,
-                ),
-                dim=-1,
-            )
-        )
+        pred_x0, pred_x0_unc = self.get_base_predictions(scatters)
+
+        feats, uncs = [], []
+        if "pred_x0" in self.grp_feats:
+            feats += [pred_x0]
+            if self.include_unc:
+                uncs += [pred_x0_unc]
+        if "deleta_angles" in self.grp_feats:
+            feats += [scatters.dtheta, scatters.dphi]
+            if self.include_unc:
+                uncs += [scatters.dtheta_unc, scatters.dphi_unc]
+        if "theta_msc" in self.grp_feats:
+            feats += [scatters.theta_msc]
+            if self.include_unc:
+                uncs += [scatters.theta_msc_unc]
+        if "track_angles" in self.grp_feats:
+            feats += [scatters.theta_xy_in, scatters.theta_xy_out_unc]
+            if self.include_unc:
+                uncs += [scatters.theta_xy_in_unc, scatters.theta_xy_out_unc]
+        if "track_xyz" in self.grp_feats:
+            feats += [scatters.xyz_in, scatters.xyz_out_unc]
+            if self.include_unc:
+                uncs += [scatters.xyz_in_unc, scatters.xyz_out_unc]
+        if "poca" in self.grp_feats:
+            feats += [scatters.location]
+            if self.include_unc:
+                uncs += [scatters.location_unc]
+        if "dpoca" in self.grp_feats:
+            feats += [scatters.location]
+            if self.include_unc:
+                uncs += [scatters.location_unc]
+
+        self.in_vars.append(torch.cat(feats, dim=-1))
+        self.in_var_uncs.append(torch.cat(uncs, dim=-1))
         self.efficiencies.append(self.compute_efficiency(scatters=scatters))
 
     def _build_inputs(self, in_var: Tensor) -> Tensor:
