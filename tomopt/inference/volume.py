@@ -331,10 +331,7 @@ class DeepVolumeInferer(AbsVolumeInferer):
         x, u = self.base_inferer.x0_from_dtheta(scatters=scatters)
         return x[:, None], u[:, None]
 
-    def add_scatters(self, scatters: AbsScatterBatch) -> None:
-        self.scatter_batches.append(scatters)
-        pred_x0, pred_x0_unc = self.get_base_predictions(scatters)
-
+    def _build_vars(self, scatters: AbsScatterBatch, pred_x0: Tensor, pred_x0_unc: Tensor) -> None:
         feats, uncs = [], []
         if "pred_x0" in self.grp_feats:
             feats += [pred_x0]
@@ -370,6 +367,11 @@ class DeepVolumeInferer(AbsVolumeInferer):
             self.in_var_uncs.append(torch.cat(uncs, dim=-1))
         self.efficiencies.append(self.compute_efficiency(scatters=scatters))
 
+    def add_scatters(self, scatters: AbsScatterBatch) -> None:
+        self.scatter_batches.append(scatters)
+        pred_x0, pred_x0_unc = self.get_base_predictions(scatters)
+        self._build_vars(scatters, pred_x0, pred_x0_unc)
+
     def _build_inputs(self, in_var: Tensor) -> Tensor:
         data = in_var[None, :].repeat_interleave(len(self.voxel_centres), dim=0)
         if "dpoca" in self.grp_feats:
@@ -399,14 +401,31 @@ class DeepVolumeInferer(AbsVolumeInferer):
 
 
 class WeightedDeepVolumeInferer(DeepVolumeInferer):
+    def __init__(
+        self,
+        model: Union[torch.jit._script.RecursiveScriptModule, nn.Module],
+        base_inferer: AbsX0Inferer,
+        volume: Volume,
+        grp_feats: List[str],
+        include_unc: bool = False,
+    ):
+        super().__init__(model=model, base_inferer=base_inferer, volume=volume, grp_feats=grp_feats, include_unc=include_unc)
+        self.in_var_weights: List[Tensor] = []
+
+    def add_scatters(self, scatters: AbsScatterBatch) -> None:
+        super().add_scatters(scatters)
+        pred_x0, pred_x0_unc = self.get_base_predictions(scatters)
+        self._build_vars(scatters, pred_x0, pred_x0_unc)
+        self.in_var_weights.append((pred_x0_unc / pred_x0) ** 2)
+
     def get_prediction(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
         self.in_var = torch.cat(self.in_vars, dim=0)
         if self.include_unc:
             self.in_var_unc = torch.cat(self.in_var_uncs, dim=0)
         self.efficiency = torch.cat(self.efficiencies, dim=0)
+        self.in_var_weight = torch.cat(self.in_var_weights, dim=0)
 
-        i = self.in_feats.index("pred_x0")
-        weight = self.efficiency[:, None] / ((self.in_var_unc[:, i : i + 1] / self.in_var[:, i : i + 1]) ** 2)
+        weight = self.efficiency[:, None] / self.in_var_weight
         weighted_vars = torch.cat((weight, self.in_var), dim=1)
         inputs = self._build_inputs(weighted_vars)
         pred = self.model(inputs[None])
