@@ -4,7 +4,8 @@ from torch import Tensor
 from tomopt.volume.volume import Volume
 
 from .callback import Callback
-from ...muon import MuonBatch, MuonGenerator
+from ...muon import MuonBatch
+from ...muon.generation import AbsMuonGenerator
 
 __all__ = ["MuonResampler"]
 
@@ -26,7 +27,7 @@ class MuonResampler(Callback):
         return ok_mask
 
     @staticmethod
-    def resample(mus: Tensor, volume: Volume, gen: MuonGenerator) -> Tensor:
+    def resample(mus: Tensor, volume: Volume, gen: AbsMuonGenerator) -> Tensor:
         n = len(mus)
         ok_mask = torch.zeros(len(mus)).bool()
         while ok_mask.sum() < n:

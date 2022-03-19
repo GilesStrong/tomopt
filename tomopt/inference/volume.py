@@ -14,8 +14,6 @@ __all__ = ["VoxelX0Inferer", "PanelX0Inferer", "DeepVolumeInferer"]
 
 
 class AbsVolumeInferer(metaclass=ABCMeta):
-    mask_muons = False
-
     def __init__(self, volume: Volume):
         self.scatter_batches: List[AbsScatterBatch] = []
         self.volume = volume
@@ -34,16 +32,8 @@ class AbsVolumeInferer(metaclass=ABCMeta):
 
 
 class AbsX0Inferer(AbsVolumeInferer):
-    def __init__(self, volume: Volume, use_low_res_trick: bool = True):
-        r"""
-        use_low_res_trick can be used to mitigate the impact of low-resolution detectors (~1.0-0.1 mm),
-        in which the scattering in the xy-plane has high imprecision. When true, the total scattering is computed using the scattering in the z plane twice.
-        This adds a furtheh bias to the X0 computation per muon, but improves teh contrast is X0 predictions, making it useful for methods that are only
-        sensitive to the relative differences in X0s. Snce the majority of detectors are expected to be around (~1.0-0.1 mm) in resolution, the defaults to true
-        """
-
+    def __init__(self, volume: Volume):
         super().__init__(volume=volume)
-        self.use_low_res_trick = use_low_res_trick
         self.x0_dthetas: List[Optional[Tensor]] = []
         self.x0_dtheta_uncs: List[Optional[Tensor]] = []
         self.x0_dxys: List[Optional[Tensor]] = []
@@ -78,10 +68,9 @@ class AbsX0Inferer(AbsVolumeInferer):
         self.voxel_weights.append(w)
 
     @staticmethod
-    def _x0_from_dtheta(delta_z: float, mom: Tensor, dtheta: Tensor, dphi: Tensor, theta_in: Tensor, theta_out: Tensor) -> Tensor:
-        theta2_msc = (dtheta**2) + (dphi**2)
+    def _x0_from_dtheta(delta_z: float, mom: Tensor, theta_msc: Tensor, theta_in: Tensor, theta_out: Tensor) -> Tensor:
         cos_theta = (theta_in.cos() + theta_out.cos()) / 2
-        return 2 * ((SCATTER_COEF_A / mom) ** 2) * delta_z / (theta2_msc * cos_theta)
+        return 2 * ((SCATTER_COEF_A / mom) ** 2) * delta_z / (theta_msc.pow(2) * cos_theta)
 
     @staticmethod
     def _x0_from_dtheta_unc(pred: Tensor, in_vars: Tensor, uncs: Tensor) -> Tensor:
@@ -109,25 +98,14 @@ class AbsX0Inferer(AbsVolumeInferer):
 
         mu = scatters.mu
 
-        if self.mask_muons:  # Scatter mask assumes that muons are prefiltered to only include those which stay inside the volume
-            muon_mask = mu.get_xy_mask((0, 0), self.lw)
-
         scatter_vars, scatter_uncs = [], []
-        scatter_vars.append((mu.reco_mom if self.mask_muons is False else mu.reco_mom[muon_mask])[:, None])  # 0
+        scatter_vars.append((mu.reco_mom)[:, None])  # 0
         scatter_uncs.append(torch.zeros(len(scatter_vars[0]), 1))
 
-        if self.use_low_res_trick:  # Use dtheta for both scatterings due to dphi being ovverestimated
-            scatter_vars.append(scatters.dtheta)  # 1
-            scatter_uncs.append(scatters.dtheta_unc)
-            scatter_vars.append(scatters.dtheta)  # 2
-            scatter_uncs.append(scatters.dtheta_unc)
-        else:  # Use both dtheta and dphi
-            scatter_vars.append(scatters.dtheta)  # 1
-            scatter_uncs.append(scatters.dtheta_unc)
-            scatter_vars.append(scatters.dphi)  # 2
-            scatter_uncs.append(scatters.dphi_unc)
+        scatter_vars.append(scatters.theta_msc)  # 1
+        scatter_uncs.append(scatters.theta_msc_unc)
 
-        scatter_vars.append(scatters.theta_in)  # 3
+        scatter_vars.append(scatters.theta_in)  # 2
         scatter_uncs.append(scatters.theta_in_unc)
 
         scatter_vars.append(scatters.theta_out)  # 3
@@ -139,17 +117,16 @@ class AbsX0Inferer(AbsVolumeInferer):
         )
 
         mom = in_vars[:, 0]
-        dtheta = in_vars[:, 1]
-        dphi = in_vars[:, 2]  # May actually be dtheta if use_low_res_trick
-        theta_in = in_vars[:, 3]
-        theta_out = in_vars[:, 4]
+        theta_msc = in_vars[:, 1]
+        theta_in = in_vars[:, 2]
+        theta_out = in_vars[:, 3]
 
         uncs = torch.cat(
             scatter_uncs,
             dim=-1,
         )
 
-        pred = self._x0_from_dtheta(delta_z=self.size, mom=mom, dtheta=dtheta, dphi=dphi, theta_in=theta_in, theta_out=theta_out)
+        pred = self._x0_from_dtheta(delta_z=self.size, mom=mom, theta_msc=theta_msc, theta_in=theta_in, theta_out=theta_out)
         pred_unc = self._x0_from_dtheta_unc(pred=pred, in_vars=in_vars, uncs=uncs)
 
         return pred, pred_unc
@@ -258,8 +235,6 @@ class AbsX0Inferer(AbsVolumeInferer):
 
 
 class VoxelX0Inferer(AbsX0Inferer):
-    mask_muons = True
-
     def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
         r"""
         Does not yet handle more than two detectors per position

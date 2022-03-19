@@ -26,7 +26,7 @@ from tomopt.optimisation.callbacks import (
 from tomopt.optimisation.loss import VoxelX0Loss
 from tomopt.optimisation.wrapper.volume_wrapper import AbsVolumeWrapper, FitParams, PanelVolumeWrapper
 from tomopt.volume import VoxelDetectorLayer, PanelDetectorLayer, DetectorPanel
-from tomopt.muon import MuonBatch, MuonGenerator
+from tomopt.muon import MuonBatch, MuonGenerator2016
 
 LW = Tensor([1, 1])
 SZ = 0.1
@@ -314,23 +314,19 @@ def test_hit_record():
     vw = MockWrapper()
     vw.volume = MockVolume()
     vw.volume.h = Tensor([1])
-    xa0 = torch.rand(10, 3)
-    xa1 = torch.rand(10, 3)
-    xb0 = torch.rand(10, 3)
-    xb1 = torch.rand(10, 3)
+    hits = torch.rand(10, 4, 3)
     vw.fit_params = FitParams(sb=MockScatterBatch(5))
     hr.set_wrapper(vw)
 
-    vw.fit_params.sb.above_hits = [xa0[:5], xa1[:5]]
-    vw.fit_params.sb.below_hits = [xb0[:5], xb1[:5]]
+    vw.fit_params.sb._reco_hits = hits[:5]
     hr.on_scatter_end()
-    vw.fit_params.sb.above_hits = [xa0[5:], xa1[5:]]
-    vw.fit_params.sb.below_hits = [xb0[5:], xb1[5:]]
+    vw.fit_params.sb._reco_hits = hits[5:]
     hr.on_scatter_end()
 
     assert len(hr.record) == 2
     assert hr.record[1].shape == torch.Size([5, 4, 3])
-    assert torch.all(hr.get_record() == torch.stack([xa0, xa1, xb0, xb1], dim=1))
+    print(hr.get_record().shape, hits.shape)
+    assert torch.all(hr.get_record() == hits)
 
     hr.record = [Tensor([[0.0, 0.0, 0.95], [0.1, 0.1, 0.85], [0.2, 0.2, 0.15], [0.3, 0.3, 0.05]])]
     df = hr.get_record(True)
@@ -448,7 +444,7 @@ def test_data_callback():
     assert (MuonResampler.check_mu_batch(mu, volume) == Tensor([1, 0, 0]).bool()).all()
 
     # Check resampler
-    gen = MuonGenerator.from_volume(volume)
+    gen = MuonGenerator2016.from_volume(volume)
     mus = gen(1000)
     while MuonResampler.check_mu_batch(MuonBatch(mus, volume.h), volume).sum() == 1000:
         mus = gen(1000)
