@@ -371,8 +371,14 @@ class DeepVolumeInferer(AbsVolumeInferer):
 
     def _build_inputs(self, in_var: Tensor) -> Tensor:
         data = in_var[None, :].repeat_interleave(len(self.voxel_centres), dim=0)
+        if "dpoca" in self.grp_feats:
+            i = self.in_feats.index("dpoca_x")
+            j = self.in_feats.index("dpoca_r")
+            data[:, :, i:j] -= self.voxel_centres[:, None].repeat_interleave(len(in_var), dim=1)
+            data = torch.cat((data, torch.norm(data[:, :, i:j], dim=-1, keepdim=True)), dim=-1)  # dR
         # Add voxel centres
-        data = torch.cat((data, self.voxel_centres[:, None].repeat_interleave(len(in_var), dim=1)), dim=-1)
+        if "voxels" in self.grp_feats:
+            data = torch.cat((data, self.voxel_centres[:, None].repeat_interleave(len(in_var), dim=1)), dim=-1)
         return data
 
     def _get_weight(self) -> Tensor:
