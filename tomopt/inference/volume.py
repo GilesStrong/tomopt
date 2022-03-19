@@ -321,7 +321,7 @@ class DeepVolumeInferer(AbsVolumeInferer):
             self.in_feats += ["poca_x", "poca_y", "pocaz"]
         if "dpoca" in self.grp_feats:
             self.in_feats += ["dpoca_x", "dpoca_y", "dpocaz", "dpoca_r"]
-        if "voxel" in self.grp_feats:
+        if "voxels" in self.grp_feats:
             self.in_feats += ["vox_x", "vox_y", "vox_z"]
 
     def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
