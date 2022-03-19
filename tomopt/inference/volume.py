@@ -308,14 +308,42 @@ class DeepVolumeInferer(AbsVolumeInferer):
     def add_scatters(self, scatters: AbsScatterBatch) -> None:
         self.scatter_batches.append(scatters)
         x0, x0_unc = self.get_base_predictions(scatters)
-        self.in_vars.append(torch.cat((scatters.dtheta_xy, scatters.dxy, x0, scatters.location), dim=-1))
-        self.in_var_uncs.append(torch.cat((scatters.dtheta_xy_unc, scatters.dxy_unc, x0_unc, scatters.location_unc), dim=-1))
+        self.in_vars.append(
+            torch.cat(
+                (
+                    scatters.dtheta,
+                    scatters.dphi,
+                    scatters.theta_xy_in,
+                    scatters.theta_xy_out,
+                    x0,
+                    #                     scatters.location,
+                    scatters.xyz_in,
+                    scatters.xyz_out,
+                ),
+                dim=-1,
+            )
+        )
+        self.in_var_uncs.append(
+            torch.cat(
+                (
+                    scatters.dtheta_unc,
+                    scatters.dphi_unc,
+                    scatters.theta_xy_in_unc,
+                    scatters.theta_xy_out_unc,
+                    x0_unc,
+                    #                     scatters.location_unc,
+                    scatters.xyz_in_unc,
+                    scatters.xyz_out_unc,
+                ),
+                dim=-1,
+            )
+        )
         self.efficiencies.append(self.compute_efficiency(scatters=scatters))
 
     def _build_inputs(self, in_var: Tensor) -> Tensor:
         data = in_var[None, :].repeat_interleave(len(self.voxel_centres), dim=0)
-        data[:, :, -3:] -= self.voxel_centres[:, None].repeat_interleave(len(in_var), dim=1)
-        data = torch.cat((data, torch.norm(data[:, :, -3:], dim=-1, keepdim=True)), dim=-1)  # dR
+        # Add voxel centres
+        data = torch.cat((data, self.voxel_centres[:, None].repeat_interleave(len(in_var), dim=1)), dim=-1)
         return data
 
     def _get_weight(self) -> Tensor:
