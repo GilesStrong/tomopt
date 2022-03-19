@@ -365,7 +365,7 @@ class DeepVolumeInferer(AbsVolumeInferer):
         self.in_vars.append(torch.cat(feats, dim=-1))
         if self.include_unc:
             self.in_var_uncs.append(torch.cat(uncs, dim=-1))
-        self.efficiencies.append(self.compute_efficiency(scatters=scatters))
+        self.efficiencies.append(self.compute_efficiency(scatters=scatters)[:, None])
 
     def add_scatters(self, scatters: AbsScatterBatch) -> None:
         self.scatter_batches.append(scatters)
@@ -413,7 +413,7 @@ class WeightedDeepVolumeInferer(DeepVolumeInferer):
         self.in_var_weights: List[Tensor] = []
 
     def add_scatters(self, scatters: AbsScatterBatch) -> None:
-        super().add_scatters(scatters)
+        self.scatter_batches.append(scatters)
         pred_x0, pred_x0_unc = self.get_base_predictions(scatters)
         self._build_vars(scatters, pred_x0, pred_x0_unc)
         self.in_var_weights.append((pred_x0_unc / pred_x0) ** 2)
@@ -425,7 +425,7 @@ class WeightedDeepVolumeInferer(DeepVolumeInferer):
         self.efficiency = torch.cat(self.efficiencies, dim=0)
         self.in_var_weight = torch.cat(self.in_var_weights, dim=0)
 
-        weight = self.efficiency[:, None] / self.in_var_weight
+        weight = self.efficiency / self.in_var_weight
         weighted_vars = torch.cat((weight, self.in_var), dim=1)
         inputs = self._build_inputs(weighted_vars)
         pred = self.model(inputs[None])
