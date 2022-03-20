@@ -318,9 +318,9 @@ class DeepVolumeInferer(AbsVolumeInferer):
         if "track_xy" in self.grp_feats:
             self.in_feats += ["x_in", "y_in", "x_out", "y_out"]
         if "poca" in self.grp_feats:
-            self.in_feats += ["poca_x", "poca_y", "pocaz"]
+            self.in_feats += ["poca_x", "poca_y", "poca_z"]
         if "dpoca" in self.grp_feats:
-            self.in_feats += ["dpoca_x", "dpoca_y", "dpocaz", "dpoca_r"]
+            self.in_feats += ["dpoca_x", "dpoca_y", "dpoca_z", "dpoca_r"]
         if "voxels" in self.grp_feats:
             self.in_feats += ["vox_x", "vox_y", "vox_z"]
 
