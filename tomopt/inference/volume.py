@@ -297,6 +297,8 @@ class DeepVolumeInferer(AbsVolumeInferer):
         super().__init__(volume=volume)
         self.model, self.base_inferer, self.include_unc = model, base_inferer, include_unc
         self.voxel_centres = self.volume.centres
+        self.tomopt_device = self.volume.device
+        self.model_device = next(self.model.parameters()).device
 
         self.in_vars: List[Tensor] = []
         self.in_var_uncs: List[Tensor] = []
@@ -395,7 +397,7 @@ class DeepVolumeInferer(AbsVolumeInferer):
         self.efficiency = torch.cat(self.efficiencies, dim=0)
 
         inputs = self._build_inputs(self.in_var)
-        pred = self.model(inputs[None])
+        pred = self.model(inputs[None].to(self.model_device)).to(self.tomopt_device)
         weight = self._get_weight()
         return pred, weight
 
@@ -428,6 +430,6 @@ class WeightedDeepVolumeInferer(DeepVolumeInferer):
         weight = self.efficiency / self.in_var_weight
         weighted_vars = torch.cat((weight, self.in_var), dim=1)
         inputs = self._build_inputs(weighted_vars)
-        pred = self.model(inputs[None])
+        pred = self.model(inputs[None].to(self.model_device)).to(self.tomopt_device)
         weight = self._get_weight()
         return pred, weight

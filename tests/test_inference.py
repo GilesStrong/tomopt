@@ -625,7 +625,12 @@ def test_deep_volume_inferer():
         def forward(self, x: Tensor) -> Tensor:
             return self.act(self.layer(x.mean(2).flatten()[None]))
 
-    inferer = DeepVolumeInferer(model=MockModel(), base_inferer=PanelX0Inferer(volume=volume), volume=volume)
+    inferer = DeepVolumeInferer(
+        model=MockModel(),
+        base_inferer=PanelX0Inferer(volume=volume),
+        volume=volume,
+        grp_feats=["pred_x0", "track_xy", "deleta_angles", "theta_msc", "track_angles", "track_xy", "poca", "dpoca", "voxels"],
+    )
 
     pt, pt_unc = inferer.get_base_predictions(scatters=sb)
     assert len(pt) == len(sb.location)
