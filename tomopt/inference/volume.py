@@ -346,11 +346,11 @@ class DeepVolumeInferer(AbsVolumeInferer):
             if self.include_unc:
                 uncs += [scatters.theta_msc_unc]
         if "track_angles" in self.grp_feats:
-            feats += [scatters.theta_xy_in, scatters.theta_xy_out_unc]
+            feats += [scatters.theta_xy_in, scatters.theta_xy_out]
             if self.include_unc:
                 uncs += [scatters.theta_xy_in_unc, scatters.theta_xy_out_unc]
         if "track_xy" in self.grp_feats:
-            feats += [scatters.xyz_in[:, :2], scatters.xyz_out_unc[:, :2]]
+            feats += [scatters.xyz_in[:, :2], scatters.xyz_out[:, :2]]
             if self.include_unc:
                 uncs += [scatters.xyz_in_unc, scatters.xyz_out_unc]
         if "poca" in self.grp_feats:
