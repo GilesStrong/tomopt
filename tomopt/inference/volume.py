@@ -315,8 +315,8 @@ class DeepVolumeInferer(AbsVolumeInferer):
             self.in_feats += ["theta_msc"]
         if "track_angles" in self.grp_feats:
             self.in_feats += ["theta_x_in", "theta_y_in", "theta_x_out", "theta_y_out"]
-        if "track_xyz" in self.grp_feats:
-            self.in_feats += ["x_in", "y_in", "z_in", "x_out", "y_out", "z_out"]
+        if "track_xy" in self.grp_feats:
+            self.in_feats += ["x_in", "y_in", "x_out", "y_out"]
         if "poca" in self.grp_feats:
             self.in_feats += ["poca_x", "poca_y", "pocaz"]
         if "dpoca" in self.grp_feats:
@@ -349,8 +349,8 @@ class DeepVolumeInferer(AbsVolumeInferer):
             feats += [scatters.theta_xy_in, scatters.theta_xy_out_unc]
             if self.include_unc:
                 uncs += [scatters.theta_xy_in_unc, scatters.theta_xy_out_unc]
-        if "track_xyz" in self.grp_feats:
-            feats += [scatters.xyz_in, scatters.xyz_out_unc]
+        if "track_xy" in self.grp_feats:
+            feats += [scatters.xyz_in[:, :2], scatters.xyz_out_unc[:, :2]]
             if self.include_unc:
                 uncs += [scatters.xyz_in_unc, scatters.xyz_out_unc]
         if "poca" in self.grp_feats:
