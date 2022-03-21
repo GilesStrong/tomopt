@@ -311,7 +311,7 @@ class DeepVolumeInferer(AbsVolumeInferer):
         self.in_feats = []
         if "pred_x0" in self.grp_feats:
             self.in_feats += ["pred_x0"]
-        if "deleta_angles" in self.grp_feats:
+        if "delta_angles" in self.grp_feats:
             self.in_feats += ["dtheta", "dphi"]
         if "theta_msc" in self.grp_feats:
             self.in_feats += ["theta_msc"]
@@ -339,7 +339,7 @@ class DeepVolumeInferer(AbsVolumeInferer):
             feats += [pred_x0]
             if self.include_unc:
                 uncs += [pred_x0_unc]
-        if "deleta_angles" in self.grp_feats:
+        if "delta_angles" in self.grp_feats:
             feats += [scatters.dtheta, scatters.dphi]
             if self.include_unc:
                 uncs += [scatters.dtheta_unc, scatters.dphi_unc]
