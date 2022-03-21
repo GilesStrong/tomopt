@@ -24,7 +24,7 @@ class AbsMuonGenerator:
         y_range: Tuple[float, float],
         fixed_mom: Optional[float] = 5.0,
         energy_range: Tuple[float, float] = (0.5, 500),
-        theta_range: Tuple[float, float] = (0, 0.5 * np.pi),
+        theta_range: Tuple[float, float] = (0, 70 * np.pi / 180),  # Models on accurate upto ~70 degrees
     ) -> None:
         """
         Initializer. Specify dimensions x,y of the impinging surface flag (True/False) for sampled vs uniform muon momenta respectively
