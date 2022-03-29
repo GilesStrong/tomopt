@@ -1,6 +1,5 @@
 from abc import ABCMeta, abstractmethod
 from typing import Tuple, Optional, Dict, List, Union
-import numpy as np
 
 import torch
 from torch import Tensor, nn
@@ -15,8 +14,6 @@ __all__ = ["VoxelX0Inferer", "PanelX0Inferer", "DeepVolumeInferer"]
 
 
 class AbsVolumeInferer(metaclass=ABCMeta):
-    mask_muons = False
-
     def __init__(self, volume: Volume):
         self.scatter_batches: List[AbsScatterBatch] = []
         self.volume = volume
@@ -42,8 +39,8 @@ class AbsX0Inferer(AbsVolumeInferer):
         self.x0_dxys: List[Optional[Tensor]] = []
         self.x0_dxy_uncs: List[Optional[Tensor]] = []
         self.efficiencies: List[Tensor] = []
-        self.preds: List[Tensor] = []
-        self.weights: List[Tensor] = []
+        self.voxel_preds: List[Tensor] = []
+        self.voxel_weights: List[Tensor] = []
 
     def add_scatters(self, scatters: AbsScatterBatch) -> None:
         super().add_scatters(scatters=scatters)
@@ -67,26 +64,13 @@ class AbsX0Inferer(AbsVolumeInferer):
             efficiency=self.efficiencies[-1],
             scatters=scatters,
         )
-        self.preds.append(p)
-        self.weights.append(w)
+        self.voxel_preds.append(p)
+        self.voxel_weights.append(w)
 
     @staticmethod
-    def _x0_from_dtheta(delta_z: float, mom: Tensor, dtheta: Tensor, theta_xy_in: Tensor, theta_xy_out: Tensor) -> Tensor:
-        theta2 = dtheta.pow(2).sum(1)
-        n_x0 = 0.5 * theta2 * ((mom / SCATTER_COEF_A) ** 2)
-        theta_in = theta_xy_in.pow(2).sum(1).sqrt()
-        theta_out = theta_xy_out.pow(2).sum(1).sqrt()
-        cos_theta_in = torch.cos(theta_in)
-        cos_theta_out = torch.cos(theta_out)
-        cos_mean = (cos_theta_in + cos_theta_out) / 2
-
-        pred = delta_z / (n_x0 * cos_mean)
-
-        if pred.isnan().sum() > 0:
-            print(pred)
-            raise ValueError("Prediction contains NaN values")
-
-        return pred
+    def _x0_from_dtheta(delta_z: float, mom: Tensor, theta_msc: Tensor, theta_in: Tensor, theta_out: Tensor) -> Tensor:
+        cos_theta = (theta_in.cos() + theta_out.cos()) / 2
+        return 2 * ((SCATTER_COEF_A / mom) ** 2) * delta_z / (theta_msc.pow(2) * cos_theta)
 
     @staticmethod
     def _x0_from_dtheta_unc(pred: Tensor, in_vars: Tensor, uncs: Tensor) -> Tensor:
@@ -97,11 +81,6 @@ class AbsX0Inferer(AbsVolumeInferer):
         unc_2 = (jac[:, idxs] * uncs[:, idxs]).prod(-1)
 
         pred_unc = unc_2.sum(-1).sqrt()
-
-        if pred_unc.isnan().sum() > 0:
-            print(pred_unc)
-            raise ValueError("Prediction uncertainties contains NaN values")
-
         return pred_unc
 
     def x0_from_dtheta(self, scatters: AbsScatterBatch) -> Tuple[Optional[Tensor], Optional[Tensor]]:
@@ -119,29 +98,35 @@ class AbsX0Inferer(AbsVolumeInferer):
 
         mu = scatters.mu
 
-        if self.mask_muons:  # Scatter mask assumes that muons are prefiltered to only include those which stay inside the volume
-            muon_mask = mu.get_xy_mask((0, 0), self.lw)
+        scatter_vars, scatter_uncs = [], []
+        scatter_vars.append((mu.reco_mom)[:, None])  # 0
+        scatter_uncs.append(torch.zeros(len(scatter_vars[0]), 1))
+
+        scatter_vars.append(scatters.theta_msc)  # 1
+        scatter_uncs.append(scatters.theta_msc_unc)
+
+        scatter_vars.append(scatters.theta_in)  # 2
+        scatter_uncs.append(scatters.theta_in_unc)
+
+        scatter_vars.append(scatters.theta_out)  # 3
+        scatter_uncs.append(scatters.theta_out_unc)
 
         in_vars = torch.cat(
-            [
-                (mu.reco_mom if self.mask_muons is False else mu.reco_mom[muon_mask])[:, None],  # 0
-                scatters.dtheta,  # 1,2
-                scatters.theta_in,  # 3,4
-                scatters.theta_out,  # 5,6
-            ],
+            scatter_vars,
             dim=-1,
         )
+
         mom = in_vars[:, 0]
-        dtheta = in_vars[:, 1:3]
-        theta_xy_in = in_vars[:, 3:5]
-        theta_xy_out = in_vars[:, 5:7]
+        theta_msc = in_vars[:, 1]
+        theta_in = in_vars[:, 2]
+        theta_out = in_vars[:, 3]
 
         uncs = torch.cat(
-            [torch.zeros_like(mom)[:, None], scatters.dtheta_unc, scatters.theta_in_unc, scatters.theta_out_unc],
+            scatter_uncs,
             dim=-1,
         )
 
-        pred = self._x0_from_dtheta(delta_z=self.size, mom=mom, dtheta=dtheta, theta_xy_in=theta_xy_in, theta_xy_out=theta_xy_out)
+        pred = self._x0_from_dtheta(delta_z=self.size, mom=mom, theta_msc=theta_msc, theta_in=theta_in, theta_out=theta_out)
         pred_unc = self._x0_from_dtheta_unc(pred=pred, in_vars=in_vars, uncs=uncs)
 
         return pred, pred_unc
@@ -171,6 +156,14 @@ class AbsX0Inferer(AbsVolumeInferer):
         """
 
         loc, loc_unc = scatters.location, scatters.location_unc  # loc is (x,y,z)
+        # Only consider non-NaN predictions
+        mask = ((loc == loc).prod(1) * (loc_unc == loc_unc).prod(1)).bool()
+        if x0_dtheta is not None and x0_dtheta_unc is not None:
+            mask = (mask * (~x0_dtheta.isnan()) * (~x0_dtheta.isinf()) * (~x0_dtheta_unc.isnan()) * (~x0_dtheta_unc.isinf())).bool()
+        if x0_dxy is not None and x0_dxy_unc is not None:
+            mask = (mask * (~x0_dxy.isnan()) * (~x0_dxy.isinf()) * (~x0_dxy_unc.isnan()) * (~x0_dxy_unc.isinf())).bool()
+
+        loc, loc_unc, efficiency = loc[mask], loc_unc[mask], efficiency[mask]
         shp_xyz = (
             len(loc),
             round(self.volume.lw.cpu().numpy()[0] / self.volume.passive_size),
@@ -183,6 +176,7 @@ class AbsX0Inferer(AbsVolumeInferer):
         for x0, unc in ((x0_dtheta, x0_dtheta_unc), (x0_dxy, x0_dxy_unc)):
             if x0 is None or unc is None:
                 continue
+            x0, unc = x0[mask], unc[mask]
             x0 = x0[:, None, None, None].expand(shp_zxy).clone()
             coef = efficiency[:, None, None, None].expand(shp_zxy).clone() / ((1e-17) + (unc[:, None, None, None].expand(shp_zxy).clone() ** 2))
 
@@ -230,10 +224,10 @@ class AbsX0Inferer(AbsVolumeInferer):
             print("Warning: unable to scan volume with prescribed number of muons.")
             return None, None
         elif len(self.scatter_batches) == 1:
-            return self.preds[0], self.weights[0]
+            return self.voxel_preds[0], self.voxel_weights[0]
         else:
-            preds = torch.stack(self.preds, dim=0)
-            weights = torch.stack(self.weights, dim=0)
+            preds = torch.stack(self.voxel_preds, dim=0)
+            weights = torch.stack(self.voxel_weights, dim=0)
             wpred = (preds * weights).sum(0)
             weight = weights.sum(0)
             pred = wpred / weight
@@ -241,8 +235,6 @@ class AbsX0Inferer(AbsVolumeInferer):
 
 
 class VoxelX0Inferer(AbsX0Inferer):
-    mask_muons = True
-
     def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
         r"""
         Does not yet handle more than two detectors per position
@@ -316,8 +308,8 @@ class DeepVolumeInferer(AbsVolumeInferer):
     def add_scatters(self, scatters: AbsScatterBatch) -> None:
         self.scatter_batches.append(scatters)
         x0, x0_unc = self.get_base_predictions(scatters)
-        self.in_vars.append(torch.cat((scatters.dtheta, scatters.dxy, x0, scatters.location), dim=-1))
-        self.in_var_uncs.append(torch.cat((scatters.dtheta_unc, scatters.dxy_unc, x0_unc, scatters.location_unc), dim=-1))
+        self.in_vars.append(torch.cat((scatters.dtheta_xy, scatters.dxy, x0, scatters.location), dim=-1))
+        self.in_var_uncs.append(torch.cat((scatters.dtheta_xy_unc, scatters.dxy_unc, x0_unc, scatters.location_unc), dim=-1))
         self.efficiencies.append(self.compute_efficiency(scatters=scatters))
 
     def _build_inputs(self, in_var: Tensor) -> Tensor:

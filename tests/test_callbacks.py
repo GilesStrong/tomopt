@@ -21,11 +21,12 @@ from tomopt.optimisation.callbacks import (
     HitRecord,
     CostCoefWarmup,
     PanelOptConfig,
+    MuonResampler,
 )
 from tomopt.optimisation.loss import VoxelX0Loss
 from tomopt.optimisation.wrapper.volume_wrapper import AbsVolumeWrapper, FitParams, PanelVolumeWrapper
 from tomopt.volume import VoxelDetectorLayer, PanelDetectorLayer, DetectorPanel
-from tomopt.volume.volume import Volume
+from tomopt.muon import MuonBatch, MuonGenerator2016
 
 LW = Tensor([1, 1])
 SZ = 0.1
@@ -40,8 +41,8 @@ def res_cost(x: Tensor) -> Tensor:
     return F.relu(x / 100) ** 2
 
 
-def area_cost(x: Tensor) -> Tensor:
-    return F.relu(x) ** 2
+def area_cost(a: Tensor) -> Tensor:
+    return F.relu(a)
 
 
 def check_callback_base(cb: Callback) -> bool:
@@ -65,7 +66,7 @@ def get_panel_detector() -> VoxelDetectorLayer:
         lw=LW,
         z=1,
         size=2 * SZ,
-        panels=[DetectorPanel(res=1, eff=1, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[0.5, 0.5], area_cost_func=area_cost)],
+        panels=[DetectorPanel(res=1, eff=1, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[1.0, 1.0], area_cost_func=area_cost)],
     )
 
 
@@ -75,6 +76,12 @@ class MockWrapper:
 
 class MockVolume:
     device = torch.device("cpu")
+    lw = LW
+    h = Tensor([Z])
+    passive_size = SZ
+
+    def get_passive_z_range(self) -> Tensor:
+        return Tensor([0.2, 0.8])
 
 
 class MockLayer:
@@ -307,23 +314,19 @@ def test_hit_record():
     vw = MockWrapper()
     vw.volume = MockVolume()
     vw.volume.h = Tensor([1])
-    xa0 = torch.rand(10, 3)
-    xa1 = torch.rand(10, 3)
-    xb0 = torch.rand(10, 3)
-    xb1 = torch.rand(10, 3)
+    hits = torch.rand(10, 4, 3)
     vw.fit_params = FitParams(sb=MockScatterBatch(5))
     hr.set_wrapper(vw)
 
-    vw.fit_params.sb.above_hits = [xa0[:5], xa1[:5]]
-    vw.fit_params.sb.below_hits = [xb0[:5], xb1[:5]]
+    vw.fit_params.sb._reco_hits = hits[:5]
     hr.on_scatter_end()
-    vw.fit_params.sb.above_hits = [xa0[5:], xa1[5:]]
-    vw.fit_params.sb.below_hits = [xb0[5:], xb1[5:]]
+    vw.fit_params.sb._reco_hits = hits[5:]
     hr.on_scatter_end()
 
     assert len(hr.record) == 2
     assert hr.record[1].shape == torch.Size([5, 4, 3])
-    assert torch.all(hr.get_record() == torch.stack([xa0, xa1, xb0, xb1], dim=1))
+    print(hr.get_record().shape, hits.shape)
+    assert torch.all(hr.get_record() == hits)
 
     hr.record = [Tensor([[0.0, 0.0, 0.95], [0.1, 0.1, 0.85], [0.2, 0.2, 0.15], [0.3, 0.3, 0.05]])]
     df = hr.get_record(True)
@@ -357,11 +360,11 @@ def test_cost_coef_warmup():
             ccw.on_epoch_begin()
             for v in range(3):
                 print(e, s, v)
-                loss.sub_losses["error"] = Tensor([((-1) ** s) * (2 ** e) * (3 ** v)])  # Unique value per epoch per volume
+                loss.sub_losses["error"] = Tensor([((-1) ** s) * (2**e) * (3**v)])  # Unique value per epoch per volume
                 ccw.on_volume_end()
             if e < 5:
                 if s == 0:
-                    assert ccw.v_sum.item() == ((2 ** e)) + ((2 ** e) * 3) + ((2 ** e) * 9)
+                    assert ccw.v_sum.item() == ((2**e)) + ((2**e) * 3) + ((2**e) * 9)
                     assert ccw.volume_cnt == 3
                 else:
                     assert ccw.v_sum.item() == 0.0
@@ -371,12 +374,12 @@ def test_cost_coef_warmup():
                 assert ccw.volume_cnt == 0
             ccw.on_epoch_end()
             if e < 5:
-                assert np.abs(ccw.e_sum.item() - np.sum([((2 ** i)) + ((2 ** i) * 3) + ((2 ** i) * 9) for i in range(0, e + 1)]) / 3) < 1e-4
+                assert np.abs(ccw.e_sum.item() - np.sum([((2**i)) + ((2**i) * 3) + ((2**i) * 9) for i in range(0, e + 1)]) / 3) < 1e-4
                 assert ccw.epoch_cnt == e + 1
             else:  # warm-up finished
                 assert ccw.tracking is False
                 assert opt.param_groups[0]["lr"] == 1e2
-                assert np.abs(ccw.e_sum.item() - (sum := np.sum([((2 ** i)) + ((2 ** i) * 3) + ((2 ** i) * 9) for i in range(0, 5)]) / 3)) < 1e-4
+                assert np.abs(ccw.e_sum.item() - (sum := np.sum([((2**i)) + ((2**i) * 3) + ((2**i) * 9) for i in range(0, 5)]) / 3)) < 1e-4
                 assert ccw.epoch_cnt == 5
                 assert np.abs(loss.cost_coef.item() - sum / 5) < 1e-4
 
@@ -429,3 +432,47 @@ def test_panel_opt_config():
                 assert vw.get_opt_lr("xy_pos_opt") == xy_pos_rate / (xy_pos_mult / 2)
                 assert vw.get_opt_lr("z_pos_opt") == np.abs(z_pos_rate / (z_pos_mult / 2))
                 assert vw.get_opt_lr("xy_span_opt") == xy_span_rate / (xy_span_mult / 2)
+
+
+def test_data_callback():
+    # Check checker
+    volume = MockVolume()
+    l = MockLayer()
+    l.z = 0.5
+    volume.get_passives = lambda: [l]
+    mu = MuonBatch(Tensor([[0.5, 0.5, 5, 0, 0], [-0.4, -0.4, 5, np.pi / 4, np.pi / 4], [-1, 1, 5, 0, 0]]), volume.h)
+    assert (MuonResampler.check_mu_batch(mu, volume) == Tensor([1, 0, 0]).bool()).all()
+
+    # Check resampler
+    gen = MuonGenerator2016.from_volume(volume)
+    mus = gen(1000)
+    while MuonResampler.check_mu_batch(MuonBatch(mus, volume.h), volume).sum() == 1000:
+        mus = gen(1000)
+    mus = MuonResampler.resample(mus, volume=volume, gen=gen)
+    mu = MuonBatch(mus, volume.h)
+    assert MuonResampler.check_mu_batch(mu, volume).sum() == 1000
+    assert mu.z == volume.h
+
+    # Check callback
+    volume.parameters = []
+    panel_det = get_panel_detector()
+    volume.get_detectors = lambda: [panel_det]
+    vw = PanelVolumeWrapper(
+        volume,
+        xy_pos_opt=partial(torch.optim.SGD, lr=5e4),
+        z_pos_opt=partial(torch.optim.SGD, lr=5e3),
+        xy_span_opt=partial(torch.optim.SGD, lr=1e4),
+        loss_func=VoxelX0Loss(target_budget=0),
+    )
+
+    mus = gen(1000)
+    while MuonResampler.check_mu_batch(MuonBatch(mus, volume.h), volume).sum() == 1000:
+        mus = gen(1000)
+    vw.fit_params = FitParams(mu=MuonBatch(mus, volume.h))
+    vw.mu_generator = gen
+
+    mr = MuonResampler()
+    mr.set_wrapper(vw)
+    mr.on_mu_batch_begin()
+    assert vw.fit_params.mu.z == volume.h
+    assert mr.check_mu_batch(vw.fit_params.mu, volume).sum() == 1000
