@@ -257,19 +257,31 @@ class AbsScatterBatch(metaclass=ABCMeta):
 
     @staticmethod
     def _compute_phi(x: Tensor, y: Tensor) -> Tensor:
-        phi = torch.arctan(y / x)  # (-pi/2, pi/2)
-
-        # Account for quadrants
-        m = x < 0
-        phi[m] = phi[m] + torch.pi
-        m = (x > 0) * (y < 0)
-        phi[m] = phi[m] + (2 * torch.pi)  # (0, 2pi)
+        phi = y.new_zeros(x.shape)
 
         # Case when x == 0
         phi[(x == 0) * (y > 0)] = torch.pi / 2
         phi[(x == 0) * (y < 0)] = 3 * torch.pi / 2
 
+        m = x != 0
+        phi[m] = torch.arctan(y[m] / x[m])
+        # # Account for quadrants
+        m = x < 0
+        phi[m] = phi[m] + torch.pi
+        m = (x > 0) * (y < 0)
+        phi[m] = phi[m] + (2 * torch.pi)  # (0, 2pi)
+
         return phi
+
+    @staticmethod
+    def _compute_theta(track: Tensor) -> Tensor:
+        arg = -track[:, 2:3] / track.norm(dim=-1, keepdim=True)
+        theta = arg.new_zeros(arg.shape)
+
+        m = arg != 1
+        theta[m] = torch.arccos(arg[m])
+
+        return theta
 
     @staticmethod
     def _compute_theta_msc(p: Tensor, q: Tensor) -> Tensor:
@@ -320,7 +332,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
     @property
     def theta_in(self) -> Tensor:
         if self._theta_in is None:
-            self._theta_in = torch.arccos(-self.track_in[:, 2:3] / self.track_in.norm(dim=-1, keepdim=True))
+            self._theta_in = self._compute_theta(self.track_in)
             self._theta_in_unc = None
         return self._theta_in
 
@@ -333,7 +345,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
     @property
     def theta_out(self) -> Tensor:
         if self._theta_out is None:
-            self._theta_out = torch.arccos(-self.track_out[:, 2:3] / self.track_out.norm(dim=-1, keepdim=True))
+            self._theta_out = self._compute_theta(self.track_out)
             self._theta_out_unc = None
         return self._theta_out
 
