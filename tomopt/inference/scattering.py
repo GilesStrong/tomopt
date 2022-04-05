@@ -220,7 +220,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
         pass
 
     def _filter_scatters(self) -> None:
-        # Filter to remove same tracks: ; remove muons with tracks parallel to volume or originating far from the volume
+        # Filter to remove same tracks:
         # This might seem heavy-handed, but tracks with invalid/extreme parameters can have NaN gradients, which can spoil the grads of all other muons.
         # Only include muons that scatter
         theta_msc = self._compute_theta_msc(self.track_in, self.track_out)
