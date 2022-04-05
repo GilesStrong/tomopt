@@ -40,7 +40,7 @@ class ScatterModel:
         return dtheta * torch.sqrt(inv_costheta)
 
     def extrapolate_dxy(self, dxy: Tensor, inv_costheta: Tensor) -> Tensor:
-        return dxy * (inv_costheta ** self.exp_disp_model)
+        return dxy * (inv_costheta**self.exp_disp_model)
 
     @property
     def device(self) -> Optional[torch.device]:
@@ -49,15 +49,15 @@ class ScatterModel:
     @device.setter
     def device(self, device: torch.device) -> None:
         self._device = device
-        self.dtheta_params = self.dtheta_params.to(self._device)
-        self.dxy_params = self.dxy_params.to(self._device)
+        self.dtheta_params = self.dtheta_params.to(self._device)  # Is this dtheta_xy in the muon's ref frame = dtheta dphi in the volume ref frame?
+        self.dxy_params = self.dxy_params.to(self._device)  # Is this alredy in the volume frame or still in the muon's ref frame?
         self.mom_lookup = self.mom_lookup.to(self._device)
 
-    def compute_scattering(self, x0: Tensor, deltaz: Union[Tensor, float], theta_xy: Tensor, mom: Tensor) -> Tuple[Tensor, Tensor]:
+    def compute_scattering(self, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor, mom: Tensor) -> Tuple[Tensor, Tensor]:
         if deltaz != self.deltaz:
             raise ValueError(f"Model only works for a fixed delta z step of {self.deltaz}.")
         if self._device is None:
-            self.device = theta_xy.device
+            self.device = theta.device
 
         n = len(x0)
         rnds = (self.n_bins * torch.rand((n, 4), device=self.device)).long()  # dtheta_x, dtheta_x, dy, dy
@@ -70,13 +70,13 @@ class ScatterModel:
             raise ValueError("Something went wrong in the x0 indexing")
         x0_idxs = x0_idxs.long()[:, None]
 
-        inv_costheta = 1 / (1e-17 + torch.cos(theta_xy))
-        dtheta = self.dtheta_params[x0_idxs, mom_idxs, rnds[:, :2]]
-        dtheta = self.extrapolate_dtheta(dtheta, inv_costheta)
+        inv_costheta = 1 / (1e-17 + torch.cos(theta))
+        dthetaphi = self.dtheta_params[x0_idxs, mom_idxs, rnds[:, :2]]
+        dthetaphi = self.extrapolate_dtheta(dthetaphi, inv_costheta)
         dxy = self.dxy_params[x0_idxs, mom_idxs, rnds[:, 2:]]
         dxy = self.extrapolate_dxy(dxy, inv_costheta)
 
-        return dtheta, dxy
+        return dthetaphi, dxy
 
 
 SCATTER_MODEL = ScatterModel()

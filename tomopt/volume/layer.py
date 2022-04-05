@@ -1,28 +1,74 @@
-from tomopt.volume.panel import DetectorPanel
 from typing import Iterator, Optional, Callable, Dict, Tuple, List, Union
 import numpy as np
 from abc import ABCMeta, abstractmethod
+import math
 
 import torch
 from torch import nn, Tensor
 import torch.nn.functional as F
 
 from .scatter_model import SCATTER_MODEL
-from ..core import DEVICE
+from ..core import DEVICE, SCATTER_COEF_A, SCATTER_COEF_B
 from ..muon import MuonBatch
+from .panel import DetectorPanel
 
 __all__ = ["PassiveLayer", "VoxelDetectorLayer", "PanelDetectorLayer"]
 
 
 class Layer(nn.Module):
-    def __init__(self, lw: Tensor, z: float, size: float, device: torch.device = DEVICE):
+    def __init__(self, lw: Tensor, z: float, size: float, scatter_model: str = "geant4", device: torch.device = DEVICE):
         super().__init__()
         self.lw, self.z, self.size, self.device = lw.to(device), torch.tensor([z], dtype=torch.float32, device=device), size, device
         self.rad_length: Optional[Tensor] = None
 
-    def _compute_displacements(self, *, x0: Tensor, deltaz: Union[Tensor, float], theta_xy: Tensor, mom: Tensor) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-        dtheta, dxy = SCATTER_MODEL.compute_scattering(x0=x0, deltaz=deltaz, theta_xy=theta_xy, mom=mom)
-        return dtheta[:, 0], dtheta[:, 1], dxy[:, 0], dxy[:, 1]
+    def _geant_scatter(self, *, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor, mom: Tensor) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+        dthetaphi, dxy = SCATTER_MODEL.compute_scattering(x0=x0, deltaz=deltaz, theta=theta, mom=mom)
+        return dthetaphi[:, 0], dthetaphi[:, 1], dxy[:, 0], dxy[:, 1]
+
+    def _pdg_scatter(
+        self, *, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor, log_term: bool = True
+    ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+        r"""
+        Returns dx, dy, dtheta, dphi of the muons in the refernce frame of the volume
+        """
+
+        n_x0 = deltaz / (x0 * torch.cos(theta))
+        n = len(n_x0)
+        z1 = torch.randn(n, device=self.device)
+        z2 = torch.randn(n, device=self.device)
+
+        theta0 = (SCATTER_COEF_A / mom) * torch.sqrt(n_x0)
+        if log_term:
+            theta0 = theta0 * (1 + (SCATTER_COEF_B * torch.log(n_x0)))
+        # These are in the muons' reference frames NOT the volume's!!!
+        theta_msc = math.sqrt(2) * z2 * theta0
+        phi_msc = torch.rand(n, device=self.device) * 2 * math.pi
+        dh_msc = math.sqrt(2) * deltaz * torch.sin(theta0) * ((z1 / math.sqrt(12)) + (z2 / 2))
+
+        # Compute dtheta_xy in muon ref frame, but we're free to rotate the muon,
+        # since dtheta_xy doesn't depend on muon position
+        # Therefore assign theta_y axis (muon ref) to be in the theta direction (vol ref),
+        # and theta_x axis (muon ref) to be in the phi direction (vol ref)
+        dphi = theta_msc * torch.cos(phi_msc)  # dtheta_y in muon ref
+        dtheta = theta_msc * torch.sin(phi_msc)  # dtheta_x in muon ref
+
+        # Note that if a track incides on a layer
+        # with angle theta_mu, the dx and dy displacements are relative to zero angle
+        # (generation of MSC formulas are oblivious of angle of incidence) so we need
+        # to rescale them by cos of thetax and thetay
+        dx = dh_msc * torch.cos(phi_msc) * torch.cos(theta_x)
+        dy = dh_msc * torch.sin(phi_msc) * torch.cos(theta_y)
+        return dx, dy, dtheta, dphi
+
+    def _compute_displacements(
+        self, *, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor
+    ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+        if self.scatter_model == "pdg":
+            return self._pdg_scatter(x0=x0, deltaz=deltaz, theta=theta, theta_x=theta_x, theta_y=theta_y, mom=mom)
+        elif self.scatter_model == "geant4":
+            return self._geant_scatter(x0=x0, deltaz=deltaz, theta=theta, mom=mom)
+        else:
+            raise ValueError(f"Scatter model {self.scatter_model} is not currently supported.")
 
     def scatter_and_propagate(self, mu: MuonBatch, deltaz: Union[Tensor, float]) -> None:
         """
@@ -36,15 +82,15 @@ class Layer(nn.Module):
             mask = mu.get_xy_mask((0, 0), self.lw)  # Only scatter muons inside volume
             xy_idx = self.mu_abs2idx(mu, mask)
 
-            x0 = self.rad_length[xy_idx[:, 0], xy_idx[:, 1]]  # Already masked
-            dx, dy, dtheta_x, dtheta_y = self._compute_displacements(x0=x0, deltaz=deltaz, theta_xy=mu.theta_xy[mask], mom=mu.mom[mask])
+            x0 = self.rad_length[xy_idx[:, 0], xy_idx[:, 1]]
+            dx, dy, dtheta, dphi = self._compute_displacements(
+                x0=x0, deltaz=deltaz, theta=mu.theta[mask], theta_x=mu.theta_x[mask], theta_y=mu.theta_y[mask], mom=mu.mom[mask]
+            )
 
             # Update to position at scattering.
-            mu.x[mask] = mu.x[mask] + dx
-            mu.y[mask] = mu.y[mask] + dy
+            mu.scatter_dxy(dx=dx, dy=dy, mask=mask)
             mu.propagate(deltaz)
-            mu.theta_x[mask] = mu.theta_x[mask] + dtheta_x
-            mu.theta_y[mask] = mu.theta_y[mask] + dtheta_y
+            mu.scatter_dtheta_dphi(dtheta=dtheta, dphi=dphi, mask=mask)
         else:
             mu.propagate(deltaz)
 
@@ -71,12 +117,19 @@ class PassiveLayer(Layer):
     def load_rad_length(self, rad_length_func: Callable[..., Tensor]) -> None:
         self.rad_length = rad_length_func(z=self.z, lw=self.lw, size=self.size).to(self.device)
 
-    def forward(self, mu: MuonBatch) -> None:
-        if not SCATTER_MODEL.initialised:
-            SCATTER_MODEL.load_data()  # Delay loading until requrired
-        n = int(self.size / SCATTER_MODEL.deltaz)
+    def forward(self, mu: MuonBatch, n: int = 2) -> None:
+        if self.scatter_model == "pdg":
+            if not SCATTER_MODEL.initialised:
+                SCATTER_MODEL.load_data()  # Delay loading until requrired
+            n = int(self.size / SCATTER_MODEL.deltaz)
+            dz = SCATTER_MODEL.deltaz
+        elif self.scatter_model == "geant4":
+            dz = self.size / n
+        else:
+            raise ValueError(f"Scatter model {self.scatter_model} is not currently supported.")
+
         for _ in range(n):
-            self.scatter_and_propagate(mu, deltaz=SCATTER_MODEL.deltaz)
+            self.scatter_and_propagate(mu, deltaz=dz)
         mu.propagate(mu.z - (self.z - self.size))  # In case of floating point-precision, ensure muons are at the bottom of the layer
 
 
@@ -197,7 +250,7 @@ class PanelDetectorLayer(AbsDetectorLayer):
 
     def forward(self, mu: MuonBatch) -> None:
         for p in self.yield_zordered_panels():
-            self.scatter_and_propagate(mu, mu.z - p.z)  # Move to panel
+            self.scatter_and_propagate(mu, mu.z - p.z.detach())  # Move to panel
             mu.append_hits(p.get_hits(mu), self.pos)
         self.scatter_and_propagate(mu, mu.z - (self.z - self.size))  # Move to bottom of layer
 

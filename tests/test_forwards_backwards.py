@@ -7,9 +7,9 @@ import torch.nn.functional as F
 
 from tomopt.core import X0
 from tomopt.volume import Volume, PassiveLayer, VoxelDetectorLayer, PanelDetectorLayer, DetectorPanel
-from tomopt.muon import MuonBatch, generate_batch
+from tomopt.muon import MuonBatch, MuonGenerator2016
 from tomopt.inference import VoxelScatterBatch, VoxelX0Inferer, PanelScatterBatch, PanelX0Inferer, DeepVolumeInferer
-from tomopt.optimisation.loss import VoxelX0Loss, VolumeClassLoss
+from tomopt.optimisation import VoxelX0Loss, VolumeClassLoss, MuonResampler
 
 LW = Tensor([1, 1])
 SZ = 0.1
@@ -35,8 +35,8 @@ def res_cost(x: Tensor) -> Tensor:
     return F.relu(x / 100) ** 2
 
 
-def area_cost(x: Tensor) -> Tensor:
-    return F.relu(x) ** 2
+def area_cost(a: Tensor) -> Tensor:
+    return F.relu(a)
 
 
 def get_voxel_layers() -> nn.ModuleList:
@@ -64,7 +64,7 @@ def get_panel_layers() -> nn.ModuleList:
             z=1,
             size=2 * SZ,
             panels=[
-                DetectorPanel(res=INIT_RES, eff=INIT_EFF, init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / N_PANELS)], init_xy_span=[0.5, 0.5], area_cost_func=area_cost)
+                DetectorPanel(res=INIT_RES, eff=INIT_EFF, init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / N_PANELS)], init_xy_span=[1.0, 1.0], area_cost_func=area_cost)
                 for i in range(N_PANELS)
             ],
         )
@@ -79,7 +79,7 @@ def get_panel_layers() -> nn.ModuleList:
             size=2 * SZ,
             panels=[
                 DetectorPanel(
-                    res=INIT_RES, eff=INIT_EFF, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / N_PANELS)], init_xy_span=[0.5, 0.5], area_cost_func=area_cost
+                    res=INIT_RES, eff=INIT_EFF, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / N_PANELS)], init_xy_span=[1.0, 1.0], area_cost_func=area_cost
                 )
                 for i in range(N_PANELS)
             ],
@@ -91,8 +91,10 @@ def get_panel_layers() -> nn.ModuleList:
 
 @pytest.fixture
 def voxel_inferer() -> VoxelX0Inferer:
-    mu = MuonBatch(generate_batch(N), init_z=1)
     volume = Volume(get_voxel_layers())
+    gen = MuonGenerator2016.from_volume(volume)
+    mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
+    mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
     sb = VoxelScatterBatch(mu=mu, volume=volume)
     inf = VoxelX0Inferer(volume=volume)
@@ -102,7 +104,10 @@ def voxel_inferer() -> VoxelX0Inferer:
 
 @pytest.fixture
 def panel_inferer() -> PanelX0Inferer:
-    mu = MuonBatch(generate_batch(N), init_z=1)
+    volume = Volume(get_voxel_layers())
+    gen = MuonGenerator2016.from_volume(volume)
+    mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
+    mu = MuonBatch(mus, init_z=volume.h)
     volume = Volume(get_panel_layers())
     volume(mu)
     sb = PanelScatterBatch(mu=mu, volume=volume)
@@ -113,8 +118,10 @@ def panel_inferer() -> PanelX0Inferer:
 
 @pytest.fixture
 def deep_inferer() -> DeepVolumeInferer:
-    mu = MuonBatch(generate_batch(N), init_z=1)
     volume = Volume(get_panel_layers())
+    gen = MuonGenerator2016.from_volume(volume)
+    mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
+    mu = MuonBatch(mus, init_z=volume.h)
     volume._target = Tensor([1])
     volume(mu)
     sb = PanelScatterBatch(mu=mu, volume=volume)

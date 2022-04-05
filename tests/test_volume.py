@@ -8,7 +8,8 @@ import torch.nn.functional as F
 
 from tomopt.volume.layer import Layer
 from tomopt.volume import PassiveLayer, VoxelDetectorLayer, Volume, PanelDetectorLayer, DetectorPanel
-from tomopt.muon import MuonBatch, generate_batch
+from tomopt.optimisation import MuonResampler
+from tomopt.muon import MuonBatch, MuonGenerator2016
 from tomopt.core import X0
 from tomopt.utils import jacobian
 
@@ -21,7 +22,8 @@ Z = 1
 
 @pytest.fixture
 def batch():
-    return MuonBatch(generate_batch(N), init_z=1)
+    mg = MuonGenerator2016(x_range=(0, LW[0].item()), y_range=(0, LW[1].item()))
+    return MuonBatch(mg(N), init_z=1)
 
 
 def arb_rad_length(*, z: float, lw: Tensor, size: float) -> float:
@@ -33,8 +35,8 @@ def arb_rad_length(*, z: float, lw: Tensor, size: float) -> float:
 
 def test_layer(batch):
     l = Layer(lw=LW, z=1, size=SZ)
-    batch.x = 0.5
-    batch.y = 0.7
+    batch._x = 0.5
+    batch._y = 0.7
     assert torch.all(l.mu_abs2idx(batch)[0] == Tensor([5, 7]))
 
 
@@ -50,48 +52,54 @@ def test_passive_layer_forwards(batch):
     # Normal scattering
     pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=Z, size=SZ)
     start = batch.copy()
-    pl(batch)
+    pl(batch, n=1)
     assert torch.abs(batch.z - Tensor([Z - SZ])) < 1e-5
-    assert torch.all(batch.dtheta(start) > 0)
-    assert torch.all(batch.xy != start.xy)
+    assert torch.all(batch.dtheta(start.theta[batch._keep_mask]) > 0)
+    assert torch.all(batch.xy != start.xy[batch._keep_mask])
 
     # X0 affects scattering
     pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=0, size=SZ)
     batch2 = start.copy()
-    pl(batch2)
-    assert batch2.dtheta(start).mean() < batch.dtheta(start).mean()
+    pl(batch2, n=1)
+    assert batch2.dtheta(start.theta[batch._keep_mask]).mean() < batch.dtheta(start.theta[batch._keep_mask]).mean()
 
     # Small scattering
     pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=Z, size=1e-4)
     batch = start.copy()
-    pl(batch)
-    assert torch.abs(batch.z - Tensor([Z])) <= 1e-3
-    assert torch.all(batch.dtheta(start) < 1e-2)
-    assert torch.all(torch.abs(batch.xy - start.xy) < 1e-3)
+    pl(batch, n=1)
+    assert torch.abs(batch.z - Tensor([Z - 1e-4])) <= 1e-3
+    assert (batch.dtheta(start.theta[batch._keep_mask]) < 1e-2).sum() / len(batch) > 0.9
+    assert (torch.abs(batch.xy - start.xy[batch._keep_mask]) < 1e-3).sum() / len(batch) > 0.9
 
 
 @pytest.mark.parametrize("sz", [(0.01), (0.1), (0.2), (0.205)])
-def test_passive_layer_default_scattering(mocker, batch, sz):  # noqa: F811
-    for m in ["propagate", "get_xy_mask"]:
+def test_passive_layer_geant_scattering(mocker, batch, sz):  # noqa: F811
+    for m in ["propagate", "get_xy_mask", "scatter_dxy", "scatter_dtheta_dphi"]:
         mocker.patch.object(MuonBatch, m)
-    mock_getters = {}
-    for m in ["theta_x", "theta_y", "x", "y", "mom", "theta_xy"]:
-        mock_getters[m] = mocker.PropertyMock(return_value=getattr(batch, m))
-        mocker.patch.object(MuonBatch, m, mock_getters[m])
 
-    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, size=sz, z=Z)
+    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, size=sz, z=Z, scatter_model="geant4")
     pl(batch)
     dz = 0.01
     n = int(sz / dz)
-    assert batch.propagate.call_count == n + 1
+    assert batch.propagate.call_count == n
+    assert batch.scatter_dxy.call_count == n
+    assert batch.scatter_dtheta_dphi.call_count == n
     assert batch.propagate.called_with(SZ / n)
     assert batch.get_xy_mask.call_count == n
-    assert mock_getters["mom"].call_count == n
-    assert mock_getters["theta_xy"].call_count == n
-    for m in ["x", "y"]:
-        assert mock_getters[m].call_count == 2 * n
-    for m in ["theta_x", "theta_y"]:
-        assert mock_getters[m].call_count == 2 * n
+
+
+@pytest.mark.parametrize("n", [(1), (2), (5)])
+def test_passive_layer_pdg_scattering(mocker, batch, n):  # noqa: F811
+    for m in ["propagate", "get_xy_mask", "scatter_dxy", "scatter_dtheta_dphi"]:
+        mocker.patch.object(MuonBatch, m)
+
+    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, size=SZ, z=Z, scatter_model="pdg")
+    pl(batch, n)
+    assert batch.propagate.call_count == n
+    assert batch.scatter_dxy.call_count == n
+    assert batch.scatter_dtheta_dphi.call_count == n
+    assert batch.propagate.called_with(SZ / n)
+    assert batch.get_xy_mask.call_count == n
 
 
 def eff_cost(x: Tensor) -> Tensor:
@@ -110,7 +118,7 @@ def test_voxel_detector_layer(batch):
     start = batch.copy()
     dl(batch)
     assert torch.abs(batch.z - Tensor([Z - SZ])) < 1e-5
-    assert torch.all(batch.dtheta(start) == 0)  # Detector layers don't scatter
+    assert torch.all(batch.dtheta(start.theta) == 0)  # Detector layers don't scatter
     assert torch.all(batch.xy != start.xy)
 
     hits = batch.get_hits((0, 0), LW)
@@ -135,8 +143,8 @@ def test_voxel_detector_layer(batch):
     assert (dl.efficiency == 1).all()
 
 
-def area_cost(x: Tensor) -> Tensor:
-    return F.relu(x) ** 2
+def area_cost(a: Tensor) -> Tensor:
+    return F.relu(a)
 
 
 def test_panel_detector_layer(batch):
@@ -145,7 +153,7 @@ def test_panel_detector_layer(batch):
         lw=LW,
         z=1,
         size=2 * SZ,
-        panels=[DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[0.5, 0.5], area_cost_func=area_cost)],
+        panels=[DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[1.0, 1.0], area_cost_func=area_cost)],
     )
     for p in dl.panels:
         assert p.resolution == Tensor([1e3])
@@ -154,7 +162,7 @@ def test_panel_detector_layer(batch):
     start = batch.copy()
     dl(batch)
     assert torch.abs(batch.z - Tensor([Z - (2 * SZ)])) < 1e-5
-    assert torch.all(batch.dtheta(start) == 0)  # Detector layers don't scatter
+    assert torch.all(batch.dtheta(start.theta) == 0)  # Detector layers don't scatter
     assert torch.all(batch.xy != start.xy)
 
     hits = batch.get_hits()
@@ -175,8 +183,8 @@ def test_panel_detector_layer(batch):
         size=2 * SZ,
         panels=[
             DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[0.5, 5.0], area_cost_func=area_cost),
-            DetectorPanel(res=1e3, eff=1, init_xyz=[3.0, 0.5, 2.0], init_xy_span=[0.5, 0.5], area_cost_func=area_cost),
-            DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, -0.5, -0.3], init_xy_span=[0.5, 0.5], area_cost_func=area_cost),
+            DetectorPanel(res=1e3, eff=1, init_xyz=[3.0, 0.5, 2.0], init_xy_span=[1.0, 1.0], area_cost_func=area_cost),
+            DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, -0.5, -0.3], init_xy_span=[1.0, 1.0], area_cost_func=area_cost),
             DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, 0.5, 0.4], init_xy_span=[0.0, 0.5], area_cost_func=area_cost),
         ],
     )
@@ -307,8 +315,7 @@ def test_volume_forward_voxel(batch):
 
     assert torch.abs(batch.z) <= 1e-5  # Muons traverse whole volume
     mask = batch.get_xy_mask((0, 0), LW)
-    assert mask.sum() > N / 2  # At least half the muons stay inside the volume
-    assert torch.all(batch.dtheta(start)[mask] > 0)  # All masked muons scatter
+    assert torch.all(batch.dtheta(start.theta)[mask] > 0)  # All masked muons scatter
 
     hits = batch.get_hits((0, 0), LW)
     assert "above" in hits and "below" in hits
@@ -333,7 +340,7 @@ def get_panel_layers(init_res: float = 1e4, init_eff: float = 0.5, n_panels: int
             z=1,
             size=2 * SZ,
             panels=[
-                DetectorPanel(res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / n_panels)], init_xy_span=[0.5, 0.5], area_cost_func=area_cost)
+                DetectorPanel(res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / n_panels)], init_xy_span=[1.0, 1.0], area_cost_func=area_cost)
                 for i in range(n_panels)
             ],
         )
@@ -348,7 +355,7 @@ def get_panel_layers(init_res: float = 1e4, init_eff: float = 0.5, n_panels: int
             size=2 * SZ,
             panels=[
                 DetectorPanel(
-                    res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / n_panels)], init_xy_span=[0.5, 0.5], area_cost_func=area_cost
+                    res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / n_panels)], init_xy_span=[1.0, 1.0], area_cost_func=area_cost
                 )
                 for i in range(n_panels)
             ],
@@ -358,16 +365,19 @@ def get_panel_layers(init_res: float = 1e4, init_eff: float = 0.5, n_panels: int
     return nn.ModuleList(layers)
 
 
-def test_volume_forward_panel(batch):
+@pytest.mark.flaky(max_runs=3, min_passes=2)
+def test_volume_forward_panel():
     layers = get_panel_layers(n_panels=4)
     volume = Volume(layers=layers)
+    gen = MuonGenerator2016.from_volume(volume)
+    mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
+    batch = MuonBatch(mus, init_z=volume.h)
     start = batch.copy()
     volume(batch)
 
     assert torch.abs(batch.z) <= 1e-5  # Muons traverse whole volume
     mask = batch.get_xy_mask((0, 0), LW)
-    assert mask.sum() > N / 2  # At least half the muons stay inside the volume
-    assert torch.all(batch.dtheta(start)[mask] > 0)  # All masked muons scatter
+    assert torch.all(batch.dtheta(start.theta)[mask] > 0)  # All masked muons scatter
 
     hits = batch.get_hits()
     assert "above" in hits and "below" in hits
@@ -380,9 +390,9 @@ def test_volume_forward_panel(batch):
     for i, l in enumerate(volume.get_detectors()):
         for j, p in enumerate(l.yield_zordered_panels()):
             for v in [p.xy, p.xy_span]:
-                grad = jacobian(hits["above" if l.z > 0.5 else "below"]["reco_xy"][:, j], v).sum((-1))
-                assert (grad == grad).sum() == 2 * len(grad)
-                assert ((grad == grad) * (grad != 0)).sum() > 0
+                grad = jacobian(hits["above" if l.z > 0.5 else "below"]["reco_xy"][:, j], v).nansum((-1))
+                assert grad.isnan().sum() == 0
+                assert (grad != 0).sum() > 0
 
 
 def test_detector_panel_properties():
@@ -406,7 +416,7 @@ def test_detector_panel_methods():
 
     # get_gauss
     with pytest.raises(ValueError):
-        DetectorPanel(res=1, eff=0.5, init_xyz=[np.NaN, 0.0, 0.9], init_xy_span=[0.5, 0.5], area_cost_func=area_cost).get_gauss()
+        DetectorPanel(res=1, eff=0.5, init_xyz=[np.NaN, 0.0, 0.9], init_xy_span=[1.0, 1.0], area_cost_func=area_cost).get_gauss()
     with pytest.raises(ValueError):
         DetectorPanel(res=1, eff=0.5, init_xyz=[0.0, 0.0, 0.9], init_xy_span=[0.5, np.NaN], area_cost_func=area_cost).get_gauss()
     gauss = panel.get_gauss()
@@ -461,22 +471,23 @@ def test_detector_panel_methods():
 
     # get_hits
     panel = DetectorPanel(res=10, eff=0.5, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[0.5, 0.5], area_cost_func=area_cost)
-    mu = MuonBatch(generate_batch(100), 1)
-    mu.xy = torch.ones_like(mu.xy) / 2
+    mg = MuonGenerator2016(x_range=(0, LW[0].item()), y_range=(0, LW[1].item()))
+    mu = MuonBatch(mg(100), 1)
+    mu._xy = torch.ones_like(mu.xy) / 2
     hits = panel.get_hits(mu)
     assert (hits["gen_xy"] == mu.xy).all()
     assert (hits["z"].mean() - 0.9).abs() < 1e-5
     assert (hits["reco_xy"].mean(0) - Tensor([0.5, 0.5]) < 0.25).all()
 
     panel.realistic_validation = True
-    mu.xy = torch.zeros_like(mu.xy)
+    mu._xy = torch.zeros_like(mu.xy)
     hits = panel.get_hits(mu)
     assert hits["reco_xy"].isinf().sum() == 0
 
     panel.eval()
     hits = panel.get_hits(mu)
     assert hits["reco_xy"].isinf().sum() == 2 * len(mu)
-    mu = MuonBatch(generate_batch(100), 1)
+    mu = MuonBatch(mg(100), 1)
     hits = panel.get_hits(mu)
     mask = hits["reco_xy"].isinf().prod(1) - 1 < 0
     # Reco hits can't leave panel

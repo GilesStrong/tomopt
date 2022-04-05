@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from typing import Optional, List, Tuple, Dict
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 import torch
 from torch import Tensor
@@ -15,29 +15,56 @@ __all__ = ["VoxelScatterBatch", "PanelScatterBatch", "GenScatterBatch"]
 
 
 class AbsScatterBatch(metaclass=ABCMeta):
+    # Hits
+    _reco_hits: Optional[Tensor] = None
+    _gen_hits: Optional[Tensor] = None
+    _hit_uncs: Optional[Tensor] = None
+
+    # Tracks
     _track_in: Optional[Tensor] = None
     _track_out: Optional[Tensor] = None
     _track_start_in: Optional[Tensor] = None
     _track_start_out: Optional[Tensor] = None
-    _reco_hits: Optional[Tensor] = None
-    _gen_hits: Optional[Tensor] = None
-    _hit_uncs: Optional[Tensor] = None
-    _loc: Tensor
+    _cross_track: Optional[Tensor] = None
+    _track_coefs: Optional[Tensor] = None
+    # Inferred variables
+    _loc: Optional[Tensor] = None
     _loc_unc: Optional[Tensor] = None
-    _theta_in: Tensor
-    _theta_out: Tensor
-    _dtheta: Tensor
+    _theta_in: Optional[Tensor] = None
     _theta_in_unc: Optional[Tensor] = None
+    _theta_out: Optional[Tensor] = None
     _theta_out_unc: Optional[Tensor] = None
+    _dtheta: Optional[Tensor] = None
     _dtheta_unc: Optional[Tensor] = None
-    _dxy: Tensor
+    _phi_in: Optional[Tensor] = None
+    _phi_in_unc: Optional[Tensor] = None
+    _phi_out: Optional[Tensor] = None
+    _phi_out_unc: Optional[Tensor] = None
+    _dphi: Optional[Tensor] = None
+    _dphi_unc: Optional[Tensor] = None
+    _theta_msc: Optional[Tensor] = None
+    _theta_msc_unc: Optional[Tensor] = None
+    _theta_xy_in: Optional[Tensor] = None
+    _theta_xy_in_unc: Optional[Tensor] = None
+    _theta_xy_out: Optional[Tensor] = None
+    _theta_xy_out_unc: Optional[Tensor] = None
+    _dtheta_xy: Optional[Tensor] = None
+    _dtheta_xy_unc: Optional[Tensor] = None
+    _xyz_in: Optional[Tensor] = None
+    _xyz_in_unc: Optional[Tensor] = None
+    _xyz_out: Optional[Tensor] = None
+    _xyz_out_unc: Optional[Tensor] = None
+    _dxy: Optional[Tensor] = None
     _dxy_unc: Optional[Tensor] = None
 
     def __init__(self, mu: MuonBatch, volume: Volume):
         self.mu, self.volume = mu, volume
         self.device = self.mu.device
-        self._hits = self.mu.get_hits()
+        self._hits = self._get_hits()
         self.compute_scatters()
+
+    def _get_hits(self) -> Dict[str, Dict[str, Tensor]]:
+        return self.mu.get_hits()
 
     @staticmethod
     def get_muon_trajectory(hits: Tensor, uncs: Tensor, lw: Tensor) -> Tuple[Tensor, Tensor]:
@@ -210,28 +237,43 @@ class AbsScatterBatch(metaclass=ABCMeta):
         self.extract_hits()
         self.compute_tracks()
 
-        # scatter locations
-        cross = torch.cross(self.track_in, self.track_out, dim=1)  # connecting vector perpendicular to both lines
+        # Filter to remove same tracks: only include muons that scatter
+        # This might seem heavy-handed, but tracks with theta_msc = 0 have NaN gradients, which can spoil the grads of all other muons.
+        theta_msc = self._compute_theta_msc(self.track_in, self.track_out)
+        keep_mask = ((theta_msc != 0) * (~theta_msc.isnan()) * (~theta_msc.isinf())).squeeze()
+        if not keep_mask.all():  # Recompute tracks and hits
+            self.mu.filter_muons(keep_mask)
+            self._hits = self._get_hits()
+            self.extract_hits()
+            self.compute_tracks()
+
+        # Track computations
+        self._cross_track = torch.cross(self.track_in, self.track_out, dim=1)  # connecting vector perpendicular to both lines
 
         rhs = self.track_start_out - self.track_start_in
-        lhs = torch.stack([self.track_in, -self.track_out, cross], dim=1).transpose(2, 1)
+        lhs = torch.stack([self.track_in, -self.track_out, self._cross_track], dim=1).transpose(2, 1)
         # coefs = torch.linalg.solve(lhs, rhs)  # solve p1+t1*v1 + t3*v3 = p2+t2*v2 => p2-p1 = t1*v1 - t2*v2 + t3*v3
-        coefs = (lhs.inverse() @ rhs[:, :, None]).squeeze(-1)
-        q1 = self.track_start_in + (coefs[:, 0:1] * self.track_in)  # closest point on v1
-        self._loc = q1 + (coefs[:, 2:3] * cross / 2)  # Move halfway along v3 from q1
-        self._loc_unc = None
+        self._track_coefs = (lhs.inverse() @ rhs[:, :, None]).squeeze(-1)
 
-        # Theta deviations
-        self._theta_in = torch.arctan(self.track_in[:, :2] / self.track_in[:, 2:3])
-        self._theta_out = torch.arctan(self.track_out[:, :2] / self.track_out[:, 2:3])
-        self._dtheta = torch.abs(self._theta_in - self._theta_out)
-        self._theta_in_unc = None
-        self._theta_out_unc = None
-        self._dtheta_unc = None
+    @staticmethod
+    def _compute_phi(x: Tensor, y: Tensor) -> Tensor:
+        phi = torch.arctan(y / x)  # (-pi/2, pi/2)
 
-        # xy deviations
-        self._dxy = coefs[:, 2:3] * cross[:, :2]
-        self._dxy_unc = None
+        # Account for quadrants
+        m = x < 0
+        phi[m] = phi[m] + torch.pi
+        m = (x > 0) * (y < 0)
+        phi[m] = phi[m] + (2 * torch.pi)  # (0, 2pi)
+
+        # Case when x == 0
+        phi[(x == 0) * (y > 0)] = torch.pi / 2
+        phi[(x == 0) * (y < 0)] = 3 * torch.pi / 2
+
+        return phi
+
+    @staticmethod
+    def _compute_theta_msc(p: Tensor, q: Tensor) -> Tensor:
+        return torch.arccos((p * q).sum(-1, keepdim=True) / (p.norm(dim=-1, keepdim=True) * q.norm(dim=-1, keepdim=True)))
 
     def _compute_out_var_unc(self, var: Tensor) -> Tensor:
         r"""
@@ -250,74 +292,295 @@ class AbsScatterBatch(metaclass=ABCMeta):
 
     @property
     def location(self) -> Tensor:
+        if self._loc is None:
+            q1 = self.track_start_in + (self._track_coefs[:, 0:1] * self.track_in)  # closest point on v1
+            self._loc = q1 + (self._track_coefs[:, 2:3] * self._cross_track / 2)  # Move halfway along v3 from q1
+            self._loc_unc = None
         return self._loc
 
     @property
     def location_unc(self) -> Tensor:
         if self._loc_unc is None:
-            self._loc_unc = self._compute_out_var_unc(self._loc)
+            self._loc_unc = self._compute_out_var_unc(self.location)
         return self._loc_unc
 
     @property
-    def dtheta(self) -> Tensor:
-        return self._dtheta
-
-    @property
-    def dtheta_unc(self) -> Tensor:
-        if self._dtheta_unc is None:
-            self._dtheta_unc = self._compute_out_var_unc(self._dtheta)
-        return self._dtheta_unc
-
-    @property
     def dxy(self) -> Tensor:
+        if self._dxy is None:
+            self._dxy = self._track_coefs[:, 2:3] * self._cross_track[:, :2]
+            self._dxy_unc = None
         return self._dxy
 
     @property
     def dxy_unc(self) -> Tensor:
         if self._dxy_unc is None:
-            self._dxy_unc = self._compute_out_var_unc(
-                self._dxy,
-            )
+            self._dxy_unc = self._compute_out_var_unc(self.dxy)
         return self._dxy_unc
 
     @property
     def theta_in(self) -> Tensor:
+        if self._theta_in is None:
+            self._theta_in = torch.arccos(-self.track_in[:, 2:3] / self.track_in.norm(dim=-1, keepdim=True))
+            self._theta_in_unc = None
         return self._theta_in
 
     @property
     def theta_in_unc(self) -> Tensor:
         if self._theta_in_unc is None:
-            self._theta_in_unc = self._compute_out_var_unc(self._theta_in)
+            self._theta_in_unc = self._compute_out_var_unc(self.theta_in)
         return self._theta_in_unc
 
     @property
     def theta_out(self) -> Tensor:
+        if self._theta_out is None:
+            self._theta_out = torch.arccos(-self.track_out[:, 2:3] / self.track_out.norm(dim=-1, keepdim=True))
+            self._theta_out_unc = None
         return self._theta_out
 
     @property
     def theta_out_unc(self) -> Tensor:
         if self._theta_out_unc is None:
-            self._theta_out_unc = self._compute_out_var_unc(self._theta_out)
+            self._theta_out_unc = self._compute_out_var_unc(self.theta_out)
         return self._theta_out_unc
 
+    @property
+    def phi_in(self) -> Tensor:
+        if self._phi_in is None:
+            self._phi_in = self._compute_phi(x=self.track_in[:, 0:1], y=self.track_in[:, 1:2])
+            self._phi_in_unc = None
+        return self._phi_in
+
+    @property
+    def phi_in_unc(self) -> Tensor:
+        if self._phi_in_unc is None:
+            self._phi_in_unc = self._compute_out_var_unc(self.phi_in)
+        return self._phi_in_unc
+
+    @property
+    def phi_out(self) -> Tensor:
+        if self._phi_out is None:
+            self._phi_out = self._compute_phi(x=self.track_out[:, 0:1], y=self.track_out[:, 1:2])
+            self._phi_out_unc = None
+        return self._phi_out
+
+    @property
+    def phi_out_unc(self) -> Tensor:
+        if self._phi_out_unc is None:
+            self._phi_out_unc = self._compute_out_var_unc(self.phi_out)
+        return self._phi_out_unc
+
+    @property
+    def dtheta(self) -> Tensor:
+        r"""
+        Volume ref frame
+        """
+
+        if self._dtheta is None:
+            self._dtheta = torch.abs(self.theta_in - self.theta_out)
+            self._dtheta_unc = None
+        return self._dtheta
+
+    @property
+    def dtheta_unc(self) -> Tensor:
+        if self._dtheta_unc is None:
+            self._dtheta_unc = self._compute_out_var_unc(self.dtheta)
+        return self._dtheta_unc
+
+    @property
+    def dphi(self) -> Tensor:
+        r"""
+        Volume ref frame
+        """
+
+        if self._dphi is None:
+            # Is there a simpler formular?
+            self._dphi = torch.min(
+                torch.stack(
+                    (
+                        ((2 * torch.pi) - self.phi_in) + self.phi_out,
+                        ((2 * torch.pi) - self.phi_out) + self.phi_in,
+                        torch.abs(self.phi_in - self.phi_out),
+                    ),
+                    dim=0,
+                ),
+                dim=0,
+            ).values
+            self._dphi_unc = None
+        return self._dphi
+
+    @property
+    def dphi_unc(self) -> Tensor:
+        if self._dphi_unc is None:
+            self._dphi_unc = self._compute_out_var_unc(self.dphi)
+        return self._dphi_unc
+
+    @property
+    def theta_msc(self) -> Tensor:
+        if self._theta_msc is None:
+            self._theta_msc = self._compute_theta_msc(self.track_in, self.track_out)
+            self._theta_msc_unc = None
+        return self._theta_msc
+
+    @property
+    def theta_msc_unc(self) -> Tensor:
+        if self._theta_msc_unc is None:
+            self._theta_msc_unc = self._compute_out_var_unc(self.theta_msc)
+        return self._theta_msc_unc
+
+    @property
+    def theta_xy_in(self) -> Tensor:
+        if self._theta_xy_in is None:
+            self._theta_xy_in = torch.cat([(self.theta_in.tan() * self.phi_in.cos()).arctan(), (self.theta_in.tan() * self.phi_in.sin()).arctan()], dim=-1)
+            self._theta_xy_in_unc = None
+        return self._theta_xy_in
+
+    @property
+    def theta_xy_in_unc(self) -> Tensor:
+        if self._theta_xy_in_unc is None:
+            self._theta_xy_in_unc = self._compute_out_var_unc(self.theta_xy_in)
+        return self._theta_xy_in_unc
+
+    @property
+    def theta_xy_out(self) -> Tensor:
+        if self._theta_xy_out is None:
+            self._theta_xy_out = torch.cat([(self.theta_out.tan() * self.phi_out.cos()).arctan(), (self.theta_out.tan() * self.phi_out.sin()).arctan()], dim=-1)
+            self._theta_xy_out_unc = None
+        return self._theta_xy_out
+
+    @property
+    def theta_xy_out_unc(self) -> Tensor:
+        if self._theta_xy_out_unc is None:
+            self._theta_xy_out_unc = self._compute_out_var_unc(self.theta_xy_out)
+        return self._theta_xy_out_unc
+
+    @property
+    def dtheta_xy(self) -> Tensor:
+        r"""
+        Volume ref frame
+        """
+
+        if self._dtheta_xy is None:
+            self._dtheta_xy = torch.abs(self.theta_xy_in - self.theta_xy_out)
+            self._dtheta_xy_unc = None
+        return self._dtheta_xy
+
+    @property
+    def dtheta_xy_unc(self) -> Tensor:
+        if self._dtheta_xy_unc is None:
+            self._dtheta_xy_unc = self._compute_out_var_unc(self.dtheta_xy)
+        return self._dtheta_xy_unc
+
+    @property
+    def xyz_in(self) -> Tensor:
+        if self._xyz_in is None:
+            dz = self.volume.get_passive_z_range()[1] - self._track_start_in[:, 2:3]  # last panel to volume start
+            self._xyz_in = self._track_start_in + ((dz / self._track_in[:, 2:3]) * self._track_in)
+            self._xyz_in_unc = None
+        return self._xyz_in
+
+    @property
+    def xyz_in_unc(self) -> Tensor:
+        if self._xyz_in_unc is None:
+            self._xyz_in_unc = self._compute_out_var_unc(self.xyz_in)
+        return self._xyz_in_unc
+
+    @property
+    def xyz_out(self) -> Tensor:
+        if self._xyz_out is None:
+            dz = self._track_start_out[:, 2:3] - (self.volume.get_passive_z_range()[0])  # volume end to first panel
+            self._xyz_out = self._track_start_out - ((dz / self._track_out[:, 2:3]) * self._track_out)
+            self._xyz_out_unc = None
+        return self._xyz_out
+
+    @property
+    def xyz_out_unc(self) -> Tensor:
+        if self._xyz_out_unc is None:
+            self._xyz_out_unc = self._compute_out_var_unc(self.xyz_out)
+        return self._xyz_out_unc
+
     def plot_scatter(self, idx: int) -> None:
-        x = np.hstack([self.hits["above"]["reco_xy"][idx, :, 0].detach().cpu().numpy(), self.hits["below"]["reco_xy"][idx, :, 0].detach().cpu().numpy()])
-        y = np.hstack([self.hits["above"]["reco_xy"][idx, :, 1].detach().cpu().numpy(), self.hits["below"]["reco_xy"][idx, :, 1].detach().cpu().numpy()])
-        z = np.hstack([self.hits["above"]["z"][idx, :, 0].detach().cpu().numpy(), self.hits["below"]["z"][idx, :, 0].detach().cpu().numpy()])
+        xin, xout = self.hits["above"]["reco_xy"][idx, :, 0].detach().cpu().numpy(), self.hits["below"]["reco_xy"][idx, :, 0].detach().cpu().numpy()
+        yin, yout = self.hits["above"]["reco_xy"][idx, :, 1].detach().cpu().numpy(), self.hits["below"]["reco_xy"][idx, :, 1].detach().cpu().numpy()
+        zin, zout = self.hits["above"]["z"][idx, :, 0].detach().cpu().numpy(), self.hits["below"]["z"][idx, :, 0].detach().cpu().numpy()
         scatter = self.location[idx].detach().cpu().numpy()
-        fig, axs = plt.subplots(1, 2, figsize=(8, 4))
-        axs[0].scatter(x, z)
-        axs[0].scatter(scatter[0], scatter[2], label=r"$\Delta\theta=" + f"{self.dtheta[idx,0]:.1e}$")
-        axs[0].set_xlim(0, 1)
+        dtheta_xy = self.dtheta_xy[idx].detach().cpu().numpy()
+        dphi = self.dphi[idx].detach().cpu().numpy()
+        phi_in = self.phi_in[idx].detach().cpu().numpy()
+        phi_out = self.phi_out[idx].detach().cpu().numpy()
+        theta_xy_in = self.theta_xy_in[idx].detach().cpu().numpy()
+        theta_xy_out = self.theta_xy_out[idx].detach().cpu().numpy()
+        track_start_in, track_start_out = self.track_start_in[idx].detach().cpu().numpy(), self.track_start_out[idx].detach().cpu().numpy()
+        track_in, track_out = self.track_in[idx].detach().cpu().numpy(), self.track_out[idx].detach().cpu().numpy()
+
+        fig, axs = plt.subplots(1, 3, figsize=(12, 4))
+        axs[0].plot(
+            [
+                track_start_in[0] + ((zin.max() - track_start_in[2]) * track_in[0] / track_in[2]),
+                track_start_in[0] + ((zout.min() - track_start_in[2]) * track_in[0] / track_in[2]),
+            ],
+            [zin.max(), zout.min()],
+            label=r"$\theta_{x,in}=" + f"{theta_xy_in[0]:.2}$",
+        )
+        axs[0].plot(
+            [
+                track_start_out[0] + ((zin.max() - track_start_out[2]) * track_out[0] / track_out[2]),
+                track_start_out[0] + ((zout.min() - track_start_out[2]) * track_out[0] / track_out[2]),
+            ],
+            [zin.max(), zout.min()],
+            label=r"$\theta_{x,out}=" + f"{theta_xy_out[0]:.2}$",
+        )
+        axs[0].scatter(xin, zin)
+        axs[0].scatter(xout, zout)
+        axs[0].scatter(scatter[0], scatter[2], label=r"$\Delta\theta_x=" + f"{dtheta_xy[0]:.1e}$")
         axs[0].set_xlabel("x")
         axs[0].set_ylabel("z")
         axs[0].legend()
-        axs[1].scatter(y, z)
-        axs[1].scatter(scatter[1], scatter[2], label=r"$\Delta\theta=" + f"{self.dtheta[idx,1]:.1e}$")
-        axs[1].set_xlim(0, 1)
+
+        axs[1].plot(
+            [
+                track_start_in[1] + ((zin.max() - track_start_in[2]) * track_in[1] / track_in[2]),
+                track_start_in[1] + ((zout.min() - track_start_in[2]) * track_in[1] / track_in[2]),
+            ],
+            [zin.max(), zout.min()],
+            label=r"$\theta_{y,in}=" + f"{theta_xy_in[1]:.2}$",
+        )
+        axs[1].plot(
+            [
+                track_start_out[1] + ((zin.max() - track_start_out[2]) * track_out[1] / track_out[2]),
+                track_start_out[1] + ((zout.min() - track_start_out[2]) * track_out[1] / track_out[2]),
+            ],
+            [zin.max(), zout.min()],
+            label=r"$\theta_{y,out}=" + f"{theta_xy_out[1]:.2}$",
+        )
+        axs[1].scatter(yin, zin)
+        axs[1].scatter(yout, zout)
+        axs[1].scatter(scatter[1], scatter[2], label=r"$\Delta\theta_y=" + f"{dtheta_xy[1]:.1e}$")
         axs[1].set_xlabel("y")
         axs[1].set_ylabel("z")
         axs[1].legend()
+
+        axs[2].plot(
+            [
+                track_start_in[0],
+                track_start_in[0] + np.cos(phi_in),
+            ],
+            [track_start_in[1], track_start_in[1] + np.sin(phi_in)],
+            label=r"$\phi_{in}=" + f"{phi_in[0]:.3}$",
+        )
+        axs[2].plot(
+            [
+                track_start_out[0],
+                track_start_out[0] - np.cos(phi_out),
+            ],
+            [track_start_out[1], track_start_out[1] - np.sin(phi_out)],
+            label=r"$\phi_{out}=" + f"{phi_out[0]:.3}$",
+        )
+        axs[2].scatter(xin, yin)
+        axs[2].scatter(xout, yout)
+        axs[2].scatter(scatter[0], scatter[1], label=r"$\Delta\phi=" + f"{dphi[0]:.1e}$")
+        axs[2].set_xlabel("x")
+        axs[2].set_ylabel("y")
+        axs[2].legend()
         plt.show()
 
     def get_scatter_mask(self) -> Tensor:
@@ -333,11 +596,9 @@ class AbsScatterBatch(metaclass=ABCMeta):
 
 
 class VoxelScatterBatch(AbsScatterBatch):
-    def __init__(self, mu: MuonBatch, volume: Volume):
-        self.mu, self.volume = mu, volume
-        self.device = self.mu.device
-        self._hits = self.mu.get_hits((0, 0), self.volume.lw)
-        self.compute_scatters()
+    def _get_hits(self) -> Dict[str, Dict[str, Tensor]]:
+        self.mu.filter_muons(self.mu.get_xy_mask((0, 0), self.volume.lw))
+        return self.mu.get_hits()
 
     @staticmethod
     def _get_hit_uncs(dets: List[AbsDetectorLayer], hits: Tensor) -> Tensor:
