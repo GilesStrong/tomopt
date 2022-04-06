@@ -36,8 +36,8 @@ class ScatterModel:
         self.n_bins = self.file["meta_data/n_rnd"][()]
         self.initialised = True
 
-    def extrapolate_dtheta(self, dtheta: Tensor, inv_costheta: Tensor) -> Tensor:
-        return dtheta * torch.sqrt(inv_costheta)
+    def extrapolate_dtheta(self, dthetaphi: Tensor, inv_costheta: Tensor) -> Tensor:
+        return dthetaphi * torch.sqrt(inv_costheta)
 
     def extrapolate_dxy(self, dxy: Tensor, inv_costheta: Tensor) -> Tensor:
         return dxy * (inv_costheta**self.exp_disp_model)
@@ -70,7 +70,7 @@ class ScatterModel:
             raise ValueError("Something went wrong in the x0 indexing")
         x0_idxs = x0_idxs.long()[:, None]
 
-        inv_costheta = 1 / (1e-17 + torch.cos(theta))
+        inv_costheta = 1 / (1e-17 + torch.cos(theta[:, None]))
         dthetaphi = self.dtheta_params[x0_idxs, mom_idxs, rnds[:, :2]]
         dthetaphi = self.extrapolate_dtheta(dthetaphi, inv_costheta)
         dxy = self.dxy_params[x0_idxs, mom_idxs, rnds[:, 2:]]

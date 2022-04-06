@@ -585,9 +585,8 @@ def test_x0_inferer_scatter_inversion(mocker, voxel_scatter_batch):  # noqa F811
     inferer = VoxelX0Inferer(volume=volume)
     inferer.size = SZ
     x0 = X0["lead"]
-    n_x0 = layer._compute_n_x0(x0=x0, deltaz=SZ, theta=mu.theta)
     mocker.patch("tomopt.volume.layer.torch.randn", lambda n, device: torch.ones(n, device=device))  # remove randomness
-    dx, dy, dtheta, dphi = layer._compute_displacements(n_x0=n_x0, deltaz=SZ, theta_x=mu.theta_x, theta_y=mu.theta_y, mom=mu.mom, log_term=False)
+    dx, dy, dtheta, dphi = layer._pdg_scatter(x0=x0, deltaz=SZ, theta=mu.theta, theta_x=mu.theta_x, theta_y=mu.theta_y, mom=mu.mom, log_term=False)
 
     mu_start = mu.copy()
     sb._theta_in = mu_start.theta[:, None]
@@ -598,7 +597,7 @@ def test_x0_inferer_scatter_inversion(mocker, voxel_scatter_batch):  # noqa F811
     sb._theta_msc = torch.sqrt((dtheta**2) + (dphi**2))[:, None]
     sb._theta_msc_unc = torch.ones_like(dtheta[:, None])
 
-    mask = torch.ones_like(n_x0) > 0
+    mask = torch.ones_like(mu.theta) > 0
     mocker.patch.object(sb, "get_scatter_mask", lambda: mask)
 
     mocker.patch("tomopt.inference.volume.jacobian", lambda i, j: torch.ones((len(i), 1, 7), device=i.device))  # remove randomness

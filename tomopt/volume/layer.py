@@ -18,12 +18,22 @@ __all__ = ["PassiveLayer", "VoxelDetectorLayer", "PanelDetectorLayer"]
 class Layer(nn.Module):
     def __init__(self, lw: Tensor, z: float, size: float, scatter_model: str = "geant4", device: torch.device = DEVICE):
         super().__init__()
-        self.lw, self.z, self.size, self.device = lw.to(device), torch.tensor([z], dtype=torch.float32, device=device), size, device
+        self.lw, self.z, self.size, self.scatter_model, self.device = (
+            lw.to(device),
+            torch.tensor([z], dtype=torch.float32, device=device),
+            size,
+            scatter_model,
+            device,
+        )
         self.rad_length: Optional[Tensor] = None
 
     def _geant_scatter(self, *, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor, mom: Tensor) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
         dthetaphi, dxy = SCATTER_MODEL.compute_scattering(x0=x0, deltaz=deltaz, theta=theta, mom=mom)
         return dthetaphi[:, 0], dthetaphi[:, 1], dxy[:, 0], dxy[:, 1]
+
+    @staticmethod
+    def _compute_n_x0(*, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor) -> Tensor:
+        return deltaz / (x0 * torch.cos(theta))
 
     def _pdg_scatter(
         self, *, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor, log_term: bool = True
@@ -32,7 +42,7 @@ class Layer(nn.Module):
         Returns dx, dy, dtheta, dphi of the muons in the refernce frame of the volume
         """
 
-        n_x0 = deltaz / (x0 * torch.cos(theta))
+        n_x0 = self._compute_n_x0(x0=x0, deltaz=deltaz, theta=theta)
         n = len(n_x0)
         z1 = torch.randn(n, device=self.device)
         z2 = torch.randn(n, device=self.device)
@@ -109,8 +119,16 @@ class Layer(nn.Module):
 
 
 class PassiveLayer(Layer):
-    def __init__(self, lw: Tensor, z: float, size: float, rad_length_func: Optional[Callable[..., Tensor]] = None, device: torch.device = DEVICE):
-        super().__init__(lw=lw, z=z, size=size, device=device)
+    def __init__(
+        self,
+        lw: Tensor,
+        z: float,
+        size: float,
+        rad_length_func: Optional[Callable[..., Tensor]] = None,
+        scatter_model: str = "geant4",
+        device: torch.device = DEVICE,
+    ):
+        super().__init__(lw=lw, z=z, size=size, scatter_model=scatter_model, device=device)
         if rad_length_func is not None:
             self.load_rad_length(rad_length_func)
 
@@ -118,12 +136,12 @@ class PassiveLayer(Layer):
         self.rad_length = rad_length_func(z=self.z, lw=self.lw, size=self.size).to(self.device)
 
     def forward(self, mu: MuonBatch, n: int = 2) -> None:
-        if self.scatter_model == "pdg":
+        if self.scatter_model == "geant4":
             if not SCATTER_MODEL.initialised:
                 SCATTER_MODEL.load_data()  # Delay loading until requrired
             n = int(self.size / SCATTER_MODEL.deltaz)
             dz = SCATTER_MODEL.deltaz
-        elif self.scatter_model == "geant4":
+        elif self.scatter_model == "pdg":
             dz = self.size / n
         else:
             raise ValueError(f"Scatter model {self.scatter_model} is not currently supported.")
