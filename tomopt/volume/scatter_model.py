@@ -76,6 +76,10 @@ class ScatterModel:
         dxy = self.dxy_params[x0_idxs, mom_idxs, rnds[:, 2:]]
         dxy = self.extrapolate_dxy(dxy, inv_costheta)
 
+        sign = (torch.rand((n, 4), device=self.device) - 0.5).sign()
+        dthetaphi = sign[:, :2] * dthetaphi
+        dxy = sign[:, 2:] * dxy
+
         return dthetaphi, dxy
 
 
