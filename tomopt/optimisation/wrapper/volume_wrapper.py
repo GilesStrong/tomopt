@@ -468,7 +468,7 @@ class HeatMapVolumeWrapper(AbsVolumeWrapper):
         norm_opt: PartialOpt,
         sig_opt: PartialOpt,
         loss_func: Optional[AbsDetectorLoss],
-        mu_generator: Callable[[int], Tensor] = generate_batch,
+        mu_generator: Optional[AbsMuonGenerator] = None,
         partial_scatter_inferer: Type[AbsScatterBatch] = PanelScatterBatch,
         partial_volume_inferer: Type[AbsVolumeInferer] = PanelX0Inferer,
     ):
@@ -503,7 +503,7 @@ class HeatMapVolumeWrapper(AbsVolumeWrapper):
         norm_opt: PartialOpt,
         sig_opt: PartialOpt,
         loss_func: Optional[AbsDetectorLoss],
-        mu_generator: Callable[[int], Tensor] = generate_batch,
+        mu_generator: Optional[AbsMuonGenerator] = None,
     ) -> AbsVolumeWrapper:
         vw = cls(
             volume=volume,
