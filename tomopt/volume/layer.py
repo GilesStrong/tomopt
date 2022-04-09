@@ -154,6 +154,7 @@ class VoxelDetectorLayer(AbsDetectorLayer):
         self.resolution = nn.Parameter(torch.zeros(list((self.lw / size).long()), device=self.device) + init_res)
         self.efficiency = nn.Parameter(torch.zeros(list((self.lw / size).long()), device=self.device) + init_eff)
         self.eff_cost_func, self.res_cost_func = eff_cost_func, res_cost_func
+        self.type_label = "voxel"
 
     def conform_detector(self) -> None:
         with torch.no_grad():
@@ -205,6 +206,8 @@ class PanelDetectorLayer(AbsDetectorLayer):
         self.panels = panels
         if isinstance(panels[0], DetectorHeatMap):
             self.type_label = "heatmap"
+        elif isinstance(panels[0], DetectorPanel):
+            self.type_label = "panel"
 
     @staticmethod
     def get_device(panels: nn.ModuleList) -> torch.device:
