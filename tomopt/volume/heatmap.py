@@ -36,13 +36,13 @@ class DetectorHeatMap(nn.Module):
         self.register_buffer("resolution", torch.tensor(float(res), device=self.device))
         self.register_buffer("efficiency", torch.tensor(float(eff), device=self.device))
 
-        self._n_cluster = n_cluster
+        self.n_cluster = n_cluster
         self.register_buffer("xy_fix", torch.tensor(init_xyz[:2], device=self.device))
         self.register_buffer("xy_span_fix", torch.tensor(init_xy_span, device=self.device))
         self.delta_xy = init_xy_span[1] - init_xy_span[0]
         assert self.delta_xy > 0.0, "xy_span needs [lower, upper] limit input."
 
-        self.gmm = GMM(n_cluster=self._n_cluster, init_xy=init_xyz[:2], device=device, init_xy_span=self.delta_xy)
+        self.gmm = GMM(n_cluster=self.n_cluster, init_xy=init_xyz[:2], device=device, init_xy_span=self.delta_xy)
         self.mu = self.gmm.mu
         self.sig = self.gmm.sig
         self.norm = self.gmm.norm
@@ -51,7 +51,7 @@ class DetectorHeatMap(nn.Module):
         self.range_mult = 1.2
 
     def __repr__(self) -> str:
-        return f"""{self.__class__} at av. xy={self.gmm.mu.T.mean(1)} with n_comp {self._n_cluster}, z={self.z.data}."""
+        return f"""{self.__class__} at av. xy={self.gmm.mu.T.mean(1)} with n_comp {self.n_cluster}, z={self.z.data}."""
 
     def get_xy_mask(self, xy: Tensor) -> Tensor:
         if not isinstance(self.xy_fix, Tensor):
@@ -192,16 +192,16 @@ class GMM(torch.nn.Module):
         device: torch.device = DEVICE,
     ) -> None:
         super(GMM, self).__init__()
-        self._n_cluster = n_cluster
+        self.n_cluster = n_cluster
         self.device = device
         self._init_xy = torch.tensor(init_xy, device=self.device)
         self._init_xy_span = torch.tensor(init_xy_span, device=self.device)
 
-        rand_mu = 0.5 - torch.rand(self._n_cluster, 2, requires_grad=True)
+        rand_mu = 0.5 - torch.rand(self.n_cluster, 2, requires_grad=True)
         rand_mu += torch.tensor(self._init_xy)
         self.mu = torch.nn.Parameter(self._init_xy_span * 0.5 * rand_mu)
 
-        rand_sig = torch.max(torch.rand(self._n_cluster, 2, requires_grad=True), torch.tensor(0.2))
+        rand_sig = torch.max(torch.rand(self.n_cluster, 2, requires_grad=True), torch.tensor(0.2))
         self.sig = torch.nn.Parameter(self._init_xy_span * rand_sig)
         self.norm = torch.nn.Parameter(init_norm * torch.ones(1, requires_grad=True))
 
@@ -210,7 +210,7 @@ class GMM(torch.nn.Module):
 
         mix = torch.distributions.Categorical(
             torch.ones(
-                self._n_cluster,
+                self.n_cluster,
             )
         )
         comp = torch.distributions.Independent(
