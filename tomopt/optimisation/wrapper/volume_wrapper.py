@@ -467,6 +467,7 @@ class HeatMapVolumeWrapper(AbsVolumeWrapper):
         mu_opt: PartialOpt,
         norm_opt: PartialOpt,
         sig_opt: PartialOpt,
+        z_pos_opt: PartialOpt,
         loss_func: Optional[AbsDetectorLoss],
         mu_generator: Optional[AbsMuonGenerator] = None,
         partial_scatter_inferer: Type[AbsScatterBatch] = PanelScatterBatch,
@@ -474,7 +475,7 @@ class HeatMapVolumeWrapper(AbsVolumeWrapper):
     ):
         super().__init__(
             volume=volume,
-            partial_opts={"mu_opt": mu_opt, "norm_opt": norm_opt, "sig_opt": sig_opt},
+            partial_opts={"mu_opt": mu_opt, "norm_opt": norm_opt, "sig_opt": sig_opt, "z_pos_opt": z_pos_opt},
             loss_func=loss_func,
             mu_generator=mu_generator,
             partial_scatter_inferer=partial_scatter_inferer,
@@ -491,6 +492,7 @@ class HeatMapVolumeWrapper(AbsVolumeWrapper):
             "mu_opt": kwargs["mu_opt"]((p.mu for l in dets for p in l.panels)),
             "norm_opt": kwargs["norm_opt"]((p.norm for l in dets for p in l.panels)),
             "sig_opt": kwargs["sig_opt"]((p.sig for l in dets for p in l.panels)),
+            "z_pos_opt": kwargs["z_pos_opt"]((p.z for l in dets for p in l.panels)),
         }
 
     @classmethod
@@ -502,6 +504,7 @@ class HeatMapVolumeWrapper(AbsVolumeWrapper):
         mu_opt: PartialOpt,
         norm_opt: PartialOpt,
         sig_opt: PartialOpt,
+        z_pos_opt: PartialOpt,
         loss_func: Optional[AbsDetectorLoss],
         mu_generator: Optional[AbsMuonGenerator] = None,
     ) -> AbsVolumeWrapper:
@@ -510,6 +513,7 @@ class HeatMapVolumeWrapper(AbsVolumeWrapper):
             mu_opt=mu_opt,
             norm_opt=norm_opt,
             sig_opt=sig_opt,
+            z_pos_opt=z_pos_opt,
             loss_func=loss_func,
             mu_generator=mu_generator,
         )

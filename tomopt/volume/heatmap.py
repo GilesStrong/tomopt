@@ -165,7 +165,7 @@ class DetectorHeatMap(nn.Module):
             self.mu.clamp_(min=musigz_low[0], max=musigz_high[0])
             self.z.clamp_(min=musigz_low[2] + eps, max=musigz_high[2] - eps)
             self.sig.clamp_(min=musigz_low[1] / self.range_mult, max=self.range_mult * musigz_high[1])
-            self.norm.clamp_(min=0.01, max=1.2)
+            self.norm.clamp_(min=0.01, max=1.5)
 
     @property
     def x(self) -> Tensor:
