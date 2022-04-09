@@ -1,4 +1,5 @@
 from tomopt.volume.panel import DetectorPanel
+from tomopt.volume.heatmap import DetectorHeatMap
 from typing import Iterator, Optional, Callable, Dict, Tuple, List, Union
 import math
 import numpy as np
@@ -118,11 +119,10 @@ class AbsDetectorLayer(Layer, metaclass=ABCMeta):
         z: float,
         size: float,
         device: torch.device = DEVICE,
-        type_label: str = None,
     ):
         super().__init__(lw=lw, z=z, size=size, device=device)
         self.pos = pos
-        self.type_label = type_label
+        self.type_label = ""
 
     @abstractmethod
     def forward(self, mu: MuonBatch) -> None:
@@ -197,13 +197,14 @@ class PanelDetectorLayer(AbsDetectorLayer):
         lw: Tensor,
         z: float,
         size: float,
-        panels: Union[List[DetectorPanel], nn.ModuleList],  # nn.ModuleList[DetectorPanel]
-        type_label: str = None,
+        panels: Union[List[DetectorPanel], List[DetectorHeatMap], nn.ModuleList],  # nn.ModuleList[DetectorPanel]
     ):
         if isinstance(panels, list):
             panels = nn.ModuleList(panels)
-        super().__init__(pos=pos, lw=lw, z=z, size=size, device=self.get_device(panels), type_label=type_label)
+        super().__init__(pos=pos, lw=lw, z=z, size=size, device=self.get_device(panels))
         self.panels = panels
+        if isinstance(panels[0], DetectorHeatMap):
+            self.type_label = "heatmap"
 
     @staticmethod
     def get_device(panels: nn.ModuleList) -> torch.device:
@@ -217,7 +218,7 @@ class PanelDetectorLayer(AbsDetectorLayer):
     def get_panel_zorder(self) -> List[int]:
         return list(np.argsort([p.z.detach().cpu().item() for p in self.panels])[::-1])
 
-    def yield_zordered_panels(self) -> Iterator[DetectorPanel]:
+    def yield_zordered_panels(self) -> Union[Iterator[DetectorPanel], Iterator[DetectorHeatMap]]:  # Iterator[DetectorPanel]
         for i in self.get_panel_zorder():
             yield self.panels[i]
 
