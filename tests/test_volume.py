@@ -98,6 +98,7 @@ def test_voxel_detector_layer(batch):
     dl = VoxelDetectorLayer(pos="above", init_eff=1, init_res=1e3, lw=LW, z=Z, size=SZ, eff_cost_func=eff_cost, res_cost_func=res_cost)
     assert dl.resolution.mean() == Tensor([1e3])
     assert dl.efficiency.mean() == Tensor([1])
+    assert dl.type_label == "voxel"
 
     start = batch.copy()
     dl(batch)
@@ -139,6 +140,8 @@ def test_panel_detector_layer(batch):
         size=2 * SZ,
         panels=[DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[1.0, 1.0], area_cost_func=area_cost)],
     )
+    assert dl.type_label == "panel"
+
     for p in dl.panels:
         assert p.resolution == Tensor([1e3])
         assert p.efficiency == Tensor([1])
