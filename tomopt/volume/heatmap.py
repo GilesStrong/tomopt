@@ -33,12 +33,12 @@ class DetectorHeatMap(nn.Module):
         self.area_cost_func = area_cost_func
         self.realistic_validation = realistic_validation
         self.device = device
-        self.register_buffer("resolution", torch.tensor(float(res), requires_grad=True, device=self.device))
-        self.register_buffer("efficiency", torch.tensor(float(eff), requires_grad=True, device=self.device))
+        self.register_buffer("resolution", torch.tensor(float(res), device=self.device))
+        self.register_buffer("efficiency", torch.tensor(float(eff), device=self.device))
 
         self._n_cluster = n_cluster
-        self.xy_fix = torch.tensor(init_xyz[:2], device=self.device)
-        self.xy_span_fix = torch.tensor(init_xy_span, device=self.device)
+        self.register_buffer("xy_fix", torch.tensor(init_xyz[:2], device=self.device))
+        self.register_buffer("xy_span_fix", torch.tensor(init_xy_span, device=self.device))
         self.delta_xy = init_xy_span[1] - init_xy_span[0]
         assert self.delta_xy > 0.0, "xy_span needs [lower, upper] limit input."
 
@@ -54,6 +54,11 @@ class DetectorHeatMap(nn.Module):
         return f"""{self.__class__} at av. xy={self.gmm.mu.T.mean(1)} with n_comp {self._n_cluster}, z={self.z.data}."""
 
     def get_xy_mask(self, xy: Tensor) -> Tensor:
+        if not isinstance(self.xy_fix, Tensor):
+            raise ValueError(f"{self.xy_fix} is not a Tensor for some reason.")  # To appease MyPy
+        if not isinstance(self.xy_span_fix, Tensor):
+            raise ValueError(f"{self.xy_span_fix} is not a Tensor for some reason.")  # To appease MyPy
+
         xy_low = self.xy_fix - self.range_mult * self.xy_span_fix
         xy_high = self.xy_fix + self.range_mult * self.xy_span_fix
         return (xy[:, 0] >= xy_low[0]) * (xy[:, 0] < xy_high[0]) * (xy[:, 1] >= xy_low[1]) * (xy[:, 1] < xy_high[1])
@@ -94,8 +99,12 @@ class DetectorHeatMap(nn.Module):
         return self.area_cost_func(self.sig.prod(1).mean())
 
     def get_hits(self, mu: MuonBatch) -> Dict[str, Tensor]:
-        mask = mu.get_xy_mask(self.xy_fix - self.range_mult * self.delta_xy, self.xy_fix + self.range_mult * self.delta_xy)  # Muons in panel
+        if not isinstance(self.xy_fix, Tensor):
+            raise ValueError(f"{self.xy_fix} is not a Tensor for some reason.")  # To appease MyPy
+        if not isinstance(self.xy_span_fix, Tensor):
+            raise ValueError(f"{self.xy_span_fix} is not a Tensor for some reason.")  # To appease MyPy
 
+        mask = mu.get_xy_mask(self.xy_fix - self.range_mult * self.delta_xy, self.xy_fix + self.range_mult * self.delta_xy)  # Muons in panel
         xy0 = self.xy_fix - (self.delta_xy / 2)  # aprox. Low-left of voxel
         rel_xy = mu.xy - xy0
         res = self.get_resolution(mu.xy, mask)
@@ -116,6 +125,11 @@ class DetectorHeatMap(nn.Module):
 
     def plot_map(self, bpixelate: bool = False) -> None:
         """"""
+
+        if not isinstance(self.xy_fix, Tensor):
+            raise ValueError(f"{self.xy_fix} is not a Tensor for some reason.")  # To appease MyPy
+        if not isinstance(self.xy_span_fix, Tensor):
+            raise ValueError(f"{self.xy_span_fix} is not a Tensor for some reason.")  # To appease MyPy
 
         with torch.no_grad():
             x = self.xy_fix[0].detach().numpy()
@@ -155,10 +169,14 @@ class DetectorHeatMap(nn.Module):
 
     @property
     def x(self) -> Tensor:
+        if not isinstance(self.xy_fix, Tensor):
+            raise ValueError(f"{self.xy_fix} is not a Tensor for some reason.")  # To appease MyPy
         return self.xy_fix[0]
 
     @property
     def y(self) -> Tensor:
+        if not isinstance(self.xy_fix, Tensor):
+            raise ValueError(f"{self.xy_fix} is not a Tensor for some reason.")  # I just love MyPy
         return self.xy_fix[1]
 
 
