@@ -60,7 +60,7 @@ def get_voxel_detector() -> VoxelDetectorLayer:
     return VoxelDetectorLayer("above", init_res=1, init_eff=1, lw=LW, z=1, size=SZ, eff_cost_func=eff_cost, res_cost_func=res_cost)
 
 
-def get_panel_detector() -> VoxelDetectorLayer:
+def get_panel_detector() -> PanelDetectorLayer:
     return PanelDetectorLayer(
         pos="above",
         lw=LW,
