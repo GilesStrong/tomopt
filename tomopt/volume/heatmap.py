@@ -123,7 +123,7 @@ class DetectorHeatMap(nn.Module):
         }
         return hits
 
-    def plot_map(self, bpixelate: bool = False) -> None:
+    def plot_map(self, bpixelate: bool = False, bsavefig: bool = False, filename: str = None) -> None:
         """"""
 
         if not isinstance(self.xy_fix, Tensor):
@@ -134,8 +134,8 @@ class DetectorHeatMap(nn.Module):
         with torch.no_grad():
             x = self.xy_fix[0].detach().numpy()
             y = self.xy_fix[1].detach().numpy()
-            xs = torch.linspace(x - 2 * self.delta_xy, x + 2 * self.delta_xy, steps=1000)
-            ys = torch.linspace(y - 2 * self.delta_xy, y + 2 * self.delta_xy, steps=1000)
+            xs = torch.linspace(x - 2 * self.delta_xy, x + 2 * self.delta_xy, steps=200)
+            ys = torch.linspace(y - 2 * self.delta_xy, y + 2 * self.delta_xy, steps=200)
             x, y = torch.meshgrid(xs, ys)
             z = self.get_z_from_mesh(x, y)
 
@@ -145,7 +145,14 @@ class DetectorHeatMap(nn.Module):
             else:
                 cs = ax.contourf(x.numpy(), y.numpy(), z.detach().numpy(), cmap="plasma")
             fig.colorbar(cs)
-            plt.show()
+
+            if bsavefig:
+                if filename is None:
+                    filename = "heatmap_plot.png"
+                plt.savefig(filename, dpi=300)
+                plt.close()
+            else:
+                plt.show()
 
     def get_z_from_mesh(self, x: Tensor, y: Tensor) -> Tensor:
         """"""
