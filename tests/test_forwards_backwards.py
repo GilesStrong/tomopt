@@ -125,17 +125,19 @@ def deep_inferer() -> DeepVolumeInferer:
     volume._target = Tensor([1])
     volume(mu)
     sb = PanelScatterBatch(mu=mu, volume=volume)
+    grp_feats = ["pred_x0", "delta_angles", "theta_msc", "voxels"]
+    n_infeats = 4
 
     class MockModel(nn.Module):
         def __init__(self) -> None:
             super().__init__()
-            self.layer = nn.Linear(600 * 9, 1)
+            self.layer = nn.Linear(600 * (n_infeats + 3), 1)
             self.act = nn.Sigmoid()
 
         def forward(self, x: Tensor) -> Tensor:
             return self.act(self.layer(x.mean(2).flatten()[None]))
 
-    inf = DeepVolumeInferer(model=MockModel(), base_inferer=PanelX0Inferer(volume=volume), volume=volume)
+    inf = DeepVolumeInferer(model=MockModel(), base_inferer=PanelX0Inferer(volume=volume), volume=volume, grp_feats=grp_feats)
     inf.add_scatters(sb)
     return inf
 

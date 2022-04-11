@@ -19,7 +19,12 @@ class AbsMuonGenerator:
     _n_bins_theta = 200
 
     def __init__(
-        self, x_range: Tuple[float, float], y_range: Tuple[float, float], fixed_mom: Optional[float] = 5.0, energy_range: Tuple[float, float] = (0.5, 500)
+        self,
+        x_range: Tuple[float, float],
+        y_range: Tuple[float, float],
+        fixed_mom: Optional[float] = 5.0,
+        energy_range: Tuple[float, float] = (0.5, 500),
+        theta_range: Tuple[float, float] = (0, 70 * np.pi / 180),  # Models on accurate upto ~70 degrees
     ) -> None:
         """
         Initializer. Specify dimensions x,y of the impinging surface flag (True/False) for sampled vs uniform muon momenta respectively
@@ -31,7 +36,7 @@ class AbsMuonGenerator:
         self._fixed_mom = fixed_mom
         energy_edges = np.geomspace(energy_range[0], energy_range[1], self._n_bins_energy + 1)
         self._energy_centres = np.mean(np.vstack([energy_edges[0:-1], energy_edges[1:]]), axis=0)
-        theta_edges = np.linspace(0, 0.5 * np.pi, self._n_bins_theta + 1)
+        theta_edges = np.linspace(theta_range[0], theta_range[1], self._n_bins_theta + 1)
         self._theta_centres = np.mean(np.vstack([theta_edges[0:-1], theta_edges[1:]]), axis=0)
 
         # Calculate 2d flux function
