@@ -61,7 +61,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
         self.mu, self.volume = mu, volume
         self.device = self.mu.device
         self._hits = self._get_hits()
-        self.compute_scatters()
+        self._compute_scatters()
 
     def _get_hits(self) -> Dict[str, Dict[str, Tensor]]:
         return self.mu.get_hits()
@@ -174,7 +174,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
         else:
             return self._hit_uncs[:, self.n_hits_above :]
 
-    def extract_hits(self) -> None:
+    def _extract_hits(self) -> None:
         # reco x, reco y, gen z, must be a list to allow computation of uncertainty
         above_hits = torch.stack(
             [torch.cat([self.hits["above"]["reco_xy"][:, i], self.hits["above"]["z"][:, i]], dim=-1) for i in range(self.hits["above"]["reco_xy"].shape[1])],
@@ -216,10 +216,39 @@ class AbsScatterBatch(metaclass=ABCMeta):
         return self._track_start_out
 
     @abstractmethod
-    def compute_tracks(self) -> None:
+    def _compute_tracks(self) -> None:
         pass
 
-    def compute_scatters(self) -> None:
+    def _filter_scatters(self) -> None:
+        # Filter to remove same tracks:
+        # This might seem heavy-handed, but tracks with invalid/extreme parameters can have NaN gradients, which can spoil the grads of all other muons.
+        # Only include muons that scatter
+        theta_msc = self._compute_theta_msc(self.track_in, self.track_out)
+        keep_mask = (theta_msc != 0) * (~theta_msc.isnan()) * (~theta_msc.isinf())
+
+        # Remove muons with tracks parallel to volume
+        theta_in = self._compute_theta(self.track_in)
+        theta_out = self._compute_theta(self.track_out)
+        keep_mask *= (theta_in - (torch.pi / 2) < -1e-5) * (theta_out - (torch.pi / 2) < -1e-5)
+
+        # Remove muons with tracks entering or exiting far from the volume
+        xy_in = self._compute_xyz_in()[:, :2]
+        xy_out = self._compute_xyz_out()[:, :2]
+        keep_mask *= (
+            (xy_in > -10 * self.volume.lw).prod(-1)
+            * (xy_in < 10 * self.volume.lw).prod(-1)
+            * (xy_out > -10 * self.volume.lw).prod(-1)
+            * (xy_out < 10 * self.volume.lw).prod(-1)
+        )[:, None].bool()
+
+        keep_mask.squeeze_()
+        if not keep_mask.all():  # Recompute tracks and hits
+            self.mu.filter_muons(keep_mask)
+            self._hits = self._get_hits()
+            self._extract_hits()
+            self._compute_tracks()
+
+    def _compute_scatters(self) -> None:
         r"""
         Currently only handles detectors above and below passive volume
 
@@ -234,18 +263,9 @@ class AbsScatterBatch(metaclass=ABCMeta):
         }
         """
 
-        self.extract_hits()
-        self.compute_tracks()
-
-        # Filter to remove same tracks: only include muons that scatter
-        # This might seem heavy-handed, but tracks with theta_msc = 0 have NaN gradients, which can spoil the grads of all other muons.
-        theta_msc = self._compute_theta_msc(self.track_in, self.track_out)
-        keep_mask = ((theta_msc != 0) * (~theta_msc.isnan()) * (~theta_msc.isinf())).squeeze()
-        if not keep_mask.all():  # Recompute tracks and hits
-            self.mu.filter_muons(keep_mask)
-            self._hits = self._get_hits()
-            self.extract_hits()
-            self.compute_tracks()
+        self._extract_hits()
+        self._compute_tracks()
+        self._filter_scatters()
 
         # Track computations
         self._cross_track = torch.cross(self.track_in, self.track_out, dim=1)  # connecting vector perpendicular to both lines
@@ -257,19 +277,39 @@ class AbsScatterBatch(metaclass=ABCMeta):
 
     @staticmethod
     def _compute_phi(x: Tensor, y: Tensor) -> Tensor:
-        phi = torch.arctan(y / x)  # (-pi/2, pi/2)
-
-        # Account for quadrants
-        m = x < 0
-        phi[m] = phi[m] + torch.pi
-        m = (x > 0) * (y < 0)
-        phi[m] = phi[m] + (2 * torch.pi)  # (0, 2pi)
+        phi = y.new_zeros(x.shape)
 
         # Case when x == 0
         phi[(x == 0) * (y > 0)] = torch.pi / 2
         phi[(x == 0) * (y < 0)] = 3 * torch.pi / 2
 
+        m = x != 0
+        phi[m] = torch.arctan(y[m] / x[m])
+        # # Account for quadrants
+        m = x < 0
+        phi[m] = phi[m] + torch.pi
+        m = (x > 0) * (y < 0)
+        phi[m] = phi[m] + (2 * torch.pi)  # (0, 2pi)
+
         return phi
+
+    @staticmethod
+    def _compute_theta(track: Tensor) -> Tensor:
+        arg = -track[:, 2:3] / track.norm(dim=-1, keepdim=True)
+        theta = arg.new_zeros(arg.shape)
+
+        m = arg != 1
+        theta[m] = torch.arccos(arg[m])
+
+        return theta
+
+    def _compute_xyz_in(self) -> Tensor:
+        dz = self.volume.get_passive_z_range()[1] - self._track_start_in[:, 2:3]  # last panel to volume start
+        return self._track_start_in + ((dz / self._track_in[:, 2:3]) * self._track_in)
+
+    def _compute_xyz_out(self) -> Tensor:
+        dz = self._track_start_out[:, 2:3] - (self.volume.get_passive_z_range()[0])  # volume end to first panel
+        return self._track_start_out - ((dz / self._track_out[:, 2:3]) * self._track_out)
 
     @staticmethod
     def _compute_theta_msc(p: Tensor, q: Tensor) -> Tensor:
@@ -320,7 +360,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
     @property
     def theta_in(self) -> Tensor:
         if self._theta_in is None:
-            self._theta_in = torch.arccos(-self.track_in[:, 2:3] / self.track_in.norm(dim=-1, keepdim=True))
+            self._theta_in = self._compute_theta(self.track_in)
             self._theta_in_unc = None
         return self._theta_in
 
@@ -333,7 +373,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
     @property
     def theta_out(self) -> Tensor:
         if self._theta_out is None:
-            self._theta_out = torch.arccos(-self.track_out[:, 2:3] / self.track_out.norm(dim=-1, keepdim=True))
+            self._theta_out = self._compute_theta(self.track_out)
             self._theta_out_unc = None
         return self._theta_out
 
@@ -473,8 +513,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
     @property
     def xyz_in(self) -> Tensor:
         if self._xyz_in is None:
-            dz = self.volume.get_passive_z_range()[1] - self._track_start_in[:, 2:3]  # last panel to volume start
-            self._xyz_in = self._track_start_in + ((dz / self._track_in[:, 2:3]) * self._track_in)
+            self._xyz_in = self._compute_xyz_in()
             self._xyz_in_unc = None
         return self._xyz_in
 
@@ -487,8 +526,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
     @property
     def xyz_out(self) -> Tensor:
         if self._xyz_out is None:
-            dz = self._track_start_out[:, 2:3] - (self.volume.get_passive_z_range()[0])  # volume end to first panel
-            self._xyz_out = self._track_start_out - ((dz / self._track_out[:, 2:3]) * self._track_out)
+            self._xyz_out = self._compute_xyz_out()
             self._xyz_out_unc = None
         return self._xyz_out
 
@@ -611,7 +649,7 @@ class VoxelScatterBatch(AbsScatterBatch):
             uncs.append(torch.stack([r, r, torch.zeros_like(r, device=r.device)], dim=-1))
         return torch.stack(uncs, dim=1)  # muons, panels, unc xyz
 
-    def compute_tracks(self) -> None:
+    def _compute_tracks(self) -> None:
         self._hit_uncs = self._get_hit_uncs(self.volume.get_detectors(), self.reco_hits)
         self._track_in, self._track_start_in = self.get_muon_trajectory(self.above_hits, self.above_hit_uncs, self.volume.lw)
         self._track_out, self._track_start_out = self.get_muon_trajectory(self.below_hits, self.below_hit_uncs, self.volume.lw)
@@ -627,7 +665,7 @@ class PanelScatterBatch(AbsScatterBatch):
             uncs.append(torch.cat([r, torch.zeros((len(r), 1), device=r.device)], dim=-1))
         return torch.stack(uncs, dim=1)  # muons, panels, unc xyz
 
-    def compute_tracks(self) -> None:
+    def _compute_tracks(self) -> None:
         def _get_panels() -> List[DetectorPanel]:
             panels = []
             for det in self.volume.get_detectors():
@@ -642,7 +680,7 @@ class PanelScatterBatch(AbsScatterBatch):
 
 
 class GenScatterBatch(AbsScatterBatch):
-    def compute_tracks(self) -> None:
+    def _compute_tracks(self) -> None:
         self._hit_uncs = torch.ones_like(self._gen_hits)
         self._track_in, self._track_start_in = self.get_muon_trajectory(self.above_gen_hits, self.above_hit_uncs, self.volume.lw)
         self._track_out, self._track_start_out = self.get_muon_trajectory(self.below_gen_hits, self.below_hit_uncs, self.volume.lw)
