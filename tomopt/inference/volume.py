@@ -354,7 +354,7 @@ class DeepVolumeInferer(AbsVolumeInferer):
         if "track_xy" in self.grp_feats:
             feats += [scatters.xyz_in[:, :2], scatters.xyz_out[:, :2]]
             if self.include_unc:
-                uncs += [scatters.xyz_in_unc, scatters.xyz_out_unc]
+                uncs += [scatters.xyz_in_unc[:, :2], scatters.xyz_out_unc[:, :2]]
         if "poca" in self.grp_feats:
             feats += [scatters.location]
             if self.include_unc:
