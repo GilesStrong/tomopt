@@ -84,7 +84,7 @@ class DetectorPanel(nn.Module):
     def get_hits(self, mu: MuonBatch) -> Dict[str, Tensor]:
         mask = mu.get_xy_mask(self.xy - (self.xy_span / 2), self.xy + (self.xy_span / 2))  # Muons in panel
 
-        xy0 = self.xy - (self.xy_span / 2)  # Low-left of voxel
+        xy0 = self.xy - (self.xy_span / 2)  # Low-left of panel
         rel_xy = mu.xy - xy0
         res = self.get_resolution(mu.xy, mask)
         rel_xy = rel_xy + (torch.randn((len(mu), 2), device=self.device) / res)

@@ -2,7 +2,7 @@ import pytest
 from pytest_mock import mocker  # noqa F401
 import numpy as np
 from unittest.mock import patch
-from typing import Tuple
+from typing import Tuple, Type
 import types
 
 import torch
@@ -12,7 +12,7 @@ import torch.nn.functional as F
 from tomopt.volume import PassiveLayer, VoxelDetectorLayer, Volume, PanelDetectorLayer, DetectorPanel
 from tomopt.muon import MuonBatch, MuonGenerator2016
 from tomopt.core import X0
-from tomopt.inference import VoxelScatterBatch, VoxelX0Inferer, PanelX0Inferer, PanelScatterBatch, GenScatterBatch, DeepVolumeInferer
+from tomopt.inference import VoxelScatterBatch, VoxelX0Inferer, PanelX0Inferer, PanelScatterBatch, GenScatterBatch, DeepVolumeInferer, WeightedDeepVolumeInferer
 from tomopt.volume.layer import Layer
 from tomopt.optimisation import MuonResampler
 from tomopt.utils import jacobian
@@ -608,7 +608,8 @@ def test_x0_inferer_scatter_inversion(mocker, voxel_scatter_batch):  # noqa F811
 
 
 @pytest.mark.flaky(max_runs=2, min_passes=1)
-def test_deep_volume_inferer():
+@pytest.mark.parametrize("dvi_class, weighted", [[DeepVolumeInferer, False], [WeightedDeepVolumeInferer, True]])
+def test_deep_volume_inferer(dvi_class: Type[DeepVolumeInferer], weighted: bool):
     volume = Volume(get_panel_layers(init_res=1e3))
     gen = MuonGenerator2016.from_volume(volume)
     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
@@ -616,16 +617,19 @@ def test_deep_volume_inferer():
     volume(mu)
     sb = PanelScatterBatch(mu=mu, volume=volume)
 
+    grp_feats = ["pred_x0", "track_xy", "delta_angles", "theta_msc", "track_angles", "poca", "dpoca", "voxels"]  # 1  # 4  # 2  # 1  # 4  # 3  # 3->4  # 0->3
+    n_infeats = 18
+
     class MockModel(nn.Module):
         def __init__(self) -> None:
             super().__init__()
-            self.layer = nn.Linear(600 * 9, 1)
+            self.layer = nn.Linear(600 * (n_infeats + 4 + weighted), 1)
             self.act = nn.Sigmoid()
 
         def forward(self, x: Tensor) -> Tensor:
             return self.act(self.layer(x.mean(2).flatten()[None]))
 
-    inferer = DeepVolumeInferer(model=MockModel(), base_inferer=PanelX0Inferer(volume=volume), volume=volume)
+    inferer = dvi_class(model=MockModel(), base_inferer=PanelX0Inferer(volume=volume), volume=volume, grp_feats=grp_feats, include_unc=True)
 
     pt, pt_unc = inferer.get_base_predictions(scatters=sb)
     assert len(pt) == len(sb.location)
@@ -638,12 +642,12 @@ def test_deep_volume_inferer():
     assert len(inferer.in_vars) == 1
     assert len(inferer.in_var_uncs) == 1
     assert len(inferer.efficiencies) == 1
-    assert inferer.in_vars[-1].shape == torch.Size((N, 8))
-    assert inferer.in_var_uncs[-1].shape == torch.Size((N, 8))
+    assert inferer.in_vars[-1].shape == torch.Size((N, n_infeats))
+    assert inferer.in_var_uncs[-1].shape == torch.Size((N, n_infeats))
     assert len(inferer.efficiencies[-1]) == N
 
     inputs = inferer._build_inputs(inferer.in_vars[0])
-    assert inputs.shape == torch.Size((600, N, 9))
+    assert inputs.shape == torch.Size((600, N, n_infeats + 4))  # +4 since voxels and dpoca_r
 
     pred, weight = inferer.get_prediction()
     assert pred.shape == torch.Size((1, 1))
