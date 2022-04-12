@@ -68,7 +68,7 @@ class DetectorHeatMap(nn.Module):
             raise ValueError(f"{self.resolution} is not a Tensor for some reason.")  # To appease MyPy
 
         if self.training or not self.realistic_validation:
-            res = self.resolution * self.gmm(xy)  # / self.gmm(self.xy)  # Maybe detach the normalisation?
+            res = self.resolution * self.gmm(xy) / torch.max(self.gmm(self.mu))  # Maybe detach the normalisation?
         else:
             if mask is None:
                 mask = self.get_xy_mask(xy)
@@ -81,7 +81,7 @@ class DetectorHeatMap(nn.Module):
         if not isinstance(self.efficiency, Tensor):
             raise ValueError(f"{self.efficiency} is not a Tensor for some reason.")  # To appease MyPy
         if self.training or not self.realistic_validation:
-            scale = self.gmm(xy)  # / self.gmm(self.xy)  # Maybe detach the normalisation?
+            scale = self.gmm(xy) / torch.max(self.gmm(self.mu))  # Maybe detach the normalisation?
             scale = torch.min(torch.tensor(1.0), scale)
             if not as_2d:
                 scale = torch.prod(scale, dim=-1)  # Maybe weight product by xy distance?
@@ -134,8 +134,8 @@ class DetectorHeatMap(nn.Module):
         with torch.no_grad():
             x = self.xy_fix[0].detach().numpy()
             y = self.xy_fix[1].detach().numpy()
-            xs = torch.linspace(x - 2 * self.delta_xy, x + 2 * self.delta_xy, steps=200)
-            ys = torch.linspace(y - 2 * self.delta_xy, y + 2 * self.delta_xy, steps=200)
+            xs = torch.linspace(x - 1 * self.delta_xy, x + 2 * self.delta_xy, steps=200)
+            ys = torch.linspace(y - 1 * self.delta_xy, y + 2 * self.delta_xy, steps=200)
             x, y = torch.meshgrid(xs, ys)
             z = self.get_z_from_mesh(x, y)
 
@@ -143,7 +143,7 @@ class DetectorHeatMap(nn.Module):
             if bpixelate:
                 cs = ax.scatter(x.numpy(), y.numpy(), c=z.detach().numpy(), cmap="plasma", s=450.0, marker="s")
             else:
-                cs = ax.contourf(x.numpy(), y.numpy(), z.detach().numpy(), cmap="plasma")
+                cs = ax.contourf(x.numpy(), y.numpy(), z.detach().numpy(), cmap="plasma", vmin=0.0, vmax=0.9)
             fig.colorbar(cs)
 
             if bsavefig:
@@ -160,7 +160,7 @@ class DetectorHeatMap(nn.Module):
         stacked_t = torch.stack([x, y]).T
         reshaped = torch.reshape(stacked_t, (stacked_t.shape[0] * stacked_t.shape[1], stacked_t.shape[2]))
         reshaped = torch.unsqueeze(reshaped, 1)
-        z = self.gmm(reshaped).prod(1)
+        z = self.gmm(reshaped).prod(1) / torch.max(self.gmm(self.mu))
         torch.min(torch.tensor(1.0), z)
         z = torch.reshape(z, (stacked_t.shape[0], stacked_t.shape[1]))
 
