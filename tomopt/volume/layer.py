@@ -192,14 +192,7 @@ class VoxelDetectorLayer(AbsDetectorLayer):
 
 
 class PanelDetectorLayer(AbsDetectorLayer):
-    def __init__(
-        self,
-        pos: str,
-        lw: Tensor,
-        z: float,
-        size: float,
-        panels: Union[List[DetectorPanel], List[DetectorHeatMap], nn.ModuleList],  # nn.ModuleList[DetectorPanel]
-    ):
+    def __init__(self, pos: str, lw: Tensor, z: float, size: float, panels: Union[List[DetectorPanel], List[DetectorHeatMap], nn.ModuleList]):
         if isinstance(panels, list):
             panels = nn.ModuleList(panels)
         super().__init__(pos=pos, lw=lw, z=z, size=size, device=self.get_device(panels))
@@ -221,7 +214,7 @@ class PanelDetectorLayer(AbsDetectorLayer):
     def get_panel_zorder(self) -> List[int]:
         return list(np.argsort([p.z.detach().cpu().item() for p in self.panels])[::-1])
 
-    def yield_zordered_panels(self) -> Union[Iterator[DetectorPanel], Iterator[DetectorHeatMap]]:  # Iterator[DetectorPanel]
+    def yield_zordered_panels(self) -> Union[Iterator[DetectorPanel], Iterator[DetectorHeatMap]]:
         for i in self.get_panel_zorder():
             yield self.panels[i]
 
