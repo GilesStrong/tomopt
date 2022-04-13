@@ -125,6 +125,7 @@ In order to start time, the TomOpt authors/contributors are: Giles Strong, Tomma
 - Investigation of:
   - Detector scattering of muons
   - Momentum estimation
+  - Angular statistics reconstruction method for volume inference
 - Assistance with muon coordinate-system
 - Assistance, advice, and information for various aspects of muon tomography
 
@@ -135,7 +136,7 @@ In order to start time, the TomOpt authors/contributors are: Giles Strong, Tomma
 
 ## Federico Nardi (@FedericoNardi)
 
-### 2021 - 2022. INFN-Padova, Italy.
+### 2021 - 2022?. INFN-Padova, Italy.
 
 <img src="docs/source/_static/imgs/authors/federico.png" style="width:auto;height:100px" />
 
