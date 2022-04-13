@@ -66,7 +66,7 @@ In order to start time, the TomOpt authors/contributors are: Giles Strong, Tomma
 
 ### 2021 - present. Université catholique de Louvain, Belgium.
 
-<img src="docs/source/_static/imgs/authors/andrea.png" style="width:auto;height:100px" />
+<img src="docs/source/_static/imgs/authors/picture_andrea_giammanco_tokyo_2018.png" style="width:auto;height:100px" />
 
 ### Code contributions:
 
