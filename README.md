@@ -79,7 +79,7 @@ pytest tests/test_muon.py
 
 ## Authors
 
-The TomOpt project, and its continued development and support, is the result of the combined work of many people, whose contributions are summarised in [the author list](AUTHORS.MD)
+The TomOpt project, and its continued development and support, is the result of the combined work of many people, whose contributions are summarised in [the author list](AUTHORS.md)
 
 ## Description
 

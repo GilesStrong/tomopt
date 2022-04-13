@@ -51,7 +51,7 @@ In order to start time, the TomOpt authors/contributors are: Giles Strong, Tomma
   - Maximum likelihood estimate for X0 inference
   - ULorry benchmark
   - Bimodal test-statistic for classification with X0 predictions
-  - PhiDet detector benchmark (detector and track fitting)
+  - PhiDet detector benchmark
 
 ### Other roles:
 
@@ -108,7 +108,7 @@ In order to start time, the TomOpt authors/contributors are: Giles Strong, Tomma
 ### Code contributions:
 
 - Geant 4 data for parametrised scattering model
-- Advice and assistance on custom PyTorch and CUDA kernals
+- Advice and assistance on custom PyTorch and CUDA kernels
 
 ### Other roles:
 
