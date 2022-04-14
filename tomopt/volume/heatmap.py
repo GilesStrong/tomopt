@@ -134,13 +134,23 @@ class DetectorHeatMap(nn.Module):
         if not isinstance(self.xy_span_fix, Tensor):
             raise ValueError(f"{self.xy_span_fix} is not a Tensor for some reason.")  # To appease MyPy
 
+        def get_z_from_mesh(x: Tensor, y: Tensor) -> Tensor:
+            stacked_t = torch.stack([x, y]).T
+            reshaped = torch.reshape(stacked_t, (stacked_t.shape[0] * stacked_t.shape[1], stacked_t.shape[2]))
+            reshaped = torch.unsqueeze(reshaped, 1)
+            z = self.gmm(reshaped).prod(1) / torch.max(self.gmm(self.mu))
+            torch.min(torch.tensor(1.0), z)
+            z = torch.reshape(z, (stacked_t.shape[0], stacked_t.shape[1]))
+
+            return z
+
         with sns.axes_style(style="whitegrid", rc={"patch.edgecolor": "none"}):
             x = self.xy_fix[0].detach().cpu().numpy()
             y = self.xy_fix[1].detach().cpu().numpy()
             xs = torch.linspace(x - 2 * self.delta_xy, x + 2 * self.delta_xy, steps=200)
             ys = torch.linspace(y - 2 * self.delta_xy, y + 2 * self.delta_xy, steps=200)
             x, y = torch.meshgrid(xs, ys)
-            z = self.get_z_from_mesh(x, y).detach().cpu().numpy()
+            z = get_z_from_mesh(x, y).detach().cpu().numpy()
 
             fig, ax = plt.subplots(1, 1, figsize=(4, 4))
             if bpixelate:
@@ -157,18 +167,6 @@ class DetectorHeatMap(nn.Module):
                 plt.close()
             else:
                 plt.show()
-
-    def get_z_from_mesh(self, x: Tensor, y: Tensor) -> Tensor:
-        """"""
-
-        stacked_t = torch.stack([x, y]).T
-        reshaped = torch.reshape(stacked_t, (stacked_t.shape[0] * stacked_t.shape[1], stacked_t.shape[2]))
-        reshaped = torch.unsqueeze(reshaped, 1)
-        z = self.gmm(reshaped).prod(1) / torch.max(self.gmm(self.mu))
-        torch.min(torch.tensor(1.0), z)
-        z = torch.reshape(z, (stacked_t.shape[0], stacked_t.shape[1]))
-
-        return z
 
     def clamp_params(self, musigz_low: Tuple[float, float, float], musigz_high: Tuple[float, float, float]) -> None:
         with torch.no_grad():
