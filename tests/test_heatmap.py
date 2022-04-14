@@ -399,18 +399,22 @@ def test_plot_map(mock_show):
     fname.unlink()
 
 
-# def test_gmm():
-#     gmm = GMM(n_cluster=30, init_xy=(2,-5), init_xy_span=8, init_norm=3)
-#     assert (gmm._init_xy == Tensor([2,-5])).all()
-#     assert gmm._init_xy_span == Tensor([8])
-#     assert ((gmm.mu.mean(0)-Tensor([2,-5])).abs() < 1e-2).all()
-#     assert ((gmm.sig.mean()-Tensor([8])).abs() < 1e-2).all()
-#     assert gmm.mu.shape == torch.Size([30,2])
-#     assert gmm.sig.shape == torch.Size([30,2])
-#     assert gmm.norm.shape == torch.Size([1])
-#     std = gmm.mu.std()
+@pytest.mark.flaky(max_runs=3, min_passes=2)
+def test_gmm():
+    gmm = GMM(n_cluster=30, init_xy=(2, -5), init_xy_span=2, init_norm=3)
+    assert (gmm._init_xy == Tensor([2, -5])).all()
+    assert gmm._init_xy_span == Tensor([2])
+    assert ((gmm.mu.mean(0) - Tensor([2, -5])).abs() < 1).all()
+    assert ((gmm.sig.mean() - Tensor([2])).abs() < 1).all()
+    assert gmm.mu.shape == torch.Size([30, 2])
+    assert gmm.sig.shape == torch.Size([30, 2])
+    assert gmm.norm.shape == torch.Size([1])
+    std = gmm.mu.std()
 
-#     gmm = GMM(n_cluster=30, init_xy=(2,-5), init_xy_span=4, init_norm=3)
-#     assert std > gmm.mu.std()
+    gmm = GMM(n_cluster=30, init_xy=(0.5, 0.5), init_xy_span=1, init_norm=3)
+    assert std > gmm.mu.std()
 
-#     # assert
+    assert (res := gmm(torch.rand(10, 2))).shape == torch.Size((10, 2))
+    with torch.no_grad():
+        gmm.norm += 10
+    assert gmm(torch.rand(10, 2)).mean() > res.mean()
