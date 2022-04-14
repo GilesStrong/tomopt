@@ -121,10 +121,20 @@ def test_panel_volume_wrapper_methods():
                 nn.init.zeros_(p.z)
                 nn.init.zeros_(p.sig)
                 nn.init.zeros_(p.norm)
+                nn.init.zeros_(p.resolution)
+                nn.init.zeros_(p.efficiency)
+                nn.init.zeros_(p.xy_fix)
+                nn.init.zeros_(p.xy_span_fix)
+
                 assert p.mu.sum() == 0
                 assert p.z.sum() == 0
                 assert p.sig.sum() == 0
                 assert p.norm.sum() == 0
+                assert p.resolution.sum() == 0
+                assert p.efficiency.sum() == 0
+                assert p.xy_fix.sum() == 0
+                assert p.xy_span_fix.abs().sum() == 0
+
         vw.set_opt_lr(0, "mu_opt")
         vw.set_opt_lr(0, "z_pos_opt")
         vw.set_opt_lr(0, "sig_opt")
@@ -142,6 +152,10 @@ def test_panel_volume_wrapper_methods():
             assert p.z.sum() != 0
             assert p.sig.sum() != 0
             assert p.norm.sum() != 0
+            assert p.resolution.sum() != 0
+            assert p.efficiency.sum() != 0
+            assert p.xy_fix.sum() != 0
+            assert p.xy_span_fix.abs().sum() != 0
     vw.get_opt_lr("mu_opt") != 0
     vw.get_opt_lr("z_pos_opt") != 0
     vw.get_opt_lr("sig_opt") != 0
@@ -164,6 +178,10 @@ def test_panel_volume_wrapper_methods():
             assert p.z.sum() != 0
             assert p.sig.sum() != 0
             assert p.norm.sum() != 0
+            assert p.resolution.sum() != 0
+            assert p.efficiency.sum() != 0
+            assert p.xy_fix.sum() != 0
+            assert p.xy_span_fix.abs().sum() != 0
     vw.get_opt_lr("mu_opt") != 0
     vw.get_opt_lr("z_pos_opt") != 0
     vw.get_opt_lr("sig_opt") != 0
