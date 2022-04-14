@@ -9,6 +9,7 @@ from torch import Tensor, nn
 import torch.nn.functional as F
 
 from tomopt.volume import PassiveLayer, PanelDetectorLayer, DetectorHeatMap, Volume
+from tomopt.volume.heatmap import GMM
 from tomopt.optimisation import MuonResampler
 from tomopt.muon import MuonBatch, MuonGenerator2016
 from tomopt.core import X0
@@ -396,3 +397,20 @@ def test_plot_map(mock_show):
     panel.plot_map(bpixelate=False, bsavefig=True, filename=fname)
     assert fname.exists()
     fname.unlink()
+
+
+# def test_gmm():
+#     gmm = GMM(n_cluster=30, init_xy=(2,-5), init_xy_span=8, init_norm=3)
+#     assert (gmm._init_xy == Tensor([2,-5])).all()
+#     assert gmm._init_xy_span == Tensor([8])
+#     assert ((gmm.mu.mean(0)-Tensor([2,-5])).abs() < 1e-2).all()
+#     assert ((gmm.sig.mean()-Tensor([8])).abs() < 1e-2).all()
+#     assert gmm.mu.shape == torch.Size([30,2])
+#     assert gmm.sig.shape == torch.Size([30,2])
+#     assert gmm.norm.shape == torch.Size([1])
+#     std = gmm.mu.std()
+
+#     gmm = GMM(n_cluster=30, init_xy=(2,-5), init_xy_span=4, init_norm=3)
+#     assert std > gmm.mu.std()
+
+#     # assert
