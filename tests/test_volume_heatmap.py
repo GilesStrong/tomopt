@@ -71,12 +71,11 @@ def test_heatmap_detector_layer(batch):
     assert hits["above"]["reco_xy"].shape == torch.Size([len(batch), 1, 2])
     assert hits["above"]["gen_xy"].shape == torch.Size([len(batch), 1, 2])
 
-    # every reco hit (x,y) is function of panel position and size
-    # ToDo: xy -> mu . How to translate this?
-    # for v in [dl.panels[0].xy, dl.panels[0].xy_span]:
-    #     grad = jacobian(hits["above"]["reco_xy"][:, 0], v).sum((-1))
-    #     assert (grad == grad).sum() == 2 * len(grad)
-    #     assert ((grad == grad) * (grad != 0)).sum() > 0
+    # every reco hit (x,y) is function of GMM mean and sigma
+    for v in [dl.panels[0].mu, dl.panels[0].sig]:
+        grad = jacobian(hits["above"]["reco_xy"][:, 0], v).sum((-1))
+        assert not grad.isnan().any()
+        assert (grad != 0).sum() > 0
 
     dl = PanelDetectorLayer(
         pos="above",
@@ -126,7 +125,7 @@ def test_heatmap_detector_layer(batch):
         xy_low = p.xy_fix[0] - p.range_mult * p.delta_xy
         xy_high = p.xy_fix[1] + p.range_mult * p.delta_xy
         xy_low = torch.max(torch.tensor(0.0), xy_low)
-        xy_high = torch.min(torch.tensor(LW[0]), xy_high)
+        xy_high = torch.min(LW[0], xy_high)
         for mu_comp in p.mu:
             assert mu_comp[0] <= xy_high
             assert mu_comp[1] <= xy_high
@@ -237,7 +236,7 @@ def test_volume_forward_panel():
     layers = get_panel_layers(n_panels=4)
     volume = Volume(layers=layers)
     gen = MuonGenerator2016.from_volume(volume)
-    mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
+    mus = MuonResampler.resample(gen(100), volume=volume, gen=gen)
     batch = MuonBatch(mus, init_z=volume.h)
     start = batch.copy()
     volume(batch)
@@ -253,14 +252,13 @@ def test_volume_forward_panel():
     assert hits["above"]["gen_xy"].shape[1] == 4
     assert hits["below"]["gen_xy"].shape[1] == 4
 
-    # every reco hit (x,y) is function of panel position and size
-    # ToDo: xy -> mu . How to translate this to Heatmap?
-    # for i, l in enumerate(volume.get_detectors()):
-    #     for j, p in enumerate(l.yield_zordered_panels()):
-    #         for v in [p.xy, p.xy_span]:
-    #             grad = jacobian(hits["above" if l.z > 0.5 else "below"]["reco_xy"][:, j], v).nansum((-1))
-    #             assert grad.isnan().sum() == 0
-    #             assert (grad != 0).sum() > 0
+    # every reco hit (x,y) is function of gmm mu and sig
+    for i, l in enumerate(volume.get_detectors()):
+        for j, p in enumerate(l.yield_zordered_panels()):
+            for v in [p.mu, p.sig]:
+                grad = jacobian(hits["above" if l.z > 0.5 else "below"]["reco_xy"][:, j], v).nansum((-1))
+                assert grad.isnan().sum() == 0
+                assert (grad != 0).sum() > 0
 
 
 def test_detector_panel_methods():
