@@ -74,8 +74,8 @@ def test_heatmap_detector_layer(batch):
     assert hits["above"]["reco_xy"].shape == torch.Size([len(batch), 1, 2])
     assert hits["above"]["gen_xy"].shape == torch.Size([len(batch), 1, 2])
 
-    # every reco hit (x,y) is function of GMM mean and sigma
-    for v in [dl.panels[0].mu, dl.panels[0].sig]:
+    # every reco hit (x,y) is function of GMM parameters
+    for v in [dl.panels[0].mu, dl.panels[0].sig, dl.panels[0].norm]:
         grad = jacobian(hits["above"]["reco_xy"][:, 0], v).sum((-1))
         assert not grad.isnan().any()
         assert (grad != 0).sum() > 0
@@ -255,10 +255,10 @@ def test_volume_forward_panel():
     assert hits["above"]["gen_xy"].shape[1] == 4
     assert hits["below"]["gen_xy"].shape[1] == 4
 
-    # every reco hit (x,y) is function of gmm mu and sig
+    # every reco hit (x,y) is function of gmm parameters
     for i, l in enumerate(volume.get_detectors()):
         for j, p in enumerate(l.yield_zordered_panels()):
-            for v in [p.mu, p.sig]:
+            for v in [p.mu, p.sig, p.norm]:
                 grad = jacobian(hits["above" if l.z > 0.5 else "below"]["reco_xy"][:, j], v).nansum((-1))
                 assert grad.isnan().sum() == 0
                 assert (grad != 0).sum() > 0
