@@ -71,7 +71,7 @@ class DetectorHeatMap(nn.Module):
             raise ValueError(f"{self.resolution} is not a Tensor for some reason.")  # To appease MyPy
 
         if self.training or not self.realistic_validation:
-            res = self.resolution * self.gmm(xy) / torch.max(self.gmm(self.mu))
+            res = self.resolution * self.gmm(xy) / torch.max(self.gmm(self.mu), dim=0).values
         else:
             if mask is None:
                 mask = self.get_xy_mask(xy)
@@ -84,7 +84,7 @@ class DetectorHeatMap(nn.Module):
         if not isinstance(self.efficiency, Tensor):
             raise ValueError(f"{self.efficiency} is not a Tensor for some reason.")  # To appease MyPy
         if self.training or not self.realistic_validation:
-            scale = self.gmm(xy) / torch.max(self.gmm(self.mu))
+            scale = self.gmm(xy) / torch.max(self.gmm(self.mu), dim=0).values
             scale = torch.min(torch.tensor(1.0), scale)
             if not as_2d:
                 scale = torch.prod(scale, dim=-1)  # Maybe weight product by xy distance?
@@ -164,7 +164,7 @@ class DetectorHeatMap(nn.Module):
         stacked_t = torch.stack([x, y]).T
         reshaped = torch.reshape(stacked_t, (stacked_t.shape[0] * stacked_t.shape[1], stacked_t.shape[2]))
         reshaped = torch.unsqueeze(reshaped, 1)
-        z = self.gmm(reshaped).prod(1) / torch.max(self.gmm(self.mu))
+        z = self.gmm(reshaped).prod(1) / torch.max(self.gmm(self.mu), dim=0).values
         torch.min(torch.tensor(1.0), z)
         z = torch.reshape(z, (stacked_t.shape[0], stacked_t.shape[1]))
 

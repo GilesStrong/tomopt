@@ -119,7 +119,7 @@ def test_heatmap_detector_layer(batch):
     )
 
     # detector conform
-    # ToDo: Does the test still make sense for HeatMap?
+    # TODO: Does the test still make sense for HeatMap?
     dl.conform_detector()
     for p in dl.panels:
         xy_low = p.xy_fix[0] - p.range_mult * p.delta_xy
@@ -271,59 +271,60 @@ def test_detector_panel_methods():
         n_cluster=30,
     )
 
+    with torch.no_grad():
+        panel.mu[:, 0] = 0.0
+        panel.mu[:, 1] = 0.01
+        panel.sig[:, 0] = 0.5
+        panel.sig[:, 1] = 0.51
+
     # get_xy_mask
-    # ToDo: How to translate this to Heatmap?
+
+    with pytest.raises(NotImplementedError):
+        panel.get_xy_mask(Tensor([[0, 0], [0.1, 0.1], [0.25, 0.25], [0.5, 0.5], [1, 1], [0.1, 1], [1, 0.1], [-1, -1]]))
+    # TODO: wait until realistic validation
     # mask = panel.get_xy_mask(Tensor([[0, 0], [0.1, 0.1], [0.25, 0.25], [0.5, 0.5], [1, 1], [0.1, 1], [1, 0.1], [-1, -1]]))
     # assert (mask.int() == Tensor([1, 1, 0, 0, 0, 0, 0, 0])).all()
 
     # get_resolution
-    # ToDo: How to translate this to Heatmap? Scaling / Norm?
-    # res = panel.get_resolution(Tensor([[0, 0.01], [0.1, 0.1], [0.5, 0.5], [0, 0.1]]))
-    # assert res[0].mean() == 10
-    # assert res[1].mean() < res[0].mean()
-    # assert res[2].mean() > 0
-    # assert res[3, 0] == 10
+    res = panel.get_resolution(Tensor([[0, 0.01], [0.1, 0.1], [0.5, 0.5], [0, 0.1]]))
+    assert res[0].mean() == 10
+    assert res[1].mean() < res[0].mean()
+    assert res[2].mean() > 0
 
-    # ToDo: How to translate this to Heatmap? Scaling / Norm?
-    # panel.realistic_validation = True
-    # res = panel.get_resolution(Tensor([[0, 0.01], [0.1, 0.1], [0.5, 0.5], [0, 0.1]]))
-    # assert res[0].mean() == 10
-    # assert res[1].mean() < res[0].mean()
-    # assert res[2].mean() > 0
-    # assert res[3, 0] == 10
+    # get_efficiency
+    eff = panel.get_efficiency(Tensor([[0, 0.01], [0.1, 0.1], [0.5, 0.5], [0, 0.1]]))
+    assert eff[0] == 0.5
+    assert eff[1] < eff[0]
+    assert eff[2] > 0
+    assert 0 < eff[3] < 0.5
 
-    # ToDo: How to translate this to Heatmap? Scaling / Norm?
+    panel.realistic_validation = True
+    res = panel.get_resolution(Tensor([[0, 0.01], [0.1, 0.1], [0.5, 0.5], [0, 0.1]]))
+    assert res[0].mean() == 10
+    assert res[1].mean() < res[0].mean()
+    assert res[2].mean() > 0
+
+    eff = panel.get_efficiency(Tensor([[0, 0.01], [0.1, 0.1], [0.5, 0.5], [0, 0.1]]))
+    assert eff[0] == 0.5
+    assert eff[1] < eff[0]
+    assert eff[2] > 0
+    assert 0 < eff[3] < 0.5
+
+    # TODO: wait until realistic validation
     # panel.eval()
     # res = panel.get_resolution(Tensor([[0, 0.01], [0.1, 0.1], [0.5, 0.5], [0, 0.1]]))
     # assert res[0].mean() == 10
     # assert res[1].mean() == 10
     # assert res[2].mean() == 0
-    # assert res[3, 0] == 10
-    # panel.realistic_validation = False
-    # panel.train()
-    #
-    # # get_efficiency
-    # eff = panel.get_efficiency(Tensor([[0, 0.01], [0.1, 0.1], [0.5, 0.5], [0, 0.1]]))
-    # assert eff[0] == 0.5
-    # assert eff[1] < eff[0]
-    # assert eff[2] > 0
-    # assert 0 < eff[3] < 0.5
-    #
-    # panel.realistic_validation = True
-    # eff = panel.get_efficiency(Tensor([[0, 0.01], [0.1, 0.1], [0.5, 0.5], [0, 0.1]]))
-    # assert eff[0] == 0.5
-    # assert eff[1] < eff[0]
-    # assert eff[2] > 0
-    # assert 0 < eff[3] < 0.5
-    #
-    # panel.eval()
+
     # eff = panel.get_efficiency(Tensor([[0, 0.01], [0.1, 0.1], [0.5, 0.5], [0, 0.1]]))
     # assert eff[0] == 0.5
     # assert eff[1] == 0.5
     # assert eff[2] == 0
     # assert eff[3] == 0.5
-    # panel.realistic_validation = False
-    # panel.train()
+
+    panel.realistic_validation = False
+    panel.train()
 
     # get_hits
     panel = DetectorHeatMap(
@@ -347,7 +348,7 @@ def test_detector_panel_methods():
     hits = panel.get_hits(mu)
     assert hits["reco_xy"].isinf().sum() == 0
 
-    # ToDo: Fails, but why?
+    # TODO: wait until realistic validation
     # panel.eval()
     # hits = panel.get_hits(mu)
     # assert hits["reco_xy"].isinf().sum() == 2 * len(mu)
