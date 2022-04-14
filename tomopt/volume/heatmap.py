@@ -187,7 +187,7 @@ class DetectorHeatMap(nn.Module):
         return self.xy_fix[1]
 
 
-class GMM(torch.nn.Module):
+class GMM(nn.Module):
     """"""
 
     def __init__(
@@ -205,14 +205,14 @@ class GMM(torch.nn.Module):
         self._init_xy_span = torch.tensor(init_xy_span, device=self.device)
 
         rand_mu = self._init_xy_span * (0.5 - torch.rand(self.n_cluster, 2, device=self.device))
-        self.mu = torch.nn.Parameter(rand_mu + self._init_xy)
+        self.mu = nn.Parameter(rand_mu + self._init_xy)
 
         rand_sig = torch.max(torch.rand(self.n_cluster, 2, device=self.device), torch.tensor(0.2))
-        self.sig = torch.nn.Parameter(self._init_xy_span * rand_sig)
-        self.norm = torch.nn.Parameter(torch.tensor([float(init_norm)], device=self.device))
+        self.sig = nn.Parameter(self._init_xy_span * rand_sig)
+        self.norm = nn.Parameter(torch.tensor([float(init_norm)], device=self.device))
 
         params = [self.mu, self.sig, self.norm]
-        self.my_params = torch.nn.ParameterList(params)
+        self.my_params = nn.ParameterList(params)
 
         mix = torch.distributions.Categorical(
             torch.ones(
