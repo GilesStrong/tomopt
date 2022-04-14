@@ -56,7 +56,7 @@ class DetectorHeatMap(nn.Module):
         return f"""{self.__class__} at av. xy={self.gmm.mu.T.mean(1)} with n_comp {self.n_cluster}, z={self.z.data}."""
 
     def get_xy_mask(self, xy: Tensor) -> Tensor:
-        raise NotImplementedError("Realistic validation isn;t yet supported")
+        raise NotImplementedError("Realistic validation isn't yet supported for heatmap detectors")
         if not isinstance(self.xy_fix, Tensor):
             raise ValueError(f"{self.xy_fix} is not a Tensor for some reason.")  # To appease MyPy
         if not isinstance(self.xy_span_fix, Tensor):
@@ -71,7 +71,7 @@ class DetectorHeatMap(nn.Module):
             raise ValueError(f"{self.resolution} is not a Tensor for some reason.")  # To appease MyPy
 
         if self.training or not self.realistic_validation:
-            res = self.resolution * self.gmm(xy) / torch.max(self.gmm(self.mu))  # Maybe detach the normalisation?
+            res = self.resolution * self.gmm(xy) / torch.max(self.gmm(self.mu))
         else:
             if mask is None:
                 mask = self.get_xy_mask(xy)
@@ -84,7 +84,7 @@ class DetectorHeatMap(nn.Module):
         if not isinstance(self.efficiency, Tensor):
             raise ValueError(f"{self.efficiency} is not a Tensor for some reason.")  # To appease MyPy
         if self.training or not self.realistic_validation:
-            scale = self.gmm(xy) / torch.max(self.gmm(self.mu))  # Maybe detach the normalisation?
+            scale = self.gmm(xy) / torch.max(self.gmm(self.mu))
             scale = torch.min(torch.tensor(1.0), scale)
             if not as_2d:
                 scale = torch.prod(scale, dim=-1)  # Maybe weight product by xy distance?
@@ -108,7 +108,7 @@ class DetectorHeatMap(nn.Module):
             raise ValueError(f"{self.xy_span_fix} is not a Tensor for some reason.")  # To appease MyPy
 
         mask = mu.get_xy_mask(self.xy_fix - self.range_mult * self.delta_xy, self.xy_fix + self.range_mult * self.delta_xy)  # Muons in panel
-        xy0 = self.xy_fix - (self.delta_xy / 2)  # aprox. Low-left of voxel
+        xy0 = self.xy_fix - (self.delta_xy / 2)  # aprox. Low-left of panel
         rel_xy = mu.xy - xy0
         res = self.get_resolution(mu.xy, mask)
         rel_xy = rel_xy + (torch.randn((len(mu), 2), device=self.device) / res)
