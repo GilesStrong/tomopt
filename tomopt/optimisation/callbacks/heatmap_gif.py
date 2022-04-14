@@ -27,7 +27,7 @@ class HeatMapGif(Callback):
     def _plot_current(self) -> None:
         """"""
 
-        filename = f"temp{len(self._buffer_files)}.png"
+        filename = self.wrapper.fit_params.cb_savepath / f"temp_heatmap_{len(self._buffer_files)}.png"
         self._buffer_files.append(filename)
         for l in self.wrapper.volume.get_detectors():
             if isinstance(l, PanelDetectorLayer) and l.type_label == "heatmap":
@@ -41,7 +41,7 @@ class HeatMapGif(Callback):
     def _create_gif(self) -> None:
         """"""
 
-        with imageio.get_writer(self.gif_filename, mode="I") as writer:
+        with imageio.get_writer(self.wrapper.fit_params.cb_savepath / self.gif_filename, mode="I") as writer:
             for filename in self._buffer_files:
                 image = imageio.imread(filename)
                 writer.append_data(image)

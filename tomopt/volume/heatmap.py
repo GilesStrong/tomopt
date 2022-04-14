@@ -204,13 +204,12 @@ class GMM(torch.nn.Module):
         self._init_xy = torch.tensor(init_xy, device=self.device)
         self._init_xy_span = torch.tensor(init_xy_span, device=self.device)
 
-        rand_mu = 0.5 - torch.rand(self.n_cluster, 2, requires_grad=True)
-        rand_mu += torch.tensor(self._init_xy)
-        self.mu = torch.nn.Parameter(self._init_xy_span * 0.5 * rand_mu)
+        rand_mu = self._init_xy_span * (0.5 - torch.rand(self.n_cluster, 2, device=self.device))
+        self.mu = torch.nn.Parameter(rand_mu + self._init_xy)
 
-        rand_sig = torch.max(torch.rand(self.n_cluster, 2, requires_grad=True), torch.tensor(0.2))
+        rand_sig = torch.max(torch.rand(self.n_cluster, 2, device=self.device), torch.tensor(0.2))
         self.sig = torch.nn.Parameter(self._init_xy_span * rand_sig)
-        self.norm = torch.nn.Parameter(init_norm * torch.ones(1, requires_grad=True))
+        self.norm = torch.nn.Parameter(torch.tensor([float(init_norm)], device=self.device))
 
         params = [self.mu, self.sig, self.norm]
         self.my_params = torch.nn.ParameterList(params)
