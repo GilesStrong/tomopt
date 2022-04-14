@@ -38,10 +38,11 @@ class DetectorHeatMap(nn.Module):
         self.register_buffer("efficiency", torch.tensor(float(eff), device=self.device))
 
         self.n_cluster = n_cluster
+        if init_xy_span[1] < init_xy_span[0]:
+            init_xy_span = (init_xy_span[1], init_xy_span[0])
         self.register_buffer("xy_fix", torch.tensor(init_xyz[:2], device=self.device))
         self.register_buffer("xy_span_fix", torch.tensor(init_xy_span, device=self.device))
         self.delta_xy = init_xy_span[1] - init_xy_span[0]
-        assert self.delta_xy > 0.0, "xy_span needs [lower, upper] limit input."
 
         self.gmm = GMM(n_cluster=self.n_cluster, init_xy=init_xyz[:2], device=device, init_xy_span=self.delta_xy)
         self.mu = self.gmm.mu
