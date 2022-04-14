@@ -1,6 +1,8 @@
 import pytest
 from pytest_mock import mocker  # noqa F401
+from unittest.mock import patch
 import numpy as np
+from fastcore.all import Path
 
 import torch
 from torch import Tensor, nn
@@ -374,3 +376,23 @@ def test_detector_panel_methods():
     panel.clamp_params((0, 0, 0), (1, 1, 1))
     assert panel.z - 1 < 0
     assert (panel.z - 1).abs() < 5e-3
+
+
+@patch("matplotlib.pyplot.show")
+def test_plot_map(mock_show):
+    panel = DetectorHeatMap(
+        init_xyz=[0.0, 0.01, 0.9],
+        init_xy_span=[-0.25, 0.25],
+        area_cost_func=area_cost,
+        res=10.0,
+        eff=0.5,
+        n_cluster=30,
+    )
+
+    fname = Path("tests/heatmap_test_plot.png")
+    panel.plot_map(bpixelate=False, bsavefig=False, filename=fname)
+    panel.plot_map(bpixelate=True, bsavefig=False, filename=fname)
+    assert not fname.exists()
+    panel.plot_map(bpixelate=False, bsavefig=True, filename=fname)
+    assert fname.exists()
+    fname.unlink()
