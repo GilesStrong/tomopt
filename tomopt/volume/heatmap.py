@@ -56,6 +56,7 @@ class DetectorHeatMap(nn.Module):
         return f"""{self.__class__} at av. xy={self.gmm.mu.T.mean(1)} with n_comp {self.n_cluster}, z={self.z.data}."""
 
     def get_xy_mask(self, xy: Tensor) -> Tensor:
+        raise NotImplementedError("Realistic validation isn;t yet supported")
         if not isinstance(self.xy_fix, Tensor):
             raise ValueError(f"{self.xy_fix} is not a Tensor for some reason.")  # To appease MyPy
         if not isinstance(self.xy_span_fix, Tensor):
