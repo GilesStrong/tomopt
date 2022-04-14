@@ -49,7 +49,6 @@ class DetectorHeatMap(nn.Module):
         self.sig = self.gmm.sig
         self.norm = self.gmm.norm
         self.z = nn.Parameter(torch.tensor(init_xyz[2:3], device=self.device))
-        self.gmm.my_params.append(self.z)
         self.range_mult = 1.2
 
     def __repr__(self) -> str:
@@ -212,9 +211,6 @@ class GMM(nn.Module):
         rand_sig = torch.max(torch.rand(self.n_cluster, 2, device=self.device), torch.tensor(0.2))
         self.sig = nn.Parameter(self._init_xy_span * rand_sig)
         self.norm = nn.Parameter(torch.tensor([float(init_norm)], device=self.device))
-
-        params = [self.mu, self.sig, self.norm]
-        self.my_params = nn.ParameterList(params)
 
         mix = torch.distributions.Categorical(
             torch.ones(
