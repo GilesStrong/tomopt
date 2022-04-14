@@ -1,6 +1,7 @@
 from typing import Tuple, Callable, Optional, Dict
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 import torch
 from torch import nn, Tensor
@@ -131,11 +132,11 @@ class DetectorHeatMap(nn.Module):
         if not isinstance(self.xy_span_fix, Tensor):
             raise ValueError(f"{self.xy_span_fix} is not a Tensor for some reason.")  # To appease MyPy
 
-        with torch.no_grad():
-            x = self.xy_fix[0].detach().numpy()
-            y = self.xy_fix[1].detach().numpy()
-            xs = torch.linspace(x - 1 * self.delta_xy, x + 2 * self.delta_xy, steps=200)
-            ys = torch.linspace(y - 1 * self.delta_xy, y + 2 * self.delta_xy, steps=200)
+        with sns.axes_style(style="whitegrid", rc={"patch.edgecolor": "none"}):
+            x = self.xy_fix[0].detach().cpu().numpy()
+            y = self.xy_fix[1].detach().cpu().numpy()
+            xs = torch.linspace(x - 2 * self.delta_xy, x + 2 * self.delta_xy, steps=200)
+            ys = torch.linspace(y - 2 * self.delta_xy, y + 2 * self.delta_xy, steps=200)
             x, y = torch.meshgrid(xs, ys)
             z = self.get_z_from_mesh(x, y)
 
@@ -144,6 +145,7 @@ class DetectorHeatMap(nn.Module):
                 cs = ax.scatter(x.numpy(), y.numpy(), c=z.detach().numpy(), cmap="plasma", s=450.0, marker="s")
             else:
                 cs = ax.contourf(x.numpy(), y.numpy(), z.detach().numpy(), cmap="plasma", vmin=0.0, vmax=0.9)
+            ax.set_aspect("equal")
             fig.colorbar(cs)
 
             if bsavefig:
