@@ -5,6 +5,7 @@ import math
 import pandas as pd
 from functools import partial
 from glob import glob
+from fastcore.all import Path
 
 import torch
 from torch import Tensor
@@ -529,15 +530,16 @@ def test_no_more_nans_heatmap():
 
 
 def test_heat_map_gif():
-    cb = HeatMapGif("tests/heatmap.gif")
+    cb = HeatMapGif("heatmap.gif")
     assert check_callback_base(cb)
 
     l = get_heatmap_detector()
     vw = MockWrapper()
-    vw.fit_params = FitParams(state="valid")
+    vw.fit_params = FitParams(state="valid", cb_savepath=Path("tests"))
     vw.volume = MockVolume()
     vw.volume.get_detectors = lambda: [l]
     cb.set_wrapper(vw)
+    cb.on_train_begin()
 
     assert len(cb._buffer_files) == 0
     cb.on_epoch_begin()
@@ -546,9 +548,9 @@ def test_heat_map_gif():
     cb.on_epoch_begin()
     cb.on_epoch_begin()
     assert len(cb._buffer_files) == 2
-    assert len(glob("temp*.png")) == 2
+    assert len(glob("tests/temp_heatmap_*.png")) == 2
 
     cb.on_train_end()
     assert len(cb._buffer_files) == 3
-    assert len(glob("temp*.png")) == 0
-    assert len(glob(cb.gif_filename)) == 1
+    assert len(glob("tests/temp_heatmap_*.png")) == 0
+    assert len(glob("tests/heatmap.gif")) == 1
