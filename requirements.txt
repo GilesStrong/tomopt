@@ -9,10 +9,11 @@ pandas >= 1.2.4
 ipykernel
 particle==0.20.0  # Hardcoded incase muon mass changes
 prettytable
+imageio
 
 # Dev requirements
 pre-commit
-black==22.1.0
+black==22.3.0
 flake8
 pytest
 mypy

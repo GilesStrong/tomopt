@@ -375,8 +375,14 @@ class PanelMetricLogger(MetricLogger):
                 if not isinstance(det, PanelDetectorLayer):
                     raise ValueError(f"Detector {det} is not a PanelDetectorLayer")
                 for p in det.panels:
-                    l.append(np.concatenate((p.xy.detach().cpu().numpy(), p.z.detach().cpu().numpy())))
-                    s.append(p.xy_span.detach().cpu().numpy())
+                    if det.type_label == "heatmap":
+                        l_val = np.concatenate((p.mu.detach().cpu().numpy().mean(axis=0), p.z.detach().cpu().numpy()))
+                        s_val = p.sig.detach().cpu().numpy().mean(axis=0)
+                        l.append(l_val)
+                        s.append(s_val)
+                    else:
+                        l.append(np.concatenate((p.xy.detach().cpu().numpy(), p.z.detach().cpu().numpy())))
+                        s.append(p.xy_span.detach().cpu().numpy())
                 loc, span = np.array(l), np.array(s)
 
                 for ax in axes:

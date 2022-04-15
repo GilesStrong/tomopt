@@ -4,6 +4,8 @@ from pytest_mock import mocker  # noqa F401
 import math
 import pandas as pd
 from functools import partial
+from glob import glob
+from fastcore.all import Path
 
 import torch
 from torch import Tensor
@@ -22,10 +24,11 @@ from tomopt.optimisation.callbacks import (
     CostCoefWarmup,
     PanelOptConfig,
     MuonResampler,
+    HeatMapGif,
 )
 from tomopt.optimisation.loss import VoxelX0Loss
 from tomopt.optimisation.wrapper.volume_wrapper import AbsVolumeWrapper, FitParams, PanelVolumeWrapper
-from tomopt.volume import VoxelDetectorLayer, PanelDetectorLayer, DetectorPanel
+from tomopt.volume import VoxelDetectorLayer, PanelDetectorLayer, DetectorPanel, DetectorHeatMap
 from tomopt.muon import MuonBatch, MuonGenerator2016
 
 LW = Tensor([1, 1])
@@ -60,7 +63,7 @@ def get_voxel_detector() -> VoxelDetectorLayer:
     return VoxelDetectorLayer("above", init_res=1, init_eff=1, lw=LW, z=1, size=SZ, eff_cost_func=eff_cost, res_cost_func=res_cost)
 
 
-def get_panel_detector() -> VoxelDetectorLayer:
+def get_panel_detector() -> PanelDetectorLayer:
     return PanelDetectorLayer(
         pos="above",
         lw=LW,
@@ -476,3 +479,78 @@ def test_data_callback():
     mr.on_mu_batch_begin()
     assert vw.fit_params.mu.z == volume.h
     assert mr.check_mu_batch(vw.fit_params.mu, volume).sum() == 1000
+
+
+def get_heatmap_detector() -> PanelDetectorLayer:
+    return PanelDetectorLayer(
+        pos="above",
+        lw=LW,
+        z=1,
+        size=2 * SZ,
+        panels=[
+            DetectorHeatMap(
+                res=1.0,
+                eff=1.0,
+                init_xyz=[0.5, 0.5, 0.9],
+                init_xy_span=[-0.5, 0.5],
+                area_cost_func=area_cost,
+            )
+        ],
+    )
+
+
+def test_no_more_nans_heatmap():
+    cb = NoMoreNaNs()
+    assert check_callback_base(cb)
+
+    l = get_heatmap_detector()
+    p = l.panels[0]
+    p.mu.grad = p.mu.data
+    p.z.grad = p.z.data
+    p.sig.grad = p.sig.data
+    p.norm.grad = p.norm.data
+    p.mu.grad[:1] = Tensor([np.nan])
+    p.z.grad[:1] = Tensor([np.nan])
+    p.sig.grad[:1] = Tensor([np.nan])
+    p.norm.grad[:1] = Tensor([np.nan])
+    assert p.mu.grad.sum() != p.mu.grad.sum()
+    assert p.z.grad.sum() != p.z.grad.sum()
+    assert p.sig.grad.sum() != p.sig.grad.sum()
+    assert p.norm.grad.sum() != p.norm.grad.sum()
+
+    vw = MockWrapper()
+    vw.volume = MockVolume()
+    vw.volume.get_detectors = lambda: [l]
+    cb.set_wrapper(vw)
+    cb.on_backwards_end()
+    assert p.mu.grad.sum() == p.mu.grad.sum()
+    assert p.z.grad.sum() == p.z.grad.sum()
+    assert p.sig.grad.sum() == p.sig.grad.sum()
+    assert p.norm.grad.sum() == p.norm.grad.sum()
+
+
+def test_heat_map_gif():
+    cb = HeatMapGif("heatmap.gif")
+    assert check_callback_base(cb)
+
+    l = get_heatmap_detector()
+    vw = MockWrapper()
+    vw.fit_params = FitParams(state="valid", cb_savepath=Path("tests"))
+    vw.volume = MockVolume()
+    vw.volume.get_detectors = lambda: [l]
+    cb.set_wrapper(vw)
+    cb.on_train_begin()
+
+    assert len(cb._buffer_files) == 0
+    cb.on_epoch_begin()
+    assert len(cb._buffer_files) == 0
+    vw.fit_params.state = "train"
+    cb.on_epoch_begin()
+    cb.on_epoch_begin()
+    assert len(cb._buffer_files) == 2
+    assert len(glob("tests/temp_heatmap_*.png")) == 2
+
+    cb.on_train_end()
+    assert len(cb._buffer_files) == 3
+    assert len(glob("tests/temp_heatmap_*.png")) == 0
+    assert len(glob("tests/heatmap.gif")) == 1
