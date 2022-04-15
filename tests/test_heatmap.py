@@ -1,12 +1,15 @@
 import pytest
 from pytest_mock import mocker  # noqa F401
+from unittest.mock import patch
 import numpy as np
+from fastcore.all import Path
 
 import torch
 from torch import Tensor, nn
 import torch.nn.functional as F
 
 from tomopt.volume import PassiveLayer, PanelDetectorLayer, DetectorHeatMap, Volume
+from tomopt.volume.heatmap import GMM
 from tomopt.optimisation import MuonResampler
 from tomopt.muon import MuonBatch, MuonGenerator2016
 from tomopt.core import X0
@@ -71,12 +74,11 @@ def test_heatmap_detector_layer(batch):
     assert hits["above"]["reco_xy"].shape == torch.Size([len(batch), 1, 2])
     assert hits["above"]["gen_xy"].shape == torch.Size([len(batch), 1, 2])
 
-    # every reco hit (x,y) is function of panel position and size
-    # ToDo: xy -> mu . How to translate this?
-    # for v in [dl.panels[0].xy, dl.panels[0].xy_span]:
-    #     grad = jacobian(hits["above"]["reco_xy"][:, 0], v).sum((-1))
-    #     assert (grad == grad).sum() == 2 * len(grad)
-    #     assert ((grad == grad) * (grad != 0)).sum() > 0
+    # every reco hit (x,y) is function of GMM parameters
+    for v in [dl.panels[0].mu, dl.panels[0].sig, dl.panels[0].norm]:
+        grad = jacobian(hits["above"]["reco_xy"][:, 0], v).sum((-1))
+        assert not grad.isnan().any()
+        assert (grad != 0).sum() > 0
 
     dl = PanelDetectorLayer(
         pos="above",
@@ -120,13 +122,13 @@ def test_heatmap_detector_layer(batch):
     )
 
     # detector conform
-    # ToDo: Does the test still make sense for HeatMap?
+    # TODO: Does the test still make sense for HeatMap?
     dl.conform_detector()
     for p in dl.panels:
         xy_low = p.xy_fix[0] - p.range_mult * p.delta_xy
         xy_high = p.xy_fix[1] + p.range_mult * p.delta_xy
         xy_low = torch.max(torch.tensor(0.0), xy_low)
-        xy_high = torch.min(torch.tensor(LW[0]), xy_high)
+        xy_high = torch.min(LW[0], xy_high)
         for mu_comp in p.mu:
             assert mu_comp[0] <= xy_high
             assert mu_comp[1] <= xy_high
@@ -237,7 +239,7 @@ def test_volume_forward_panel():
     layers = get_panel_layers(n_panels=4)
     volume = Volume(layers=layers)
     gen = MuonGenerator2016.from_volume(volume)
-    mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
+    mus = MuonResampler.resample(gen(100), volume=volume, gen=gen)
     batch = MuonBatch(mus, init_z=volume.h)
     start = batch.copy()
     volume(batch)
@@ -253,14 +255,13 @@ def test_volume_forward_panel():
     assert hits["above"]["gen_xy"].shape[1] == 4
     assert hits["below"]["gen_xy"].shape[1] == 4
 
-    # every reco hit (x,y) is function of panel position and size
-    # ToDo: xy -> mu . How to translate this to Heatmap?
-    # for i, l in enumerate(volume.get_detectors()):
-    #     for j, p in enumerate(l.yield_zordered_panels()):
-    #         for v in [p.xy, p.xy_span]:
-    #             grad = jacobian(hits["above" if l.z > 0.5 else "below"]["reco_xy"][:, j], v).nansum((-1))
-    #             assert grad.isnan().sum() == 0
-    #             assert (grad != 0).sum() > 0
+    # every reco hit (x,y) is function of gmm parameters
+    for i, l in enumerate(volume.get_detectors()):
+        for j, p in enumerate(l.yield_zordered_panels()):
+            for v in [p.mu, p.sig, p.norm]:
+                grad = jacobian(hits["above" if l.z > 0.5 else "below"]["reco_xy"][:, j], v).nansum((-1))
+                assert grad.isnan().sum() == 0
+                assert (grad != 0).sum() > 0
 
 
 def test_detector_panel_methods():
@@ -273,59 +274,60 @@ def test_detector_panel_methods():
         n_cluster=30,
     )
 
+    with torch.no_grad():
+        panel.mu[:, 0] = 0.0
+        panel.mu[:, 1] = 0.01
+        panel.sig[:, 0] = 0.5
+        panel.sig[:, 1] = 0.51
+
     # get_xy_mask
-    # ToDo: How to translate this to Heatmap?
+
+    with pytest.raises(NotImplementedError):
+        panel.get_xy_mask(Tensor([[0, 0], [0.1, 0.1], [0.25, 0.25], [0.5, 0.5], [1, 1], [0.1, 1], [1, 0.1], [-1, -1]]))
+    # TODO: wait until realistic validation
     # mask = panel.get_xy_mask(Tensor([[0, 0], [0.1, 0.1], [0.25, 0.25], [0.5, 0.5], [1, 1], [0.1, 1], [1, 0.1], [-1, -1]]))
     # assert (mask.int() == Tensor([1, 1, 0, 0, 0, 0, 0, 0])).all()
 
     # get_resolution
-    # ToDo: How to translate this to Heatmap? Scaling / Norm?
-    # res = panel.get_resolution(Tensor([[0, 0.01], [0.1, 0.1], [0.5, 0.5], [0, 0.1]]))
-    # assert res[0].mean() == 10
-    # assert res[1].mean() < res[0].mean()
-    # assert res[2].mean() > 0
-    # assert res[3, 0] == 10
+    res = panel.get_resolution(Tensor([[0, 0.01], [0.1, 0.1], [0.5, 0.5], [0, 0.1]]))
+    assert res[0].mean() == 10
+    assert res[1].mean() < res[0].mean()
+    assert res[2].mean() > 0
 
-    # ToDo: How to translate this to Heatmap? Scaling / Norm?
-    # panel.realistic_validation = True
-    # res = panel.get_resolution(Tensor([[0, 0.01], [0.1, 0.1], [0.5, 0.5], [0, 0.1]]))
-    # assert res[0].mean() == 10
-    # assert res[1].mean() < res[0].mean()
-    # assert res[2].mean() > 0
-    # assert res[3, 0] == 10
+    # get_efficiency
+    eff = panel.get_efficiency(Tensor([[0, 0.01], [0.1, 0.1], [0.5, 0.5], [0, 0.1]]))
+    assert eff[0] == 0.5
+    assert eff[1] < eff[0]
+    assert eff[2] > 0
+    assert 0 < eff[3] < 0.5
 
-    # ToDo: How to translate this to Heatmap? Scaling / Norm?
+    panel.realistic_validation = True
+    res = panel.get_resolution(Tensor([[0, 0.01], [0.1, 0.1], [0.5, 0.5], [0, 0.1]]))
+    assert res[0].mean() == 10
+    assert res[1].mean() < res[0].mean()
+    assert res[2].mean() > 0
+
+    eff = panel.get_efficiency(Tensor([[0, 0.01], [0.1, 0.1], [0.5, 0.5], [0, 0.1]]))
+    assert eff[0] == 0.5
+    assert eff[1] < eff[0]
+    assert eff[2] > 0
+    assert 0 < eff[3] < 0.5
+
+    # TODO: wait until realistic validation
     # panel.eval()
     # res = panel.get_resolution(Tensor([[0, 0.01], [0.1, 0.1], [0.5, 0.5], [0, 0.1]]))
     # assert res[0].mean() == 10
     # assert res[1].mean() == 10
     # assert res[2].mean() == 0
-    # assert res[3, 0] == 10
-    # panel.realistic_validation = False
-    # panel.train()
-    #
-    # # get_efficiency
-    # eff = panel.get_efficiency(Tensor([[0, 0.01], [0.1, 0.1], [0.5, 0.5], [0, 0.1]]))
-    # assert eff[0] == 0.5
-    # assert eff[1] < eff[0]
-    # assert eff[2] > 0
-    # assert 0 < eff[3] < 0.5
-    #
-    # panel.realistic_validation = True
-    # eff = panel.get_efficiency(Tensor([[0, 0.01], [0.1, 0.1], [0.5, 0.5], [0, 0.1]]))
-    # assert eff[0] == 0.5
-    # assert eff[1] < eff[0]
-    # assert eff[2] > 0
-    # assert 0 < eff[3] < 0.5
-    #
-    # panel.eval()
+
     # eff = panel.get_efficiency(Tensor([[0, 0.01], [0.1, 0.1], [0.5, 0.5], [0, 0.1]]))
     # assert eff[0] == 0.5
     # assert eff[1] == 0.5
     # assert eff[2] == 0
     # assert eff[3] == 0.5
-    # panel.realistic_validation = False
-    # panel.train()
+
+    panel.realistic_validation = False
+    panel.train()
 
     # get_hits
     panel = DetectorHeatMap(
@@ -349,7 +351,7 @@ def test_detector_panel_methods():
     hits = panel.get_hits(mu)
     assert hits["reco_xy"].isinf().sum() == 0
 
-    # ToDo: Fails, but why?
+    # TODO: wait until realistic validation
     # panel.eval()
     # hits = panel.get_hits(mu)
     # assert hits["reco_xy"].isinf().sum() == 2 * len(mu)
@@ -375,3 +377,44 @@ def test_detector_panel_methods():
     panel.clamp_params((0, 0, 0), (1, 1, 1))
     assert panel.z - 1 < 0
     assert (panel.z - 1).abs() < 5e-3
+
+
+@patch("matplotlib.pyplot.show")
+def test_plot_map(mock_show):
+    panel = DetectorHeatMap(
+        init_xyz=[0.0, 0.01, 0.9],
+        init_xy_span=[-0.25, 0.25],
+        area_cost_func=area_cost,
+        res=10.0,
+        eff=0.5,
+        n_cluster=30,
+    )
+
+    fname = Path("tests/heatmap_test_plot.png")
+    panel.plot_map(bpixelate=False, bsavefig=False, filename=fname)
+    panel.plot_map(bpixelate=True, bsavefig=False, filename=fname)
+    assert not fname.exists()
+    panel.plot_map(bpixelate=False, bsavefig=True, filename=fname)
+    assert fname.exists()
+    fname.unlink()
+
+
+@pytest.mark.flaky(max_runs=3, min_passes=2)
+def test_gmm():
+    gmm = GMM(n_cluster=30, init_xy=(2, -5), init_xy_span=2, init_norm=3)
+    assert (gmm._init_xy == Tensor([2, -5])).all()
+    assert gmm._init_xy_span == Tensor([2])
+    assert ((gmm.mu.mean(0) - Tensor([2, -5])).abs() < 1).all()
+    assert ((gmm.sig.mean() - Tensor([2])).abs() < 1).all()
+    assert gmm.mu.shape == torch.Size([30, 2])
+    assert gmm.sig.shape == torch.Size([30, 2])
+    assert gmm.norm.shape == torch.Size([1])
+    std = gmm.mu.std()
+
+    gmm = GMM(n_cluster=30, init_xy=(0.5, 0.5), init_xy_span=1, init_norm=3)
+    assert std > gmm.mu.std()
+
+    assert (res := gmm(torch.rand(10, 2))).shape == torch.Size((10, 2))
+    with torch.no_grad():
+        gmm.norm += 10
+    assert gmm(torch.rand(10, 2)).mean() > res.mean()

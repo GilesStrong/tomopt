@@ -4,6 +4,8 @@ from pytest_mock import mocker  # noqa F401
 import math
 import pandas as pd
 from functools import partial
+from glob import glob
+from fastcore.all import Path
 
 import torch
 from torch import Tensor
@@ -22,6 +24,7 @@ from tomopt.optimisation.callbacks import (
     CostCoefWarmup,
     PanelOptConfig,
     MuonResampler,
+    HeatMapGif,
 )
 from tomopt.optimisation.loss import VoxelX0Loss
 from tomopt.optimisation.wrapper.volume_wrapper import AbsVolumeWrapper, FitParams, PanelVolumeWrapper
@@ -524,3 +527,30 @@ def test_no_more_nans_heatmap():
     assert p.z.grad.sum() == p.z.grad.sum()
     assert p.sig.grad.sum() == p.sig.grad.sum()
     assert p.norm.grad.sum() == p.norm.grad.sum()
+
+
+def test_heat_map_gif():
+    cb = HeatMapGif("heatmap.gif")
+    assert check_callback_base(cb)
+
+    l = get_heatmap_detector()
+    vw = MockWrapper()
+    vw.fit_params = FitParams(state="valid", cb_savepath=Path("tests"))
+    vw.volume = MockVolume()
+    vw.volume.get_detectors = lambda: [l]
+    cb.set_wrapper(vw)
+    cb.on_train_begin()
+
+    assert len(cb._buffer_files) == 0
+    cb.on_epoch_begin()
+    assert len(cb._buffer_files) == 0
+    vw.fit_params.state = "train"
+    cb.on_epoch_begin()
+    cb.on_epoch_begin()
+    assert len(cb._buffer_files) == 2
+    assert len(glob("tests/temp_heatmap_*.png")) == 2
+
+    cb.on_train_end()
+    assert len(cb._buffer_files) == 3
+    assert len(glob("tests/temp_heatmap_*.png")) == 0
+    assert len(glob("tests/heatmap.gif")) == 1

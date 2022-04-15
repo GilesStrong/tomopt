@@ -1,6 +1,7 @@
 from typing import Tuple, Callable, Optional, Dict
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 import torch
 from torch import nn, Tensor
@@ -37,23 +38,24 @@ class DetectorHeatMap(nn.Module):
         self.register_buffer("efficiency", torch.tensor(float(eff), device=self.device))
 
         self.n_cluster = n_cluster
+        if init_xy_span[1] < init_xy_span[0]:
+            init_xy_span = (init_xy_span[1], init_xy_span[0])
         self.register_buffer("xy_fix", torch.tensor(init_xyz[:2], device=self.device))
         self.register_buffer("xy_span_fix", torch.tensor(init_xy_span, device=self.device))
         self.delta_xy = init_xy_span[1] - init_xy_span[0]
-        assert self.delta_xy > 0.0, "xy_span needs [lower, upper] limit input."
 
         self.gmm = GMM(n_cluster=self.n_cluster, init_xy=init_xyz[:2], device=device, init_xy_span=self.delta_xy)
         self.mu = self.gmm.mu
         self.sig = self.gmm.sig
         self.norm = self.gmm.norm
         self.z = nn.Parameter(torch.tensor(init_xyz[2:3], device=self.device))
-        self.gmm.my_params.append(self.z)
         self.range_mult = 1.2
 
     def __repr__(self) -> str:
         return f"""{self.__class__} at av. xy={self.gmm.mu.T.mean(1)} with n_comp {self.n_cluster}, z={self.z.data}."""
 
     def get_xy_mask(self, xy: Tensor) -> Tensor:
+        raise NotImplementedError("Realistic validation isn't yet supported for heatmap detectors")
         if not isinstance(self.xy_fix, Tensor):
             raise ValueError(f"{self.xy_fix} is not a Tensor for some reason.")  # To appease MyPy
         if not isinstance(self.xy_span_fix, Tensor):
@@ -68,7 +70,7 @@ class DetectorHeatMap(nn.Module):
             raise ValueError(f"{self.resolution} is not a Tensor for some reason.")  # To appease MyPy
 
         if self.training or not self.realistic_validation:
-            res = self.resolution * self.gmm(xy) / torch.max(self.gmm(self.mu))  # Maybe detach the normalisation?
+            res = self.resolution * self.gmm(xy)
         else:
             if mask is None:
                 mask = self.get_xy_mask(xy)
@@ -81,7 +83,7 @@ class DetectorHeatMap(nn.Module):
         if not isinstance(self.efficiency, Tensor):
             raise ValueError(f"{self.efficiency} is not a Tensor for some reason.")  # To appease MyPy
         if self.training or not self.realistic_validation:
-            scale = self.gmm(xy) / torch.max(self.gmm(self.mu))  # Maybe detach the normalisation?
+            scale = self.gmm(xy)
             scale = torch.min(torch.tensor(1.0), scale)
             if not as_2d:
                 scale = torch.prod(scale, dim=-1)  # Maybe weight product by xy distance?
@@ -105,7 +107,7 @@ class DetectorHeatMap(nn.Module):
             raise ValueError(f"{self.xy_span_fix} is not a Tensor for some reason.")  # To appease MyPy
 
         mask = mu.get_xy_mask(self.xy_fix - self.range_mult * self.delta_xy, self.xy_fix + self.range_mult * self.delta_xy)  # Muons in panel
-        xy0 = self.xy_fix - (self.delta_xy / 2)  # aprox. Low-left of voxel
+        xy0 = self.xy_fix - (self.delta_xy / 2)  # aprox. Low-left of panel
         rel_xy = mu.xy - xy0
         res = self.get_resolution(mu.xy, mask)
         rel_xy = rel_xy + (torch.randn((len(mu), 2), device=self.device) / res)
@@ -131,19 +133,30 @@ class DetectorHeatMap(nn.Module):
         if not isinstance(self.xy_span_fix, Tensor):
             raise ValueError(f"{self.xy_span_fix} is not a Tensor for some reason.")  # To appease MyPy
 
-        with torch.no_grad():
-            x = self.xy_fix[0].detach().numpy()
-            y = self.xy_fix[1].detach().numpy()
-            xs = torch.linspace(x - 1 * self.delta_xy, x + 2 * self.delta_xy, steps=200)
-            ys = torch.linspace(y - 1 * self.delta_xy, y + 2 * self.delta_xy, steps=200)
+        def get_z_from_mesh(x: Tensor, y: Tensor) -> Tensor:
+            stacked_t = torch.stack([x, y]).T
+            reshaped = torch.reshape(stacked_t, (stacked_t.shape[0] * stacked_t.shape[1], stacked_t.shape[2]))
+            reshaped = torch.unsqueeze(reshaped, 1)
+            z = self.gmm(reshaped).prod(1)
+            torch.min(torch.tensor(1.0), z)
+            z = torch.reshape(z, (stacked_t.shape[0], stacked_t.shape[1]))
+
+            return z
+
+        with sns.axes_style(style="whitegrid", rc={"patch.edgecolor": "none"}):
+            x = self.xy_fix[0].detach().cpu().numpy()
+            y = self.xy_fix[1].detach().cpu().numpy()
+            xs = torch.linspace(x - 2 * self.delta_xy, x + 2 * self.delta_xy, steps=200)
+            ys = torch.linspace(y - 2 * self.delta_xy, y + 2 * self.delta_xy, steps=200)
             x, y = torch.meshgrid(xs, ys)
-            z = self.get_z_from_mesh(x, y)
+            z = get_z_from_mesh(x, y).detach().cpu().numpy()
 
             fig, ax = plt.subplots(1, 1, figsize=(4, 4))
             if bpixelate:
-                cs = ax.scatter(x.numpy(), y.numpy(), c=z.detach().numpy(), cmap="plasma", s=450.0, marker="s")
+                cs = ax.scatter(x, y, c=z, cmap="plasma", s=450.0, marker="s")
             else:
-                cs = ax.contourf(x.numpy(), y.numpy(), z.detach().numpy(), cmap="plasma", vmin=0.0, vmax=0.9)
+                cs = ax.contourf(x, y, z, cmap="plasma", vmin=0.0, vmax=0.9)
+            ax.set_aspect("equal")
             fig.colorbar(cs)
 
             if bsavefig:
@@ -153,18 +166,6 @@ class DetectorHeatMap(nn.Module):
                 plt.close()
             else:
                 plt.show()
-
-    def get_z_from_mesh(self, x: Tensor, y: Tensor) -> Tensor:
-        """"""
-
-        stacked_t = torch.stack([x, y]).T
-        reshaped = torch.reshape(stacked_t, (stacked_t.shape[0] * stacked_t.shape[1], stacked_t.shape[2]))
-        reshaped = torch.unsqueeze(reshaped, 1)
-        z = self.gmm(reshaped).prod(1) / torch.max(self.gmm(self.mu))
-        torch.min(torch.tensor(1.0), z)
-        z = torch.reshape(z, (stacked_t.shape[0], stacked_t.shape[1]))
-
-        return z
 
     def clamp_params(self, musigz_low: Tuple[float, float, float], musigz_high: Tuple[float, float, float]) -> None:
         with torch.no_grad():
@@ -187,7 +188,7 @@ class DetectorHeatMap(nn.Module):
         return self.xy_fix[1]
 
 
-class GMM(torch.nn.Module):
+class GMM(nn.Module):
     """"""
 
     def __init__(
@@ -204,16 +205,12 @@ class GMM(torch.nn.Module):
         self._init_xy = torch.tensor(init_xy, device=self.device)
         self._init_xy_span = torch.tensor(init_xy_span, device=self.device)
 
-        rand_mu = 0.5 - torch.rand(self.n_cluster, 2, requires_grad=True)
-        rand_mu += torch.tensor(self._init_xy)
-        self.mu = torch.nn.Parameter(self._init_xy_span * 0.5 * rand_mu)
+        rand_mu = self._init_xy_span * (0.5 - torch.rand(self.n_cluster, 2, device=self.device))
+        self.mu = nn.Parameter(rand_mu + self._init_xy)
 
-        rand_sig = torch.max(torch.rand(self.n_cluster, 2, requires_grad=True), torch.tensor(0.2))
-        self.sig = torch.nn.Parameter(self._init_xy_span * rand_sig)
-        self.norm = torch.nn.Parameter(init_norm * torch.ones(1, requires_grad=True))
-
-        params = [self.mu, self.sig, self.norm]
-        self.my_params = torch.nn.ParameterList(params)
+        rand_sig = torch.max(torch.rand(self.n_cluster, 2, device=self.device), torch.tensor(0.2))
+        self.sig = nn.Parameter(self._init_xy_span * rand_sig)
+        self.norm = nn.Parameter(torch.tensor([float(init_norm)], device=self.device))
 
         mix = torch.distributions.Categorical(
             torch.ones(
@@ -230,7 +227,7 @@ class GMM(torch.nn.Module):
         self.gmm = torch.distributions.MixtureSameFamily(mix, comp)
 
     def forward(self, x: Tensor) -> Tensor:
-        res = self.norm * torch.exp(self.gmm.log_prob(x))
+        res = self.norm * torch.exp(self.gmm.log_prob(x) - torch.max(self.gmm.log_prob(self.mu)))
         res = res.reshape(res.shape[0], 1)
         res = res.expand(res.shape[0], 2)
         res = torch.sqrt(res)

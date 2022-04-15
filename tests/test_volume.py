@@ -114,8 +114,8 @@ def test_voxel_detector_layer(batch):
 
     # every reco hit (x,y) is function of resolution
     grad = jacobian(hits["above"]["reco_xy"][:, 0], dl.resolution).sum((-1, -2))
-    assert (grad == grad).sum() == 2 * len(grad)
-    assert ((grad == grad) * (grad != 0)).sum() > 0
+    assert not grad.isnan().any()
+    assert (grad != 0).sum() > 0
 
     # Conform detector
     dl = VoxelDetectorLayer(pos="above", init_eff=-1, init_res=1e14, lw=LW, z=Z, size=SZ, eff_cost_func=eff_cost, res_cost_func=res_cost)
@@ -160,8 +160,8 @@ def test_panel_detector_layer(batch):
     # every reco hit (x,y) is function of panel position and size
     for v in [dl.panels[0].xy, dl.panels[0].xy_span]:
         grad = jacobian(hits["above"]["reco_xy"][:, 0], v).sum((-1))
-        assert (grad == grad).sum() == 2 * len(grad)
-        assert ((grad == grad) * (grad != 0)).sum() > 0
+        assert not grad.isnan().any()
+        assert (grad != 0).sum() > 0
 
     dl = PanelDetectorLayer(
         pos="above",
@@ -314,8 +314,8 @@ def test_volume_forward_voxel(batch):
 
     for i, l in enumerate(volume.get_detectors()):
         grad = jacobian(hits["above" if l.z > 0.5 else "below"]["reco_xy"][:, i % 2], l.resolution).sum((-1, -2))
-        assert (grad == grad).sum() == 2 * len(grad)
-        assert ((grad == grad) * (grad != 0)).sum() > 0  # every reco hit (x,y) is function of resolution
+        assert not grad.isnan().any()
+        assert (grad != 0).sum() > 0  # every reco hit (x,y) is function of resolution
 
 
 def get_panel_layers(init_res: float = 1e4, init_eff: float = 0.5, n_panels: int = 4) -> nn.ModuleList:
