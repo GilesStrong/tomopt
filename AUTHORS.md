@@ -152,7 +152,7 @@ In order to start time, the TomOpt authors/contributors are: Giles Strong, Tomma
 
 ### 2021 - present. Lebanese University, Lebanon.
 
-<img src="docs/source/_static/imgs/authors/haitham.png" style="width:auto;height:100px" />
+<img src="docs/source/_static/imgs/authors/hz.gif" style="width:auto;height:100px" />
 
 ### Code contributions:
 
