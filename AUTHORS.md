@@ -165,7 +165,7 @@ In order to start time, the TomOpt authors/contributors are: Giles Strong, Tomma
 
 ## Max Lamparth (@maxlampe)
 
-### 2021 - present. Technische Universität München, Germany.
+### 2021 - present. Technical University of Munich, Germany.
 
 <img src="docs/source/_static/imgs/authors/max.jpeg" style="width:auto;height:100px" />
 
