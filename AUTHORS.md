@@ -167,7 +167,7 @@ In order to start time, the TomOpt authors/contributors are: Giles Strong, Tomma
 
 ### 2021 - present. Technical University of Munich, Germany.
 
-<img src="docs/source/_static/imgs/authors/max.jpeg" style="width:auto;height:100px" />
+<img src="docs/source/_static/imgs/authors/maxlamparth.png" style="width:auto;height:100px" />
 
 ### Code contributions:
 
