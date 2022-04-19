@@ -437,7 +437,7 @@ def test_panel_opt_config():
                 assert vw.get_opt_lr("xy_span_opt") == xy_span_rate / (xy_span_mult / 2)
 
 
-def test_data_callback():
+def test_muon_resampler_callback():
     # Check checker
     volume = MockVolume()
     l = MockLayer()
