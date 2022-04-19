@@ -25,6 +25,7 @@ from tomopt.optimisation.callbacks import (
     PanelOptConfig,
     MuonResampler,
     HeatMapGif,
+    ClassPredHandler,
 )
 from tomopt.optimisation.loss import VoxelX0Loss
 from tomopt.optimisation.wrapper.volume_wrapper import AbsVolumeWrapper, FitParams, PanelVolumeWrapper
@@ -183,6 +184,39 @@ def test_pred_handler():
     assert preds[1][0][0] == 2
     assert preds[0][1][0] == 3
     assert preds[1][1][0] == 3
+
+
+def test_class_pred_handler():
+    cb = ClassPredHandler({0.5: 0, 1.5: 1, 3.0: 2})
+    assert check_callback_base(cb)
+
+    cb.on_pred_begin()
+    assert isinstance(cb.preds, list)
+    assert len(cb.preds) == 0
+
+    vw = MockWrapper()
+    vw.fit_params = FitParams(state="train", pred=Tensor([1]))
+    cb.set_wrapper(vw)
+    vw.volume = MockVolume()
+    vw.volume.target = Tensor([0.5, 0.5, 3.0])
+
+    cb.on_x0_pred_end()
+    assert len(cb.preds) == 0
+    vw.fit_params.state = "valid"
+    cb.on_x0_pred_end()
+    assert len(cb.preds) == 0
+    vw.fit_params.state = "test"
+    cb.on_x0_pred_end()
+    assert len(cb.preds) == 1
+    vw.fit_params.pred = vw.fit_params.pred + 1
+    cb.on_x0_pred_end()
+    assert len(cb.preds) == 2
+    assert cb.preds[0][0] == 1
+    assert cb.preds[1][0] == 2
+
+    preds = cb.get_preds()
+    assert (preds[0][1][:2] == 0).all()
+    assert preds[0][1][2] == 2
 
 
 @pytest.mark.parametrize("detector", ["none", "voxel", "panel"])
