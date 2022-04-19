@@ -1,6 +1,6 @@
 from distutils.version import LooseVersion
 import numpy as np
-from typing import Dict
+from typing import Dict, Union
 
 import torch
 from torch import Tensor
@@ -27,15 +27,17 @@ def jacobian(y: Tensor, x: Tensor, create_graph: bool = False, allow_unused: boo
     return vmap(get_vjp)(torch.eye(len(flat_y), device=y.device)).reshape(y.shape + x.shape)
 
 
-def class_to_x0preds(array: np.ndarray, id2x0: Dict[int, float]) -> np.ndarray:
-    x0array = np.zeros_like(array, dtype="float32")
-    for i in np.unique(array):
+def class_to_x0preds(array: Union[np.ndarray, Tensor], id2x0: Dict[int, float]) -> Union[np.ndarray, Tensor]:
+    pkg = torch if isinstance(array, Tensor) else np
+    x0array = pkg.zeros_like(array, dtype="float32")
+    for i in pkg.unique(array):
         x0array[array == i] = id2x0[i]
     return x0array
 
 
-def x0targs_to_classtargs(array: np.ndarray, x02id: Dict[float, int]) -> np.ndarray:
-    x0array = np.zeros_like(array)
-    for i in np.unique(array):
+def x0targs_to_classtargs(array: Union[np.ndarray, Tensor], x02id: Dict[float, int]) -> Union[np.ndarray, Tensor]:
+    pkg = torch if isinstance(array, Tensor) else np
+    x0array = pkg.zeros_like(array)
+    for i in pkg.unique(array):
         x0array[array == i] = x02id[min(x02id, key=lambda x: abs(x - i))]
     return x0array
