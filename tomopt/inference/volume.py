@@ -1,8 +1,9 @@
 from abc import ABCMeta, abstractmethod
-from typing import Tuple, Optional, Dict, List, Union
+from typing import Tuple, Optional, Dict, List, Union, Type
 
 import torch
 from torch import Tensor, nn
+import torch.nn.functional as F
 from torch.distributions import Normal
 
 from .scattering import AbsScatterBatch
@@ -10,7 +11,7 @@ from ..volume import VoxelDetectorLayer, PanelDetectorLayer, Volume
 from ..core import SCATTER_COEF_A
 from ..utils import jacobian
 
-__all__ = ["VoxelX0Inferer", "PanelX0Inferer", "DeepVolumeInferer", "WeightedDeepVolumeInferer"]
+__all__ = ["VoxelX0Inferer", "PanelX0Inferer", "DeepVolumeInferer", "WeightedDeepVolumeInferer", "DenseBlockClassifierFromX0s"]
 
 
 class AbsVolumeInferer(metaclass=ABCMeta):
@@ -433,3 +434,60 @@ class WeightedDeepVolumeInferer(DeepVolumeInferer):
         pred = self.model(inputs[None].to(self.model_device)).to(self.tomopt_device)
         weight = self._get_weight()
         return pred, weight
+
+
+class DenseBlockClassifierFromX0s(AbsVolumeInferer):
+    r"""
+    Transforms voxel-wise X0 preds into binary classification statistic under the hypothesis of a small, dense block against a light-weight background
+    """
+
+    def __init__(
+        self,
+        n_block_voxels: int,
+        partial_x0_inferer: Type[AbsX0Inferer],
+        volume: Volume,
+        use_avgpool: bool = True,
+        cut_coef: float = 1e4,
+        ratio_offset: float = -1.0,
+        ratio_coef: float = 1.0,
+    ):
+        super().__init__(volume=volume)
+        self.use_avgpool, self.cut_coef, self.ratio_offset, self.ratio_coef = use_avgpool, cut_coef, ratio_offset, ratio_coef
+        self.x0_inferer = partial_x0_inferer(self.volume)
+        self.frac = n_block_voxels / self.volume.centres.numel()
+
+        self.efficiencies: List[Tensor] = []
+        self.efficiency: Optional[Tensor] = None
+        self.scatter_batches = self.x0_inferer.scatter_batches
+
+    def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
+        return self.x0_inferer.compute_efficiency(scatters=scatters)
+
+    def add_scatters(self, scatters: AbsScatterBatch) -> None:
+        self.x0_inferer.add_scatters(scatters)
+        self.efficiencies.append(self.compute_efficiency(scatters=scatters))
+
+    def _get_weight(self) -> Tensor:
+        """Maybe alter this to include resolution/pred uncertainties"""
+        return self.efficiency.sum()
+
+    def get_prediction(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
+        self.efficiency = torch.cat(self.efficiencies, dim=0)
+        vox_preds, vox_weights = self.x0_inferer.get_prediction()
+        if self.use_avgpool:
+            vox_preds = F.avg_pool3d(vox_preds[None], kernel_size=3, stride=1, padding=1, count_include_pad=False)[0]
+
+        flat_preds = vox_preds.flatten()
+        cut = flat_preds.kthvalue(1 + round(self.frac * (flat_preds.numel() - 1))).values
+
+        w_bkg = torch.sigmoid(self.cut_coef * (flat_preds - cut))
+        w_blk = 1 - w_bkg
+
+        mean_bkg = (w_bkg * flat_preds).sum() / w_bkg.sum()
+        mean_blk = (w_blk * flat_preds).sum() / w_blk.sum()
+
+        r = 2 * (mean_bkg - mean_blk) / (mean_bkg + mean_blk)
+        r = (r + self.ratio_offset) * self.ratio_coef
+        pred = torch.sigmoid(r)
+        weight = self._get_weight()
+        return pred[None, None], weight
