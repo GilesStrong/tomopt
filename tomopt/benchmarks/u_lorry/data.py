@@ -4,7 +4,7 @@ import numpy as np
 import torch
 from torch import Tensor
 
-from .passives import AbsPassiveGenerator
+from ...optimisation.data.passives import AbsPassiveGenerator
 from ...volume import Volume
 from ...core import X0
 

@@ -688,21 +688,3 @@ class GenScatterBatch(AbsScatterBatch):
     @staticmethod
     def _compute_unc(var: Tensor, hits: List[Tensor], hit_uncs: List[Tensor]) -> Tensor:
         return var.new_zeros(var.shape)
-
-
-class PhiDetScatterBatch(AbsScatterBatch):
-    @staticmethod
-    def get_muon_trajectory(hits: Tensor, uncs: Tensor, lw: Tensor) -> Tuple[Tensor, Tensor]:
-        r"""
-        hits = (muons,panels,(x,y,z))
-        uncs = (muons,panels,(unc,unc,0))
-
-        Assume no uncertainty for z
-
-        In eval mode:
-            Muons with <2 hits within panels have NaN trajectory.
-            Muons with >=2 hits in panels have valid trajectories
-        """
-
-        hits = torch.where(torch.isinf(hits), lw.mean().type(hits.type()) / 2, hits)
-        uncs = torch.nan_to_num(uncs)  # Set Infs to large number
