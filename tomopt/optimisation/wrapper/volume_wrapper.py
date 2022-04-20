@@ -24,7 +24,7 @@ from ...muon.generation import AbsMuonGenerator
 from ...inference.scattering import AbsScatterBatch, VoxelScatterBatch, PanelScatterBatch
 from ...inference.volume import AbsVolumeInferer, VoxelX0Inferer, PanelX0Inferer
 
-__all__ = ["VoxelVolumeWrapper", "PanelVolumeWrapper"]
+__all__ = ["VoxelVolumeWrapper", "PanelVolumeWrapper", "HeatMapVolumeWrapper"]
 
 r"""
 This FitParams and AbsVolumeWrapper are modified versions of the FitParams in LUMIN (https://github.com/GilesStrong/lumin/blob/v0.7.2/lumin/nn/models/abs_model.py#L16)
@@ -452,6 +452,68 @@ class PanelVolumeWrapper(AbsVolumeWrapper):
             xy_pos_opt=xy_pos_opt,
             z_pos_opt=z_pos_opt,
             xy_span_opt=xy_span_opt,
+            loss_func=loss_func,
+            mu_generator=mu_generator,
+        )
+        vw.load(name)
+        return vw
+
+
+class HeatMapVolumeWrapper(AbsVolumeWrapper):
+    def __init__(
+        self,
+        volume: Volume,
+        *,
+        mu_opt: PartialOpt,
+        norm_opt: PartialOpt,
+        sig_opt: PartialOpt,
+        z_pos_opt: PartialOpt,
+        loss_func: Optional[AbsDetectorLoss],
+        mu_generator: Optional[AbsMuonGenerator] = None,
+        partial_scatter_inferer: Type[AbsScatterBatch] = PanelScatterBatch,
+        partial_volume_inferer: Type[AbsVolumeInferer] = PanelX0Inferer,
+    ):
+        super().__init__(
+            volume=volume,
+            partial_opts={"mu_opt": mu_opt, "norm_opt": norm_opt, "sig_opt": sig_opt, "z_pos_opt": z_pos_opt},
+            loss_func=loss_func,
+            mu_generator=mu_generator,
+            partial_scatter_inferer=partial_scatter_inferer,
+            partial_volume_inferer=partial_volume_inferer,
+        )
+
+    def _build_opt(self, **kwargs: PartialOpt) -> None:
+        all_dets = self.volume.get_detectors()
+        dets: List[PanelDetectorLayer] = []
+        for d in all_dets:
+            if isinstance(d, PanelDetectorLayer):
+                dets.append(d)
+        self.opts = {
+            "mu_opt": kwargs["mu_opt"]((p.mu for l in dets for p in l.panels)),
+            "norm_opt": kwargs["norm_opt"]((p.norm for l in dets for p in l.panels)),
+            "sig_opt": kwargs["sig_opt"]((p.sig for l in dets for p in l.panels)),
+            "z_pos_opt": kwargs["z_pos_opt"]((p.z for l in dets for p in l.panels)),
+        }
+
+    @classmethod
+    def from_save(
+        cls,
+        name: str,
+        *,
+        volume: Volume,
+        mu_opt: PartialOpt,
+        norm_opt: PartialOpt,
+        sig_opt: PartialOpt,
+        z_pos_opt: PartialOpt,
+        loss_func: Optional[AbsDetectorLoss],
+        mu_generator: Optional[AbsMuonGenerator] = None,
+    ) -> AbsVolumeWrapper:
+        vw = cls(
+            volume=volume,
+            mu_opt=mu_opt,
+            norm_opt=norm_opt,
+            sig_opt=sig_opt,
+            z_pos_opt=z_pos_opt,
             loss_func=loss_func,
             mu_generator=mu_generator,
         )
