@@ -1,7 +1,7 @@
-from typing import Tuple
+# from typing import Tuple
 
-import torch
-from torch import Tensor
+# import torch
+# from torch import Tensor
 
 from ...inference.scattering import AbsScatterBatch
 
