@@ -80,6 +80,14 @@ class PhiDetScatterBatch(AbsScatterBatch):
         x_{i,opt} = x0 + z_i tan(theta) cos(phi)
         y_{i,opt} = y0 + z_i tan(theta) sin(phi)
 
+        x0, y0, z0 = track coordinates at z=0
+        theta, phi = track angles
+
+        x0 = sum_i[ ((cos(phi_i)/(unc_i^2))*(h_i-(z_i*tan(theta)*cos(phi)*cos(phi_i))-(sin(phi_i)*(y0+(z_i*tan(theta)*sin(phi))))) ] / sum_i[ ((cos(phi_i)^2)/(unc_i^2)) ]
+        y0 = sum_i[ ((sin(phi_i)/(unc_i^2))*(h_i-(z_i*tan(theta)*sin(phi)*cos(phi_i))-(cos(phi_i)*(x0+(z_i*tan(theta)*sin(phi))))) ] / sun_i[ ((sin(phi_i)^2)/(unc_i^2)) ]
+        theta = tan^-1[ sum_i[ (z_i/(unc_i^2))*((h_i*((cos(phi)*cos(phi_i))+(sin(phi)*sin(phi_i))))-(x0*((cos(phi_i)*sin(phi_i)*sin(phi))+(cos(phi)*cos(phi_i)*cos(phi_i))))-(y0((cos(phi)*cos(phi_i)*sin(phi_i))+(sin(phi)*sin(phi_i)*sin(phi_i))))) ] / sum_i[ ((z_i^2)/(unc_i^2))*((cos(phi)*cos(phi_i))+(sin(phi)*sin(sin(phi_i)))) ] ]
+        phi = sin^-1[ ((z_i*sin(phi_i))/(unc_i^2))*(h_i-(y0*sin(phi_i))-(x0*cos(phi_i))-(z_i*tan(theta)*cos(phi)*cos(phi_i))) ] / sum_i[ (((z_i*sin(phi_i))^2)/(unc_i^2))*tan(theta) ]
+
         In eval mode:
             Muons with <2 hits within panels have NaN trajectory.
             Muons with >=2 hits in panels have valid trajectories

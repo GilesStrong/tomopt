@@ -12,9 +12,15 @@ __all__ = ["PhiDetectorPanel"]
 
 
 class PhiDetectorPanel(DetectorPanel):
-    def __init__(self, *, init_phi: float, res: float, eff: float, device: torch.device = DEVICE):
+    def __init__(self, *, init_phi: float, init_z: float, res: float, eff: float, device: torch.device = DEVICE):
         super().__init__(
-            res=res, eff=eff, init_xyz=(0, 0, 0), init_xy_span=(1, 1), area_cost_func=lambda x: torch.zeros(1, 1), realistic_validation=False, device=device
+            res=res,
+            eff=eff,
+            init_xyz=(0.0, 0.0, float(init_z)),
+            init_xy_span=(1.0, 1.0),
+            area_cost_func=lambda x: torch.zeros(1, 1),
+            realistic_validation=False,
+            device=device,
         )
         self.phi = nn.Parameter(torch.tensor(float(init_phi), device=self.device))
 
@@ -32,7 +38,7 @@ class PhiDetectorPanel(DetectorPanel):
         return self.efficiency
 
     def get_hits(self, mu: MuonBatch) -> Dict[str, Tensor]:
-        gen_h = (mu.x * self.phi.cos()) + (mu.y * self.phi.sin())
+        gen_h = (mu.x[:, None] * self.phi.cos()) + (mu.y[:, None] * self.phi.sin())
         reco_h = gen_h + (torch.randn((len(mu), 1), device=self.device) / self.resolution)
 
         hits = {
