@@ -75,8 +75,8 @@ In order to start time, the TomOpt authors/contributors are: Giles Strong, Tomma
 ### Other roles:
 
 - Funding acquisition (M. Lagrange)
-- Supervision (M. Lagrange, P. Vischia?)
-- Meeting attendence
+- Supervision (M. Lagrange)
+- Meeting attendance
 - Advertisement/mention of TomOpt in talks
 
 ## Pietro Vischia (@vischia)
