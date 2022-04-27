@@ -136,7 +136,7 @@ In order to start time, the TomOpt authors/contributors are: Giles Strong, Tomma
 
 ## Federico Nardi (@FedericoNardi)
 
-### 2021 - 2022?. INFN-Padova, Italy.
+### 2021 - present. INFN-Padova, Italy.
 
 <img src="docs/source/_static/imgs/authors/federico.png" style="width:auto;height:100px" />
 
