@@ -38,13 +38,14 @@ class PhiDetectorPanel(DetectorPanel):
         return self.efficiency
 
     def get_hits(self, mu: MuonBatch) -> Dict[str, Tensor]:
-        gen_h = (mu.x[:, None] * self.phi.cos()) + (mu.y[:, None] * self.phi.sin())
+        xy = mu.xy.detach().clone()
+        gen_h = (xy[:, 0:1] * self.phi.cos()) + (xy[:, 1:2] * self.phi.sin())
         reco_h = gen_h + (torch.randn((len(mu), 1), device=self.device) / self.resolution)
 
         hits = {
             "reco_h": reco_h,
             "gen_h": gen_h,
-            "gen_xy": mu.xy.detach().clone(),
+            "gen_xy": xy,
             "z": self.z.expand_as(mu.x)[:, None],
             "phi": self.phi.expand_as(mu.x)[:, None],
         }
@@ -53,4 +54,4 @@ class PhiDetectorPanel(DetectorPanel):
     def clamp_params(self, xyz_low: Tuple[float, float, float], xyz_high: Tuple[float, float, float]) -> None:
         super().clamp_params(xyz_low, xyz_high)
         with torch.no_grad():
-            self.phi.clamp_(min=0, max=torch.pi * 2)
+            self.phi = self.phi % (torch.pi * 2)
