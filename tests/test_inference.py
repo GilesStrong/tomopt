@@ -12,7 +12,16 @@ import torch.nn.functional as F
 from tomopt.volume import PassiveLayer, VoxelDetectorLayer, Volume, PanelDetectorLayer, DetectorPanel
 from tomopt.muon import MuonBatch, MuonGenerator2016
 from tomopt.core import X0
-from tomopt.inference import VoxelScatterBatch, VoxelX0Inferer, PanelX0Inferer, PanelScatterBatch, GenScatterBatch, DeepVolumeInferer, WeightedDeepVolumeInferer
+from tomopt.inference import (
+    VoxelScatterBatch,
+    VoxelX0Inferer,
+    PanelX0Inferer,
+    PanelScatterBatch,
+    GenScatterBatch,
+    DeepVolumeInferer,
+    WeightedDeepVolumeInferer,
+    DenseBlockClassifierFromX0s,
+)
 from tomopt.volume.layer import Layer
 from tomopt.optimisation import MuonResampler
 from tomopt.utils import jacobian
@@ -661,3 +670,32 @@ def test_deep_volume_inferer(dvi_class: Type[DeepVolumeInferer], weighted: bool)
             assert torch.autograd.grad(weight.abs().sum(), panel.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
             assert torch.autograd.grad(weight.abs().sum(), panel.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
             assert torch.autograd.grad(weight.abs().sum(), panel.z, retain_graph=True, allow_unused=True)[0].abs().sum() == 0
+
+
+@pytest.mark.flaky(max_runs=2, min_passes=1)
+def test_dense_block_classifier_from_x0s():
+    volume = Volume(get_panel_layers(init_res=1e4))
+    gen = MuonGenerator2016.from_volume(volume)
+    mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
+    mu = MuonBatch(mus, init_z=volume.h)
+
+    def u_rad_length(*, z: float, lw: Tensor, size: float) -> Tensor:
+        rad_length = torch.ones(list((lw / size).long())) * X0["beryllium"]
+        if z > 0.4 and z <= 0.5:
+            rad_length[7:, 6:] = X0["uranium"]
+        return rad_length
+
+    volume.load_rad_length(u_rad_length)
+    volume(mu)
+    sb = PanelScatterBatch(mu=mu, volume=volume)
+    inferer = DenseBlockClassifierFromX0s(12, PanelX0Inferer, volume=volume)
+    inferer.add_scatters(sb)
+
+    p, w = inferer.get_prediction()
+    for l in volume.get_detectors():
+        for panel in l.panels:
+            assert torch.autograd.grad(p.abs().sum(), panel.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+            assert torch.autograd.grad(p.abs().sum(), panel.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+            assert torch.autograd.grad(p.abs().sum(), panel.z, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+            assert torch.autograd.grad(w.abs().sum(), panel.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+            assert torch.autograd.grad(w.abs().sum(), panel.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
