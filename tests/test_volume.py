@@ -179,7 +179,7 @@ def test_panel_detector_layer(batch):
     # z-ordering
     zorder = dl.get_panel_zorder()
     assert (zorder == np.array([1, 0, 3, 2])).all()
-    for i, p in enumerate(dl.yield_zordered_panels()):
+    for i, (_, p) in enumerate(dl.yield_zordered_panels()):
         assert p is dl.panels[zorder[i]]
 
     # detector conform
@@ -375,7 +375,7 @@ def test_volume_forward_panel():
 
     # every reco hit (x,y) is function of panel position and size
     for i, l in enumerate(volume.get_detectors()):
-        for j, p in enumerate(l.yield_zordered_panels()):
+        for j, (_, p) in enumerate(l.yield_zordered_panels()):
             for v in [p.xy, p.xy_span]:
                 grad = jacobian(hits["above" if l.z > 0.5 else "below"]["reco_xy"][:, j], v).nansum((-1))
                 assert grad.isnan().sum() == 0

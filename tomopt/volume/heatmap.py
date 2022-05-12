@@ -1,4 +1,4 @@
-from typing import Tuple, Callable, Optional, Dict
+from typing import Tuple, Optional, Dict
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -20,7 +20,7 @@ class DetectorHeatMap(nn.Module):
         eff: float,
         init_xyz: Tuple[float, float, float],
         init_xy_span: Tuple[float, float],
-        area_cost_func: Callable[[Tensor], Tensor],
+        m2_cost: float,
         realistic_validation: bool = False,
         device: torch.device = DEVICE,
         n_cluster: int = 30,
@@ -31,9 +31,9 @@ class DetectorHeatMap(nn.Module):
             raise ValueError("Efficiency must be positive")
 
         super().__init__()
-        self.area_cost_func = area_cost_func
         self.realistic_validation = realistic_validation
         self.device = device
+        self.register_buffer("m2_cost", torch.tensor(float(m2_cost), device=self.device))
         self.register_buffer("resolution", torch.tensor(float(res), device=self.device))
         self.register_buffer("efficiency", torch.tensor(float(eff), device=self.device))
 
@@ -98,9 +98,11 @@ class DetectorHeatMap(nn.Module):
         return eff
 
     def get_cost(self) -> Tensor:
-        return self.area_cost_func(self.sig.prod(1).mean())
+        return self.m2_cost * self.sig.prod(1).mean()
 
-    def get_hits(self, mu: MuonBatch) -> Dict[str, Tensor]:
+    def get_hits(self, mu: MuonBatch, budget: Optional[Tensor] = None) -> Dict[str, Tensor]:
+        if budget is not None:
+            raise NotImplementedError("Please update me to work with a budget!")
         if not isinstance(self.xy_fix, Tensor):
             raise ValueError(f"{self.xy_fix} is not a Tensor for some reason.")  # To appease MyPy
         if not isinstance(self.xy_span_fix, Tensor):

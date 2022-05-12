@@ -12,13 +12,15 @@ __all__ = ["Volume"]
 
 
 class Volume(nn.Module):
-    def __init__(self, layers: nn.ModuleList):
+    def __init__(self, layers: nn.ModuleList, budget: Optional[Tensor] = None):
         super().__init__()
-        self.layers = layers
+        self.layers, self.budget = layers, budget
         self._device = self._get_device()
         self._check_passives()
         self._target: Optional[Tensor] = None
         self._edges: Optional[Tensor] = None
+
+        self.budget_weights = nn.Parameter(torch.ones(len([l for l in self.layers if hasattr(l, "get_cost")]), device=self._device))
 
     @property
     def edges(self) -> Tensor:
@@ -111,20 +113,30 @@ class Volume(nn.Module):
             p.load_rad_length(rad_length_func)
 
     def forward(self, mu: MuonBatch) -> None:  # Expand to take volume as input, too
+        budget_idx = 0
         for l in self.layers:
-            l(mu)
+            if self.budget is not None and hasattr(l, "get_cost"):
+                l(mu, budget=self.budget * self.budget_weights[budget_idx] / self.budget_weights.sum())
+                budget_idx += 1
+            else:
+                l(mu)
             mu.snapshot_xyz()
 
     def get_cost(self) -> Tensor:
         cost = None
-        for l in self.layers:
+        for i, l in enumerate(self.layers):
             if hasattr(l, "get_cost"):
+                c = l.get_cost()
+                if self.budget is not None:
+                    c = c * self.budget * self.budget_weights[i] / self.budget_weights.sum()
                 if cost is None:
-                    cost = l.get_cost()
+                    cost = c
                 else:
-                    cost = cost + l.get_cost()
+                    cost = c
         if cost is None:
             cost = torch.zeros((1), device=self.device)
+        if self.budget is not None and (cost - self.budget).abs() > 1e-3:
+            raise RuntimeWarning(f"Total layer cost, {cost} does not match the specified budget, {self.budget}")
         return cost
 
     @property

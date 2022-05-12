@@ -257,7 +257,7 @@ def test_volume_forward_panel():
 
     # every reco hit (x,y) is function of gmm parameters
     for i, l in enumerate(volume.get_detectors()):
-        for j, p in enumerate(l.yield_zordered_panels()):
+        for j, (_, p) in enumerate(l.yield_zordered_panels()):
             for v in [p.mu, p.sig, p.norm]:
                 grad = jacobian(hits["above" if l.z > 0.5 else "below"]["reco_xy"][:, j], v).nansum((-1))
                 assert grad.isnan().sum() == 0

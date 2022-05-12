@@ -230,7 +230,7 @@ def test_panel_scatter_batch(mock_show, panel_scatter_batch):
     assert (sb.theta_msc.abs() >= 0).all() and (sb.theta_msc < torch.pi).all()
 
     # uncertainties
-    panel = next(volume.get_detectors()[0].yield_zordered_panels())
+    _, panel = next(volume.get_detectors()[0].yield_zordered_panels())
     uncs = sb._get_hit_uncs([panel], sb.reco_hits[:, 0:1])
     assert (uncs[0][:, 2] == 0).all()
     xy_unc = uncs[0][:, :2]

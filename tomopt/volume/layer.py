@@ -125,7 +125,7 @@ class AbsDetectorLayer(Layer, metaclass=ABCMeta):
         self.type_label = ""
 
     @abstractmethod
-    def forward(self, mu: MuonBatch) -> None:
+    def forward(self, mu: MuonBatch, budget: Optional[Tensor] = None) -> None:
         pass
 
     @abstractmethod
@@ -182,7 +182,7 @@ class VoxelDetectorLayer(AbsDetectorLayer):
         }
         return hits
 
-    def forward(self, mu: MuonBatch) -> None:
+    def forward(self, mu: MuonBatch, budget: Optional[Tensor] = None) -> None:
         self.scatter_and_propagate(mu, self.size / 2)
         mu.append_hits(self.get_hits(mu), self.pos)
         self.scatter_and_propagate(mu, self.size / 2)
@@ -201,6 +201,7 @@ class PanelDetectorLayer(AbsDetectorLayer):
             self.type_label = "heatmap"
         elif isinstance(panels[0], DetectorPanel):
             self.type_label = "panel"
+        self.budget_weights = nn.Parameter(torch.ones(len(self.panels), device=self.device))
 
     @staticmethod
     def get_device(panels: nn.ModuleList) -> torch.device:
@@ -214,9 +215,9 @@ class PanelDetectorLayer(AbsDetectorLayer):
     def get_panel_zorder(self) -> List[int]:
         return list(np.argsort([p.z.detach().cpu().item() for p in self.panels])[::-1])
 
-    def yield_zordered_panels(self) -> Union[Iterator[DetectorPanel], Iterator[DetectorHeatMap]]:
+    def yield_zordered_panels(self) -> Union[Iterator[Tuple[int, DetectorPanel]], Iterator[Tuple[int, DetectorHeatMap]]]:
         for i in self.get_panel_zorder():
-            yield self.panels[i]
+            yield i, self.panels[i]
 
     def conform_detector(self) -> None:
         lw = self.lw.detach().cpu().numpy()
@@ -238,10 +239,11 @@ class PanelDetectorLayer(AbsDetectorLayer):
                     xyz_high=(lw[0], lw[1], z),
                 )
 
-    def forward(self, mu: MuonBatch) -> None:
-        for p in self.yield_zordered_panels():
+    def forward(self, mu: MuonBatch, budget: Optional[Tensor] = None) -> None:
+        for i, p in self.yield_zordered_panels():
             self.scatter_and_propagate(mu, mu.z - p.z.detach())  # Move to panel
-            mu.append_hits(p.get_hits(mu), self.pos)
+            hits = p.get_hits(mu, budget=budget * self.budget_weights[i] / self.budget_weights.sum()) if budget is not None else p.get_hits(mu)
+            mu.append_hits(hits, self.pos)
         self.scatter_and_propagate(mu, mu.z - (self.z - self.size))  # Move to bottom of layer
 
     def get_cost(self) -> Tensor:
