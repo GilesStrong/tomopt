@@ -132,7 +132,7 @@ class Volume(nn.Module):
                 if cost is None:
                     cost = c
                 else:
-                    cost = c
+                    cost = cost + c
         if cost is None:
             cost = torch.zeros((1), device=self.device)
         if self.budget is not None and (cost - self.budget).abs() > 1e-3:
