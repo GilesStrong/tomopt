@@ -115,5 +115,5 @@ class VolumeClassLoss(AbsMaterialClassLoss):
         targ = volume.target.clone()
         for x0 in targ.unique():
             targ[targ == x0] = self.x02id[min(self.x02id, key=lambda x: abs(x - x0))]
-        loss = F.nll_loss(pred, targ.long(), reduction="none") if pred.shape[1] > 1 else F.binary_cross_entropy(pred, targ[:, None], reduction="none")
+        loss = F.nll_loss(pred, targ.long(), reduction="none") if pred.shape[1] > 1 else F.binary_cross_entropy(pred, targ[:, None].float(), reduction="none")
         return torch.mean(loss / inv_pred_weight)
