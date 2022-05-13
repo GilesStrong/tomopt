@@ -124,11 +124,13 @@ class Volume(nn.Module):
 
     def get_cost(self) -> Tensor:
         cost = None
-        for i, l in enumerate(self.layers):
+        budget_idx = 0
+        for l in self.layers:
             if hasattr(l, "get_cost"):
                 c = l.get_cost()
                 if self.budget is not None:
-                    c = c * self.budget * self.budget_weights[i] / self.budget_weights.sum()
+                    c = c * self.budget * self.budget_weights[budget_idx] / self.budget_weights.sum()
+                    budget_idx += 1
                 if cost is None:
                     cost = c
                 else:

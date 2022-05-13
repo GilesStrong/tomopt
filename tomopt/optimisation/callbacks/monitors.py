@@ -382,7 +382,7 @@ class PanelMetricLogger(MetricLogger):
                         s.append(s_val)
                     else:
                         l.append(np.concatenate((p.xy.detach().cpu().numpy(), p.z.detach().cpu().numpy())))
-                        s.append(p.xy_span.detach().cpu().numpy())
+                        s.append(p.get_scaled_xy_span().detach().cpu().numpy())
                 loc, span = np.array(l), np.array(s)
 
                 for ax in axes:
