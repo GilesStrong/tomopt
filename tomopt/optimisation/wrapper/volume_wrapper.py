@@ -409,7 +409,8 @@ class PanelVolumeWrapper(AbsVolumeWrapper):
         xy_pos_opt: PartialOpt,
         z_pos_opt: PartialOpt,
         xy_span_opt: PartialOpt,
-        budget_opt: Optional[PartialOpt] = None,
+        vol_budget_opt: Optional[PartialOpt] = None,
+        det_budget_opt: Optional[PartialOpt] = None,
         loss_func: Optional[AbsDetectorLoss],
         mu_generator: Optional[AbsMuonGenerator] = None,
         partial_scatter_inferer: Type[AbsScatterBatch] = PanelScatterBatch,
@@ -417,7 +418,13 @@ class PanelVolumeWrapper(AbsVolumeWrapper):
     ):
         super().__init__(
             volume=volume,
-            partial_opts={"xy_pos_opt": xy_pos_opt, "z_pos_opt": z_pos_opt, "xy_span_opt": xy_span_opt, "budget_opt": budget_opt},
+            partial_opts={
+                "xy_pos_opt": xy_pos_opt,
+                "z_pos_opt": z_pos_opt,
+                "xy_span_opt": xy_span_opt,
+                "vol_budget_opt": vol_budget_opt,
+                "det_budget_opt": det_budget_opt,
+            },
             loss_func=loss_func,
             mu_generator=mu_generator,
             partial_scatter_inferer=partial_scatter_inferer,
@@ -435,10 +442,10 @@ class PanelVolumeWrapper(AbsVolumeWrapper):
             "z_pos_opt": kwargs["z_pos_opt"]((p.z for l in dets for p in l.panels)),
             "xy_span_opt": kwargs["xy_span_opt"]((p.xy_span for l in dets for p in l.panels)),
         }
-        if kwargs["budget_opt"] is not None:
-            self.opts["budget_opt"] = kwargs["xy_span_opt"](
-                (o.budget_weights for o in [self.volume] + [l for l in self.volume.layers if hasattr(l, "get_cost")])
-            )
+        if kwargs["vol_budget_opt"] is not None:
+            self.opts["vol_budget_opt"] = kwargs["vol_budget_opt"](iter(self.volume.budget_weights))
+        if kwargs["det_budget_opt"] is not None:
+            self.opts["det_budget_opt"] = kwargs["det_budget_opt"]((l.budget_weights for l in self.volume.layers if hasattr(l, "get_cost")))
 
     @classmethod
     def from_save(
