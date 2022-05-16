@@ -4,6 +4,7 @@ import numpy as np
 
 import torch
 from torch import nn, Tensor
+import torch.nn.functional as F
 
 from .layer import AbsDetectorLayer, PassiveLayer
 from ..muon import MuonBatch
@@ -20,7 +21,7 @@ class Volume(nn.Module):
         self._target: Optional[Tensor] = None
         self._edges: Optional[Tensor] = None
 
-        self.budget_weights = nn.Parameter(torch.ones(len([l for l in self.layers if hasattr(l, "get_cost")]), device=self._device))
+        self.budget_weights = nn.Parameter(torch.zeros(len([l for l in self.layers if hasattr(l, "get_cost")]), device=self._device))
 
     @property
     def edges(self) -> Tensor:
@@ -113,10 +114,12 @@ class Volume(nn.Module):
             p.load_rad_length(rad_length_func)
 
     def forward(self, mu: MuonBatch) -> None:  # Expand to take volume as input, too
-        budget_idx = 0
+        if self.budget is not None:
+            budget_idx = 0
+            layer_budgets = self.budget * F.softmax(self.budget_weights, dim=-1)
         for l in self.layers:
             if self.budget is not None and hasattr(l, "get_cost"):
-                l(mu, budget=self.budget * self.budget_weights[budget_idx] / self.budget_weights.sum())
+                l(mu, budget=layer_budgets[budget_idx])
                 budget_idx += 1
             else:
                 l(mu)
@@ -124,12 +127,14 @@ class Volume(nn.Module):
 
     def get_cost(self) -> Tensor:
         cost = None
-        budget_idx = 0
+        if self.budget is not None:
+            budget_idx = 0
+            layer_budgets = self.budget * F.softmax(self.budget_weights, dim=-1)
         for l in self.layers:
             if hasattr(l, "get_cost"):
                 c = l.get_cost()
                 if self.budget is not None:
-                    c = c * self.budget * self.budget_weights[budget_idx] / self.budget_weights.sum()
+                    c = c * layer_budgets[budget_idx]
                     budget_idx += 1
                 if cost is None:
                     cost = c

@@ -201,7 +201,7 @@ class PanelDetectorLayer(AbsDetectorLayer):
             self.type_label = "heatmap"
         elif isinstance(panels[0], DetectorPanel):
             self.type_label = "panel"
-        self.budget_weights = nn.Parameter(torch.ones(len(self.panels), device=self.device))
+        self.budget_weights = nn.Parameter(torch.zeros(len(self.panels), device=self.device))
 
     @staticmethod
     def get_device(panels: nn.ModuleList) -> torch.device:
@@ -240,9 +240,11 @@ class PanelDetectorLayer(AbsDetectorLayer):
                 )
 
     def forward(self, mu: MuonBatch, budget: Optional[Tensor] = None) -> None:
+        if budget is not None:
+            panel_budgets = budget * F.softmax(self.budget_weights, dim=-1)
         for i, p in self.yield_zordered_panels():
             self.scatter_and_propagate(mu, mu.z - p.z.detach())  # Move to panel
-            hits = p.get_hits(mu, budget=budget * self.budget_weights[i] / self.budget_weights.sum()) if budget is not None else p.get_hits(mu)
+            hits = p.get_hits(mu, budget=panel_budgets[i]) if budget is not None else p.get_hits(mu)
             mu.append_hits(hits, self.pos)
         self.scatter_and_propagate(mu, mu.z - (self.z - self.size))  # Move to bottom of layer
 
