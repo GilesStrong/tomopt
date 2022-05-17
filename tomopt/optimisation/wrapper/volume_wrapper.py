@@ -443,7 +443,7 @@ class PanelVolumeWrapper(AbsVolumeWrapper):
             "xy_span_opt": kwargs["xy_span_opt"]((p.xy_span for l in dets for p in l.panels)),
         }
         if kwargs["vol_budget_opt"] is not None:
-            self.opts["vol_budget_opt"] = kwargs["vol_budget_opt"](iter(self.volume.budget_weights))
+            self.opts["vol_budget_opt"] = kwargs["vol_budget_opt"]((p for p in [self.volume.budget_weights]))
         if kwargs["det_budget_opt"] is not None:
             self.opts["det_budget_opt"] = kwargs["det_budget_opt"]((l.budget_weights for l in self.volume.layers if hasattr(l, "get_cost")))
 

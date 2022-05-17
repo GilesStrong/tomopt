@@ -11,7 +11,13 @@ __all__ = ["PanelOptConfig"]
 
 class PanelOptConfig(Callback):
     def __init__(
-        self, n_warmup: int, xy_pos_rate: float, z_pos_rate: float, xy_span_rate: float, vol_budget_rate: Optional[float], det_budget_rate: Optional[float]
+        self,
+        n_warmup: int,
+        xy_pos_rate: float,
+        z_pos_rate: float,
+        xy_span_rate: float,
+        vol_budget_rate: Optional[float] = None,
+        det_budget_rate: Optional[float] = None,
     ):
         self.n_warmup = n_warmup
         self.rates = {"xy_pos_opt": xy_pos_rate, "z_pos_opt": z_pos_rate, "xy_span_opt": xy_span_rate}
