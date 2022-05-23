@@ -49,13 +49,15 @@ class PhiDetScatterBatch(AbsScatterBatch):
     def _get_hit_uncs(zordered_panels: List[PhiDetectorPanel], hits: Tensor) -> Tensor:
         uncs: List[Tensor] = []
         for l, h in zip(zordered_panels, hits.unbind(1)):
+            if not isinstance(l.resolution, Tensor):
+                raise ValueError(f"{l.resolution} is not a Tensor for some reason.")  # To appease MyPy
             r = 1 / l.resolution
             uncs.append(torch.cat([r, torch.zeros((len(r), 2), device=r.device)], dim=-1))
         return torch.stack(uncs, dim=1)  # muons, panels, unc h,phi,z, zero unc for phi and z
 
     def _compute_tracks(self) -> None:
         def _get_panels() -> List[PhiDetectorPanel]:
-            panels = []
+            panels: List[PhiDetectorPanel] = []
             for det in self.volume.get_detectors():
                 if not isinstance(det, PhiDetectorPanel):
                     raise ValueError(f"Detector {det} is not a PhiDetectorPanel")
@@ -92,6 +94,7 @@ class PhiDetScatterBatch(AbsScatterBatch):
             Muons with <2 hits within panels have NaN trajectory.
             Muons with >=2 hits in panels have valid trajectories
         """
+        raise NotImplementedError("We still need to work out how to fit tracks efficiently!")
 
         hits = torch.where(torch.isinf(hits), lw.mean().type(hits.type()) / 2, hits)
         uncs = torch.nan_to_num(uncs)  # Set Infs to large number

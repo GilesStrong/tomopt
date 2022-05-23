@@ -54,4 +54,4 @@ class PhiDetectorPanel(DetectorPanel):
     def clamp_params(self, xyz_low: Tuple[float, float, float], xyz_high: Tuple[float, float, float]) -> None:
         super().clamp_params(xyz_low, xyz_high)
         with torch.no_grad():
-            self.phi = self.phi % (torch.pi * 2)
+            self.phi.data = self.phi.data % (torch.pi * 2)
