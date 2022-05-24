@@ -62,7 +62,7 @@ class MetricLogger(Callback):
     h_mid = 8
     w_mid = h_mid * 16 / 9
 
-    def __init__(self, gif_filename: Optional[str] = None, show_plots: bool = IN_NOTEBOOK):
+    def __init__(self, gif_filename: Optional[str] = "optimisation_history.gif", show_plots: bool = IN_NOTEBOOK):
         self.gif_filename, self.show_plots = gif_filename, show_plots
 
     def _reset(self) -> None:
