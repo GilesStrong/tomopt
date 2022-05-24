@@ -6,6 +6,7 @@ import pandas as pd
 from functools import partial
 from glob import glob
 from fastcore.all import Path
+import matplotlib.pyplot as plt
 
 import torch
 from torch import Tensor
@@ -234,9 +235,20 @@ def test_metric_logger(detector, mocker):  # noqa F811
         det = get_panel_detector()
         vw.get_detectors = lambda: [det]
     vw.loss_func = VoxelX0Loss(target_budget=1, cost_coef=1)
-    vw.fit_params = FitParams(pred=10, trn_passives=range(10), passive_bs=2, metric_cbs=[EvalMetric(name="test", main_metric=True, lower_metric_better=True)])
+    vw.fit_params = FitParams(
+        pred=10,
+        trn_passives=range(10),
+        passive_bs=2,
+        state="train",
+        metric_cbs=[EvalMetric(name="test", main_metric=True, lower_metric_better=True)],
+        cb_savepath=Path("tests"),
+    )
     logger.set_wrapper(vw)
     mocker.spy(logger, "_reset")
+    mocker.spy(logger, "_snapshot_monitor")
+    assert logger.gif_filename == "optimisation_history.gif"
+    # Hack to make a fugure
+    logger.fig = plt.figure(figsize=(5, 5), constrained_layout=True)
 
     logger.on_train_begin()
     assert logger._reset.call_count == 1
@@ -249,11 +261,17 @@ def test_metric_logger(detector, mocker):  # noqa F811
     assert len(logger.metric_vals) == 1
     assert len(logger.metric_vals[0]) == 0
 
+    logger.show_plots = True
     logger.on_epoch_begin()
+    logger.show_plots = False
     assert logger.tmp_loss == 0
     assert logger.batch_cnt == 0
     assert logger.volume_cnt == 0
     assert len(logger.tmp_sub_losses.keys()) == 0
+    assert logger._snapshot_monitor.call_count == 1
+    assert len(logger._buffer_files) == 1
+    assert logger._buffer_files[-1] == Path("tests/temp_monitor_0.png")
+    assert logger._buffer_files[-1].exists()
 
     for state in ["train", "valid"]:
         vw.fit_params.state = state
@@ -283,6 +301,7 @@ def test_metric_logger(detector, mocker):  # noqa F811
     vw.fit_params.state = "train"
     logger.on_epoch_end()
     assert logger.val_epoch_results is None
+    assert len(logger._buffer_files) == 1
     vw.fit_params.state = "valid"
     logger.on_epoch_end()
     assert logger.loss_vals["Validation"] == [(val_loss := val_loss / 5)]
@@ -293,12 +312,20 @@ def test_metric_logger(detector, mocker):  # noqa F811
     assert logger.metric_vals[0][0] == 3
     assert logger.best_loss == val_loss
     assert logger.val_epoch_results == (val_loss, 3)
+    assert len(logger._buffer_files) == 1
 
+    logger.show_plots = True
     logger.on_train_end()
+    logger.show_plots = False
     history = logger.get_loss_history()
     assert history[0]["Training"] == trn_losses
     assert history[0]["Validation"] == [val_loss]
     assert history[1]["test"] == [3]
+    assert len(logger._buffer_files) == 2
+    assert logger._buffer_files[-1] == Path("tests/temp_monitor_1.png")
+    for f in logger._buffer_files:
+        assert not f.exists()
+    assert Path("tests/optimisation_history.gif").exists()
 
     logger.loss_vals["Validation"] = [9, 8, 7, 6, 5, 9]
     logger.metric_vals = [[10, 3, 5, 6, 7, 5]]
