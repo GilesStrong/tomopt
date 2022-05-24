@@ -48,7 +48,7 @@ class DetectorPanel(nn.Module):
         try:
             return torch.distributions.Normal(self.xy, self.xy_span / 4)  # We say that the panel widths corresponds to 2-sigma of the Gaussian
         except ValueError:
-            raise ValueError(f"Invalid parameters for Gaussian: loc={self.xy}, scale={self.xy_span/2}")
+            raise ValueError(f"Invalid parameters for Gaussian: loc={self.xy}, scale={self.xy_span/4}")
 
     def get_resolution(self, xy: Tensor, mask: Optional[Tensor] = None) -> Tensor:
         if not isinstance(self.resolution, Tensor):
