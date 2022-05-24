@@ -247,8 +247,7 @@ def test_metric_logger(detector, mocker):  # noqa F811
     mocker.spy(logger, "_reset")
     mocker.spy(logger, "_snapshot_monitor")
     assert logger.gif_filename == "optimisation_history.gif"
-    # Hack to make a fugure
-    logger.fig = plt.figure(figsize=(5, 5), constrained_layout=True)
+    logger.fig = plt.figure(figsize=(5, 5), constrained_layout=True)  # Hack to make a figure
 
     logger.on_train_begin()
     assert logger._reset.call_count == 1
