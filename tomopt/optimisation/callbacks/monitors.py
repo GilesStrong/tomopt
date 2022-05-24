@@ -354,10 +354,6 @@ class VoxelMetricLogger(MetricLogger):
 
 
 class PanelMetricLogger(MetricLogger):
-    def __init__(self, panel_scale: int = 1, gif_filename: Optional[str] = None, show_plots: bool = IN_NOTEBOOK):
-        super().__init__(gif_filename=gif_filename, show_plots=show_plots)
-        self.panel_scale = panel_scale
-
     def _build_grid_spec(self) -> GridSpec:
         self.n_dets = len(self.wrapper.get_detectors())
         return self.fig.add_gridspec(5 + (self.main_metric_idx is None), 3)
@@ -407,7 +403,7 @@ class PanelMetricLogger(MetricLogger):
                         s.append(s_val)
                     else:
                         l.append(np.concatenate((p.xy.detach().cpu().numpy(), p.z.detach().cpu().numpy())))
-                        s.append(self.panel_scale * p.xy_span.detach().cpu().numpy())
+                        s.append(p.xy_span.detach().cpu().numpy())
                 loc, span = np.array(l), np.array(s)
 
                 for ax in axes:
