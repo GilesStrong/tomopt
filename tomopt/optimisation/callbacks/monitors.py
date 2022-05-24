@@ -131,7 +131,7 @@ class MetricLogger(Callback):
 
         self.tmp_loss, self.batch_cnt, self.volume_cnt = 0.0, 0, 0
         self.tmp_sub_losses: Dict[str, float] = defaultdict(float)
-        if self.gif_filename is not None and self.wrapper.fit_params.state == "train":
+        if self.gif_filename is not None and self.wrapper.fit_params.state == "train" and self.show_plots:
             self._snapshot_monitor()
 
     def on_volume_end(self) -> None:
@@ -248,7 +248,7 @@ class MetricLogger(Callback):
             os.remove(filename)
 
     def on_train_end(self) -> None:
-        if self.gif_filename is not None:
+        if self.gif_filename is not None and self.show_plots:
             self._snapshot_monitor()
             self._create_gif()
         plt.clf()  # prevent plot be shown twice
