@@ -66,7 +66,7 @@ def get_voxel_layers(init_res: float = 1e4, init_eff: float = 0.5) -> nn.ModuleL
     return nn.ModuleList(layers)
 
 
-def get_panel_layers(init_res: float = 1e5, init_eff: float = 0.9, n_panels: int = 4) -> nn.ModuleList:
+def get_panel_layers(init_res: float = 1e5, init_eff: float = 0.9, n_panels: int = 4, init_xy_span=[3.0, 3.0]) -> nn.ModuleList:
     layers = []
     layers.append(
         PanelDetectorLayer(
@@ -75,7 +75,9 @@ def get_panel_layers(init_res: float = 1e5, init_eff: float = 0.9, n_panels: int
             z=1,
             size=2 * SZ,
             panels=[
-                DetectorPanel(res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / n_panels)], init_xy_span=[1.0, 1.0], area_cost_func=area_cost)
+                DetectorPanel(
+                    res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / n_panels)], init_xy_span=init_xy_span, area_cost_func=area_cost
+                )
                 for i in range(n_panels)
             ],
         )
@@ -90,7 +92,7 @@ def get_panel_layers(init_res: float = 1e5, init_eff: float = 0.9, n_panels: int
             size=2 * SZ,
             panels=[
                 DetectorPanel(
-                    res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / n_panels)], init_xy_span=[1.0, 1.0], area_cost_func=area_cost
+                    res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / n_panels)], init_xy_span=init_xy_span, area_cost_func=area_cost
                 )
                 for i in range(n_panels)
             ],
@@ -502,7 +504,7 @@ def test_voxel_x0_inferer_methods():
 
 @pytest.mark.flaky(max_runs=2, min_passes=1)
 def test_panel_x0_inferer_methods():
-    volume = Volume(get_panel_layers(init_res=1e3))
+    volume = Volume(get_panel_layers(init_res=1e5))
     gen = MuonGenerator2016.from_volume(volume)
     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
     mu = MuonBatch(mus, init_z=volume.h)
@@ -619,7 +621,7 @@ def test_x0_inferer_scatter_inversion(mocker, voxel_scatter_batch):  # noqa F811
 @pytest.mark.flaky(max_runs=2, min_passes=1)
 @pytest.mark.parametrize("dvi_class, weighted", [[DeepVolumeInferer, False], [WeightedDeepVolumeInferer, True]])
 def test_deep_volume_inferer(dvi_class: Type[DeepVolumeInferer], weighted: bool):
-    volume = Volume(get_panel_layers(init_res=1e3))
+    volume = Volume(get_panel_layers(init_res=1e4))
     gen = MuonGenerator2016.from_volume(volume)
     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
     mu = MuonBatch(mus, init_z=volume.h)
