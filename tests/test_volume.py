@@ -408,7 +408,7 @@ def test_detector_panel_methods():
         DetectorPanel(res=1, eff=0.5, init_xyz=[0.0, 0.0, 0.9], init_xy_span=[0.5, np.NaN], area_cost_func=area_cost).get_gauss()
     gauss = panel.get_gauss()
     assert (gauss.loc == Tensor([0.0, 0.01])).all()
-    assert (gauss.scale == Tensor([0.5, 0.51])).all()
+    assert (gauss.scale == Tensor([0.5 / 4, 0.51 / 4])).all()
 
     # get_resolution
     res = panel.get_resolution(Tensor([[0, 0.01], [0.1, 0.1], [0.5, 0.5], [0, 0.1]]))
