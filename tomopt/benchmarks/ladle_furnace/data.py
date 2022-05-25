@@ -44,6 +44,12 @@ class LadleFurnacePassiveGenerator(AbsPassiveGenerator):
                 )
             elif z > slag_z:
                 x0 = X0["air"] * torch.ones(self.xy_shp)
+
+            # Add furnace walls
+            x0[0, :] = self.x0_furnace
+            x0[-1, :] = self.x0_furnace
+            x0[:, 0] = self.x0_furnace
+            x0[:, -1] = self.x0_furnace
             return x0
 
-        return generator, mat_z - self.size
+        return generator, mat_z
