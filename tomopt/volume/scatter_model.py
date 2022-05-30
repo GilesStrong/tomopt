@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Union, Tuple
+from typing import Dict, Optional, Union
 import h5py
 import os
 from fastcore.all import Path
@@ -53,7 +53,7 @@ class ScatterModel:
         self.dxy_params = self.dxy_params.to(self._device)  # Is this alredy in the volume frame or still in the muon's ref frame?
         self.mom_lookup = self.mom_lookup.to(self._device)
 
-    def compute_scattering(self, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor, mom: Tensor) -> Tuple[Tensor, Tensor]:
+    def compute_scattering(self, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor, mom: Tensor) -> Dict[str, Tensor]:
         if deltaz != self.deltaz:
             raise ValueError(f"Model only works for a fixed delta z step of {self.deltaz}.")
         if self._device is None:
@@ -80,7 +80,7 @@ class ScatterModel:
         dthetaphi = sign[:, :2] * dthetaphi
         dxy = sign[:, 2:] * dxy
 
-        return dthetaphi, dxy
+        return {"dtheta": dthetaphi[:, 0], "dphi": dthetaphi[:, 1], "dx": dxy[:, 0], "dy": dxy[:, 1]}
 
 
 SCATTER_MODEL = ScatterModel()

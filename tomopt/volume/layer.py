@@ -1,4 +1,4 @@
-from typing import Iterator, Optional, Callable, Dict, Tuple, List, Union
+from typing import Iterator, Optional, Callable, Dict, List, Union
 import numpy as np
 from abc import ABCMeta, abstractmethod
 import math
@@ -28,9 +28,8 @@ class Layer(nn.Module):
         )
         self.rad_length: Optional[Tensor] = None
 
-    def _geant_scatter(self, *, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor, mom: Tensor) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-        dthetaphi, dxy = SCATTER_MODEL.compute_scattering(x0=x0, deltaz=deltaz, theta=theta, mom=mom)
-        return dthetaphi[:, 0], dthetaphi[:, 1], dxy[:, 0], dxy[:, 1]
+    def _geant_scatter(self, *, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor, mom: Tensor) -> Dict[str, Tensor]:
+        return SCATTER_MODEL.compute_scattering(x0=x0, deltaz=deltaz, theta=theta, mom=mom)
 
     @staticmethod
     def _compute_n_x0(*, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor) -> Tensor:
@@ -38,7 +37,7 @@ class Layer(nn.Module):
 
     def _pdg_scatter(
         self, *, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor, log_term: bool = True
-    ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+    ) -> Dict[str, Tensor]:
         r"""
         Returns dx, dy, dtheta, dphi of the muons in the refernce frame of the volume
         """
@@ -69,11 +68,11 @@ class Layer(nn.Module):
         # to rescale them by cos of thetax and thetay
         dx = dh_msc * torch.cos(phi_msc) * torch.cos(theta_x)
         dy = dh_msc * torch.sin(phi_msc) * torch.cos(theta_y)
-        return dx, dy, dtheta, dphi
+        return {"dtheta": dtheta, "dphi": dphi, "dx": dx, "dy": dy}
 
     def _compute_displacements(
         self, *, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor
-    ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+    ) -> Dict[str, Tensor]:
         if self.scatter_model == "pdg":
             return self._pdg_scatter(x0=x0, deltaz=deltaz, theta=theta, theta_x=theta_x, theta_y=theta_y, mom=mom)
         elif self.scatter_model == "geant4":
@@ -94,14 +93,14 @@ class Layer(nn.Module):
             xy_idx = self.mu_abs2idx(mu, mask)
 
             x0 = self.rad_length[xy_idx[:, 0], xy_idx[:, 1]]
-            dx, dy, dtheta, dphi = self._compute_displacements(
+            scatterings = self._compute_displacements(
                 x0=x0, deltaz=deltaz, theta=mu.theta[mask], theta_x=mu.theta_x[mask], theta_y=mu.theta_y[mask], mom=mu.mom[mask]
             )
 
             # Update to position at scattering.
-            mu.scatter_dxy(dx=dx, dy=dy, mask=mask)
+            mu.scatter_dxy(dx=scatterings["dx"], dy=scatterings["dy"], mask=mask)
             mu.propagate(deltaz)
-            mu.scatter_dtheta_dphi(dtheta=dtheta, dphi=dphi, mask=mask)
+            mu.scatter_dtheta_dphi(dtheta=scatterings["dtheta"], dphi=scatterings["dphi"], mask=mask)
         else:
             mu.propagate(deltaz)
 
