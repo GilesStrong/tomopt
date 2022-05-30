@@ -9,6 +9,8 @@ import seaborn as sns
 import numpy as np
 from typing import List, Dict, Tuple, Optional, TYPE_CHECKING
 from collections import defaultdict
+import os
+import imageio
 
 if IN_NOTEBOOK:
     from IPython.display import display
@@ -60,8 +62,8 @@ class MetricLogger(Callback):
     h_mid = 8
     w_mid = h_mid * 16 / 9
 
-    def __init__(self, show_plots: bool = IN_NOTEBOOK):
-        self.show_plots = show_plots
+    def __init__(self, gif_filename: Optional[str] = "optimisation_history.gif", show_plots: bool = IN_NOTEBOOK):
+        self.gif_filename, self.show_plots = gif_filename, show_plots
 
     def _reset(self) -> None:
         self.loss_vals: Dict[str, List[float]] = {"Training": [], "Validation": []}
@@ -70,6 +72,7 @@ class MetricLogger(Callback):
         self.val_epoch_results: Optional[Tuple[float, Optional[float]]] = None
         self.metric_cbs: List[EvalMetric] = []
         self.n_trn_batches = len(self.wrapper.fit_params.trn_passives) // self.wrapper.fit_params.passive_bs
+        self._buffer_files: List[str] = []
 
         self.metric_vals: List[List[float]] = [[] for _ in self.wrapper.fit_params.metric_cbs]
         self.main_metric_idx: Optional[int] = None
@@ -117,6 +120,10 @@ class MetricLogger(Callback):
         super().on_train_begin()
         self._reset()
 
+    def _snapshot_monitor(self) -> None:
+        self._buffer_files.append(self.wrapper.fit_params.cb_savepath / f"temp_monitor_{len(self._buffer_files)}.png")
+        self.fig.savefig(self._buffer_files[-1], bbox_inches="tight")
+
     def on_epoch_begin(self) -> None:
         r"""
         Prepare to track new loss
@@ -124,6 +131,8 @@ class MetricLogger(Callback):
 
         self.tmp_loss, self.batch_cnt, self.volume_cnt = 0.0, 0, 0
         self.tmp_sub_losses: Dict[str, float] = defaultdict(float)
+        if self.gif_filename is not None and self.wrapper.fit_params.state == "train" and self.show_plots:
+            self._snapshot_monitor()
 
     def on_volume_end(self) -> None:
         if self.wrapper.fit_params.state == "valid" and self.wrapper.loss_func is not None and hasattr(self.wrapper.loss_func, "sub_losses"):
@@ -229,7 +238,19 @@ class MetricLogger(Callback):
                     self.metric_ax.set_xlabel("Epoch", fontsize=0.8 * self.lbl_sz, color=self.lbl_col)
                     self.metric_ax.set_ylabel(self.wrapper.fit_params.metric_cbs[self.main_metric_idx].name, fontsize=0.8 * self.lbl_sz, color=self.lbl_col)
 
+    def _create_gif(self) -> None:
+        with imageio.get_writer(self.wrapper.fit_params.cb_savepath / self.gif_filename, mode="I") as writer:
+            for filename in self._buffer_files:
+                image = imageio.imread(filename)
+                writer.append_data(image)
+
+        for filename in set(self._buffer_files):
+            os.remove(filename)
+
     def on_train_end(self) -> None:
+        if self.gif_filename is not None and self.show_plots:
+            self._snapshot_monitor()
+            self._create_gif()
         plt.clf()  # prevent plot be shown twice
         self.metric_cbs = self.wrapper.fit_params.metric_cbs  # Copy referenece since fit_params gets set to None at end of training
 
@@ -375,8 +396,14 @@ class PanelMetricLogger(MetricLogger):
                 if not isinstance(det, PanelDetectorLayer):
                     raise ValueError(f"Detector {det} is not a PanelDetectorLayer")
                 for p in det.panels:
-                    l.append(np.concatenate((p.xy.detach().cpu().numpy(), p.z.detach().cpu().numpy())))
-                    s.append(p.xy_span.detach().cpu().numpy())
+                    if det.type_label == "heatmap":
+                        l_val = np.concatenate((p.mu.detach().cpu().numpy().mean(axis=0), p.z.detach().cpu().numpy()))
+                        s_val = p.sig.detach().cpu().numpy().mean(axis=0)
+                        l.append(l_val)
+                        s.append(s_val)
+                    else:
+                        l.append(np.concatenate((p.xy.detach().cpu().numpy(), p.z.detach().cpu().numpy())))
+                        s.append(p.xy_span.detach().cpu().numpy())
                 loc, span = np.array(l), np.array(s)
 
                 for ax in axes:

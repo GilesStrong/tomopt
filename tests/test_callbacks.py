@@ -4,6 +4,9 @@ from pytest_mock import mocker  # noqa F401
 import math
 import pandas as pd
 from functools import partial
+from glob import glob
+from fastcore.all import Path
+import matplotlib.pyplot as plt
 
 import torch
 from torch import Tensor
@@ -22,10 +25,12 @@ from tomopt.optimisation.callbacks import (
     CostCoefWarmup,
     PanelOptConfig,
     MuonResampler,
+    HeatMapGif,
+    ClassPredHandler,
 )
 from tomopt.optimisation.loss import VoxelX0Loss
 from tomopt.optimisation.wrapper.volume_wrapper import AbsVolumeWrapper, FitParams, PanelVolumeWrapper
-from tomopt.volume import VoxelDetectorLayer, PanelDetectorLayer, DetectorPanel
+from tomopt.volume import VoxelDetectorLayer, PanelDetectorLayer, DetectorPanel, DetectorHeatMap
 from tomopt.muon import MuonBatch, MuonGenerator2016
 
 LW = Tensor([1, 1])
@@ -60,7 +65,7 @@ def get_voxel_detector() -> VoxelDetectorLayer:
     return VoxelDetectorLayer("above", init_res=1, init_eff=1, lw=LW, z=1, size=SZ, eff_cost_func=eff_cost, res_cost_func=res_cost)
 
 
-def get_panel_detector() -> VoxelDetectorLayer:
+def get_panel_detector() -> PanelDetectorLayer:
     return PanelDetectorLayer(
         pos="above",
         lw=LW,
@@ -182,6 +187,39 @@ def test_pred_handler():
     assert preds[1][1][0] == 3
 
 
+def test_class_pred_handler():
+    cb = ClassPredHandler({0.5: 0, 1.5: 1, 3.0: 2})
+    assert check_callback_base(cb)
+
+    cb.on_pred_begin()
+    assert isinstance(cb.preds, list)
+    assert len(cb.preds) == 0
+
+    vw = MockWrapper()
+    vw.fit_params = FitParams(state="train", pred=Tensor([1]))
+    cb.set_wrapper(vw)
+    vw.volume = MockVolume()
+    vw.volume.target = Tensor([0.5, 0.5, 3.0])
+
+    cb.on_x0_pred_end()
+    assert len(cb.preds) == 0
+    vw.fit_params.state = "valid"
+    cb.on_x0_pred_end()
+    assert len(cb.preds) == 0
+    vw.fit_params.state = "test"
+    cb.on_x0_pred_end()
+    assert len(cb.preds) == 1
+    vw.fit_params.pred = vw.fit_params.pred + 1
+    cb.on_x0_pred_end()
+    assert len(cb.preds) == 2
+    assert cb.preds[0][0] == 1
+    assert cb.preds[1][0] == 2
+
+    preds = cb.get_preds()
+    assert (preds[0][1][:2] == 0).all()
+    assert preds[0][1][2] == 2
+
+
 @pytest.mark.parametrize("detector", ["none", "voxel", "panel"])
 def test_metric_logger(detector, mocker):  # noqa F811
     vw = MockWrapper()
@@ -197,9 +235,19 @@ def test_metric_logger(detector, mocker):  # noqa F811
         det = get_panel_detector()
         vw.get_detectors = lambda: [det]
     vw.loss_func = VoxelX0Loss(target_budget=1, cost_coef=1)
-    vw.fit_params = FitParams(pred=10, trn_passives=range(10), passive_bs=2, metric_cbs=[EvalMetric(name="test", main_metric=True, lower_metric_better=True)])
+    vw.fit_params = FitParams(
+        pred=10,
+        trn_passives=range(10),
+        passive_bs=2,
+        state="train",
+        metric_cbs=[EvalMetric(name="test", main_metric=True, lower_metric_better=True)],
+        cb_savepath=Path("tests"),
+    )
     logger.set_wrapper(vw)
     mocker.spy(logger, "_reset")
+    mocker.spy(logger, "_snapshot_monitor")
+    assert logger.gif_filename == "optimisation_history.gif"
+    logger.fig = plt.figure(figsize=(5, 5), constrained_layout=True)  # Hack to make a figure
 
     logger.on_train_begin()
     assert logger._reset.call_count == 1
@@ -212,11 +260,17 @@ def test_metric_logger(detector, mocker):  # noqa F811
     assert len(logger.metric_vals) == 1
     assert len(logger.metric_vals[0]) == 0
 
+    logger.show_plots = True
     logger.on_epoch_begin()
+    logger.show_plots = False
     assert logger.tmp_loss == 0
     assert logger.batch_cnt == 0
     assert logger.volume_cnt == 0
     assert len(logger.tmp_sub_losses.keys()) == 0
+    assert logger._snapshot_monitor.call_count == 1
+    assert len(logger._buffer_files) == 1
+    assert logger._buffer_files[-1] == Path("tests/temp_monitor_0.png")
+    assert logger._buffer_files[-1].exists()
 
     for state in ["train", "valid"]:
         vw.fit_params.state = state
@@ -246,6 +300,7 @@ def test_metric_logger(detector, mocker):  # noqa F811
     vw.fit_params.state = "train"
     logger.on_epoch_end()
     assert logger.val_epoch_results is None
+    assert len(logger._buffer_files) == 1
     vw.fit_params.state = "valid"
     logger.on_epoch_end()
     assert logger.loss_vals["Validation"] == [(val_loss := val_loss / 5)]
@@ -256,12 +311,20 @@ def test_metric_logger(detector, mocker):  # noqa F811
     assert logger.metric_vals[0][0] == 3
     assert logger.best_loss == val_loss
     assert logger.val_epoch_results == (val_loss, 3)
+    assert len(logger._buffer_files) == 1
 
+    logger.show_plots = True
     logger.on_train_end()
+    logger.show_plots = False
     history = logger.get_loss_history()
     assert history[0]["Training"] == trn_losses
     assert history[0]["Validation"] == [val_loss]
     assert history[1]["test"] == [3]
+    assert len(logger._buffer_files) == 2
+    assert logger._buffer_files[-1] == Path("tests/temp_monitor_1.png")
+    for f in logger._buffer_files:
+        assert not f.exists()
+    assert Path("tests/optimisation_history.gif").exists()
 
     logger.loss_vals["Validation"] = [9, 8, 7, 6, 5, 9]
     logger.metric_vals = [[10, 3, 5, 6, 7, 5]]
@@ -434,7 +497,7 @@ def test_panel_opt_config():
                 assert vw.get_opt_lr("xy_span_opt") == xy_span_rate / (xy_span_mult / 2)
 
 
-def test_data_callback():
+def test_muon_resampler_callback():
     # Check checker
     volume = MockVolume()
     l = MockLayer()
@@ -476,3 +539,78 @@ def test_data_callback():
     mr.on_mu_batch_begin()
     assert vw.fit_params.mu.z == volume.h
     assert mr.check_mu_batch(vw.fit_params.mu, volume).sum() == 1000
+
+
+def get_heatmap_detector() -> PanelDetectorLayer:
+    return PanelDetectorLayer(
+        pos="above",
+        lw=LW,
+        z=1,
+        size=2 * SZ,
+        panels=[
+            DetectorHeatMap(
+                res=1.0,
+                eff=1.0,
+                init_xyz=[0.5, 0.5, 0.9],
+                init_xy_span=[-0.5, 0.5],
+                area_cost_func=area_cost,
+            )
+        ],
+    )
+
+
+def test_no_more_nans_heatmap():
+    cb = NoMoreNaNs()
+    assert check_callback_base(cb)
+
+    l = get_heatmap_detector()
+    p = l.panels[0]
+    p.mu.grad = p.mu.data
+    p.z.grad = p.z.data
+    p.sig.grad = p.sig.data
+    p.norm.grad = p.norm.data
+    p.mu.grad[:1] = Tensor([np.nan])
+    p.z.grad[:1] = Tensor([np.nan])
+    p.sig.grad[:1] = Tensor([np.nan])
+    p.norm.grad[:1] = Tensor([np.nan])
+    assert p.mu.grad.sum() != p.mu.grad.sum()
+    assert p.z.grad.sum() != p.z.grad.sum()
+    assert p.sig.grad.sum() != p.sig.grad.sum()
+    assert p.norm.grad.sum() != p.norm.grad.sum()
+
+    vw = MockWrapper()
+    vw.volume = MockVolume()
+    vw.volume.get_detectors = lambda: [l]
+    cb.set_wrapper(vw)
+    cb.on_backwards_end()
+    assert p.mu.grad.sum() == p.mu.grad.sum()
+    assert p.z.grad.sum() == p.z.grad.sum()
+    assert p.sig.grad.sum() == p.sig.grad.sum()
+    assert p.norm.grad.sum() == p.norm.grad.sum()
+
+
+def test_heat_map_gif():
+    cb = HeatMapGif("heatmap.gif")
+    assert check_callback_base(cb)
+
+    l = get_heatmap_detector()
+    vw = MockWrapper()
+    vw.fit_params = FitParams(state="valid", cb_savepath=Path("tests"))
+    vw.volume = MockVolume()
+    vw.volume.get_detectors = lambda: [l]
+    cb.set_wrapper(vw)
+    cb.on_train_begin()
+
+    assert len(cb._buffer_files) == 0
+    cb.on_epoch_begin()
+    assert len(cb._buffer_files) == 0
+    vw.fit_params.state = "train"
+    cb.on_epoch_begin()
+    cb.on_epoch_begin()
+    assert len(cb._buffer_files) == 2
+    assert len(glob("tests/temp_heatmap_*.png")) == 2
+
+    cb.on_train_end()
+    assert len(cb._buffer_files) == 3
+    assert len(glob("tests/temp_heatmap_*.png")) == 0
+    assert len(glob("tests/heatmap.gif")) == 1

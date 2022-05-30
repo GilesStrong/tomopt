@@ -46,16 +46,16 @@ class DetectorPanel(nn.Module):
 
     def get_gauss(self) -> torch.distributions.Normal:
         try:
-            return torch.distributions.Normal(self.xy, self.xy_span)  # maybe upscale span?
+            return torch.distributions.Normal(self.xy, self.xy_span / 4)  # We say that the panel widths corresponds to 2-sigma of the Gaussian
         except ValueError:
-            raise ValueError(f"Invalid parameters for Gaussian: loc={self.xy}, scale={self.xy_span}")
+            raise ValueError(f"Invalid parameters for Gaussian: loc={self.xy}, scale={self.xy_span/4}")
 
     def get_resolution(self, xy: Tensor, mask: Optional[Tensor] = None) -> Tensor:
         if not isinstance(self.resolution, Tensor):
             raise ValueError(f"{self.resolution} is not a Tensor for some reason.")  # To appease MyPy
         if self.training or not self.realistic_validation:
             g = self.get_gauss()
-            res = self.resolution * torch.exp(g.log_prob(xy)) / torch.exp(g.log_prob(self.xy))  # Maybe detach the normalisation?
+            res = self.resolution * torch.exp(g.log_prob(xy)) / torch.exp(g.log_prob(self.xy))
         else:
             if mask is None:
                 mask = self.get_xy_mask(xy)
@@ -68,7 +68,7 @@ class DetectorPanel(nn.Module):
             raise ValueError(f"{self.efficiency} is not a Tensor for some reason.")  # To appease MyPy
         if self.training or not self.realistic_validation:
             g = self.get_gauss()
-            scale = torch.exp(g.log_prob(xy)) / torch.exp(g.log_prob(self.xy))  # Maybe detach the normalisation?
+            scale = torch.exp(g.log_prob(xy)) / torch.exp(g.log_prob(self.xy))
             if not as_2d:
                 scale = torch.prod(scale, dim=-1)  # Maybe weight product by xy distance?
             eff = self.efficiency * scale

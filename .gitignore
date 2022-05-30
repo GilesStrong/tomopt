@@ -2,8 +2,15 @@
 *.pt
 *.h5
 *.hdf5
+*.gif
+temp*
 **.DS_Store
 **train_weights
+*.gif
+*.png
+*.jpg
+*.jpeg
+*.csv
 
 # settings
 .vscode/*

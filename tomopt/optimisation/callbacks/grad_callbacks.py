@@ -14,8 +14,14 @@ class NoMoreNaNs(Callback):
                 torch.nan_to_num_(l.efficiency.grad, 0)
             elif isinstance(l, PanelDetectorLayer):
                 for p in l.panels:
-                    torch.nan_to_num_(p.xy.grad, 0)
-                    torch.nan_to_num_(p.z.grad, 0)
-                    torch.nan_to_num_(p.xy_span.grad, 0)
+                    if l.type_label == "heatmap":
+                        torch.nan_to_num_(p.mu.grad, 0)
+                        torch.nan_to_num_(p.norm.grad, 0)
+                        torch.nan_to_num_(p.sig.grad, 0)
+                        torch.nan_to_num_(p.z.grad, 0)
+                    else:
+                        torch.nan_to_num_(p.xy.grad, 0)
+                        torch.nan_to_num_(p.z.grad, 0)
+                        torch.nan_to_num_(p.xy_span.grad, 0)
             else:
                 raise NotImplementedError(f"NoMoreNaNs does not yet support {type(l)}")

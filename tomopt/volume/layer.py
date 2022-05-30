@@ -10,7 +10,8 @@ import torch.nn.functional as F
 from .scatter_model import SCATTER_MODEL
 from ..core import DEVICE, SCATTER_COEF_A, SCATTER_COEF_B
 from ..muon import MuonBatch
-from .panel import DetectorPanel
+from tomopt.volume.panel import DetectorPanel
+from tomopt.volume.heatmap import DetectorHeatMap
 
 __all__ = ["PassiveLayer", "VoxelDetectorLayer", "PanelDetectorLayer"]
 
@@ -163,6 +164,7 @@ class AbsDetectorLayer(Layer, metaclass=ABCMeta):
     ):
         super().__init__(lw=lw, z=z, size=size, device=device)
         self.pos = pos
+        self.type_label = ""
 
     @abstractmethod
     def forward(self, mu: MuonBatch) -> None:
@@ -194,6 +196,7 @@ class VoxelDetectorLayer(AbsDetectorLayer):
         self.resolution = nn.Parameter(torch.zeros(list((self.lw / size).long()), device=self.device) + init_res)
         self.efficiency = nn.Parameter(torch.zeros(list((self.lw / size).long()), device=self.device) + init_eff)
         self.eff_cost_func, self.res_cost_func = eff_cost_func, res_cost_func
+        self.type_label = "voxel"
 
     def conform_detector(self) -> None:
         with torch.no_grad():
@@ -231,18 +234,15 @@ class VoxelDetectorLayer(AbsDetectorLayer):
 
 
 class PanelDetectorLayer(AbsDetectorLayer):
-    def __init__(
-        self,
-        pos: str,
-        lw: Tensor,
-        z: float,
-        size: float,
-        panels: Union[List[DetectorPanel], nn.ModuleList],  # nn.ModuleList[DetectorPanel]
-    ):
+    def __init__(self, pos: str, lw: Tensor, z: float, size: float, panels: Union[List[DetectorPanel], List[DetectorHeatMap], nn.ModuleList]):
         if isinstance(panels, list):
             panels = nn.ModuleList(panels)
         super().__init__(pos=pos, lw=lw, z=z, size=size, device=self.get_device(panels))
         self.panels = panels
+        if isinstance(panels[0], DetectorHeatMap):
+            self.type_label = "heatmap"
+        elif isinstance(panels[0], DetectorPanel):
+            self.type_label = "panel"
 
     @staticmethod
     def get_device(panels: nn.ModuleList) -> torch.device:
@@ -256,7 +256,7 @@ class PanelDetectorLayer(AbsDetectorLayer):
     def get_panel_zorder(self) -> List[int]:
         return list(np.argsort([p.z.detach().cpu().item() for p in self.panels])[::-1])
 
-    def yield_zordered_panels(self) -> Iterator[DetectorPanel]:
+    def yield_zordered_panels(self) -> Union[Iterator[DetectorPanel], Iterator[DetectorHeatMap]]:
         for i in self.get_panel_zorder():
             yield self.panels[i]
 
@@ -264,7 +264,21 @@ class PanelDetectorLayer(AbsDetectorLayer):
         lw = self.lw.detach().cpu().numpy()
         z = self.z.detach().cpu()[0]
         for p in self.panels:
-            p.clamp_params(xyz_low=(0, 0, z - self.size), xyz_high=(lw[0], lw[1], z))
+            if self.type_label == "heatmap":
+                xy_low = p.xy_fix[0] - p.range_mult * p.delta_xy
+                xy_high = p.xy_fix[1] + p.range_mult * p.delta_xy
+                xy_low = torch.max(torch.tensor(0.0), xy_low)
+                xy_high = torch.min(torch.tensor(lw[0]), xy_high)
+
+                p.clamp_params(
+                    musigz_low=(xy_low, 0.0, z - self.size),
+                    musigz_high=(xy_high, lw[1], z),
+                )
+            else:
+                p.clamp_params(
+                    xyz_low=(0, 0, z - self.size),
+                    xyz_high=(lw[0], lw[1], z),
+                )
 
     def forward(self, mu: MuonBatch) -> None:
         for p in self.yield_zordered_panels():
