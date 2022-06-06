@@ -25,10 +25,9 @@ class LadleFurnacePassiveGenerator(AbsPassiveGenerator):
 
         self.xy_shp = (self.lw / self.size).astype(int).tolist()
         self.fill_z_range = ((self.z_range[0]) + self.size, self.z_range[1])
-        self.fill_h = self.fill_z_range[1] - self.fill_z_range[0]
 
     def _generate(self) -> Tuple[Callable[..., Tensor], Tensor]:
-        mat_z = self.fill_z_range[0] + (self.fill_h * torch.rand(1, device=self.volume.device))
+        mat_z = self.size + self.fill_z_range[0] + ((self.fill_z_range[1] - (self.fill_z_range[0] + self.size)) * torch.rand(1, device=self.volume.device))
         slag_z = mat_z + ((self.z_range[1] - mat_z) * torch.rand(1, device=self.volume.device))
 
         def generator(*, z: float, lw: Tensor, size: float) -> Tensor:
@@ -44,8 +43,6 @@ class LadleFurnacePassiveGenerator(AbsPassiveGenerator):
                 )
             elif z > slag_z:
                 x0 = X0["air"] * torch.ones(self.xy_shp)
-
-            # Add furnace walls
             x0[0, :] = self.x0_furnace
             x0[-1, :] = self.x0_furnace
             x0[:, 0] = self.x0_furnace
