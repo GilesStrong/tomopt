@@ -11,8 +11,7 @@ def integer_class_loss(
     target_int: Tensor,
     pred_start_int: int,
     use_mse: bool,
-    batch_weights: Optional[Tensor] = None,
-    target_weights: Optional[Tensor] = None,
+    weight: Optional[Tensor] = None,
     reduction: str = "mean",
 ) -> Tensor:
     ints = torch.arange(pred_start_int, pred_start_int + int_probs.size(1))
@@ -21,18 +20,18 @@ def integer_class_loss(
         diffs = diffs**2
     else:
         diffs = diffs.abs()
-    if target_weights is not None:
-        diffs = diffs * target_weights  # Weight classes by importance
     diffs = torch.softmax(diffs, dim=-1)
     loss = diffs * int_probs
     loss = loss.sum(-1)
 
-    if batch_weights is not None:
-        loss = loss * batch_weights
+    if weight is not None:
+        loss = loss * weight
 
     if reduction == "mean":
         return loss.mean(-1)
     elif reduction == "sum":
         return loss.sum(-1)
-    else:
+    elif reduction == "none":
         return loss
+    else:
+        raise ValueError(f"Unknown reduction {reduction}. Please use ['mean', 'sum', 'none'].")
