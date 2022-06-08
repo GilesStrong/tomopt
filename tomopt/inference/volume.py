@@ -520,8 +520,7 @@ class AbsIntClassifierFromX0(AbsVolumeInferer):
         return self.efficiency.sum()
 
     @abstractmethod
-    @staticmethod
-    def x02probs(vox_preds: Tensor, vox_weights: Tensor) -> Tensor:
+    def x02probs(self, vox_preds: Tensor, vox_weights: Tensor) -> Tensor:
         """Convert voxelwise X0 predictions to int probabilities"""
         pass
 
