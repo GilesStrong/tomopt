@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import Tuple, Optional, Dict, List, Union, Type
+from typing import Tuple, Optional, Dict, List, Union, Type, Callable
 
 import torch
 from torch import Tensor, nn
@@ -465,7 +465,9 @@ class DenseBlockClassifierFromX0s(AbsVolumeInferer):
 
     def add_scatters(self, scatters: AbsScatterBatch) -> None:
         self.x0_inferer.add_scatters(scatters)
-        self.efficiencies.append(self.compute_efficiency(scatters=scatters))
+        self.efficiencies.append(
+            self.compute_efficiency(scatters=scatters)
+        )  # Giles: why not just grab the efficiencies from self.x0_inferer rather than compute them twice?
 
     def _get_weight(self) -> Tensor:
         """Maybe alter this to include resolution/pred uncertainties"""
@@ -491,3 +493,49 @@ class DenseBlockClassifierFromX0s(AbsVolumeInferer):
         pred = torch.sigmoid(r)
         weight = self._get_weight()
         return pred[None, None], weight
+
+
+class AbsIntClassifierFromX0(AbsVolumeInferer):
+    """Abstract class for inferring"""
+
+    def __init__(
+        self, partial_x0_inferer: Type[AbsX0Inferer], volume: Volume, output_probs: bool = True, class2float: Optional[Callable[[Tensor], Tensor]] = None
+    ):
+        super().__init__(volume=volume)
+        self.output_probs, self.class2float = output_probs, class2float
+        self.x0_inferer = partial_x0_inferer(self.volume)
+
+        self.efficiency: Optional[Tensor] = None
+        self.scatter_batches = self.x0_inferer.scatter_batches
+        self.efficiencies = self.x0_inferer.efficiencies
+
+    def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
+        return self.x0_inferer.compute_efficiency(scatters=scatters)
+
+    def add_scatters(self, scatters: AbsScatterBatch) -> None:
+        self.x0_inferer.add_scatters(scatters)
+
+    def _get_weight(self) -> Tensor:
+        """Maybe alter this to include resolution/pred uncertainties"""
+        return self.efficiency.sum()
+
+    @abstractmethod
+    @staticmethod
+    def x02probs(vox_preds: Tensor, vox_weights: Tensor) -> Tensor:
+        """Convert voxelwise X0 predictions to int probabilities"""
+        pass
+
+    def get_prediction(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
+        self.efficiency = torch.cat(self.efficiencies, dim=0)
+        vox_preds, vox_weights = self.x0_inferer.get_prediction()
+
+        probs = self.x02probs(vox_preds, vox_weights)
+        weight = self._get_weight()
+        if self.output_probs:
+            return probs, weight
+        else:
+            pred = torch.argmax(probs, dim=-1)
+            if self.class2float is None:
+                return pred, weight
+            else:
+                return self.class2float(pred), weight
