@@ -30,7 +30,7 @@ class VolumeTargetPredHandler(PredHandler):
     If a x02id lookup is provided, it transforms the target from an X0 value to a material class ID.
     """
 
-    def __init__(self, x02id: Optional[Dict[float, int]]):
+    def __init__(self, x02id: Optional[Dict[float, int]] = None):
         self.x02id = x02id
 
     def on_x0_pred_end(self) -> None:
