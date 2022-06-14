@@ -14,13 +14,14 @@ def integer_class_loss(
     weight: Optional[Tensor] = None,
     reduction: str = "mean",
 ) -> Tensor:
-    ints = torch.arange(pred_start_int, pred_start_int + int_probs.size(1))
+
+    ints = torch.arange(pred_start_int, pred_start_int + int_probs.size(0))
     diffs = target_int - ints
     if use_mse:
         diffs = diffs**2
     else:
         diffs = diffs.abs()
-    diffs = torch.softmax(diffs, dim=-1)
+    diffs = diffs / diffs.sum(-1, keepdim=True)
     loss = diffs * int_probs
     loss = loss.sum(-1)
 

@@ -8,7 +8,7 @@ from torch.nn import functional as F
 from .sub_losses import integer_class_loss
 from ...volume import Volume
 
-__all__ = ["VoxelX0Loss", "VoxelClassLoss", "VolumeClassLoss"]
+__all__ = ["VoxelX0Loss", "VoxelClassLoss", "VolumeClassLoss", "VolumeIntClassLoss"]
 
 
 class AbsDetectorLoss(nn.Module, metaclass=ABCMeta):
@@ -126,7 +126,7 @@ class VolumeIntClassLoss(AbsDetectorLoss):
     def __init__(
         self,
         *,
-        targ2int: Callable[[Tensor], Tensor],
+        targ2int: Callable[[Tensor, Volume], Tensor],
         pred_int_start: int,
         use_mse: bool,
         target_budget: float,
@@ -139,6 +139,6 @@ class VolumeIntClassLoss(AbsDetectorLoss):
         self.targ2int, self.pred_int_start, self.use_mse = targ2int, pred_int_start, use_mse
 
     def _get_inference_loss(self, pred: Tensor, inv_pred_weight: Tensor, volume: Volume) -> Tensor:
-        int_targ = self.targ2int(volume.target.clone())
+        int_targ = self.targ2int(volume.target.clone(), volume)
         loss = integer_class_loss(pred, int_targ, pred_start_int=self.pred_int_start, use_mse=self.use_mse, reduction="none")
         return torch.mean(loss / inv_pred_weight)

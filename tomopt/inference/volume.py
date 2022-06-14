@@ -499,7 +499,11 @@ class AbsIntClassifierFromX0(AbsVolumeInferer):
     """Abstract class for inferring"""
 
     def __init__(
-        self, partial_x0_inferer: Type[AbsX0Inferer], volume: Volume, output_probs: bool = True, class2float: Optional[Callable[[Tensor], Tensor]] = None
+        self,
+        partial_x0_inferer: Type[AbsX0Inferer],
+        volume: Volume,
+        output_probs: bool = True,
+        class2float: Optional[Callable[[Tensor, Volume], Tensor]] = None,
     ):
         super().__init__(volume=volume)
         self.output_probs, self.class2float = output_probs, class2float
@@ -537,4 +541,4 @@ class AbsIntClassifierFromX0(AbsVolumeInferer):
             if self.class2float is None:
                 return pred, weight
             else:
-                return self.class2float(pred), weight
+                return self.class2float(pred, self.volume), weight
