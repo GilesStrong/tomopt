@@ -416,11 +416,7 @@ def test_integer_class_loss():
     ur_loss = integer_class_loss(
         int_probs=F.softmax(Tensor([[10, 0, 0, 0], [10, 0, 0, 0]]), dim=1), target_int=Tensor([[0], [1]]), pred_start_int=0, use_mse=False, reduction="none"
     )
-    assert ur_loss.shape == torch.Size(
-        [
-            2,
-        ]
-    )
+    assert ur_loss.shape == torch.Size([2, 1])
     s_loss = integer_class_loss(
         int_probs=F.softmax(Tensor([[10, 0, 0, 0], [10, 0, 0, 0]]), dim=1), target_int=Tensor([[0], [1]]), pred_start_int=0, use_mse=False, reduction="sum"
     )
@@ -436,16 +432,12 @@ def test_integer_class_loss():
     loss = integer_class_loss(
         int_probs=F.softmax(Tensor([[10, 0, 0, 0], [10, 0, 0, 0]]), dim=1),
         target_int=Tensor([[0], [0]]),
-        weight=Tensor([1, 10]),
+        weight=Tensor([[1], [10]]),
         pred_start_int=0,
         use_mse=False,
         reduction="none",
     )
-    assert loss.shape == torch.Size(
-        [
-            2,
-        ]
-    )
+    assert loss.shape == torch.Size([2, 1])
     assert ((loss[0] * 10) - loss[1]).abs() < 1e-5
 
     # diff check

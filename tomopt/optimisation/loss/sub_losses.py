@@ -23,7 +23,7 @@ def integer_class_loss(
         diffs = diffs.abs()
     diffs = diffs / diffs.sum(-1, keepdim=True)
     loss = diffs * int_probs
-    loss = loss.sum(-1)
+    loss = loss.sum(-1, keepdim=True)
 
     if weight is not None:
         loss = loss * weight
