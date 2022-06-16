@@ -384,3 +384,6 @@ def test_volume_int_class_loss(mocker):  # noqa F811
     loss_func.pred_int_start = 1
     one_loss = loss_func(F.softmax(Tensor([[10, 0, 0, 0]]), dim=1), 1, volume)
     assert one_loss < zero_loss
+    # targ2int works
+    volume._target = Tensor([1.7])
+    assert loss_func(F.softmax(Tensor([[10, 0, 0, 0]]), dim=1), 1, volume) == one_loss
