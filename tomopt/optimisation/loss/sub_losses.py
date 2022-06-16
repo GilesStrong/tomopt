@@ -15,13 +15,14 @@ def integer_class_loss(
     reduction: str = "mean",
 ) -> Tensor:
 
-    ints = torch.arange(pred_start_int, pred_start_int + int_probs.size(0))
+    ints = torch.arange(pred_start_int, pred_start_int + int_probs.size(-1))
     diffs = target_int - ints
     if use_mse:
         diffs = diffs**2
     else:
         diffs = diffs.abs()
     diffs = diffs / diffs.sum(-1, keepdim=True)
+    print(diffs)
     loss = diffs * int_probs
     loss = loss.sum(-1)
 
@@ -29,9 +30,9 @@ def integer_class_loss(
         loss = loss * weight
 
     if reduction == "mean":
-        return loss.mean(-1)
+        return loss.mean()
     elif reduction == "sum":
-        return loss.sum(-1)
+        return loss.sum()
     elif reduction == "none":
         return loss
     else:
