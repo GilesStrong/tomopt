@@ -9,7 +9,7 @@ import torch
 from torch import Tensor, nn
 import torch.nn.functional as F
 
-from tomopt.volume import PassiveLayer, VoxelDetectorLayer, Volume, PanelDetectorLayer, DetectorPanel
+from tomopt.volume import PassiveLayer, VoxelDetectorLayer, Volume, PanelDetectorLayer, DetectorPanel, AbsIntClassifierFromX0
 from tomopt.muon import MuonBatch, MuonGenerator2016
 from tomopt.core import X0
 from tomopt.inference import (
@@ -701,3 +701,9 @@ def test_dense_block_classifier_from_x0s():
             assert torch.autograd.grad(p.abs().sum(), panel.z, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
             assert torch.autograd.grad(w.abs().sum(), panel.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
             assert torch.autograd.grad(w.abs().sum(), panel.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+
+
+def test_abs_int_classifier_from_x0():
+    class Inf(AbsIntClassifierFromX0):
+        def x02probs(self, vox_preds: Tensor, vox_weights: Tensor) -> Tensor:
+            pass
