@@ -102,6 +102,4 @@ class LadleFurnaceFillLevelInferrer(AbsIntClassifierFromX0):
             vox_preds = vox_preds[None]
         for f in self.pipeline:
             vox_preds = self.__getattribute__(f)(vox_preds)
-        if self.add_batch_dim:
-            vox_preds = vox_preds[0]
         return F.softmax(vox_preds, dim=-1)
