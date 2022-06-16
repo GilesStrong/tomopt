@@ -5,7 +5,7 @@ import torch
 from torch import nn, Tensor
 import torch.nn.functional as F
 
-from tomopt.optimisation import VoxelX0Loss, VoxelClassLoss, VolumeClassLoss, VolumeIntClassLoss
+from tomopt.optimisation import VoxelX0Loss, VoxelClassLoss, VolumeClassLoss, VolumeIntClassLoss, integer_class_loss
 from tomopt.optimisation.loss.loss import AbsDetectorLoss
 from tomopt.volume import Volume
 
@@ -373,10 +373,12 @@ def test_volume_int_class_loss(mocker):  # noqa F811
     # Far prediction = highest loss
     far_loss = loss_func(F.softmax(Tensor([[1, 3, 5, 10]]), dim=1), 1, volume)
     assert far_loss > close_loss
+
     # MSE affects loss
     loss_func.use_mse = True
     mse_far_loss = loss_func(F.softmax(Tensor([[1, 3, 5, 10]]), dim=1), 1, volume)
     assert mse_far_loss > far_loss
+
     # pred int start works
     loss_func.use_mse = False
     volume._target = Tensor([[1]]).long()
@@ -384,6 +386,69 @@ def test_volume_int_class_loss(mocker):  # noqa F811
     loss_func.pred_int_start = 1
     one_loss = loss_func(F.softmax(Tensor([[10, 0, 0, 0]]), dim=1), 1, volume)
     assert one_loss < zero_loss
+
     # targ2int works
     volume._target = Tensor([1.7])
     assert loss_func(F.softmax(Tensor([[10, 0, 0, 0]]), dim=1), 1, volume) == one_loss
+
+
+def test_integer_class_loss():
+    # Behaviour
+    # Good prediction = low loss
+    good_loss = integer_class_loss(int_probs=F.softmax(Tensor([[10, 0, 0, 0]]), dim=1), target_int=0, pred_start_int=0, use_mse=False)
+    # Close prediction = higher loss
+    close_loss = integer_class_loss(int_probs=F.softmax(Tensor([[1, 10, 5, 3]]), dim=1), target_int=0, pred_start_int=0, use_mse=False)
+    assert close_loss > good_loss
+    # Far prediction = highest loss
+    far_loss = integer_class_loss(int_probs=F.softmax(Tensor([[1, 3, 5, 10]]), dim=1), target_int=0, pred_start_int=0, use_mse=False)
+    assert far_loss > close_loss
+
+    # MSE affects loss
+    mse_far_loss = integer_class_loss(int_probs=F.softmax(Tensor([[1, 3, 5, 10]]), dim=1), target_int=0, pred_start_int=0, use_mse=True)
+    assert mse_far_loss > far_loss
+
+    # pred int start works
+    zero_loss = integer_class_loss(int_probs=F.softmax(Tensor([[10, 0, 0, 0]]), dim=1), target_int=1, pred_start_int=0, use_mse=False)
+    one_loss = integer_class_loss(int_probs=F.softmax(Tensor([[10, 0, 0, 0]]), dim=1), target_int=1, pred_start_int=1, use_mse=False)
+    assert one_loss < zero_loss
+
+    # reductions
+    ur_loss = integer_class_loss(
+        int_probs=F.softmax(Tensor([[10, 0, 0, 0], [10, 0, 0, 0]]), dim=1), target_int=Tensor([[0], [1]]), pred_start_int=0, use_mse=False, reduction="none"
+    )
+    assert ur_loss.shape == torch.Size(
+        [
+            2,
+        ]
+    )
+    s_loss = integer_class_loss(
+        int_probs=F.softmax(Tensor([[10, 0, 0, 0], [10, 0, 0, 0]]), dim=1), target_int=Tensor([[0], [1]]), pred_start_int=0, use_mse=False, reduction="sum"
+    )
+    assert s_loss.shape == torch.Size([])
+    assert ur_loss.sum() == s_loss
+    m_loss = integer_class_loss(
+        int_probs=F.softmax(Tensor([[10, 0, 0, 0], [10, 0, 0, 0]]), dim=1), target_int=Tensor([[0], [1]]), pred_start_int=0, use_mse=False, reduction="mean"
+    )
+    assert m_loss.shape == torch.Size([])
+    assert ur_loss.mean() == m_loss
+
+    # weights
+    loss = integer_class_loss(
+        int_probs=F.softmax(Tensor([[10, 0, 0, 0], [10, 0, 0, 0]]), dim=1),
+        target_int=Tensor([[0], [0]]),
+        weight=Tensor([1, 10]),
+        pred_start_int=0,
+        use_mse=False,
+        reduction="none",
+    )
+    assert loss.shape == torch.Size(
+        [
+            2,
+        ]
+    )
+    assert ((loss[0] * 10) - loss[1]).abs() < 1e-5
+
+    # diff check
+    x = torch.tensor([[10.0, 0.0, 0.0, 0.0]], requires_grad=True)
+    loss = integer_class_loss(int_probs=F.softmax(x, dim=1), target_int=0, pred_start_int=0, use_mse=False)
+    assert torch.autograd.grad(loss, x)[0].abs().sum() > 0

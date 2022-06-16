@@ -22,7 +22,6 @@ def integer_class_loss(
     else:
         diffs = diffs.abs()
     diffs = diffs / diffs.sum(-1, keepdim=True)
-    print(diffs)
     loss = diffs * int_probs
     loss = loss.sum(-1)
 
