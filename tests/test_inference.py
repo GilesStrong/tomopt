@@ -9,7 +9,7 @@ import torch
 from torch import Tensor, nn
 import torch.nn.functional as F
 
-from tomopt.volume import PassiveLayer, VoxelDetectorLayer, Volume, PanelDetectorLayer, DetectorPanel, AbsIntClassifierFromX0
+from tomopt.volume import PassiveLayer, VoxelDetectorLayer, Volume, PanelDetectorLayer, DetectorPanel
 from tomopt.muon import MuonBatch, MuonGenerator2016
 from tomopt.core import X0
 from tomopt.inference import (
@@ -22,6 +22,7 @@ from tomopt.inference import (
     WeightedDeepVolumeInferer,
     DenseBlockClassifierFromX0s,
 )
+from tomopt.inference.volume import AbsIntClassifierFromX0
 from tomopt.volume.layer import Layer
 from tomopt.optimisation import MuonResampler
 from tomopt.utils import jacobian
@@ -704,6 +705,45 @@ def test_dense_block_classifier_from_x0s():
 
 
 def test_abs_int_classifier_from_x0():
+    volume = Volume(get_panel_layers(init_res=1e4))
+    gen = MuonGenerator2016.from_volume(volume)
+    mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
+    mu = MuonBatch(mus, init_z=volume.h)
+    volume(mu)
+    sb = PanelScatterBatch(mu=mu, volume=volume)
+
     class Inf(AbsIntClassifierFromX0):
         def x02probs(self, vox_preds: Tensor, vox_weights: Tensor) -> Tensor:
-            pass
+            return F.softmax(vox_preds.mean([1, 2]), dim=-1)
+
+    # Raw probs
+    inferer = Inf(partial_x0_inferer=PanelX0Inferer, volume=volume, output_probs=True)
+    inferer.add_scatters(sb)
+
+    p, w = inferer.get_prediction()
+    assert p.shape == torch.Size([6])
+    assert w.shape == torch.Size([])
+
+    for l in volume.get_detectors():
+        for panel in l.panels:
+            assert jacobian(p, panel.xy_span).abs().sum() > 0
+            assert jacobian(p, panel.xy).abs().sum() > 0
+            assert jacobian(p, panel.z).abs().sum() > 0
+            assert torch.autograd.grad(w.abs().sum(), panel.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+            assert torch.autograd.grad(w.abs().sum(), panel.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+
+    # Single prediction
+    inferer = Inf(partial_x0_inferer=PanelX0Inferer, volume=volume, output_probs=False)
+    inferer.add_scatters(sb)
+    p, w = inferer.get_prediction()
+    assert p.type() == "torch.LongTensor"
+    assert p.shape == torch.Size([])
+    assert w.shape == torch.Size([])
+
+    # Single float prediction
+    inferer = Inf(partial_x0_inferer=PanelX0Inferer, volume=volume, output_probs=False, class2float=lambda x, v: 3.5 * x)
+    inferer.add_scatters(sb)
+    p, w = inferer.get_prediction()
+    assert p.type() == "torch.FloatTensor"
+    assert p.shape == torch.Size([])
+    assert w.shape == torch.Size([])

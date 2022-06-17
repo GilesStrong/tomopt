@@ -11,6 +11,10 @@ __all__ = ["LadleFurnaceIntClassLoss"]
 
 
 class LadleFurnaceIntClassLoss(VolumeIntClassLoss):
+    r"""
+    Research tested only: no unit tests
+    """
+
     def __init__(
         self,
         *,

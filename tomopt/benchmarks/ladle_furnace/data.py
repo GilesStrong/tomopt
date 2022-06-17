@@ -11,6 +11,10 @@ __all__ = ["LadleFurnacePassiveGenerator"]
 
 
 class LadleFurnacePassiveGenerator(AbsPassiveGenerator):
+    r"""
+    Research tested only: no unit tests
+    """
+
     def __init__(
         self,
         volume: Volume,

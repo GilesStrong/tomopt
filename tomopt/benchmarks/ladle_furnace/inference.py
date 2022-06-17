@@ -10,6 +10,10 @@ __all__ = ["LadleFurnaceFillLevelInferrer"]
 
 
 class LadleFurnaceFillLevelInferrer(AbsIntClassifierFromX0):
+    r"""
+    Research tested only: no unit tests
+    """
+
     def __init__(
         self,
         partial_x0_inferer: Type[AbsX0Inferer],
@@ -98,6 +102,7 @@ class LadleFurnaceFillLevelInferrer(AbsIntClassifierFromX0):
         return x[:, 1:, 1:-1, 1:-1]
 
     def x02probs(self, vox_preds: Tensor, vox_weights: Tensor) -> Tensor:
+        """Can we inlcude the vox_weights? e.g. weighted average?"""
         if self.add_batch_dim:
             vox_preds = vox_preds[None]
         for f in self.pipeline:

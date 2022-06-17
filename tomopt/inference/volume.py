@@ -496,7 +496,7 @@ class DenseBlockClassifierFromX0s(AbsVolumeInferer):
 
 
 class AbsIntClassifierFromX0(AbsVolumeInferer):
-    """Abstract class for inferring"""
+    """Abstract class for inferring integers through multiclass classification from voxelwise X0 predictions"""
 
     def __init__(
         self,
