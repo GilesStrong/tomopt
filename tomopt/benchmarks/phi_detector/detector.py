@@ -12,6 +12,10 @@ __all__ = ["PhiDetectorPanel"]
 
 
 class PhiDetectorPanel(DetectorPanel):
+    r"""
+    Research tested only: no unit tests
+    """
+
     def __init__(self, *, init_phi: float, init_z: float, res: float, eff: float, device: torch.device = DEVICE):
         super().__init__(
             res=res,

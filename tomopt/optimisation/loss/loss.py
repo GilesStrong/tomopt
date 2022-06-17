@@ -1,13 +1,14 @@
-from typing import Dict, Optional, Union
+from typing import Dict, Optional, Union, Callable
 from abc import abstractmethod, ABCMeta
 
 import torch
 from torch import nn, Tensor
 from torch.nn import functional as F
 
+from .sub_losses import integer_class_loss
 from ...volume import Volume
 
-__all__ = ["VoxelX0Loss", "VoxelClassLoss", "VolumeClassLoss"]
+__all__ = ["VoxelX0Loss", "VoxelClassLoss", "VolumeClassLoss", "VolumeIntClassLoss"]
 
 
 class AbsDetectorLoss(nn.Module, metaclass=ABCMeta):
@@ -116,4 +117,28 @@ class VolumeClassLoss(AbsMaterialClassLoss):
         for x0 in targ.unique():
             targ[targ == x0] = self.x02id[min(self.x02id, key=lambda x: abs(x - x0))]
         loss = F.nll_loss(pred, targ.long(), reduction="none") if pred.shape[1] > 1 else F.binary_cross_entropy(pred, targ[:, None].float(), reduction="none")
+        return torch.mean(loss / inv_pred_weight)
+
+
+class VolumeIntClassLoss(AbsDetectorLoss):
+    """Prediction of int valued target per volume"""
+
+    def __init__(
+        self,
+        *,
+        targ2int: Callable[[Tensor, Volume], Tensor],
+        pred_int_start: int,
+        use_mse: bool,
+        target_budget: float,
+        budget_smoothing: float = 10,
+        cost_coef: Optional[Union[Tensor, float]] = None,
+        steep_budget: bool = True,
+        debug: bool = False,
+    ):
+        super().__init__(target_budget=target_budget, budget_smoothing=budget_smoothing, cost_coef=cost_coef, steep_budget=steep_budget, debug=debug)
+        self.targ2int, self.pred_int_start, self.use_mse = targ2int, pred_int_start, use_mse
+
+    def _get_inference_loss(self, pred: Tensor, inv_pred_weight: Tensor, volume: Volume) -> Tensor:
+        int_targ = self.targ2int(volume.target.clone(), volume)
+        loss = integer_class_loss(pred, int_targ, pred_start_int=self.pred_int_start, use_mse=self.use_mse, reduction="none")
         return torch.mean(loss / inv_pred_weight)
