@@ -456,18 +456,15 @@ class DenseBlockClassifierFromX0s(AbsVolumeInferer):
         self.x0_inferer = partial_x0_inferer(self.volume)
         self.frac = n_block_voxels / self.volume.centres.numel()
 
-        self.efficiencies: List[Tensor] = []
         self.efficiency: Optional[Tensor] = None
         self.scatter_batches = self.x0_inferer.scatter_batches
+        self.efficiencies = self.x0_inferer.efficiencies
 
     def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
         return self.x0_inferer.compute_efficiency(scatters=scatters)
 
     def add_scatters(self, scatters: AbsScatterBatch) -> None:
         self.x0_inferer.add_scatters(scatters)
-        self.efficiencies.append(
-            self.compute_efficiency(scatters=scatters)
-        )  # Giles: why not just grab the efficiencies from self.x0_inferer rather than compute them twice?
 
     def _get_weight(self) -> Tensor:
         """Maybe alter this to include resolution/pred uncertainties"""
