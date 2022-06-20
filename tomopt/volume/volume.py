@@ -21,7 +21,16 @@ class Volume(nn.Module):
         self._target: Optional[Tensor] = None
         self._edges: Optional[Tensor] = None
 
-        self.budget_weights = nn.Parameter(torch.zeros(len([l for l in self.layers if hasattr(l, "get_cost")]), device=self._device))
+        if self.budget is not None:
+            self._configure_budget()
+
+    def _configure_budget(self) -> None:
+        r"""
+        Currently only accounts for detector costs
+        """
+
+        self._n_layer_costs = [l._n_costs for l in self.layers if hasattr(l, "get_cost")]  # Number of different costs in the detector layer
+        self.budget_weights = nn.Parameter(torch.zeros(np.sum(self._n_layer_costs), device=self._device))  # Assignment of budget amongst all costs
 
     @property
     def edges(self) -> Tensor:
@@ -117,10 +126,11 @@ class Volume(nn.Module):
         if self.budget is not None:
             budget_idx = 0
             layer_budgets = self.budget * F.softmax(self.budget_weights, dim=-1)
-        for l in self.layers:
+        for i, l in enumerate(self.layers):
             if self.budget is not None and hasattr(l, "get_cost"):
-                l(mu, budget=layer_budgets[budget_idx])
-                budget_idx += 1
+                n = self._n_layer_costs[i]
+                l(mu, budget=layer_budgets[budget_idx : budget_idx + n])
+                budget_idx += n
             else:
                 l(mu)
             mu.snapshot_xyz()
@@ -128,22 +138,16 @@ class Volume(nn.Module):
     def get_cost(self) -> Tensor:
         cost = None
         if self.budget is not None:
-            budget_idx = 0
-            layer_budgets = self.budget * F.softmax(self.budget_weights, dim=-1)
-        for l in self.layers:
+            return self.budget
+        for i, l in enumerate(self.layers):
             if hasattr(l, "get_cost"):
                 c = l.get_cost()
-                if self.budget is not None:
-                    c = c * layer_budgets[budget_idx]
-                    budget_idx += 1
                 if cost is None:
                     cost = c
                 else:
                     cost = cost + c
         if cost is None:
             cost = torch.zeros((1), device=self.device)
-        if self.budget is not None and (cost - self.budget).abs() > 1e-3:
-            raise RuntimeWarning(f"Total layer cost, {cost} does not match the specified budget, {self.budget}")
         return cost
 
     @property

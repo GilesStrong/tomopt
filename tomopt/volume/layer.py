@@ -114,6 +114,8 @@ class PassiveLayer(Layer):
 
 
 class AbsDetectorLayer(Layer, metaclass=ABCMeta):
+    _n_costs = 0
+
     def __init__(
         self,
         pos: str,
@@ -200,6 +202,7 @@ class PanelDetectorLayer(AbsDetectorLayer):
             panels = nn.ModuleList(panels)
         super().__init__(pos=pos, lw=lw, z=z, size=size, device=self.get_device(panels))
         self.panels = panels
+        self._n_costs = len(self.panels)
         if isinstance(panels[0], DetectorHeatMap):
             self.type_label = "heatmap"
         elif isinstance(panels[0], DetectorPanel):
