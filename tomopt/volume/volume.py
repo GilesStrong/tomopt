@@ -13,10 +13,11 @@ __all__ = ["Volume"]
 
 
 class Volume(nn.Module):
-    def __init__(self, layers: nn.ModuleList, budget: Optional[Tensor] = None):
+    def __init__(self, layers: nn.ModuleList, budget: Optional[float] = None):
         super().__init__()
-        self.layers, self.budget = layers, budget
+        self.layers = layers
         self._device = self._get_device()
+        self.budget = None if budget is None else torch.tensor(budget, device=self._device)
         self._check_passives()
         self._target: Optional[Tensor] = None
         self._edges: Optional[Tensor] = None
@@ -124,13 +125,14 @@ class Volume(nn.Module):
 
     def forward(self, mu: MuonBatch) -> None:  # Expand to take volume as input, too
         if self.budget is not None:
-            budget_idx = 0
+            budget_idx, layer_idx = 0, 0
             layer_budgets = self.budget * F.softmax(self.budget_weights, dim=-1)
-        for i, l in enumerate(self.layers):
+        for l in self.layers:
             if self.budget is not None and hasattr(l, "get_cost"):
-                n = self._n_layer_costs[i]
+                n = self._n_layer_costs[layer_idx]
                 l(mu, budget=layer_budgets[budget_idx : budget_idx + n])
                 budget_idx += n
+                layer_idx += 1
             else:
                 l(mu)
             mu.snapshot_xyz()

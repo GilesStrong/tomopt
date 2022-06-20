@@ -409,7 +409,7 @@ class PanelVolumeWrapper(AbsVolumeWrapper):
         xy_pos_opt: PartialOpt,
         z_pos_opt: PartialOpt,
         xy_span_opt: PartialOpt,
-        vol_budget_opt: Optional[PartialOpt] = None,
+        budget_opt: Optional[PartialOpt] = None,
         loss_func: Optional[AbsDetectorLoss],
         mu_generator: Optional[AbsMuonGenerator] = None,
         partial_scatter_inferer: Type[AbsScatterBatch] = PanelScatterBatch,
@@ -421,7 +421,7 @@ class PanelVolumeWrapper(AbsVolumeWrapper):
                 "xy_pos_opt": xy_pos_opt,
                 "z_pos_opt": z_pos_opt,
                 "xy_span_opt": xy_span_opt,
-                "vol_budget_opt": vol_budget_opt,
+                "budget_opt": budget_opt,
             },
             loss_func=loss_func,
             mu_generator=mu_generator,
@@ -440,8 +440,8 @@ class PanelVolumeWrapper(AbsVolumeWrapper):
             "z_pos_opt": kwargs["z_pos_opt"]((p.z for l in dets for p in l.panels)),
             "xy_span_opt": kwargs["xy_span_opt"]((p.xy_span for l in dets for p in l.panels)),
         }
-        if kwargs["vol_budget_opt"] is not None:
-            self.opts["vol_budget_opt"] = kwargs["vol_budget_opt"]((p for p in [self.volume.budget_weights]))
+        if kwargs["budget_opt"] is not None:
+            self.opts["budget_opt"] = kwargs["budget_opt"]((p for p in [self.volume.budget_weights]))
 
     @classmethod
     def from_save(
