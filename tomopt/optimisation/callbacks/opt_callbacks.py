@@ -41,8 +41,6 @@ class PanelOptConfig(Callback):
                 self.stats["vol_budget_opt"].append(self.wrapper.volume.budget_weights.grad.cpu().numpy())
             for l in self.wrapper.volume.get_detectors():
                 if isinstance(l, PanelDetectorLayer):
-                    if "det_budget_opt" in self.rates and hasattr(l, "get_cost"):
-                        self.stats["det_budget_opt"].append(l.budget_weights.grad.cpu().numpy())
                     for p in l.panels:
                         self.stats["xy_pos_opt"].append(p.xy.grad.cpu().numpy())
                         self.stats["z_pos_opt"].append(p.z.grad.cpu().numpy())

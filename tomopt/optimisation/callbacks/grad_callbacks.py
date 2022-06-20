@@ -14,7 +14,6 @@ class NoMoreNaNs(Callback):
                 torch.nan_to_num_(l.resolution.grad, 0)
                 torch.nan_to_num_(l.efficiency.grad, 0)
             elif isinstance(l, PanelDetectorLayer):
-                torch.nan_to_num_(l.budget_weights.grad, 0)
                 for p in l.panels:
                     if l.type_label == "heatmap":
                         torch.nan_to_num_(p.mu.grad, 0)
