@@ -405,7 +405,7 @@ def test_gmm():
     assert (gmm._init_xy == Tensor([2, -5])).all()
     assert gmm._init_xy_span == Tensor([2])
     assert ((gmm.mu.mean(0) - Tensor([2, -5])).abs() < 1).all()
-    assert ((gmm.sig.mean() - Tensor([2])).abs() < 1).all()
+    assert ((gmm.sig.mean() - Tensor([1])).abs() < 1).all()
     assert gmm.mu.shape == torch.Size([30, 2])
     assert gmm.sig.shape == torch.Size([30, 2])
     assert gmm.norm.shape == torch.Size([1])
