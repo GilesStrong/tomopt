@@ -628,7 +628,7 @@ def test_deep_volume_inferer(dvi_class: Type[DeepVolumeInferer], weighted: bool)
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
     sb = PanelScatterBatch(mu=mu, volume=volume)
-    nvalid = len(sb.hits)
+    nvalid = len(mu)
 
     grp_feats = ["pred_x0", "track_xy", "delta_angles", "theta_msc", "track_angles", "poca", "dpoca", "voxels"]  # 1  # 4  # 2  # 1  # 4  # 3  # 3->4  # 0->3
     n_infeats = 18
