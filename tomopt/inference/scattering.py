@@ -241,6 +241,9 @@ class AbsScatterBatch(metaclass=ABCMeta):
             * (xy_out < 10 * self.volume.lw).prod(-1)
         )[:, None].bool()
 
+        # Remove muons with high uncertainties; yes they get ignored during track fitting, but they can cause NaNs in the gradient
+        keep_mask *= (self.hit_uncs[:, :, :2] < 1e10).all(-1).all(-1, keepdim=True)
+
         keep_mask.squeeze_()
         if not keep_mask.all():  # Recompute tracks and hits
             self.mu.filter_muons(keep_mask)

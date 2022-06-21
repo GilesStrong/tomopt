@@ -628,6 +628,7 @@ def test_deep_volume_inferer(dvi_class: Type[DeepVolumeInferer], weighted: bool)
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
     sb = PanelScatterBatch(mu=mu, volume=volume)
+    nvalid = len(mu)
 
     grp_feats = ["pred_x0", "track_xy", "delta_angles", "theta_msc", "track_angles", "poca", "dpoca", "voxels"]  # 1  # 4  # 2  # 1  # 4  # 3  # 3->4  # 0->3
     n_infeats = 18
@@ -654,12 +655,12 @@ def test_deep_volume_inferer(dvi_class: Type[DeepVolumeInferer], weighted: bool)
     assert len(inferer.in_vars) == 1
     assert len(inferer.in_var_uncs) == 1
     assert len(inferer.efficiencies) == 1
-    assert inferer.in_vars[-1].shape == torch.Size((N, n_infeats))
-    assert inferer.in_var_uncs[-1].shape == torch.Size((N, n_infeats))
-    assert len(inferer.efficiencies[-1]) == N
+    assert inferer.in_vars[-1].shape == torch.Size((nvalid, n_infeats))
+    assert inferer.in_var_uncs[-1].shape == torch.Size((nvalid, n_infeats))
+    assert len(inferer.efficiencies[-1]) == nvalid
 
     inputs = inferer._build_inputs(inferer.in_vars[0])
-    assert inputs.shape == torch.Size((600, N, n_infeats + 4))  # +4 since voxels and dpoca_r
+    assert inputs.shape == torch.Size((600, nvalid, n_infeats + 4))  # +4 since voxels and dpoca_r
 
     pred, weight = inferer.get_prediction()
     assert pred.shape == torch.Size((1, 1))
