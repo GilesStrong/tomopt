@@ -62,6 +62,7 @@ class DetectorPanel(nn.Module):
         if self.training or not self.realistic_validation:
             g = self.get_gauss()
             res = self.resolution * torch.exp(g.log_prob(xy)) / torch.exp(g.log_prob(self.xy))
+            res = torch.clamp_min(res, 1e-10)  # To avoid NaN gradients
         else:
             if mask is None:
                 mask = self.get_xy_mask(xy)
