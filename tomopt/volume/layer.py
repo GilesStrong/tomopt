@@ -130,7 +130,7 @@ class AbsDetectorLayer(Layer, metaclass=ABCMeta):
         self.type_label = ""
 
     @abstractmethod
-    def forward(self, mu: MuonBatch, budget: Optional[Tensor] = None) -> None:
+    def forward(self, mu: MuonBatch) -> None:
         pass
 
     @abstractmethod
@@ -194,7 +194,7 @@ class VoxelDetectorLayer(AbsDetectorLayer):
         }
         return hits
 
-    def forward(self, mu: MuonBatch, budget: Optional[Tensor] = None) -> None:
+    def forward(self, mu: MuonBatch) -> None:
         self.scatter_and_propagate(mu, self.size / 2)
         mu.append_hits(self.get_hits(mu), self.pos)
         self.scatter_and_propagate(mu, self.size / 2)
@@ -251,10 +251,10 @@ class PanelDetectorLayer(AbsDetectorLayer):
                     xyz_high=(lw[0], lw[1], z),
                 )
 
-    def forward(self, mu: MuonBatch, budget: Optional[Tensor] = None) -> None:
+    def forward(self, mu: MuonBatch) -> None:
         for i, p in self.yield_zordered_panels():
             self.scatter_and_propagate(mu, mu.z - p.z.detach())  # Move to panel
-            hits = p.get_hits(mu, budget=budget[i]) if budget is not None else p.get_hits(mu)
+            hits = p.get_hits(mu)
             mu.append_hits(hits, self.pos)
         self.scatter_and_propagate(mu, mu.z - (self.z - self.size))  # Move to bottom of layer
 

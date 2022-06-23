@@ -94,8 +94,7 @@ class DetectorPanel(nn.Module):
         if budget is not None:
             self.budget_scale = torch.sqrt(budget / (self.m2_cost * self.xy_span.prod()))
 
-    def get_hits(self, mu: MuonBatch, budget: Optional[Tensor] = None) -> Dict[str, Tensor]:
-        self.assign_budget(budget)
+    def get_hits(self, mu: MuonBatch) -> Dict[str, Tensor]:
         span = self.get_scaled_xy_span()
         mask = mu.get_xy_mask(self.xy - (span / 2), self.xy + (span / 2))  # Muons in panel
 

@@ -32,17 +32,7 @@ class Volume(nn.Module):
 
         self._n_layer_costs = [l._n_costs for l in self.layers if hasattr(l, "get_cost")]  # Number of different costs in the detector layer
         self.budget_weights = nn.Parameter(torch.zeros(np.sum(self._n_layer_costs), device=self._device))  # Assignment of budget amongst all costs
-
-        # Assign budget
-        if self.budget is not None:
-            budget_idx, layer_idx = 0, 0
-            layer_budgets = self.budget * F.softmax(self.budget_weights, dim=-1)
-        for l in self.layers:
-            if self.budget is not None and hasattr(l, "get_cost"):
-                n = self._n_layer_costs[layer_idx]
-                l.assign_budget(layer_budgets[budget_idx : budget_idx + n])
-                budget_idx += n
-                layer_idx += 1
+        self.assign_budget()
 
     @property
     def edges(self) -> Tensor:
@@ -134,18 +124,22 @@ class Volume(nn.Module):
         for p in self.get_passives():
             p.load_rad_length(rad_length_func)
 
-    def forward(self, mu: MuonBatch) -> None:  # Expand to take volume as input, too
+    def assign_budget(self) -> None:
         if self.budget is not None:
             budget_idx, layer_idx = 0, 0
             layer_budgets = self.budget * F.softmax(self.budget_weights, dim=-1)
+            for l in self.layers:
+                if self.budget is not None and hasattr(l, "get_cost"):
+                    n = self._n_layer_costs[layer_idx]
+                    l.assign_budget(layer_budgets[budget_idx : budget_idx + n])
+                    budget_idx += n
+                    layer_idx += 1
+
+    def forward(self, mu: MuonBatch) -> None:  # Expand to take volume as input, too
+        self.assign_budget()
+
         for l in self.layers:
-            if self.budget is not None and hasattr(l, "get_cost"):
-                n = self._n_layer_costs[layer_idx]
-                l(mu, budget=layer_budgets[budget_idx : budget_idx + n])
-                budget_idx += n
-                layer_idx += 1
-            else:
-                l(mu)
+            l(mu)
             mu.snapshot_xyz()
 
     def get_cost(self) -> Tensor:
