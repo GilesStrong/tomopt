@@ -33,6 +33,17 @@ class Volume(nn.Module):
         self._n_layer_costs = [l._n_costs for l in self.layers if hasattr(l, "get_cost")]  # Number of different costs in the detector layer
         self.budget_weights = nn.Parameter(torch.zeros(np.sum(self._n_layer_costs), device=self._device))  # Assignment of budget amongst all costs
 
+        # Assign budget
+        if self.budget is not None:
+            budget_idx, layer_idx = 0, 0
+            layer_budgets = self.budget * F.softmax(self.budget_weights, dim=-1)
+        for l in self.layers:
+            if self.budget is not None and hasattr(l, "get_cost"):
+                n = self._n_layer_costs[layer_idx]
+                l.assign_budget(layer_budgets[budget_idx : budget_idx + n])
+                budget_idx += n
+                layer_idx += 1
+
     @property
     def edges(self) -> Tensor:
         if self._edges is None:

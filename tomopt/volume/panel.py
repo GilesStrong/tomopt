@@ -20,6 +20,7 @@ class DetectorPanel(nn.Module):
         init_xyz: Tuple[float, float, float],
         init_xy_span: Tuple[float, float],
         m2_cost: float,
+        budget: Optional[Tensor] = None,
         realistic_validation: bool = False,
         device: torch.device = DEVICE,
     ):
@@ -37,6 +38,7 @@ class DetectorPanel(nn.Module):
         self.z = nn.Parameter(torch.tensor(init_xyz[2:3], device=self.device))
         self.xy_span = nn.Parameter(torch.tensor(init_xy_span, device=self.device))
         self.budget_scale = torch.ones(1, device=device)
+        self.assign_budget(budget)
 
     def get_scaled_xy_span(self) -> Tensor:
         return self.xy_span * self.budget_scale
@@ -88,13 +90,12 @@ class DetectorPanel(nn.Module):
                 eff = eff[:, None]
         return eff
 
-    def _set_budget_scale(self, budget: Optional[Tensor] = None) -> None:
-        # Hack to provide budget persistence; eventually encode res and eff in hits
+    def assign_budget(self, budget: Optional[Tensor] = None) -> None:
         if budget is not None:
             self.budget_scale = torch.sqrt(budget / (self.m2_cost * self.xy_span.prod()))
 
     def get_hits(self, mu: MuonBatch, budget: Optional[Tensor] = None) -> Dict[str, Tensor]:
-        self._set_budget_scale(budget)
+        self.assign_budget(budget)
         span = self.get_scaled_xy_span()
         mask = mu.get_xy_mask(self.xy - (span / 2), self.xy + (span / 2))  # Muons in panel
 

@@ -140,6 +140,13 @@ class AbsDetectorLayer(Layer, metaclass=ABCMeta):
     def conform_detector(self) -> None:
         pass
 
+    def assign_budget(self, budget: Optional[Tensor]) -> None:
+        r"""
+        For assigning budget withput calling forward
+        """
+
+        pass
+
 
 class VoxelDetectorLayer(AbsDetectorLayer):
     def __init__(
@@ -256,3 +263,8 @@ class PanelDetectorLayer(AbsDetectorLayer):
         for p in self.panels:
             cost = p.get_cost() if cost is None else cost + p.get_cost()
         return cost
+
+    def assign_budget(self, budget: Optional[Tensor]) -> None:
+        if budget is not None:
+            for i, p in self.yield_zordered_panels():
+                p.assign_budget(budget[i])

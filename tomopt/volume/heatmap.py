@@ -100,6 +100,10 @@ class DetectorHeatMap(nn.Module):
     def get_cost(self) -> Tensor:
         return self.m2_cost * self.sig.prod(1).mean()
 
+    def assign_budget(self, budget: Optional[Tensor] = None) -> None:
+        if budget is not None:
+            raise NotImplementedError("Please update me to work with a budget!")
+
     def get_hits(self, mu: MuonBatch, budget: Optional[Tensor] = None) -> Dict[str, Tensor]:
         if budget is not None:
             raise NotImplementedError("Please update me to work with a budget!")
