@@ -128,17 +128,13 @@ def test_voxel_detector_layer(batch):
     assert (dl.efficiency == 1).all()
 
 
-def area_cost(a: Tensor) -> Tensor:
-    return F.relu(a)
-
-
 def test_panel_detector_layer(batch):
     dl = PanelDetectorLayer(
         pos="above",
         lw=LW,
         z=1,
         size=2 * SZ,
-        panels=[DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[1.0, 1.0], area_cost_func=area_cost)],
+        panels=[DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[1.0, 1.0])],
     )
     assert dl.type_label == "panel"
 
@@ -169,10 +165,10 @@ def test_panel_detector_layer(batch):
         z=1,
         size=2 * SZ,
         panels=[
-            DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[0.5, 5.0], area_cost_func=area_cost),
-            DetectorPanel(res=1e3, eff=1, init_xyz=[3.0, 0.5, 2.0], init_xy_span=[1.0, 1.0], area_cost_func=area_cost),
-            DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, -0.5, -0.3], init_xy_span=[1.0, 1.0], area_cost_func=area_cost),
-            DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, 0.5, 0.4], init_xy_span=[0.0, 0.5], area_cost_func=area_cost),
+            DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[0.5, 5.0]),
+            DetectorPanel(res=1e3, eff=1, init_xyz=[3.0, 0.5, 2.0], init_xy_span=[1.0, 1.0]),
+            DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, -0.5, -0.3], init_xy_span=[1.0, 1.0]),
+            DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, 0.5, 0.4], init_xy_span=[0.0, 0.5]),
         ],
     )
 
@@ -203,13 +199,13 @@ def test_panel_detector_layer(batch):
         z=1,
         size=2 * SZ,
         panels=[
-            DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[0.1, 0.2], area_cost_func=area_cost),
-            DetectorPanel(res=1e3, eff=1, init_xyz=[3.0, 0.5, 2.0], init_xy_span=[0.3, 0.4], area_cost_func=area_cost),
-            DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, -0.5, -0.3], init_xy_span=[0.5, 0.6], area_cost_func=area_cost),
-            DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, 0.5, 0.4], init_xy_span=[0.7, 0.8], area_cost_func=area_cost),
+            DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[0.1, 0.2]),
+            DetectorPanel(res=1e3, eff=1, init_xyz=[3.0, 0.5, 2.0], init_xy_span=[0.3, 0.4]),
+            DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, -0.5, -0.3], init_xy_span=[0.5, 0.6]),
+            DetectorPanel(res=1e3, eff=1, init_xyz=[0.5, 0.5, 0.4], init_xy_span=[0.7, 0.8]),
         ],
     )
-    assert dl.get_cost().detach().cpu().numpy() == np.sum([area_cost(p.xy_span.prod()).detach().cpu().numpy() for p in dl.panels])
+    assert dl.get_cost().detach().cpu().numpy() == np.sum([p.xy_span.prod().detach().cpu().numpy() for p in dl.panels])
 
 
 def get_voxel_layers():
@@ -327,8 +323,7 @@ def get_panel_layers(init_res: float = 1e4, init_eff: float = 0.5, n_panels: int
             z=1,
             size=2 * SZ,
             panels=[
-                DetectorPanel(res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / n_panels)], init_xy_span=[1.0, 1.0], area_cost_func=area_cost)
-                for i in range(n_panels)
+                DetectorPanel(res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / n_panels)], init_xy_span=[1.0, 1.0]) for i in range(n_panels)
             ],
         )
     )
@@ -341,9 +336,7 @@ def get_panel_layers(init_res: float = 1e4, init_eff: float = 0.5, n_panels: int
             z=0.2,
             size=2 * SZ,
             panels=[
-                DetectorPanel(
-                    res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / n_panels)], init_xy_span=[1.0, 1.0], area_cost_func=area_cost
-                )
+                DetectorPanel(res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / n_panels)], init_xy_span=[1.0, 1.0])
                 for i in range(n_panels)
             ],
         )
@@ -383,19 +376,26 @@ def test_volume_forward_panel():
 
 
 def test_detector_panel_properties():
-    panel = DetectorPanel(res=1, eff=0.5, init_xyz=[0.5, 0.4, 0.9], init_xy_span=[0.3, 0.5], area_cost_func=area_cost, realistic_validation=False)
-    assert panel.area_cost_func == area_cost
+    panel = DetectorPanel(res=1, eff=0.5, init_xyz=[0.5, 0.4, 0.9], init_xy_span=[0.3, 0.5], realistic_validation=False, m2_cost=4)
+    assert panel.m2_cost == Tensor([4])
+    assert panel.budget_scale == Tensor([1])
     assert panel.resolution == Tensor([1])
     assert panel.efficiency == Tensor([0.5])
     assert (panel.xy == Tensor([0.5, 0.4])).all()
     assert panel.z == Tensor([0.9])
     assert (panel.xy_span == Tensor([0.3, 0.5])).all()
+    assert (panel.get_scaled_xy_span() == Tensor([0.3, 0.5])).all()
     assert panel.x == Tensor([0.5])
     assert panel.y == Tensor([0.4])
 
+    panel = DetectorPanel(res=1, eff=0.5, init_xyz=[0.5, 0.4, 0.9], init_xy_span=[0.8, 0.5], realistic_validation=False, m2_cost=10, budget=64)
+    assert panel.budget_scale == Tensor([4])
+    assert (panel.xy_span == Tensor([0.8, 0.5])).all()
+    assert (panel.get_scaled_xy_span() == Tensor([3.2, 2.0])).all()
+
 
 def test_detector_panel_methods():
-    panel = DetectorPanel(res=10, eff=0.5, init_xyz=[0.0, 0.01, 0.9], init_xy_span=[0.5, 0.51], area_cost_func=area_cost)
+    panel = DetectorPanel(res=10, eff=0.5, init_xyz=[0.0, 0.01, 0.9], init_xy_span=[0.5, 0.51])
 
     # get_xy_mask
     mask = panel.get_xy_mask(Tensor([[0, 0], [0.1, 0.1], [0.25, 0.25], [0.5, 0.5], [1, 1], [0.1, 1], [1, 0.1], [-1, -1]]))
@@ -403,9 +403,9 @@ def test_detector_panel_methods():
 
     # get_gauss
     with pytest.raises(ValueError):
-        DetectorPanel(res=1, eff=0.5, init_xyz=[np.NaN, 0.0, 0.9], init_xy_span=[1.0, 1.0], area_cost_func=area_cost).get_gauss()
+        DetectorPanel(res=1, eff=0.5, init_xyz=[np.NaN, 0.0, 0.9], init_xy_span=[1.0, 1.0]).get_gauss()
     with pytest.raises(ValueError):
-        DetectorPanel(res=1, eff=0.5, init_xyz=[0.0, 0.0, 0.9], init_xy_span=[0.5, np.NaN], area_cost_func=area_cost).get_gauss()
+        DetectorPanel(res=1, eff=0.5, init_xyz=[0.0, 0.0, 0.9], init_xy_span=[0.5, np.NaN]).get_gauss()
     gauss = panel.get_gauss()
     assert (gauss.loc == Tensor([0.0, 0.01])).all()
     assert (gauss.scale == Tensor([0.5 / 4, 0.51 / 4])).all()
@@ -457,7 +457,7 @@ def test_detector_panel_methods():
     panel.train()
 
     # get_hits
-    panel = DetectorPanel(res=10, eff=0.5, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[0.5, 0.5], area_cost_func=area_cost)
+    panel = DetectorPanel(res=10, eff=0.5, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[0.5, 0.5])
     mg = MuonGenerator2016(x_range=(0, LW[0].item()), y_range=(0, LW[1].item()))
     mu = MuonBatch(mg(100), 1)
     mu._xy = torch.ones_like(mu.xy) / 2
@@ -483,7 +483,7 @@ def test_detector_panel_methods():
 
     # get_cost
     cost = panel.get_cost()
-    assert cost == area_cost(Tensor([0.5 * 0.5]))
+    assert cost == Tensor([0.5 * 0.5])
     assert (torch.autograd.grad(cost, panel.xy_span, retain_graph=True, allow_unused=True)[0] > 0).all()
 
     # clamp_params
@@ -492,7 +492,7 @@ def test_detector_panel_methods():
     assert (panel.xy == Tensor([0.5, 0.5])).all()
     assert (panel.xy_span == Tensor([0.5, 0.5])).all()
 
-    panel = DetectorPanel(res=10, eff=0.5, init_xyz=[2.0, -2.0, 2.0], init_xy_span=[0.0, 20.0], area_cost_func=area_cost)
+    panel = DetectorPanel(res=10, eff=0.5, init_xyz=[2.0, -2.0, 2.0], init_xy_span=[0.0, 20.0])
     panel.clamp_params((0, 0, 0), (1, 1, 1))
     assert (panel.xy == Tensor([1, 0])).all()
     assert panel.z - 1 < 0

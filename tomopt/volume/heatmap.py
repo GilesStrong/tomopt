@@ -20,7 +20,7 @@ class DetectorHeatMap(nn.Module):
         eff: float,
         init_xyz: Tuple[float, float, float],
         init_xy_span: Tuple[float, float],
-        m2_cost: float,
+        m2_cost: float = 1,
         budget: Optional[Tensor] = None,
         realistic_validation: bool = False,
         device: torch.device = DEVICE,

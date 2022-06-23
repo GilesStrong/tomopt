@@ -59,9 +59,6 @@ def get_voxel_layers(init_res: float = 1e3):
 
 
 def get_panel_layers(init_res: float = 1e3) -> nn.ModuleList:
-    def area_cost(a: Tensor) -> Tensor:
-        return F.relu(a)
-
     layers = []
     init_eff = 0.9
     n_panels = 4
@@ -72,8 +69,7 @@ def get_panel_layers(init_res: float = 1e3) -> nn.ModuleList:
             z=1,
             size=2 * SZ,
             panels=[
-                DetectorPanel(res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / n_panels)], init_xy_span=[1.0, 1.0], area_cost_func=area_cost)
-                for i in range(n_panels)
+                DetectorPanel(res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / n_panels)], init_xy_span=[1.0, 1.0]) for i in range(n_panels)
             ],
         )
     )
@@ -86,9 +82,7 @@ def get_panel_layers(init_res: float = 1e3) -> nn.ModuleList:
             z=0.2,
             size=2 * SZ,
             panels=[
-                DetectorPanel(
-                    res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / n_panels)], init_xy_span=[1.0, 1.0], area_cost_func=area_cost
-                )
+                DetectorPanel(res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / n_panels)], init_xy_span=[1.0, 1.0])
                 for i in range(n_panels)
             ],
         )
@@ -538,9 +532,6 @@ def test_volume_wrapper_predict(mocker):  # noqa F811
 
 
 def get_heatmap_layers(init_res: float = 1e3) -> nn.ModuleList:
-    def area_cost(a: Tensor) -> Tensor:
-        return F.relu(a)
-
     layers = []
     init_eff = 0.9
     n_panels = 4
@@ -556,7 +547,6 @@ def get_heatmap_layers(init_res: float = 1e3) -> nn.ModuleList:
                     eff=init_eff,
                     init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / n_panels)],
                     init_xy_span=[-0.5, 0.5],
-                    area_cost_func=area_cost,
                 )
                 for i in range(n_panels)
             ],
@@ -576,7 +566,6 @@ def get_heatmap_layers(init_res: float = 1e3) -> nn.ModuleList:
                     eff=init_eff,
                     init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / n_panels)],
                     init_xy_span=[-0.5, 0.5],
-                    area_cost_func=area_cost,
                 )
                 for i in range(n_panels)
             ],

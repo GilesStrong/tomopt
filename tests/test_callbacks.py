@@ -46,10 +46,6 @@ def res_cost(x: Tensor) -> Tensor:
     return F.relu(x / 100) ** 2
 
 
-def area_cost(a: Tensor) -> Tensor:
-    return F.relu(a)
-
-
 def check_callback_base(cb: Callback) -> bool:
     assert cb.wrapper is None
     with pytest.raises(AttributeError):
@@ -71,7 +67,7 @@ def get_panel_detector() -> PanelDetectorLayer:
         lw=LW,
         z=1,
         size=2 * SZ,
-        panels=[DetectorPanel(res=1, eff=1, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[1.0, 1.0], area_cost_func=area_cost)],
+        panels=[DetectorPanel(res=1, eff=1, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[1.0, 1.0])],
     )
 
 
@@ -84,6 +80,7 @@ class MockVolume:
     lw = LW
     h = Tensor([Z])
     passive_size = SZ
+    budget_weights = torch.zeros(3, requires_grad=True)
 
     def get_passive_z_range(self) -> Tensor:
         return Tensor([0.2, 0.8])
@@ -109,26 +106,35 @@ def test_no_more_nans_voxel():
     cb = NoMoreNaNs()
     assert check_callback_base(cb)
 
+    vw = MockWrapper()
+    vw.volume = MockVolume()
+    vw.volume.budget_weights.grad = Tensor([np.nan, np.nan, np.nan])
+    vw.volume.get_detectors = lambda: [l]
+
     l = get_voxel_detector()
     l.resolution.grad = l.resolution.data
     l.efficiency.grad = l.efficiency.data
     l.resolution.grad[:5, :5] = Tensor([np.nan])
     l.efficiency.grad[:5, :5] = Tensor([np.nan])
-    assert l.resolution.grad.sum() != l.resolution.grad.sum()
-    assert l.efficiency.grad.sum() != l.efficiency.grad.sum()
+    assert l.resolution.grad.sum().isnan()
+    assert l.efficiency.grad.sum().isnan()
+    assert vw.volume.budget_weights.grad.sum().isnan()
 
-    vw = MockWrapper()
-    vw.volume = MockVolume()
-    vw.volume.get_detectors = lambda: [l]
     cb.set_wrapper(vw)
     cb.on_backwards_end()
-    assert l.resolution.grad.sum() == l.resolution.grad.sum()
-    assert l.efficiency.grad.sum() == l.efficiency.grad.sum()
+    assert not l.resolution.grad.sum().isnan()
+    assert not l.efficiency.grad.sum().isnan()
+    assert not vw.volume.budget_weights.grad.sum().isnan()
 
 
 def test_no_more_nans_panel():
     cb = NoMoreNaNs()
     assert check_callback_base(cb)
+
+    vw = MockWrapper()
+    vw.volume = MockVolume()
+    vw.volume.budget_weights.grad = Tensor([np.nan, np.nan, np.nan])
+    vw.volume.get_detectors = lambda: [l]
 
     l = get_panel_detector()
     p = l.panels[0]
@@ -138,18 +144,17 @@ def test_no_more_nans_panel():
     p.xy.grad[:1] = Tensor([np.nan])
     p.z.grad[:1] = Tensor([np.nan])
     p.xy_span.grad[:1] = Tensor([np.nan])
-    assert p.xy.grad.sum() != p.xy.grad.sum()
-    assert p.z.grad.sum() != p.z.grad.sum()
-    assert p.xy_span.grad.sum() != p.xy_span.grad.sum()
+    assert p.xy.grad.sum().isnan()
+    assert p.z.grad.sum().isnan()
+    assert p.xy_span.grad.sum().isnan()
+    assert vw.volume.budget_weights.grad.sum().isnan()
 
-    vw = MockWrapper()
-    vw.volume = MockVolume()
-    vw.volume.get_detectors = lambda: [l]
     cb.set_wrapper(vw)
     cb.on_backwards_end()
-    assert p.xy.grad.sum() == p.xy.grad.sum()
-    assert p.z.grad.sum() == p.z.grad.sum()
-    assert p.xy_span.grad.sum() == p.xy_span.grad.sum()
+    assert not p.xy.grad.sum().isnan()
+    assert not p.z.grad.sum().isnan()
+    assert not p.xy_span.grad.sum().isnan()
+    assert not vw.volume.budget_weights.grad.sum().isnan()
 
 
 def test_pred_handler():
@@ -585,7 +590,6 @@ def get_heatmap_detector() -> PanelDetectorLayer:
                 eff=1.0,
                 init_xyz=[0.5, 0.5, 0.9],
                 init_xy_span=[-0.5, 0.5],
-                area_cost_func=area_cost,
             )
         ],
     )
@@ -594,6 +598,11 @@ def get_heatmap_detector() -> PanelDetectorLayer:
 def test_no_more_nans_heatmap():
     cb = NoMoreNaNs()
     assert check_callback_base(cb)
+
+    vw = MockWrapper()
+    vw.volume = MockVolume()
+    vw.volume.budget_weights.grad = Tensor([np.nan, np.nan, np.nan])
+    vw.volume.get_detectors = lambda: [l]
 
     l = get_heatmap_detector()
     p = l.panels[0]
@@ -605,20 +614,19 @@ def test_no_more_nans_heatmap():
     p.z.grad[:1] = Tensor([np.nan])
     p.sig.grad[:1] = Tensor([np.nan])
     p.norm.grad[:1] = Tensor([np.nan])
-    assert p.mu.grad.sum() != p.mu.grad.sum()
-    assert p.z.grad.sum() != p.z.grad.sum()
-    assert p.sig.grad.sum() != p.sig.grad.sum()
-    assert p.norm.grad.sum() != p.norm.grad.sum()
+    assert p.mu.grad.sum().isnan()
+    assert p.z.grad.sum().isnan()
+    assert p.sig.grad.sum().isnan()
+    assert p.norm.grad.sum().isnan()
+    assert vw.volume.budget_weights.grad.sum().isnan()
 
-    vw = MockWrapper()
-    vw.volume = MockVolume()
-    vw.volume.get_detectors = lambda: [l]
     cb.set_wrapper(vw)
     cb.on_backwards_end()
-    assert p.mu.grad.sum() == p.mu.grad.sum()
-    assert p.z.grad.sum() == p.z.grad.sum()
-    assert p.sig.grad.sum() == p.sig.grad.sum()
-    assert p.norm.grad.sum() == p.norm.grad.sum()
+    assert not p.mu.grad.sum().isnan()
+    assert not p.z.grad.sum().isnan()
+    assert not p.sig.grad.sum().isnan()
+    assert not p.norm.grad.sum().isnan()
+    assert not vw.volume.budget_weights.grad.sum().isnan()
 
 
 def test_heat_map_gif():

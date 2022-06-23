@@ -4,7 +4,6 @@ import numpy as np
 
 import torch
 from torch import Tensor, nn
-import torch.nn.functional as F
 
 from tomopt.muon import MuonGenerator2016, MuonGenerator2015, MuonBatch
 from tomopt.volume import PassiveLayer, Volume, PanelDetectorLayer, DetectorPanel
@@ -14,10 +13,6 @@ N = 3
 LW = Tensor([1, 1])
 SZ = 0.1
 Z = 1
-
-
-def area_cost(a: Tensor) -> Tensor:
-    return F.relu(a)
 
 
 def arb_rad_length(*, z: float, lw: Tensor, size: float) -> float:
@@ -36,8 +31,7 @@ def get_panel_layers(init_res: float = 1e4, init_eff: float = 0.5, n_panels: int
             z=1,
             size=2 * SZ,
             panels=[
-                DetectorPanel(res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / n_panels)], init_xy_span=[1.0, 1.0], area_cost_func=area_cost)
-                for i in range(n_panels)
+                DetectorPanel(res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / n_panels)], init_xy_span=[1.0, 1.0]) for i in range(n_panels)
             ],
         )
     )
@@ -50,9 +44,7 @@ def get_panel_layers(init_res: float = 1e4, init_eff: float = 0.5, n_panels: int
             z=0.2,
             size=2 * SZ,
             panels=[
-                DetectorPanel(
-                    res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / n_panels)], init_xy_span=[1.0, 1.0], area_cost_func=area_cost
-                )
+                DetectorPanel(res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / n_panels)], init_xy_span=[1.0, 1.0])
                 for i in range(n_panels)
             ],
         )
