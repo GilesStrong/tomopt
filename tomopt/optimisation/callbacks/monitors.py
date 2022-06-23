@@ -15,6 +15,8 @@ import imageio
 if IN_NOTEBOOK:
     from IPython.display import display
 
+import torch
+
 from .callback import Callback
 from .eval_metric import EvalMetric
 from ...volume import VoxelDetectorLayer, PanelDetectorLayer
@@ -371,13 +373,20 @@ class PanelMetricLogger(MetricLogger):
             ax.set_ylabel(x, fontsize=0.8 * self.lbl_sz, color=self.lbl_col)
 
         for ax, det in zip((self.above_det, self.below_det), self.wrapper.get_detectors()):
+            if not isinstance(det, PanelDetectorLayer):
+                raise ValueError(f"Detector {det} is not a PanelDetectorLayer")
             lw, z = det.lw.detach().cpu(), det.z.detach().cpu()
-            ax[0].set_xlim(-lw[0] / 2, 1.5 * lw[0])
-            ax[1].set_xlim(-lw[1] / 2, 1.5 * lw[1])
-            ax[2].set_xlim(-lw[0] / 2, 1.5 * lw[0])
+            sizes = torch.stack([p.get_scaled_xy_span().detach().cpu() for p in det.panels], dim=0) / 2
+            poss = torch.stack([p.xy.detach().cpu() for p in det.panels], dim=0)
+            xy_min, xy_max = (poss - sizes).min(0).values, (poss + sizes).max(0).values
+            margin = lw.max() / 2
+
+            ax[0].set_xlim(min([torch.zeros(1), xy_min[0]]) - (lw[0] / 2), max([lw[0], xy_max[0]]) + (lw[0] / 2))
+            ax[1].set_xlim(min([torch.zeros(1), xy_min[1]]) - (lw[1] / 2), max([lw[1], xy_max[1]]) + (lw[1] / 2))
+            ax[2].set_xlim(xy_min.min() - margin, xy_max.max() + margin)
             ax[0].set_ylim(z - (1.25 * det.size), z + (0.25 * det.size))
             ax[1].set_ylim(z - (1.25 * det.size), z + (0.25 * det.size))
-            ax[2].set_ylim(-lw[1] / 2, 1.5 * lw[1])
+            ax[2].set_ylim(xy_min.min() - margin, xy_max.max() + margin)
             ax[2].set_aspect("equal", "box")
 
     def _prep_plots(self) -> None:
@@ -408,6 +417,10 @@ class PanelMetricLogger(MetricLogger):
 
                 for ax in axes:
                     ax.clear()
+
+                lw = self.wrapper.volume.lw.detach().cpu().numpy()
+                axes[2].add_patch(patches.Rectangle((0, 0), lw[0], lw[1], linewidth=1, edgecolor="black", facecolor="none", hatch="x"))  # volume
+
                 for p in range(len(loc)):
                     axes[0].add_line(
                         mlines.Line2D((loc[p, 0] - (span[p, 0] / 2), loc[p, 0] + (span[p, 0] / 2)), (loc[p, 2], loc[p, 2]), linewidth=2, color=palette[p])
