@@ -19,7 +19,8 @@ class DetectorPanel(nn.Module):
         eff: float,
         init_xyz: Tuple[float, float, float],
         init_xy_span: Tuple[float, float],
-        m2_cost: float,
+        m2_cost: float = 1,
+        budget: Optional[Tensor] = None,
         realistic_validation: bool = False,
         device: torch.device = DEVICE,
     ):
@@ -37,12 +38,13 @@ class DetectorPanel(nn.Module):
         self.z = nn.Parameter(torch.tensor(init_xyz[2:3], device=self.device))
         self.xy_span = nn.Parameter(torch.tensor(init_xy_span, device=self.device))
         self.budget_scale = torch.ones(1, device=device)
+        self.assign_budget(budget)
 
     def get_scaled_xy_span(self) -> Tensor:
         return self.xy_span * self.budget_scale
 
     def __repr__(self) -> str:
-        return f"""{self.__class__} located at xy={self.xy.data}, z={self.z.data}, and xy span {self.xy_span.data}"""
+        return f"""{self.__class__} located at xy={self.xy.data}, z={self.z.data}, and xy span {self.get_scaled_xy_span().data} with budget scale {self.budget_scale.data}"""
 
     def get_xy_mask(self, xy: Tensor) -> Tensor:
         span = self.get_scaled_xy_span()
@@ -62,6 +64,7 @@ class DetectorPanel(nn.Module):
         if self.training or not self.realistic_validation:
             g = self.get_gauss()
             res = self.resolution * torch.exp(g.log_prob(xy)) / torch.exp(g.log_prob(self.xy))
+            res = torch.clamp_min(res, 1e-10)  # To avoid NaN gradients
         else:
             if mask is None:
                 mask = self.get_xy_mask(xy)
@@ -87,13 +90,11 @@ class DetectorPanel(nn.Module):
                 eff = eff[:, None]
         return eff
 
-    def _set_budget_scale(self, budget: Optional[Tensor] = None) -> None:
-        # Hack to provide budget persistence; eventually encode res and eff in hits
+    def assign_budget(self, budget: Optional[Tensor] = None) -> None:
         if budget is not None:
             self.budget_scale = torch.sqrt(budget / (self.m2_cost * self.xy_span.prod()))
 
-    def get_hits(self, mu: MuonBatch, budget: Optional[Tensor] = None) -> Dict[str, Tensor]:
-        self._set_budget_scale(budget)
+    def get_hits(self, mu: MuonBatch) -> Dict[str, Tensor]:
         span = self.get_scaled_xy_span()
         mask = mu.get_xy_mask(self.xy - (span / 2), self.xy + (span / 2))  # Muons in panel
 

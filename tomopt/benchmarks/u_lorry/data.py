@@ -12,6 +12,10 @@ __all__ = ["ULorryPassiveGenerator"]
 
 
 class ULorryPassiveGenerator(AbsPassiveGenerator):
+    r"""
+    Research tested only: no unit tests
+    """
+
     def __init__(
         self,
         volume: Volume,

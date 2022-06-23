@@ -20,7 +20,8 @@ class DetectorHeatMap(nn.Module):
         eff: float,
         init_xyz: Tuple[float, float, float],
         init_xy_span: Tuple[float, float],
-        m2_cost: float,
+        m2_cost: float = 1,
+        budget: Optional[Tensor] = None,
         realistic_validation: bool = False,
         device: torch.device = DEVICE,
         n_cluster: int = 30,
@@ -50,6 +51,9 @@ class DetectorHeatMap(nn.Module):
         self.norm = self.gmm.norm
         self.z = nn.Parameter(torch.tensor(init_xyz[2:3], device=self.device))
         self.range_mult = 1.2
+
+        self.budget_scale = torch.ones(1, device=device)
+        self.assign_budget(budget)
 
     def __repr__(self) -> str:
         return f"""{self.__class__} at av. xy={self.gmm.mu.T.mean(1)} with n_comp {self.n_cluster}, z={self.z.data}."""
@@ -100,9 +104,11 @@ class DetectorHeatMap(nn.Module):
     def get_cost(self) -> Tensor:
         return self.m2_cost * self.sig.prod(1).mean()
 
-    def get_hits(self, mu: MuonBatch, budget: Optional[Tensor] = None) -> Dict[str, Tensor]:
+    def assign_budget(self, budget: Optional[Tensor] = None) -> None:
         if budget is not None:
             raise NotImplementedError("Please update me to work with a budget!")
+
+    def get_hits(self, mu: MuonBatch) -> Dict[str, Tensor]:
         if not isinstance(self.xy_fix, Tensor):
             raise ValueError(f"{self.xy_fix} is not a Tensor for some reason.")  # To appease MyPy
         if not isinstance(self.xy_span_fix, Tensor):

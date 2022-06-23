@@ -6,7 +6,6 @@ from fastcore.all import Path
 
 import torch
 from torch import Tensor, nn
-import torch.nn.functional as F
 
 from tomopt.volume import PassiveLayer, PanelDetectorLayer, DetectorHeatMap, Volume
 from tomopt.volume.heatmap import GMM
@@ -35,10 +34,6 @@ def arb_rad_length(*, z: float, lw: Tensor, size: float) -> float:
     return rad_length
 
 
-def area_cost(a: Tensor) -> Tensor:
-    return F.relu(a)
-
-
 def test_heatmap_detector_layer(batch):
     dl = PanelDetectorLayer(
         pos="above",
@@ -49,7 +44,6 @@ def test_heatmap_detector_layer(batch):
             DetectorHeatMap(
                 init_xyz=[0.5, 0.5, 0.9],
                 init_xy_span=[-1.0, 1.0],
-                area_cost_func=area_cost,
                 res=1e3,
                 eff=1.0,
                 n_cluster=30,
@@ -89,7 +83,6 @@ def test_heatmap_detector_layer(batch):
             DetectorHeatMap(
                 init_xyz=[0.5, 0.5, 0.9],
                 init_xy_span=[-0.5, 0.5],
-                area_cost_func=area_cost,
                 res=1e3,
                 eff=1.0,
                 n_cluster=30,
@@ -97,7 +90,6 @@ def test_heatmap_detector_layer(batch):
             DetectorHeatMap(
                 init_xyz=[3.0, 0.5, 2.0],
                 init_xy_span=[-1.0, 1.0],
-                area_cost_func=area_cost,
                 res=1e3,
                 eff=1.0,
                 n_cluster=30,
@@ -105,7 +97,6 @@ def test_heatmap_detector_layer(batch):
             DetectorHeatMap(
                 init_xyz=[0.5, -0.5, -0.3],
                 init_xy_span=[-1.0, 1.0],
-                area_cost_func=area_cost,
                 res=1e3,
                 eff=1.0,
                 n_cluster=30,
@@ -113,7 +104,6 @@ def test_heatmap_detector_layer(batch):
             DetectorHeatMap(
                 init_xyz=[0.5, 0.5, 0.4],
                 init_xy_span=[0.0, 0.5],
-                area_cost_func=area_cost,
                 res=1e3,
                 eff=1.0,
                 n_cluster=30,
@@ -154,7 +144,6 @@ def test_heatmap_detector_layer(batch):
             DetectorHeatMap(
                 init_xyz=[0.5, 0.5, 0.9],
                 init_xy_span=[0.1, 0.2],
-                area_cost_func=area_cost,
                 res=1e3,
                 eff=1.0,
                 n_cluster=30,
@@ -162,7 +151,6 @@ def test_heatmap_detector_layer(batch):
             DetectorHeatMap(
                 init_xyz=[3.0, 0.5, 2.0],
                 init_xy_span=[0.3, 0.4],
-                area_cost_func=area_cost,
                 res=1e3,
                 eff=1.0,
                 n_cluster=30,
@@ -170,7 +158,6 @@ def test_heatmap_detector_layer(batch):
             DetectorHeatMap(
                 init_xyz=[0.5, -0.5, -0.3],
                 init_xy_span=[0.5, 0.6],
-                area_cost_func=area_cost,
                 res=1e3,
                 eff=1.0,
                 n_cluster=30,
@@ -178,7 +165,6 @@ def test_heatmap_detector_layer(batch):
             DetectorHeatMap(
                 init_xyz=[0.5, 0.5, 0.4],
                 init_xy_span=[0.7, 0.8],
-                area_cost_func=area_cost,
                 res=1e3,
                 eff=1.0,
                 n_cluster=30,
@@ -200,7 +186,6 @@ def get_panel_layers(init_res: float = 1e4, init_eff: float = 0.5, n_panels: int
                 DetectorHeatMap(
                     init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / n_panels)],
                     init_xy_span=[-0.5, 0.5],
-                    area_cost_func=area_cost,
                     res=init_res,
                     eff=init_eff,
                     n_cluster=30,
@@ -221,7 +206,6 @@ def get_panel_layers(init_res: float = 1e4, init_eff: float = 0.5, n_panels: int
                 DetectorHeatMap(
                     init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / n_panels)],
                     init_xy_span=[-0.5, 0.5],
-                    area_cost_func=area_cost,
                     res=init_res,
                     eff=init_eff,
                     n_cluster=30,
@@ -268,7 +252,6 @@ def test_detector_panel_methods():
     panel = DetectorHeatMap(
         init_xyz=[0.0, 0.01, 0.9],
         init_xy_span=[-0.25, 0.25],
-        area_cost_func=area_cost,
         res=10.0,
         eff=0.5,
         n_cluster=30,
@@ -333,7 +316,6 @@ def test_detector_panel_methods():
     panel = DetectorHeatMap(
         init_xyz=[0.5, 0.5, 0.9],
         init_xy_span=[-0.25, 0.25],
-        area_cost_func=area_cost,
         res=10.0,
         eff=0.5,
         n_cluster=30,
@@ -369,7 +351,6 @@ def test_detector_panel_methods():
     panel = DetectorHeatMap(
         init_xyz=[2.0, -2.0, 2.0],
         init_xy_span=[-10.0, 10.0],
-        area_cost_func=area_cost,
         res=10.0,
         eff=0.5,
         n_cluster=30,
@@ -384,7 +365,6 @@ def test_plot_map(mock_show):
     panel = DetectorHeatMap(
         init_xyz=[0.0, 0.01, 0.9],
         init_xy_span=[-0.25, 0.25],
-        area_cost_func=area_cost,
         res=10.0,
         eff=0.5,
         n_cluster=30,
@@ -405,7 +385,7 @@ def test_gmm():
     assert (gmm._init_xy == Tensor([2, -5])).all()
     assert gmm._init_xy_span == Tensor([2])
     assert ((gmm.mu.mean(0) - Tensor([2, -5])).abs() < 1).all()
-    assert ((gmm.sig.mean() - Tensor([2])).abs() < 1).all()
+    assert ((gmm.sig.mean() - Tensor([1])).abs() < 1).all()
     assert gmm.mu.shape == torch.Size([30, 2])
     assert gmm.sig.shape == torch.Size([30, 2])
     assert gmm.norm.shape == torch.Size([1])

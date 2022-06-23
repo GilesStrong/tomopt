@@ -102,6 +102,9 @@ class PassiveLayer(Layer):
         if rad_length_func is not None:
             self.load_rad_length(rad_length_func)
 
+    def __repr__(self) -> str:
+        return f"""PassiveLayer located at z={self.z}"""
+
     def load_rad_length(self, rad_length_func: Callable[..., Tensor]) -> None:
         self.rad_length = rad_length_func(z=self.z, lw=self.lw, size=self.size).to(self.device)
 
@@ -111,6 +114,8 @@ class PassiveLayer(Layer):
 
 
 class AbsDetectorLayer(Layer, metaclass=ABCMeta):
+    _n_costs = 0
+
     def __init__(
         self,
         pos: str,
@@ -125,7 +130,7 @@ class AbsDetectorLayer(Layer, metaclass=ABCMeta):
         self.type_label = ""
 
     @abstractmethod
-    def forward(self, mu: MuonBatch, budget: Optional[Tensor] = None) -> None:
+    def forward(self, mu: MuonBatch) -> None:
         pass
 
     @abstractmethod
@@ -133,6 +138,13 @@ class AbsDetectorLayer(Layer, metaclass=ABCMeta):
         pass
 
     def conform_detector(self) -> None:
+        pass
+
+    def assign_budget(self, budget: Optional[Tensor]) -> None:
+        r"""
+        For assigning budget withput calling forward
+        """
+
         pass
 
 
@@ -182,7 +194,7 @@ class VoxelDetectorLayer(AbsDetectorLayer):
         }
         return hits
 
-    def forward(self, mu: MuonBatch, budget: Optional[Tensor] = None) -> None:
+    def forward(self, mu: MuonBatch) -> None:
         self.scatter_and_propagate(mu, self.size / 2)
         mu.append_hits(self.get_hits(mu), self.pos)
         self.scatter_and_propagate(mu, self.size / 2)
@@ -197,11 +209,11 @@ class PanelDetectorLayer(AbsDetectorLayer):
             panels = nn.ModuleList(panels)
         super().__init__(pos=pos, lw=lw, z=z, size=size, device=self.get_device(panels))
         self.panels = panels
+        self._n_costs = len(self.panels)
         if isinstance(panels[0], DetectorHeatMap):
             self.type_label = "heatmap"
         elif isinstance(panels[0], DetectorPanel):
             self.type_label = "panel"
-        self.budget_weights = nn.Parameter(torch.zeros(len(self.panels), device=self.device))
 
     @staticmethod
     def get_device(panels: nn.ModuleList) -> torch.device:
@@ -239,12 +251,10 @@ class PanelDetectorLayer(AbsDetectorLayer):
                     xyz_high=(lw[0], lw[1], z),
                 )
 
-    def forward(self, mu: MuonBatch, budget: Optional[Tensor] = None) -> None:
-        if budget is not None:
-            panel_budgets = budget * F.softmax(self.budget_weights, dim=-1)
+    def forward(self, mu: MuonBatch) -> None:
         for i, p in self.yield_zordered_panels():
             self.scatter_and_propagate(mu, mu.z - p.z.detach())  # Move to panel
-            hits = p.get_hits(mu, budget=panel_budgets[i]) if budget is not None else p.get_hits(mu)
+            hits = p.get_hits(mu)
             mu.append_hits(hits, self.pos)
         self.scatter_and_propagate(mu, mu.z - (self.z - self.size))  # Move to bottom of layer
 
@@ -253,3 +263,8 @@ class PanelDetectorLayer(AbsDetectorLayer):
         for p in self.panels:
             cost = p.get_cost() if cost is None else cost + p.get_cost()
         return cost
+
+    def assign_budget(self, budget: Optional[Tensor]) -> None:
+        if budget is not None:
+            for i, p in self.yield_zordered_panels():
+                p.assign_budget(budget[i])
