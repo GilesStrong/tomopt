@@ -42,7 +42,7 @@ class DetectorPanel(nn.Module):
         return self.xy_span * self.budget_scale
 
     def __repr__(self) -> str:
-        return f"""{self.__class__} located at xy={self.xy.data}, z={self.z.data}, and xy span {self.xy_span.data}"""
+        return f"""{self.__class__} located at xy={self.xy.data}, z={self.z.data}, and xy span {self.get_scaled_xy_span().data} with budget scale {self.budget_scale.data}"""
 
     def get_xy_mask(self, xy: Tensor) -> Tensor:
         span = self.get_scaled_xy_span()
