@@ -179,7 +179,7 @@ def test_voxel_detector_layer(batch):
     assert (dl.efficiency == 1).all()
 
 
-def test_panel_detector_layer(batch):
+def test_panel_detector_layer(mocker, batch):  # noqa F811
     dl = PanelDetectorLayer(
         pos="above",
         lw=LW,
@@ -257,6 +257,18 @@ def test_panel_detector_layer(batch):
         ],
     )
     assert dl.get_cost().detach().cpu().numpy() == np.sum([p.xy_span.prod().detach().cpu().numpy() for p in dl.panels])
+
+    # budget checks
+    assert dl._n_costs == 4
+    for p in dl.panels:
+        mocker.patch.object(p, "assign_budget")
+    dl.assign_budget(None)
+    for p in dl.panels:
+        assert p.assign_budget.call_count == 0
+    dl.assign_budget(Tensor([1, 2, 3, 4]))
+    for i, p in zip([2, 1, 4, 3], dl.panels):  # Panels are called in z order
+        assert p.assign_budget.call_count == 1
+        assert p.assign_budget.called_with(Tensor([i]))
 
 
 def test_volume_properties():
