@@ -147,6 +147,9 @@ def test_voxel_detector_layer(batch):
     assert dl.resolution.mean() == Tensor([1e3])
     assert dl.efficiency.mean() == Tensor([1])
     assert dl.type_label == "voxel"
+    assert dl._n_costs == 0
+    with pytest.raises(NotImplementedError):
+        dl.assign_budget(Tensor([2]))
 
     start = batch.copy()
     dl(batch)
