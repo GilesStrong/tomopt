@@ -130,7 +130,7 @@ def test_passive_layer_scattering(mocker, batch, n):  # noqa: F811
     assert batch.propagate.call_count == n
     assert batch.scatter_dxy.call_count == n
     assert batch.scatter_dtheta_dphi.call_count == n
-    assert batch.propagate.called_with(SZ / n)
+    batch.propagate.assert_called_with(SZ / n)
     assert batch.get_xy_mask.call_count == n
 
 
@@ -268,7 +268,7 @@ def test_panel_detector_layer(mocker, batch):  # noqa F811
     dl.assign_budget(Tensor([1, 2, 3, 4]))
     for i, p in zip([2, 1, 4, 3], dl.panels):  # Panels are called in z order
         assert p.assign_budget.call_count == 1
-        assert p.assign_budget.called_with(Tensor([i]))
+        p.assign_budget.assert_called_with(Tensor([i]))
 
 
 def test_volume_properties():
@@ -287,7 +287,7 @@ def test_volume_properties():
     assert volume.budget_weights.sum() == 0  # Equal budget split at start
 
 
-def test_volume_methods():
+def test_volume_methods(mocker):  # noqa F811
     layers = get_panel_layers()
     volume = Volume(layers=layers)
     assert volume.get_detectors()[-1] == layers[-1]
@@ -349,6 +349,14 @@ def test_volume_methods():
     assert centres.shape == torch.Size((600, 3))
     assert (centres[0] == Tensor([0, 0, 2 * SZ]) + (SZ / 2)).all()
     assert (centres[-1] == Tensor([LW[0] - SZ, LW[1] - SZ, 7 * SZ]) + (SZ / 2)).all()
+
+    # Budget assigment
+    mocker.patch.object(layers[0], "assign_budget")
+    mocker.patch.object(layers[-1], "assign_budget")
+    volume = Volume(layers=layers, budget=8)
+    for i in [0, -1]:
+        assert layers[i].assign_budget.call_count == 1
+        assert (layers[i].assign_budget.call_args.args[0].data == Tensor([1, 1, 1, 1])).all()
 
 
 def test_volume_forward_voxel(batch):
