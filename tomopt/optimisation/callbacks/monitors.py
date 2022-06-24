@@ -381,8 +381,8 @@ class PanelMetricLogger(MetricLogger):
             xy_min, xy_max = (poss - sizes).min(0).values, (poss + sizes).max(0).values
             margin = lw.max() / 2
 
-            ax[0].set_xlim(min([torch.zeros(1), xy_min[0]]) - (lw[0] / 2), max([lw[0], xy_max[0]]) + (lw[0] / 2))
-            ax[1].set_xlim(min([torch.zeros(1), xy_min[1]]) - (lw[1] / 2), max([lw[1], xy_max[1]]) + (lw[1] / 2))
+            ax[0].set_xlim(min([1, xy_min[0].item()]) - (lw[0] / 2), max([lw[0].item(), xy_max[0].item()]) + (lw[0] / 2))
+            ax[1].set_xlim(min([1, xy_min[1].item()]) - (lw[1] / 2), max([lw[1].item(), xy_max[1].item()]) + (lw[1] / 2))
             ax[2].set_xlim(xy_min.min() - margin, xy_max.max() + margin)
             ax[0].set_ylim(z - (1.25 * det.size), z + (0.25 * det.size))
             ax[1].set_ylim(z - (1.25 * det.size), z + (0.25 * det.size))
