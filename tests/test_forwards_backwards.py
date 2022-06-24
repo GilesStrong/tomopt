@@ -142,6 +142,19 @@ def panel_inferer() -> PanelX0Inferer:
 
 
 @pytest.fixture
+def fixed_budget_panel_inferer() -> PanelX0Inferer:
+    volume = Volume(get_panel_layers(), budget=32)
+    gen = MuonGenerator2016.from_volume(volume)
+    mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
+    mu = MuonBatch(mus, init_z=volume.h)
+    volume(mu)
+    sb = PanelScatterBatch(mu=mu, volume=volume)
+    inf = PanelX0Inferer(volume=volume)
+    inf.add_scatters(sb)
+    return inf
+
+
+@pytest.fixture
 def heatmap_inferer() -> PanelX0Inferer:
     volume = Volume(get_heatmap_layers())
     gen = MuonGenerator2016.from_volume(volume)
@@ -196,6 +209,19 @@ def test_forwards_panel(panel_inferer):
     loss_val = loss_func(pred, weight, panel_inferer.volume)
 
     for l in panel_inferer.volume.get_detectors():
+        for p in l.panels:
+            assert torch.autograd.grad(loss_val, p.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+            assert torch.autograd.grad(loss_val, p.z, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+            assert torch.autograd.grad(loss_val, p.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+
+
+def test_forwards_fixed_budget_panel(fixed_budget_panel_inferer):
+    pred, weight = fixed_budget_panel_inferer.get_prediction()
+    loss_func = VoxelX0Loss(target_budget=1, cost_coef=1e-5)
+    loss_val = loss_func(pred, weight, fixed_budget_panel_inferer.volume)
+
+    assert torch.autograd.grad(loss_val, fixed_budget_panel_inferer.volume.budget_weights, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+    for l in fixed_budget_panel_inferer.volume.get_detectors():
         for p in l.panels:
             assert torch.autograd.grad(loss_val, p.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
             assert torch.autograd.grad(loss_val, p.z, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
