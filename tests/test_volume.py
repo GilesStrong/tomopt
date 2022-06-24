@@ -268,6 +268,7 @@ def test_panel_detector_layer(mocker, batch):  # noqa F811
     dl.assign_budget(Tensor([1, 2, 3, 4]))
     for i, p in zip([2, 1, 4, 3], dl.panels):  # Panels are called in z order
         assert p.assign_budget.call_count == 1
+        print(p.z)
         p.assign_budget.assert_called_with(Tensor([i]))
 
 

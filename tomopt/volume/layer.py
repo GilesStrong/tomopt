@@ -270,5 +270,7 @@ class PanelDetectorLayer(AbsDetectorLayer):
 
     def assign_budget(self, budget: Optional[Tensor]) -> None:
         if budget is not None:
-            for i, p in self.yield_zordered_panels():
+            i = 0
+            for _, p in self.yield_zordered_panels():
                 p.assign_budget(budget[i])
+                i += 1
