@@ -256,6 +256,22 @@ def test_panel_detector_layer(batch):
     assert dl.get_cost().detach().cpu().numpy() == np.sum([p.xy_span.prod().detach().cpu().numpy() for p in dl.panels])
 
 
+def test_volume_properties():
+    layers = get_panel_layers()
+    volume = Volume(layers=layers)
+
+    assert volume.layers == layers
+    with pytest.raises(AttributeError):
+        volume._n_layer_costs == 8
+    with pytest.raises(AttributeError):
+        volume.budget_weights.shape == torch.Size([8])
+
+    volume = Volume(layers=layers, budget=10)
+    assert volume._n_layer_costs == [4, 4]  # 4 panels per layer
+    assert volume.budget_weights.shape == torch.Size([8])
+    assert volume.budget_weights.sum() == 0  # Equal budget split at start
+
+
 def test_volume_methods():
     layers = get_panel_layers()
     volume = Volume(layers=layers)

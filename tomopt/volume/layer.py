@@ -202,6 +202,10 @@ class VoxelDetectorLayer(AbsDetectorLayer):
     def get_cost(self) -> Tensor:
         return self.eff_cost_func(self.efficiency).sum() + self.res_cost_func(self.resolution).sum()
 
+    def assign_budget(self, budget: Optional[Tensor]) -> None:
+        if budget is not None:
+            raise NotImplementedError("Please update me to work with a budget!")
+
 
 class PanelDetectorLayer(AbsDetectorLayer):
     def __init__(self, pos: str, lw: Tensor, z: float, size: float, panels: Union[List[DetectorPanel], List[DetectorHeatMap], nn.ModuleList]):
