@@ -114,6 +114,8 @@ class PassiveLayer(Layer):
 
 
 class AbsDetectorLayer(Layer, metaclass=ABCMeta):
+    _n_costs = 0
+
     def __init__(
         self,
         pos: str,
@@ -136,6 +138,13 @@ class AbsDetectorLayer(Layer, metaclass=ABCMeta):
         pass
 
     def conform_detector(self) -> None:
+        pass
+
+    def assign_budget(self, budget: Optional[Tensor]) -> None:
+        r"""
+        For assigning budget withput calling forward
+        """
+
         pass
 
 
@@ -193,6 +202,10 @@ class VoxelDetectorLayer(AbsDetectorLayer):
     def get_cost(self) -> Tensor:
         return self.eff_cost_func(self.efficiency).sum() + self.res_cost_func(self.resolution).sum()
 
+    def assign_budget(self, budget: Optional[Tensor]) -> None:
+        if budget is not None:
+            raise NotImplementedError("Please update me to work with a budget!")
+
 
 class PanelDetectorLayer(AbsDetectorLayer):
     def __init__(self, pos: str, lw: Tensor, z: float, size: float, panels: Union[List[DetectorPanel], List[DetectorHeatMap], nn.ModuleList]):
@@ -200,6 +213,7 @@ class PanelDetectorLayer(AbsDetectorLayer):
             panels = nn.ModuleList(panels)
         super().__init__(pos=pos, lw=lw, z=z, size=size, device=self.get_device(panels))
         self.panels = panels
+        self._n_costs = len(self.panels)
         if isinstance(panels[0], DetectorHeatMap):
             self.type_label = "heatmap"
         elif isinstance(panels[0], DetectorPanel):
@@ -217,9 +231,9 @@ class PanelDetectorLayer(AbsDetectorLayer):
     def get_panel_zorder(self) -> List[int]:
         return list(np.argsort([p.z.detach().cpu().item() for p in self.panels])[::-1])
 
-    def yield_zordered_panels(self) -> Union[Iterator[DetectorPanel], Iterator[DetectorHeatMap]]:
+    def yield_zordered_panels(self) -> Union[Iterator[Tuple[int, DetectorPanel]], Iterator[Tuple[int, DetectorHeatMap]]]:
         for i in self.get_panel_zorder():
-            yield self.panels[i]
+            yield i, self.panels[i]
 
     def conform_detector(self) -> None:
         lw = self.lw.detach().cpu().numpy()
@@ -242,9 +256,10 @@ class PanelDetectorLayer(AbsDetectorLayer):
                 )
 
     def forward(self, mu: MuonBatch) -> None:
-        for p in self.yield_zordered_panels():
+        for i, p in self.yield_zordered_panels():
             self.scatter_and_propagate(mu, mu.z - p.z.detach())  # Move to panel
-            mu.append_hits(p.get_hits(mu), self.pos)
+            hits = p.get_hits(mu)
+            mu.append_hits(hits, self.pos)
         self.scatter_and_propagate(mu, mu.z - (self.z - self.size))  # Move to bottom of layer
 
     def get_cost(self) -> Tensor:
@@ -252,3 +267,10 @@ class PanelDetectorLayer(AbsDetectorLayer):
         for p in self.panels:
             cost = p.get_cost() if cost is None else cost + p.get_cost()
         return cost
+
+    def assign_budget(self, budget: Optional[Tensor]) -> None:
+        if budget is not None:
+            i = 0
+            for _, p in self.yield_zordered_panels():  # This really should be an enumerate, but MyPy then thinks assign_budget is a Tensor...
+                p.assign_budget(budget[i])
+                i += 1

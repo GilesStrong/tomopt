@@ -36,10 +36,6 @@ def res_cost(x: Tensor) -> Tensor:
     return F.relu(x / 100) ** 2
 
 
-def area_cost(a: Tensor) -> Tensor:
-    return F.relu(a)
-
-
 def get_voxel_layers() -> nn.ModuleList:
     layers = []
 
@@ -65,8 +61,7 @@ def get_panel_layers() -> nn.ModuleList:
             z=1,
             size=2 * SZ,
             panels=[
-                DetectorPanel(res=INIT_RES, eff=INIT_EFF, init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / N_PANELS)], init_xy_span=[1.0, 1.0], area_cost_func=area_cost)
-                for i in range(N_PANELS)
+                DetectorPanel(res=INIT_RES, eff=INIT_EFF, init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / N_PANELS)], init_xy_span=[1.0, 1.0]) for i in range(N_PANELS)
             ],
         )
     )
@@ -79,9 +74,7 @@ def get_panel_layers() -> nn.ModuleList:
             z=0.2,
             size=2 * SZ,
             panels=[
-                DetectorPanel(
-                    res=INIT_RES, eff=INIT_EFF, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / N_PANELS)], init_xy_span=[1.0, 1.0], area_cost_func=area_cost
-                )
+                DetectorPanel(res=INIT_RES, eff=INIT_EFF, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / N_PANELS)], init_xy_span=[1.0, 1.0])
                 for i in range(N_PANELS)
             ],
         )
@@ -99,13 +92,7 @@ def get_heatmap_layers() -> nn.ModuleList:
             z=1,
             size=2 * SZ,
             panels=[
-                DetectorHeatMap(
-                    res=INIT_RES,
-                    eff=INIT_EFF,
-                    init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / N_PANELS)],
-                    init_xy_span=[-0.5, 0.5],
-                    area_cost_func=area_cost,
-                )
+                DetectorHeatMap(res=INIT_RES, eff=INIT_EFF, init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / N_PANELS)], init_xy_span=[-0.5, 0.5])
                 for i in range(N_PANELS)
             ],
         )
@@ -119,13 +106,7 @@ def get_heatmap_layers() -> nn.ModuleList:
             z=0.2,
             size=2 * SZ,
             panels=[
-                DetectorHeatMap(
-                    res=INIT_RES,
-                    eff=INIT_EFF,
-                    init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / N_PANELS)],
-                    init_xy_span=[-0.5, 0.5],
-                    area_cost_func=area_cost,
-                )
+                DetectorHeatMap(res=INIT_RES, eff=INIT_EFF, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / N_PANELS)], init_xy_span=[-0.5, 0.5])
                 for i in range(N_PANELS)
             ],
         )
@@ -150,6 +131,19 @@ def voxel_inferer() -> VoxelX0Inferer:
 @pytest.fixture
 def panel_inferer() -> PanelX0Inferer:
     volume = Volume(get_panel_layers())
+    gen = MuonGenerator2016.from_volume(volume)
+    mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
+    mu = MuonBatch(mus, init_z=volume.h)
+    volume(mu)
+    sb = PanelScatterBatch(mu=mu, volume=volume)
+    inf = PanelX0Inferer(volume=volume)
+    inf.add_scatters(sb)
+    return inf
+
+
+@pytest.fixture
+def fixed_budget_panel_inferer() -> PanelX0Inferer:
+    volume = Volume(get_panel_layers(), budget=32)
     gen = MuonGenerator2016.from_volume(volume)
     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
     mu = MuonBatch(mus, init_z=volume.h)
@@ -221,6 +215,19 @@ def test_forwards_panel(panel_inferer):
             assert torch.autograd.grad(loss_val, p.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
 
 
+def test_forwards_fixed_budget_panel(fixed_budget_panel_inferer):
+    pred, weight = fixed_budget_panel_inferer.get_prediction()
+    loss_func = VoxelX0Loss(target_budget=1, cost_coef=1e-5)
+    loss_val = loss_func(pred, weight, fixed_budget_panel_inferer.volume)
+
+    assert torch.autograd.grad(loss_val, fixed_budget_panel_inferer.volume.budget_weights, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+    for l in fixed_budget_panel_inferer.volume.get_detectors():
+        for p in l.panels:
+            assert torch.autograd.grad(loss_val, p.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+            assert torch.autograd.grad(loss_val, p.z, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+            assert torch.autograd.grad(loss_val, p.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+
+
 def test_forwards_heatmap(heatmap_inferer):
     pred, weight = heatmap_inferer.get_prediction()
     loss_func = VoxelX0Loss(target_budget=1, cost_coef=1e-5)
@@ -272,6 +279,29 @@ def test_backwards_panel(panel_inferer):
         assert p.grad is not None
     opt.step()
     for l in panel_inferer.volume.get_detectors():
+        for i, p in enumerate(l.panels):
+            assert (p.xy != Tensor([0.5, 0.5])).all()
+            if l.pos == "above":
+                assert (p.z != Tensor([1 - (i * (2 * SZ) / N_PANELS)])).all()
+            else:
+                assert (p.z != Tensor([0.2 - (i * (2 * SZ) / N_PANELS)])).all()
+            assert (p.xy_span != Tensor([0.5, 0.5])).all()
+            assert p.resolution == Tensor([INIT_RES])
+            assert p.efficiency == Tensor([INIT_EFF])
+
+
+def test_backwards_fixed_budget_panel(fixed_budget_panel_inferer):
+    pred, weight = fixed_budget_panel_inferer.get_prediction()
+    loss_func = VoxelX0Loss(target_budget=1, cost_coef=0.15)
+    loss_val = loss_func(pred, weight, fixed_budget_panel_inferer.volume)
+    opt = torch.optim.SGD(fixed_budget_panel_inferer.volume.parameters(), lr=1)
+    opt.zero_grad()
+    loss_val.backward()
+    for p in fixed_budget_panel_inferer.volume.parameters():
+        assert p.grad is not None
+    opt.step()
+    assert (fixed_budget_panel_inferer.volume.budget_weights != torch.zeros(2 * N_PANELS)).all()
+    for l in fixed_budget_panel_inferer.volume.get_detectors():
         for i, p in enumerate(l.panels):
             assert (p.xy != Tensor([0.5, 0.5])).all()
             if l.pos == "above":

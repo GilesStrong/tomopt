@@ -22,7 +22,7 @@ class PhiDetectorPanel(DetectorPanel):
             eff=eff,
             init_xyz=(0.0, 0.0, float(init_z)),
             init_xy_span=(1.0, 1.0),
-            area_cost_func=lambda x: torch.zeros(1, 1),
+            m2_cost=0,
             realistic_validation=False,
             device=device,
         )
@@ -41,7 +41,7 @@ class PhiDetectorPanel(DetectorPanel):
             raise ValueError(f"{self.efficiency} is not a Tensor for some reason.")  # To appease MyPy
         return self.efficiency
 
-    def get_hits(self, mu: MuonBatch) -> Dict[str, Tensor]:
+    def get_hits(self, mu: MuonBatch, budget: Optional[Tensor] = None) -> Dict[str, Tensor]:
         xy = mu.xy.detach().clone()
         gen_h = (xy[:, 0:1] * self.phi.cos()) + (xy[:, 1:2] * self.phi.sin())
         reco_h = gen_h + (torch.randn((len(mu), 1), device=self.device) / self.resolution)

@@ -4,6 +4,7 @@ import numpy as np
 
 import torch
 from torch import nn, Tensor
+import torch.nn.functional as F
 
 from .layer import AbsDetectorLayer, PassiveLayer
 from ..muon import MuonBatch
@@ -12,13 +13,26 @@ __all__ = ["Volume"]
 
 
 class Volume(nn.Module):
-    def __init__(self, layers: nn.ModuleList):
+    def __init__(self, layers: nn.ModuleList, budget: Optional[float] = None):
         super().__init__()
         self.layers = layers
         self._device = self._get_device()
+        self.budget = None if budget is None else torch.tensor(budget, device=self._device)
         self._check_passives()
         self._target: Optional[Tensor] = None
         self._edges: Optional[Tensor] = None
+
+        if self.budget is not None:
+            self._configure_budget()
+
+    def _configure_budget(self) -> None:
+        r"""
+        Currently only accounts for detector costs
+        """
+
+        self._n_layer_costs = [l._n_costs for l in self.layers if hasattr(l, "get_cost")]  # Number of different costs in the detector layer
+        self.budget_weights = nn.Parameter(torch.zeros(np.sum(self._n_layer_costs), device=self._device))  # Assignment of budget amongst all costs
+        self.assign_budget()
 
     @property
     def edges(self) -> Tensor:
@@ -110,19 +124,35 @@ class Volume(nn.Module):
         for p in self.get_passives():
             p.load_rad_length(rad_length_func)
 
+    def assign_budget(self) -> None:
+        if self.budget is not None:
+            budget_idx, layer_idx = 0, 0
+            layer_budgets = self.budget * F.softmax(self.budget_weights, dim=-1)
+            for l in self.layers:
+                if self.budget is not None and hasattr(l, "get_cost"):
+                    n = self._n_layer_costs[layer_idx]
+                    l.assign_budget(layer_budgets[budget_idx : budget_idx + n])
+                    budget_idx += n
+                    layer_idx += 1
+
     def forward(self, mu: MuonBatch) -> None:  # Expand to take volume as input, too
+        self.assign_budget()
+
         for l in self.layers:
             l(mu)
             mu.snapshot_xyz()
 
     def get_cost(self) -> Tensor:
         cost = None
-        for l in self.layers:
+        if self.budget is not None:
+            return self.budget
+        for i, l in enumerate(self.layers):
             if hasattr(l, "get_cost"):
+                c = l.get_cost()
                 if cost is None:
-                    cost = l.get_cost()
+                    cost = c
                 else:
-                    cost = cost + l.get_cost()
+                    cost = cost + c
         if cost is None:
             cost = torch.zeros((1), device=self.device)
         return cost
