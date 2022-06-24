@@ -452,6 +452,7 @@ class PanelVolumeWrapper(AbsVolumeWrapper):
         xy_pos_opt: PartialOpt,
         z_pos_opt: PartialOpt,
         xy_span_opt: PartialOpt,
+        budget_opt: Optional[PartialOpt] = None,
         loss_func: Optional[AbsDetectorLoss],
         mu_generator: Optional[AbsMuonGenerator] = None,
     ) -> AbsVolumeWrapper:
@@ -460,6 +461,7 @@ class PanelVolumeWrapper(AbsVolumeWrapper):
             xy_pos_opt=xy_pos_opt,
             z_pos_opt=z_pos_opt,
             xy_span_opt=xy_span_opt,
+            budget_opt=budget_opt,
             loss_func=loss_func,
             mu_generator=mu_generator,
         )

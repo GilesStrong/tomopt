@@ -128,8 +128,8 @@ def test_voxel_volume_wrapper_methods():
     for l in volume.get_detectors():
         assert l.resolution.sum() != 0
         assert l.efficiency.sum() != 0
-    vw.get_opt_lr("res_opt") == 0
-    vw.get_opt_lr("eff_opt") == 0
+    assert vw.get_opt_lr("res_opt") != 0
+    assert vw.get_opt_lr("eff_opt") != 0
 
     # from_save
     zero_params(volume, vw)
@@ -139,8 +139,8 @@ def test_voxel_volume_wrapper_methods():
     for l in volume.get_detectors():
         assert l.resolution.sum() != 0
         assert l.efficiency.sum() != 0
-    vw.get_opt_lr("res_opt") != 0
-    vw.get_opt_lr("eff_opt") != 0
+    assert vw.get_opt_lr("res_opt") != 0
+    assert vw.get_opt_lr("eff_opt") != 0
 
 
 def test_panel_volume_wrapper_methods():
@@ -150,6 +150,17 @@ def test_panel_volume_wrapper_methods():
         xy_pos_opt=partial(optim.SGD, lr=2e0, momentum=0.95),
         z_pos_opt=partial(optim.Adam, lr=2e-2),
         xy_span_opt=partial(optim.Adam, lr=2e-0),
+        loss_func=VoxelX0Loss(target_budget=1, cost_coef=0.15),
+    )  # Can init without budget opt
+
+    volume.budget = torch.tensor(32, device=volume._device)
+    volume._configure_budget()
+    vw = PanelVolumeWrapper(
+        volume,
+        xy_pos_opt=partial(optim.SGD, lr=2e0, momentum=0.95),
+        z_pos_opt=partial(optim.Adam, lr=2e-2),
+        xy_span_opt=partial(optim.Adam, lr=2e-0),
+        budget_opt=partial(optim.SGD, lr=2e0, momentum=0.95),
         loss_func=VoxelX0Loss(target_budget=1, cost_coef=0.15),
     )
 
@@ -164,12 +175,14 @@ def test_panel_volume_wrapper_methods():
         assert torch.all(p.z == z)
         assert torch.all(p.xy_span == s)
 
+    assert (vw.opts["budget_opt"].param_groups[0]["params"][0] == volume.budget_weights).all()
+
     # get_detectors
     for i, j, k in zip(volume.get_detectors(), vw.get_detectors(), (volume.layers[0], volume.layers[-1])):
         assert i == j == k
 
     # get_param_count
-    assert vw.get_param_count() == 4 * 2 * 5
+    assert vw.get_param_count() == (4 * 2 * 5) + 8
 
     # save
     def zero_params(v, vw):
@@ -181,9 +194,12 @@ def test_panel_volume_wrapper_methods():
                 assert p.xy.sum() == 0
                 assert p.z.sum() == 0
                 assert p.xy_span.sum() == 0
+        nn.init.ones_(v.budget_weights)
+        assert v.budget_weights.sum() == 8
         vw.set_opt_lr(0, "xy_pos_opt")
         vw.set_opt_lr(0, "z_pos_opt")
         vw.set_opt_lr(0, "xy_span_opt")
+        vw.set_opt_lr(0, "budget_opt")
 
     path = Path("tests/test_panel_save.pt")
     vw.save("tests/test_panel_save.pt")
@@ -196,9 +212,11 @@ def test_panel_volume_wrapper_methods():
             assert p.xy.sum() != 0
             assert p.z.sum() != 0
             assert p.xy_span.sum() != 0
-    vw.get_opt_lr("xy_pos_opt") != 0
-    vw.get_opt_lr("z_pos_opt") != 0
-    vw.get_opt_lr("xy_span_opt") != 0
+    assert volume.budget_weights.sum() == 0
+    assert vw.get_opt_lr("xy_pos_opt") != 0
+    assert vw.get_opt_lr("z_pos_opt") != 0
+    assert vw.get_opt_lr("xy_span_opt") != 0
+    assert vw.get_opt_lr("budget_opt") != 0
 
     # from_save
     zero_params(volume, vw)
@@ -208,6 +226,7 @@ def test_panel_volume_wrapper_methods():
         xy_pos_opt=partial(optim.SGD, lr=0),
         z_pos_opt=partial(optim.Adam, lr=0),
         xy_span_opt=partial(optim.Adam, lr=0),
+        budget_opt=partial(optim.SGD, lr=2e0, momentum=0.95),
         loss_func=VoxelX0Loss(target_budget=1, cost_coef=0.15),
     )
     for l in volume.get_detectors():
@@ -215,9 +234,11 @@ def test_panel_volume_wrapper_methods():
             assert p.xy.sum() != 0
             assert p.z.sum() != 0
             assert p.xy_span.sum() != 0
-    vw.get_opt_lr("xy_pos_opt") != 0
-    vw.get_opt_lr("z_pos_opt") != 0
-    vw.get_opt_lr("xy_span_opt") != 0
+    assert volume.budget_weights.sum() == 0
+    assert vw.get_opt_lr("xy_pos_opt") != 0
+    assert vw.get_opt_lr("z_pos_opt") != 0
+    assert vw.get_opt_lr("xy_span_opt") != 0
+    assert vw.get_opt_lr("budget_opt") != 0
 
 
 def test_volume_wrapper_parameters():
