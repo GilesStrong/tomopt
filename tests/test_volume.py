@@ -356,7 +356,7 @@ def test_volume_methods(mocker):  # noqa F811
     volume = Volume(layers=layers, budget=8)
     for i in [0, -1]:
         assert layers[i].assign_budget.call_count == 1
-        assert (layers[i].assign_budget.call_args.args[0].data == Tensor([1, 1, 1, 1])).all()
+        assert (layers[i].assign_budget.call_args.args[0] == Tensor([1, 1, 1, 1])).all()
 
 
 def test_volume_forward_voxel(batch):
@@ -537,9 +537,11 @@ def test_detector_panel_methods():
     assert (panel.z - 1).abs() < 5e-3
     assert (panel.xy_span == Tensor([5e-2, 10])).all()
 
-
-# def test_budget_assignment():
-#     layers = get_panel_layers(n_panels=4)
-#     volume = Volume(layers=layers)
-
-#     assert
+    # Budget assignment
+    panel = DetectorPanel(res=10, eff=0.5, init_xyz=[2.0, -2.0, 2.0], init_xy_span=[0.8, 0.5], m2_cost=10)
+    panel.assign_budget(None)
+    assert panel.budget_scale == 1
+    panel.assign_budget(Tensor([64]))
+    assert panel.budget_scale == Tensor([4])
+    assert (panel.xy_span == Tensor([0.8, 0.5])).all()
+    assert (panel.get_scaled_xy_span() == Tensor([3.2, 2.0])).all()
