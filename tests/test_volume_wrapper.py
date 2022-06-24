@@ -380,12 +380,13 @@ def test_volume_wrapper_scan_volume_mu_batch(mocker):  # noqa F811
 @pytest.mark.flaky(max_runs=2, min_passes=1)
 @pytest.mark.parametrize("state", ["train", "valid", "test"])
 def test_volume_wrapper_scan_volumes(state, mocker):  # noqa F811
-    volume = Volume(get_panel_layers())
+    volume = Volume(get_panel_layers(), budget=32)
     vw = PanelVolumeWrapper(
         volume,
         xy_pos_opt=partial(optim.SGD, lr=0),
         z_pos_opt=partial(optim.SGD, lr=0),
         xy_span_opt=partial(optim.SGD, lr=0),
+        budget_opt=partial(optim.SGD, lr=0),
         loss_func=VoxelX0Loss(target_budget=None),
     )
     cb = Callback()
@@ -405,6 +406,7 @@ def test_volume_wrapper_scan_volumes(state, mocker):  # noqa F811
     mocker.spy(vw.opts["xy_pos_opt"], "step")
     mocker.spy(vw.opts["z_pos_opt"], "step")
     mocker.spy(vw.opts["xy_span_opt"], "step")
+    mocker.spy(vw.opts["budget_opt"], "step")
 
     mocker.patch.object(vw, "loss_func", return_value=torch.tensor(3.0, requires_grad=True))
 
@@ -435,6 +437,7 @@ def test_volume_wrapper_scan_volumes(state, mocker):  # noqa F811
         assert vw.opts["xy_pos_opt"].step.call_count == 2
         assert vw.opts["z_pos_opt"].zero_grad.call_count == 2
         assert vw.opts["xy_span_opt"].step.call_count == 2
+        assert vw.opts["budget_opt"].step.call_count == 2
     else:
         assert cb.on_backwards_begin.call_count == 0
         assert cb.on_backwards_end.call_count == 0
@@ -444,6 +447,7 @@ def test_volume_wrapper_scan_volumes(state, mocker):  # noqa F811
         assert vw.opts["xy_pos_opt"].step.call_count == 0
         assert vw.opts["z_pos_opt"].step.call_count == 0
         assert vw.opts["xy_span_opt"].step.call_count == 0
+        assert vw.opts["budget_opt"].step.call_count == 0
 
 
 @pytest.mark.flaky(max_runs=2, min_passes=1)
