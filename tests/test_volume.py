@@ -20,6 +20,54 @@ N = 1000
 Z = 1
 
 
+def get_voxel_layers():
+    layers = []
+    init_eff = 0.5
+    init_res = 1000
+    pos = "above"
+    for z, d in zip(np.arange(Z, 0, -SZ), [1, 1, 0, 0, 0, 0, 0, 0, 1, 1]):
+        if d:
+            layers.append(
+                VoxelDetectorLayer(pos=pos, init_eff=init_eff, init_res=init_res, lw=LW, z=z, size=SZ, eff_cost_func=eff_cost, res_cost_func=res_cost)
+            )
+        else:
+            pos = "below"
+            layers.append(PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=z, size=SZ))
+
+    return nn.ModuleList(layers)
+
+
+def get_panel_layers(init_res: float = 1e4, init_eff: float = 0.5, n_panels: int = 4) -> nn.ModuleList:
+    layers = []
+    layers.append(
+        PanelDetectorLayer(
+            pos="above",
+            lw=LW,
+            z=1,
+            size=2 * SZ,
+            panels=[
+                DetectorPanel(res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / n_panels)], init_xy_span=[1.0, 1.0]) for i in range(n_panels)
+            ],
+        )
+    )
+    for z in [0.8, 0.7, 0.6, 0.5, 0.4, 0.3]:
+        layers.append(PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=z, size=SZ))
+    layers.append(
+        PanelDetectorLayer(
+            pos="below",
+            lw=LW,
+            z=0.2,
+            size=2 * SZ,
+            panels=[
+                DetectorPanel(res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / n_panels)], init_xy_span=[1.0, 1.0])
+                for i in range(n_panels)
+            ],
+        )
+    )
+
+    return nn.ModuleList(layers)
+
+
 @pytest.fixture
 def batch():
     mg = MuonGenerator2016(x_range=(0, LW[0].item()), y_range=(0, LW[1].item()))
@@ -208,28 +256,11 @@ def test_panel_detector_layer(batch):
     assert dl.get_cost().detach().cpu().numpy() == np.sum([p.xy_span.prod().detach().cpu().numpy() for p in dl.panels])
 
 
-def get_voxel_layers():
-    layers = []
-    init_eff = 0.5
-    init_res = 1000
-    pos = "above"
-    for z, d in zip(np.arange(Z, 0, -SZ), [1, 1, 0, 0, 0, 0, 0, 0, 1, 1]):
-        if d:
-            layers.append(
-                VoxelDetectorLayer(pos=pos, init_eff=init_eff, init_res=init_res, lw=LW, z=z, size=SZ, eff_cost_func=eff_cost, res_cost_func=res_cost)
-            )
-        else:
-            pos = "below"
-            layers.append(PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=z, size=SZ))
-
-    return nn.ModuleList(layers)
-
-
 def test_volume_methods():
-    layers = get_voxel_layers()
+    layers = get_panel_layers()
     volume = Volume(layers=layers)
     assert volume.get_detectors()[-1] == layers[-1]
-    assert volume.get_passives()[-1] == layers[-3]
+    assert volume.get_passives()[-1] == layers[-2]
     assert torch.all(volume.lw == LW)
     assert volume.passive_size == Tensor([SZ])
     assert volume.h == 10 * SZ
@@ -238,13 +269,12 @@ def test_volume_methods():
     with pytest.raises(AttributeError):
         volume.passive_size = 0
     with pytest.raises(AttributeError):
-
         volume.h = 0
 
     zr = volume.get_passive_z_range()
     assert torch.abs(zr[0] - 0.2) < 1e-5
     assert torch.abs(zr[1] - 0.8) < 1e-5
-    assert volume.get_cost() == 41392.6758
+    assert volume.get_cost() == 8.0
 
     cube = volume.get_rad_cube()
     assert cube.shape == torch.Size([6] + list((LW / SZ).long()))
@@ -312,37 +342,6 @@ def test_volume_forward_voxel(batch):
         grad = jacobian(hits["above" if l.z > 0.5 else "below"]["reco_xy"][:, i % 2], l.resolution).sum((-1, -2))
         assert not grad.isnan().any()
         assert (grad != 0).sum() > 0  # every reco hit (x,y) is function of resolution
-
-
-def get_panel_layers(init_res: float = 1e4, init_eff: float = 0.5, n_panels: int = 4) -> nn.ModuleList:
-    layers = []
-    layers.append(
-        PanelDetectorLayer(
-            pos="above",
-            lw=LW,
-            z=1,
-            size=2 * SZ,
-            panels=[
-                DetectorPanel(res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / n_panels)], init_xy_span=[1.0, 1.0]) for i in range(n_panels)
-            ],
-        )
-    )
-    for z in [0.8, 0.7, 0.6, 0.5, 0.4, 0.3]:
-        layers.append(PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=z, size=SZ))
-    layers.append(
-        PanelDetectorLayer(
-            pos="below",
-            lw=LW,
-            z=0.2,
-            size=2 * SZ,
-            panels=[
-                DetectorPanel(res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / n_panels)], init_xy_span=[1.0, 1.0])
-                for i in range(n_panels)
-            ],
-        )
-    )
-
-    return nn.ModuleList(layers)
 
 
 @pytest.mark.flaky(max_runs=3, min_passes=2)
@@ -498,3 +497,10 @@ def test_detector_panel_methods():
     assert panel.z - 1 < 0
     assert (panel.z - 1).abs() < 5e-3
     assert (panel.xy_span == Tensor([5e-2, 10])).all()
+
+
+# def test_budget_assignment():
+#     layers = get_panel_layers(n_panels=4)
+#     volume = Volume(layers=layers)
+
+#     assert
