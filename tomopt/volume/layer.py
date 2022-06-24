@@ -271,6 +271,6 @@ class PanelDetectorLayer(AbsDetectorLayer):
     def assign_budget(self, budget: Optional[Tensor]) -> None:
         if budget is not None:
             i = 0
-            for _, p in self.yield_zordered_panels():
+            for _, p in self.yield_zordered_panels():  # This really should be an enumerate, but MyPy then thinks assign_budget is a Tensor...
                 p.assign_budget(budget[i])
                 i += 1
