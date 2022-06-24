@@ -290,6 +290,29 @@ def test_backwards_panel(panel_inferer):
             assert p.efficiency == Tensor([INIT_EFF])
 
 
+def test_backwards_fixed_budget_panel(fixed_budget_panel_inferer):
+    pred, weight = fixed_budget_panel_inferer.get_prediction()
+    loss_func = VoxelX0Loss(target_budget=1, cost_coef=0.15)
+    loss_val = loss_func(pred, weight, fixed_budget_panel_inferer.volume)
+    opt = torch.optim.SGD(fixed_budget_panel_inferer.volume.parameters(), lr=1)
+    opt.zero_grad()
+    loss_val.backward()
+    for p in fixed_budget_panel_inferer.volume.parameters():
+        assert p.grad is not None
+    opt.step()
+    assert (fixed_budget_panel_inferer.volume.budget_weights != torch.zeros(2 * N_PANELS)).all()
+    for l in fixed_budget_panel_inferer.volume.get_detectors():
+        for i, p in enumerate(l.panels):
+            assert (p.xy != Tensor([0.5, 0.5])).all()
+            if l.pos == "above":
+                assert (p.z != Tensor([1 - (i * (2 * SZ) / N_PANELS)])).all()
+            else:
+                assert (p.z != Tensor([0.2 - (i * (2 * SZ) / N_PANELS)])).all()
+            assert (p.xy_span != Tensor([0.5, 0.5])).all()
+            assert p.resolution == Tensor([INIT_RES])
+            assert p.efficiency == Tensor([INIT_EFF])
+
+
 def test_backwards_heatmap(heatmap_inferer):
     pred, weight = heatmap_inferer.get_prediction()
     init_params = defaultdict(lambda: defaultdict(dict))
