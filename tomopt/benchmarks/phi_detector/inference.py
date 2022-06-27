@@ -11,6 +11,10 @@ __all__ = ["PhiDetScatterBatch"]
 
 
 class PhiDetScatterBatch(AbsScatterBatch):
+    r"""
+    Untested: no unit tests
+    """
+
     def _extract_hits(self) -> None:
         # reco x, reco y, gen z, must be a list to allow computation of uncertainty
         above_hits = torch.stack(

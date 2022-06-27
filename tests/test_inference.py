@@ -22,6 +22,7 @@ from tomopt.inference import (
     WeightedDeepVolumeInferer,
     DenseBlockClassifierFromX0s,
 )
+from tomopt.inference.volume import AbsIntClassifierFromX0
 from tomopt.volume.layer import Layer
 from tomopt.optimisation import MuonResampler
 from tomopt.utils import jacobian
@@ -45,10 +46,6 @@ def eff_cost(x: Tensor) -> Tensor:
 
 def res_cost(x: Tensor) -> Tensor:
     return F.relu(x / 100) ** 2
-
-
-def area_cost(a: Tensor) -> Tensor:
-    return F.relu(a)
 
 
 def get_voxel_layers(init_res: float = 1e4, init_eff: float = 0.5) -> nn.ModuleList:
@@ -75,9 +72,7 @@ def get_panel_layers(init_res: float = 1e5, init_eff: float = 0.9, n_panels: int
             z=1,
             size=2 * SZ,
             panels=[
-                DetectorPanel(
-                    res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / n_panels)], init_xy_span=init_xy_span, area_cost_func=area_cost
-                )
+                DetectorPanel(res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / n_panels)], init_xy_span=init_xy_span)
                 for i in range(n_panels)
             ],
         )
@@ -91,9 +86,7 @@ def get_panel_layers(init_res: float = 1e5, init_eff: float = 0.9, n_panels: int
             z=0.2,
             size=2 * SZ,
             panels=[
-                DetectorPanel(
-                    res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / n_panels)], init_xy_span=init_xy_span, area_cost_func=area_cost
-                )
+                DetectorPanel(res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / n_panels)], init_xy_span=init_xy_span)
                 for i in range(n_panels)
             ],
         )
@@ -232,7 +225,7 @@ def test_panel_scatter_batch(mock_show, panel_scatter_batch):
     assert (sb.theta_msc.abs() >= 0).all() and (sb.theta_msc < torch.pi).all()
 
     # uncertainties
-    panel = next(volume.get_detectors()[0].yield_zordered_panels())
+    _, panel = next(volume.get_detectors()[0].yield_zordered_panels())
     uncs = sb._get_hit_uncs([panel], sb.reco_hits[:, 0:1])
     assert (uncs[0][:, 2] == 0).all()
     xy_unc = uncs[0][:, :2]
@@ -626,6 +619,7 @@ def test_deep_volume_inferer(dvi_class: Type[DeepVolumeInferer], weighted: bool)
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
     sb = PanelScatterBatch(mu=mu, volume=volume)
+    nvalid = len(mu)
 
     grp_feats = ["pred_x0", "track_xy", "delta_angles", "theta_msc", "track_angles", "poca", "dpoca", "voxels"]  # 1  # 4  # 2  # 1  # 4  # 3  # 3->4  # 0->3
     n_infeats = 18
@@ -652,12 +646,12 @@ def test_deep_volume_inferer(dvi_class: Type[DeepVolumeInferer], weighted: bool)
     assert len(inferer.in_vars) == 1
     assert len(inferer.in_var_uncs) == 1
     assert len(inferer.efficiencies) == 1
-    assert inferer.in_vars[-1].shape == torch.Size((N, n_infeats))
-    assert inferer.in_var_uncs[-1].shape == torch.Size((N, n_infeats))
-    assert len(inferer.efficiencies[-1]) == N
+    assert inferer.in_vars[-1].shape == torch.Size((nvalid, n_infeats))
+    assert inferer.in_var_uncs[-1].shape == torch.Size((nvalid, n_infeats))
+    assert len(inferer.efficiencies[-1]) == nvalid
 
     inputs = inferer._build_inputs(inferer.in_vars[0])
-    assert inputs.shape == torch.Size((600, N, n_infeats + 4))  # +4 since voxels and dpoca_r
+    assert inputs.shape == torch.Size((600, nvalid, n_infeats + 4))  # +4 since voxels and dpoca_r
 
     pred, weight = inferer.get_prediction()
     assert pred.shape == torch.Size((1, 1))
@@ -700,3 +694,48 @@ def test_dense_block_classifier_from_x0s():
             assert torch.autograd.grad(p.abs().sum(), panel.z, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
             assert torch.autograd.grad(w.abs().sum(), panel.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
             assert torch.autograd.grad(w.abs().sum(), panel.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+
+
+def test_abs_int_classifier_from_x0():
+    volume = Volume(get_panel_layers(init_res=1e4))
+    gen = MuonGenerator2016.from_volume(volume)
+    mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
+    mu = MuonBatch(mus, init_z=volume.h)
+    volume(mu)
+    sb = PanelScatterBatch(mu=mu, volume=volume)
+
+    class Inf(AbsIntClassifierFromX0):
+        def x02probs(self, vox_preds: Tensor, vox_weights: Tensor) -> Tensor:
+            return F.softmax(vox_preds.mean([1, 2]), dim=-1)
+
+    # Raw probs
+    inferer = Inf(partial_x0_inferer=PanelX0Inferer, volume=volume, output_probs=True)
+    inferer.add_scatters(sb)
+
+    p, w = inferer.get_prediction()
+    assert p.shape == torch.Size([6])
+    assert w.shape == torch.Size([])
+
+    for l in volume.get_detectors():
+        for panel in l.panels:
+            assert jacobian(p, panel.xy_span).abs().sum() > 0
+            assert jacobian(p, panel.xy).abs().sum() > 0
+            assert jacobian(p, panel.z).abs().sum() > 0
+            assert torch.autograd.grad(w.abs().sum(), panel.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+            assert torch.autograd.grad(w.abs().sum(), panel.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+
+    # Single prediction
+    inferer = Inf(partial_x0_inferer=PanelX0Inferer, volume=volume, output_probs=False)
+    inferer.add_scatters(sb)
+    p, w = inferer.get_prediction()
+    assert p.type() == "torch.LongTensor"
+    assert p.shape == torch.Size([])
+    assert w.shape == torch.Size([])
+
+    # Single float prediction
+    inferer = Inf(partial_x0_inferer=PanelX0Inferer, volume=volume, output_probs=False, class2float=lambda x, v: 3.5 * x)
+    inferer.add_scatters(sb)
+    p, w = inferer.get_prediction()
+    assert p.type() == "torch.FloatTensor"
+    assert p.shape == torch.Size([])
+    assert w.shape == torch.Size([])

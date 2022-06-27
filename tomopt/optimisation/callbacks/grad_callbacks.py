@@ -8,6 +8,8 @@ __all__ = ["NoMoreNaNs"]
 
 class NoMoreNaNs(Callback):
     def on_backwards_end(self) -> None:
+        if hasattr(self.wrapper.volume, "budget_weights"):
+            torch.nan_to_num_(self.wrapper.volume.budget_weights.grad, 0)
         for l in self.wrapper.volume.get_detectors():
             if isinstance(l, VoxelDetectorLayer):
                 torch.nan_to_num_(l.resolution.grad, 0)
