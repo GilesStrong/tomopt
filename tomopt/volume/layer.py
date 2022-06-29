@@ -1,4 +1,4 @@
-from typing import Iterator, Optional, Callable, Dict, List, Union
+from typing import Iterator, Optional, Callable, Dict, List, Union, Tuple
 import numpy as np
 from abc import ABCMeta, abstractmethod
 import math

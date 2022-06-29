@@ -7,7 +7,7 @@ __all__ = ["DEVICE", "SCATTER_COEF_A", "SCATTER_COEF_B", "X0", "PartialOpt"]
 
 DEVICE = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
-SCATTER_COEF_A = 0.0136
+SCATTER_COEF_A = 0.0136  # GeV
 
 SCATTER_COEF_B = 0.038
 
