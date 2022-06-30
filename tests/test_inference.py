@@ -565,6 +565,37 @@ def test_panel_x0_inferer_methods():
     assert (wi - w).abs().sum() > 1e-2
 
 
+def test_panel_inferer_multi_batch():
+    volume = Volume(get_panel_layers(init_res=1e5))
+    gen = MuonGenerator2016.from_volume(volume)
+    mus = MuonResampler.resample(gen(1000), volume=volume, gen=gen)
+    mu = MuonBatch(mus, init_z=volume.h)
+    volume(mu)
+
+    # one batch
+    inf = PanelX0Inferer(volume=volume)
+    inf.add_scatters(PanelScatterBatch(mu=mu, volume=volume))
+    pred1, weight1 = inf.get_prediction()
+
+    # multi-batch
+    inf = PanelX0Inferer(volume=volume)
+    for i in range(4):
+        mask = torch.zeros(len(mu))
+        mask[250 * i : 250 * (i + 1)] = 1
+        mask = mask.bool()
+        mu_batch = mu.copy()
+        mu_batch.filter_muons(mask)
+        for pos in mu._hits:
+            for var in mu._hits[pos]:
+                for xy_pos in mu._hits[pos][var]:
+                    mu_batch._hits[pos][var].append(xy_pos[mask])
+        inf.add_scatters(PanelScatterBatch(mu=mu_batch, volume=volume))
+    pred4, weight4 = inf.get_prediction()
+
+    assert (((pred1 - pred4) / pred1).abs() < 1e-4).all()
+    assert (((weight1 - weight4) / weight1).abs() < 1e-4).all()
+
+
 def test_panel_x0_inferer_efficiency(mocker, panel_scatter_batch):  # noqa F811
     mu, volume, sb = panel_scatter_batch
     inferer = PanelX0Inferer(volume=volume)
