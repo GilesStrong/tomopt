@@ -11,7 +11,7 @@ SCATTER_COEF_A = 0.0136
 
 SCATTER_COEF_B = 0.038
 
-X0 = {  # Is actually X0/density "inverse scaled scattering density"
+X0 = {  # https://pdg.lbl.gov/2022/AtomicNuclearProperties/index.html
     "beryllium": 0.3528,  # m
     "carbon": 0.1932,
     "silicon": 0.0937,
@@ -21,6 +21,12 @@ X0 = {  # Is actually X0/density "inverse scaled scattering density"
     "lead": 0.005612,
     "uranium": 3.141e-3,
     "air": 312.22,
+    "water": 0.3608,
+    "SiO2": 0.116577,
+    "Al2O3": 0.07038,
+    "Fe2O3": 0.03242,
+    "MgO": 0.07828,
+    "CaO": 0.05760,
 }
 
 PartialOpt = Callable[[Iterator[nn.Parameter]], torch.optim.Optimizer]
