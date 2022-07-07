@@ -7,9 +7,9 @@ __all__ = ["DEVICE", "SCATTER_COEF_A", "SCATTER_COEF_B", "X0", "PartialOpt"]
 
 DEVICE = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
-SCATTER_COEF_A = 0.0136
-
-SCATTER_COEF_B = 0.038
+# https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf
+SCATTER_COEF_A = 0.0136  # GeV
+SCATTER_COEF_B = 0.038  # Dimensionless
 
 X0 = {  # https://pdg.lbl.gov/2022/AtomicNuclearProperties/index.html
     "beryllium": 0.3528,  # m
@@ -28,5 +28,6 @@ X0 = {  # https://pdg.lbl.gov/2022/AtomicNuclearProperties/index.html
     "MgO": 0.07828,
     "CaO": 0.05760,
 }
+
 
 PartialOpt = Callable[[Iterator[nn.Parameter]], torch.optim.Optimizer]

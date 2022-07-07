@@ -15,11 +15,16 @@ class SmallWallsPassiveGenerator(AbsPassiveGenerator):
     def __init__(
         self,
         volume: Volume,
-        x0_soil: float = (0.5 * X0["carbon"]) + (0.25 * X0["water"]) + (0.25 * X0["air"]),
-        x0_wall: float = (0.55 * X0["SiO2"]) + (0.30 * X0["Al2O3"]) + (0.08 * X0["Fe2O3"]) + (0.05 * X0["MgO"]) + (0.01 * X0["CaO"]) + (0.01 * X0["carbon"]),
+        x0_soil: float = (0.5 * X0["carbon"]) + (0.25 * X0["water"]) + (0.25 * X0["air"]),  # 78.24m
+        x0_wall: float = (0.55 * X0["SiO2"])
+        + (0.30 * X0["Al2O3"])
+        + (0.08 * X0["Fe2O3"])
+        + (0.05 * X0["MgO"])
+        + (0.01 * X0["CaO"])
+        + (0.01 * X0["carbon"]),  # 0.09m
         stop_k: float = 10,
         turn_k: float = 5,
-        min_lenght: int = 3,
+        min_lenght: int = 3,  # number of voxels
         min_height: int = 3,
     ) -> None:
         super().__init__(volume=volume, materials=["soil", "wall"])
