@@ -6,7 +6,7 @@ from torch import Tensor
 
 from ...optimisation.data.passives import AbsPassiveGenerator
 from ...volume import Volume
-from ...core import X0
+from ...core import X0, DENSITIES, x0_from_mixture
 
 __all__ = ["SmallWallsPassiveGenerator"]
 
@@ -15,13 +15,18 @@ class SmallWallsPassiveGenerator(AbsPassiveGenerator):
     def __init__(
         self,
         volume: Volume,
-        x0_soil: float = (0.5 * X0["carbon"]) + (0.25 * X0["water"]) + (0.25 * X0["air"]),  # 78.24m
-        x0_wall: float = (0.55 * X0["SiO2"])
-        + (0.30 * X0["Al2O3"])
-        + (0.08 * X0["Fe2O3"])
-        + (0.05 * X0["MgO"])
-        + (0.01 * X0["CaO"])
-        + (0.01 * X0["carbon"]),  # 0.09m
+        x0_soil: float = x0_from_mixture(
+            [X0["graphite"], X0["water"], X0["air"]], [DENSITIES["graphite"], DENSITIES["water"], DENSITIES["air"]], [0.5, 0.25, 0.25]
+        )[
+            "X0"
+        ],  # ~82m
+        x0_wall: float = x0_from_mixture(
+            [X0["SiO2"], X0["Al2O3"], X0["Fe2O3"], X0["MgO"], X0["CaO"], X0["graphite"]],
+            [DENSITIES["SiO2"], DENSITIES["Al2O3"], DENSITIES["Fe2O3"], DENSITIES["MgO"], DENSITIES["CaO"], DENSITIES["graphite"]],
+            [0.55, 0.30, 0.08, 0.05, 0.01, 0.01],
+        )[
+            "X0"
+        ],  # 0.09m
         stop_k: float = 10,
         turn_k: float = 5,
         min_lenght: int = 3,  # number of voxels
