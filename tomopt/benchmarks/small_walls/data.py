@@ -6,7 +6,8 @@ from torch import Tensor
 
 from ...optimisation.data.passives import AbsPassiveGenerator
 from ...volume import Volume
-from ...core import X0, DENSITIES, x0_from_mixture
+from ...core import X0, DENSITIES
+from ...utils import x0_from_mixture
 
 __all__ = ["SmallWallsPassiveGenerator"]
 

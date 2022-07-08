@@ -1,10 +1,9 @@
-from typing import Callable, Iterator, Union, List, Dict
-import numpy as np
+from typing import Callable, Iterator
 
 import torch
 from torch import nn
 
-__all__ = ["DEVICE", "SCATTER_COEF_A", "SCATTER_COEF_B", "X0", "DENSITIES", "PartialOpt", "x0_from_mixture"]
+__all__ = ["DEVICE", "SCATTER_COEF_A", "SCATTER_COEF_B", "X0", "DENSITIES", "PartialOpt"]
 
 DEVICE = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
@@ -40,21 +39,5 @@ DENSITIES = {  # https://pdg.lbl.gov/2022/AtomicNuclearProperties/index.html
     "graphite": 2210.0,
     "air": 1.205,
 }
-
-
-def x0_from_mixture(x0s: Union[np.ndarray, List[float]], densities: Union[np.ndarray, List[float]], fracs: Union[np.ndarray, List[float]]) -> Dict[str, float]:
-    if not isinstance(x0s, np.ndarray):
-        x0s = np.array(x0s)
-    if not isinstance(densities, np.ndarray):
-        densities = np.array(densities)
-    if not isinstance(fracs, np.ndarray):
-        fracs = np.array(fracs)
-    fracs = fracs / fracs.sum()
-
-    x0rho = 1 / (fracs / (x0s * densities)).sum()
-    rho = 1 / (fracs / densities).sum()
-    x0 = x0rho / rho
-    return {"X0": x0, "density": rho}
-
 
 PartialOpt = Callable[[Iterator[nn.Parameter]], torch.optim.Optimizer]

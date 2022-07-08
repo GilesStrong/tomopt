@@ -1,12 +1,12 @@
 from distutils.version import LooseVersion
 import numpy as np
-from typing import Dict
+from typing import Dict, Union, List
 
 import torch
 from torch import Tensor
 from torch._vmap_internals import _vmap as vmap
 
-__all__ = ["jacobian", "class_to_x0preds", "x0targs_to_classtargs"]
+__all__ = ["jacobian", "class_to_x0preds", "x0targs_to_classtargs", "x0_from_mixture"]
 
 
 if (ver := LooseVersion(torch.__version__)) < LooseVersion("1.10.0"):
@@ -39,3 +39,18 @@ def x0targs_to_classtargs(array: np.ndarray, x02id: Dict[float, int]) -> np.ndar
     for i in np.unique(array):
         x0array[array == i] = x02id[min(x02id, key=lambda x: abs(x - i))]
     return x0array
+
+
+def x0_from_mixture(x0s: Union[np.ndarray, List[float]], densities: Union[np.ndarray, List[float]], fracs: Union[np.ndarray, List[float]]) -> Dict[str, float]:
+    if not isinstance(x0s, np.ndarray):
+        x0s = np.array(x0s)
+    if not isinstance(densities, np.ndarray):
+        densities = np.array(densities)
+    if not isinstance(fracs, np.ndarray):
+        fracs = np.array(fracs)
+    fracs = fracs / fracs.sum()
+
+    x0rho = 1 / (fracs / (x0s * densities)).sum()
+    rho = 1 / (fracs / densities).sum()
+    x0 = x0rho / rho
+    return {"X0": x0, "density": rho}
