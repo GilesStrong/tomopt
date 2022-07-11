@@ -55,6 +55,10 @@ def test_x0targs_to_classtargs():
 
 
 def test_x0_from_mixture():
+    r"""
+    Values from https://cds.cern.ch/record/1279627/files/PH-EP-Tech-Note-2010-013.pdf
+    """
+
     props = x0_from_mixture([43.25 / 1.33, 42.7 / 3.52], [1.33, 3.52], [1, 3])
     assert np.abs(props["X0"] - 17.179) < 1e-3
     assert np.abs(props["density"] - 2.493) < 1e-3

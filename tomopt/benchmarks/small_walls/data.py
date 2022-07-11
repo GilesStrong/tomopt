@@ -17,24 +17,26 @@ class SmallWallsPassiveGenerator(AbsPassiveGenerator):
         self,
         volume: Volume,
         x0_soil: float = x0_from_mixture(
-            [X0["graphite"], X0["water"], X0["air"]], [DENSITIES["graphite"], DENSITIES["water"], DENSITIES["air"]], [0.5, 0.25, 0.25]
+            [X0["SiO2"], X0["soft tissue"], X0["water"], X0["air"]],
+            [DENSITIES["SiO2"], DENSITIES["soft tissue"], DENSITIES["water"], DENSITIES["air"]],
+            volume_fracs=[0.44, 0.6, 0.25, 0.25],
         )[
             "X0"
-        ],  # ~82m
+        ],  # ~0.26m
         x0_wall: float = x0_from_mixture(
-            [X0["SiO2"], X0["Al2O3"], X0["Fe2O3"], X0["MgO"], X0["CaO"], X0["graphite"]],
-            [DENSITIES["SiO2"], DENSITIES["Al2O3"], DENSITIES["Fe2O3"], DENSITIES["MgO"], DENSITIES["CaO"], DENSITIES["graphite"]],
-            [0.55, 0.30, 0.08, 0.05, 0.01, 0.01],
+            [X0["SiO2"], X0["Al2O3"], X0["Fe2O3"], X0["MgO"], X0["CaO"], X0["Na2O"], X0["K2O"]],
+            [DENSITIES["SiO2"], DENSITIES["Al2O3"], DENSITIES["Fe2O3"], DENSITIES["MgO"], DENSITIES["CaO"], DENSITIES["Na2O"], DENSITIES["K2O"]],
+            volume_fracs=[56.0, 17.0, 11.2, 4.0, 4.2, 3.0, 4.6],
         )[
             "X0"
-        ],  # 0.09m
+        ],  # 0.08m https://core.ac.uk/download/pdf/324142628.pdf
         stop_k: float = 10,
         turn_k: float = 5,
-        min_lenght: int = 3,  # number of voxels
-        min_height: int = 3,
+        min_length: int = 4,  # number of voxels
+        min_height: int = 4,
     ) -> None:
         super().__init__(volume=volume, materials=["soil", "wall"])
-        self.x0_soil, self.x0_wall, self.stop_k, self.turn_k, self.min_lenght, self.min_height = x0_soil, x0_wall, stop_k, turn_k, min_lenght, min_height
+        self.x0_soil, self.x0_wall, self.stop_k, self.turn_k, self.min_length, self.min_height = x0_soil, x0_wall, stop_k, turn_k, min_length, min_height
         self.zxy_shp = [int(np.round((self.z_range[1] - self.z_range[0]) / self.size))] + (self.lw / self.size).astype(int).tolist()
         self.wall_z_range = (self.z_range[0], self.z_range[1] - self.size)  # Atleast top layer is soil
 
@@ -45,7 +47,7 @@ class SmallWallsPassiveGenerator(AbsPassiveGenerator):
         wall_heights = []
 
         for _ in range(n_walls):
-            wall_heights.append(np.random.randint(ground_z + self.min_height, self.zxy_shp[0] - 1))
+            wall_heights.append(np.random.randint(ground_z + self.min_height, self.zxy_shp[0]))
             x, y = np.random.randint(self.zxy_shp[1]), np.random.randint(self.zxy_shp[2])
 
             # Choose initial move direction, border start position limits direction
@@ -69,7 +71,7 @@ class SmallWallsPassiveGenerator(AbsPassiveGenerator):
                 length += 1
                 n_since_last_turn += 1
 
-                if length >= self.min_lenght and np.random.random() < np.exp(-self.stop_k / length):  # Wall ends
+                if length >= self.min_length and np.random.random() < np.exp(-self.stop_k / length):  # Wall ends
                     break
                 if np.random.random() < np.exp(-self.turn_k / n_since_last_turn):  # Wall turns
                     n_since_last_turn = 0

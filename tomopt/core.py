@@ -27,6 +27,11 @@ X0 = {  # https://pdg.lbl.gov/2022/AtomicNuclearProperties/index.html
     "Fe2O3": 0.03242,
     "MgO": 0.07828,
     "CaO": 0.05760,
+    "toluene": 0.5068,
+    "benzene": 0.4984,
+    "K2O": 0.08147,
+    "Na2O": 0.1285,
+    "soft tissue": 0.3763,
 }
 
 DENSITIES = {  # https://pdg.lbl.gov/2022/AtomicNuclearProperties/index.html
@@ -38,6 +43,11 @@ DENSITIES = {  # https://pdg.lbl.gov/2022/AtomicNuclearProperties/index.html
     "CaO": 3300.0,
     "graphite": 2210.0,
     "air": 1.205,
+    "toluene": 866.9,
+    "benzene": 878.7,
+    "K2O": 2320.0,
+    "Na2O": 2270.0,
+    "soft tissue": 1000.0,
 }
 
 PartialOpt = Callable[[Iterator[nn.Parameter]], torch.optim.Optimizer]

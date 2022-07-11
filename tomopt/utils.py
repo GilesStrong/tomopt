@@ -1,6 +1,6 @@
 from distutils.version import LooseVersion
 import numpy as np
-from typing import Dict, Union, List
+from typing import Dict, Union, List, Optional
 
 import torch
 from torch import Tensor
@@ -41,16 +41,35 @@ def x0targs_to_classtargs(array: np.ndarray, x02id: Dict[float, int]) -> np.ndar
     return x0array
 
 
-def x0_from_mixture(x0s: Union[np.ndarray, List[float]], densities: Union[np.ndarray, List[float]], fracs: Union[np.ndarray, List[float]]) -> Dict[str, float]:
+def x0_from_mixture(
+    x0s: Union[np.ndarray, List[float]],
+    densities: Union[np.ndarray, List[float]],
+    weight_fracs: Optional[Union[np.ndarray, List[float]]] = None,
+    volume_fracs: Optional[Union[np.ndarray, List[float]]] = None,
+) -> Dict[str, float]:
+    r"""
+    Based on https://cds.cern.ch/record/1279627/files/PH-EP-Tech-Note-2010-013.pdf
+    """
+
+    if weight_fracs is None and volume_fracs is None:
+        raise ValueError("Must pass the fractional composition by either weight or volume")
+    if weight_fracs is not None and volume_fracs is not None:
+        raise ValueError("Cannot pass both weight and volume fractions")
     if not isinstance(x0s, np.ndarray):
         x0s = np.array(x0s)
     if not isinstance(densities, np.ndarray):
         densities = np.array(densities)
-    if not isinstance(fracs, np.ndarray):
-        fracs = np.array(fracs)
-    fracs = fracs / fracs.sum()
 
-    x0rho = 1 / (fracs / (x0s * densities)).sum()
-    rho = 1 / (fracs / densities).sum()
+    if weight_fracs is None:
+        if not isinstance(volume_fracs, np.ndarray):
+            volume_fracs = np.array(volume_fracs)
+        weight_fracs = densities * volume_fracs
+
+    if not isinstance(weight_fracs, np.ndarray):
+        weight_fracs = np.array(weight_fracs)
+    weight_fracs = weight_fracs / weight_fracs.sum()
+
+    x0rho = 1 / (weight_fracs / (x0s * densities)).sum()
+    rho = 1 / (weight_fracs / densities).sum()
     x0 = x0rho / rho
     return {"X0": x0, "density": rho}
