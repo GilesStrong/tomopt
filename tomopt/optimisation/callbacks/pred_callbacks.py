@@ -6,7 +6,7 @@ import h5py
 from .callback import Callback
 from ...utils import x0targs_to_classtargs
 
-__all__ = ["PredHandler", "VolumeTargetPredHandler"]
+__all__ = ["PredHandler", "VolumeTargetPredHandler", "Save2HDF5PredHandler"]
 
 
 class PredHandler(Callback):
