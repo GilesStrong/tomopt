@@ -10,6 +10,7 @@ ipykernel
 particle==0.20.0  # Hardcoded incase muon mass changes
 prettytable
 imageio
+h5py
 
 # Dev requirements
 pre-commit

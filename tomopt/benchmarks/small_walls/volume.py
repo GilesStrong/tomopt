@@ -10,7 +10,7 @@ from ...volume.layer import Layer
 from ...optimisation.wrapper import PanelVolumeWrapper
 from ...muon import MuonGenerator2016
 
-__all__ = ["get_small_walls_volume"]
+__all__ = ["get_small_walls_volume", "get_small_walls_volume_wrapper"]
 
 
 def get_small_walls_volume(
