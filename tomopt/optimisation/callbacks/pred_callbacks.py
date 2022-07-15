@@ -79,7 +79,9 @@ class Save2HDF5PredHandler(VolumeTargetPredHandler):
                 ds.resize((ds.shape[0] + 1), axis=0)
                 ds[-1] = targ[None].astype("float32")
             else:
-                h5.create_dataset("targs", data=targ[None].astype("int"), dtype="int", compression=self.compression, chunks=True, maxshape=(None, *targ.shape))
+                h5.create_dataset(
+                    "targs", data=targ[None].astype("float32"), dtype="float32", compression=self.compression, chunks=True, maxshape=(None, *targ.shape)
+                )
 
     def on_x0_pred_end(self) -> None:
         if self.wrapper.fit_params.state == "test":
