@@ -126,8 +126,8 @@ def test_abs_passive_generator(volume):
     pg = PG(volume)
     assert set(pg.materials) == set([m for m in X0])
 
-    pg = PG(volume, ["iron", "carbon"])
-    assert pg.materials == ["iron", "carbon"]
+    pg = PG(volume, ["iron", "graphite"])
+    assert pg.materials == ["iron", "graphite"]
 
 
 @pytest.mark.flaky(max_runs=3, min_passes=1)
@@ -147,7 +147,7 @@ def test_voxel_passive_generator(volume):
 
 
 def test_random_block_passive_generator(volume):
-    mats = ["lead", "carbon"]
+    mats = ["lead", "graphite"]
     x0s = [X0[m] for m in mats]
     pg = RandomBlockPassiveGenerator(volume, block_size=[0.6, 0.4, 0.2], sort_x0=True, enforce_diff_mat=True, materials=mats)
     for _ in range(10):
@@ -175,7 +175,7 @@ def test_random_block_passive_generator(volume):
 
 
 def test_block_present_passive_generator(volume):
-    mats = ["lead", "carbon"]
+    mats = ["lead", "graphite"]
     x0s = [X0[m] for m in mats]
     pg = BlockPresentPassiveGenerator(volume, block_size=[0.6, 0.4, 0.2], materials=mats)
     for _ in range(10):

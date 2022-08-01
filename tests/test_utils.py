@@ -3,7 +3,7 @@ from torch import Tensor
 import numpy as np
 import pytest
 
-from tomopt.utils import jacobian, class_to_x0preds, x0targs_to_classtargs
+from tomopt.utils import jacobian, class_to_x0preds, x0targs_to_classtargs, x0_from_mixture
 
 
 def test_jacobian():
@@ -52,3 +52,13 @@ def test_x0targs_to_classtargs():
     assert tarr[0] == 0
     assert (tarr[1:] == 1).all()  # -3 gets mapped to -2 ID to account for float precision
     assert (arr == np.array([-1.5, -2.0, -3.0])).all()
+
+
+def test_x0_from_mixture():
+    r"""
+    Values from https://cds.cern.ch/record/1279627/files/PH-EP-Tech-Note-2010-013.pdf
+    """
+
+    props = x0_from_mixture([43.25 / 1.33, 42.7 / 3.52], [1.33, 3.52], [1, 3])
+    assert np.abs(props["X0"] - 17.179) < 1e-3
+    assert np.abs(props["density"] - 2.493) < 1e-3

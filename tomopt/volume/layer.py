@@ -97,8 +97,12 @@ class Layer(nn.Module):
 
 
 class PassiveLayer(Layer):
-    def __init__(self, lw: Tensor, z: float, size: float, rad_length_func: Optional[Callable[..., Tensor]] = None, device: torch.device = DEVICE):
+    def __init__(
+        self, lw: Tensor, z: float, size: float, rad_length_func: Optional[Callable[..., Tensor]] = None, dz_step: float = 0.05, device: torch.device = DEVICE
+    ):
         super().__init__(lw=lw, z=z, size=size, device=device)
+        self.dz_step = dz_step
+        self.n_steps = int(np.round(self.size / self.dz_step))
         if rad_length_func is not None:
             self.load_rad_length(rad_length_func)
 
@@ -108,9 +112,10 @@ class PassiveLayer(Layer):
     def load_rad_length(self, rad_length_func: Callable[..., Tensor]) -> None:
         self.rad_length = rad_length_func(z=self.z, lw=self.lw, size=self.size).to(self.device)
 
-    def forward(self, mu: MuonBatch, n: int = 2) -> None:
-        for _ in range(n):
-            self.scatter_and_propagate(mu, deltaz=self.size / n)
+    def forward(self, mu: MuonBatch) -> None:
+        for _ in range(self.n_steps):
+            self.scatter_and_propagate(mu, deltaz=self.dz_step)
+        mu.propagate(mu.z - (self.z - self.size))  # In case of floating point-precision, ensure muons are at the bottom of the layer
 
 
 class AbsDetectorLayer(Layer, metaclass=ABCMeta):
