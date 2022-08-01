@@ -20,7 +20,7 @@ class LadleFurnacePassiveGenerator(AbsPassiveGenerator):
         volume: Volume,
         x0_furnace: float = X0["iron"],
         fill_materials: List[str] = ["aluminium"],
-        slag_materials: List[str] = ["silicon", "carbon", "beryllium"],
+        slag_materials: List[str] = ["silicon", "graphite", "beryllium"],
     ) -> None:
         self.x0_furnace, self.fill_materials, self.slag_materials = x0_furnace, fill_materials, slag_materials
         super().__init__(volume=volume, materials=self.fill_materials + self.slag_materials)
