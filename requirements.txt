@@ -9,7 +9,7 @@ pandas >= 1.2.4
 ipykernel
 particle==0.20.0  # Hardcoded incase muon mass changes
 prettytable
-imageio
+imageio==2.16.2  # Recent version introduces breaking change
 h5py
 
 # Dev requirements
