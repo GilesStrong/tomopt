@@ -19,7 +19,7 @@ class ULorryPassiveGenerator(AbsPassiveGenerator):
     def __init__(
         self,
         volume: Volume,
-        u_volume: float,
+        u_volume: float,  # [m3]
         u_prob: float = 0.5,
         fill_frac: float = 0.8,
         x0_lorry: float = X0["iron"],
@@ -28,7 +28,7 @@ class ULorryPassiveGenerator(AbsPassiveGenerator):
         super().__init__(volume=volume, materials=["iron", "uranium"])
         self.u_volume, self.u_prob, self.fill_frac, self.x0_lorry, self.bkg_materials = u_volume, u_prob, fill_frac, x0_lorry, bkg_materials
         self.bkg_x0s = Tensor([X0[m] for m in self.bkg_materials], device=self.volume.device)
-        self.n_u_voxels = np.max((1, self.u_volume // (self.size**3)))
+        self.n_u_voxels = np.max((1, np.round(self.u_volume / (self.size**3), decimals=3)))
         self.xy_shp = (self.lw / self.size).astype(int).tolist()
         self.bkg_z_range = ((self.z_range[0]) + self.size, self.fill_frac * self.z_range[1])
 
@@ -43,9 +43,9 @@ class ULorryPassiveGenerator(AbsPassiveGenerator):
 
         block_low = np.hstack(
             (
-                int(np.random.uniform(0, self.xy_shp[0] - block_size[0])),
-                int(np.random.uniform(0, self.xy_shp[1] - block_size[1])),
-                np.random.uniform(self.bkg_z_range[0], self.bkg_z_range[1] - block_size[2]),
+                int(np.random.uniform(0, self.xy_shp[0] - block_size[0])),  # voxels
+                int(np.random.uniform(0, self.xy_shp[1] - block_size[1])),  # voxels
+                np.random.uniform(self.bkg_z_range[0], self.bkg_z_range[1] - block_size[2]),  # m
             )
         )
         block_high = block_low + block_size

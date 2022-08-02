@@ -40,7 +40,6 @@ class VolumeTargetPredHandler(PredHandler):
             targ = self.wrapper.volume.target.detach().cpu().numpy()
             if self.x02id is not None:
                 targ = x0targs_to_classtargs(targ, self.x02id)
-            print(self.wrapper.fit_params.pred.detach().cpu().numpy().shape)
             self.preds.append((self.wrapper.fit_params.pred.detach().cpu().numpy(), targ))
 
 
