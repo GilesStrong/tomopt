@@ -7,6 +7,7 @@ from functools import partial
 from glob import glob
 from fastcore.all import Path
 import matplotlib.pyplot as plt
+import h5py
 
 import torch
 from torch import Tensor
@@ -27,6 +28,7 @@ from tomopt.optimisation.callbacks import (
     MuonResampler,
     HeatMapGif,
     VolumeTargetPredHandler,
+    Save2HDF5PredHandler,
 )
 from tomopt.optimisation.loss import VoxelX0Loss
 from tomopt.optimisation.wrapper.volume_wrapper import AbsVolumeWrapper, FitParams, PanelVolumeWrapper
@@ -654,3 +656,31 @@ def test_heat_map_gif():
     assert len(cb._buffer_files) == 3
     assert len(glob("tests/temp_heatmap_*.png")) == 0
     assert len(glob("tests/heatmap.gif")) == 1
+
+
+def test_save_2_hdf5_pred_handler():
+    out_path = Path("test_pred_save.h5")
+    if out_path.exists():
+        out_path.unlink()
+    cb = Save2HDF5PredHandler(out_path, use_volume_target=False)
+    assert check_callback_base(cb)
+
+    vw = MockWrapper()
+    vw.fit_params = FitParams(state="train", pred=Tensor([1]))
+    cb.set_wrapper(vw)
+    vw.volume = MockVolume()
+    vw.volume.get_rad_cube = lambda: Tensor([3, 4])
+
+    assert not out_path.exists()
+    cb.on_pred_begin()
+    vw.fit_params.state = "test"
+    cb.on_x0_pred_end()
+    assert len(cb.preds) == 0
+    assert out_path.exists()
+    vw.fit_params.pred = vw.fit_params.pred + 1
+    cb.on_x0_pred_end()
+
+    with h5py.File(out_path) as h5:
+        preds, targs = h5["preds"][()], h5["targs"][()]
+    assert (preds == np.array([[1], [2]])).all()
+    assert (targs == np.array([[3, 4], [3, 4]])).all()
