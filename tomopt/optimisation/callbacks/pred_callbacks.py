@@ -59,13 +59,13 @@ class Save2HDF5PredHandler(VolumeTargetPredHandler):
         if self.path.exists() and overwrite:
             self.path.unlink()
 
-    def open_file(self) -> h5py.File:
+    def _open_file(self) -> h5py.File:
         if self.path.exists():
             return h5py.File(self.path, "r+")
         return h5py.File(self.path, "w")
 
-    def write_data(self, pred: np.ndarray, targ: np.ndarray) -> None:
-        with self.open_file() as h5:
+    def _write_data(self, pred: np.ndarray, targ: np.ndarray) -> None:
+        with self._open_file() as h5:
             if "preds" in h5:
                 ds = h5["preds"]
                 ds.resize((ds.shape[0] + 1), axis=0)
@@ -92,4 +92,4 @@ class Save2HDF5PredHandler(VolumeTargetPredHandler):
             else:
                 targ = self.wrapper.volume.get_rad_cube().detach().cpu().numpy()
             pred = self.wrapper.fit_params.pred.detach().cpu().numpy()
-            self.write_data(pred, targ)
+            self._write_data(pred, targ)
