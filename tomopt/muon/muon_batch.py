@@ -199,25 +199,25 @@ class MuonBatch:
             "Please use the scatter_dtheta_dphi method to modify the direction of muons. Or modify the _muons attribute if you really know what you're doing"
         )
 
-    def scatter_dxy(self, dx: Optional[Tensor] = None, dy: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
+    def scatter_dxy(self, dx_vol: Optional[Tensor] = None, dy_vol: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
         r"""
-        dx & dy are expected to be the volume reference fram, not the muons'
+        dx & dy are expected to be the volume reference frame, not the muons'
         """
 
         if mask is None:
             mask = torch.ones(len(self._muons), device=self.device).bool()
-        if dx is not None:
-            self._x[mask] = self._x[mask] + dx
-        if dy is not None:
-            self._y[mask] = self._y[mask] + dy
+        if dx_vol is not None:
+            self._x[mask] = self._x[mask] + dx_vol
+        if dy_vol is not None:
+            self._y[mask] = self._y[mask] + dy_vol
 
-    def scatter_dtheta_dphi(self, dtheta: Optional[Tensor] = None, dphi: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
+    def scatter_dtheta_dphi(self, dtheta_vol: Optional[Tensor] = None, dphi_vol: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
         if mask is None:
             mask = torch.ones(len(self._muons), device=self.device).bool()
-        if dphi is not None:
-            self._phi[mask] = (self._phi[mask] + dphi) % (2 * torch.pi)
-        if dtheta is not None:
-            theta = (self._theta[mask] + dtheta) % (2 * torch.pi)
+        if dphi_vol is not None:
+            self._phi[mask] = (self._phi[mask] + dphi_vol) % (2 * torch.pi)
+        if dtheta_vol is not None:
+            theta = (self._theta[mask] + dtheta_vol) % (2 * torch.pi)
             # Correct theta, must avoid double Bool mask
             phi = self._phi[mask]
             m = theta > torch.pi
