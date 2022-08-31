@@ -621,12 +621,13 @@ def test_x0_inferer_scatter_inversion(mocker, voxel_scatter_batch):  # noqa F811
     inferer.size = SZ
     x0 = X0["lead"]
     mocker.patch("tomopt.volume.layer.torch.randn", lambda n, device: torch.ones(n, device=device))  # remove randomness
-    dx, dy, dtheta, dphi = layer._pdg_scatter(x0=x0, deltaz=SZ, theta=mu.theta, theta_x=mu.theta_x, theta_y=mu.theta_y, mom=mu.mom, log_term=False)
+    scatters = layer._pdg_scatter(x0=x0, deltaz=SZ, theta=mu.theta, theta_x=mu.theta_x, theta_y=mu.theta_y, mom=mu.mom, log_term=False)
+    dtheta, dphi = scatters["dtheta_vol"], scatters["dphi_vol"]
 
     mu_start = mu.copy()
     sb._theta_in = mu_start.theta[:, None]
     sb._theta_in_unc = torch.ones_like(dtheta[:, None])
-    mu.scatter_dtheta_dphi(dtheta=dtheta, dphi=dphi)
+    mu.scatter_dtheta_dphi(dtheta_vol=dtheta, dphi_vol=dphi)
     sb._theta_out = mu.theta[:, None]
     sb._theta_out_unc = torch.ones_like(dtheta[:, None])
     sb._theta_msc = torch.sqrt((dtheta**2) + (dphi**2))[:, None]

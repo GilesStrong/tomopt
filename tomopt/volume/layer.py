@@ -42,8 +42,8 @@ class Layer(nn.Module):
         n_x0 = flight / x0
 
         n = len(n_x0)
-        z1 = torch.randn(2, n, device=self.device)
-        z2 = torch.randn(2, n, device=self.device)
+        z1 = torch.randn((2, n), device=self.device)
+        z2 = torch.randn((2, n), device=self.device)
         theta0 = (SCATTER_COEF_A / mom) * torch.sqrt(n_x0)
         if log_term:
             theta0 = theta0 * (1 + (SCATTER_COEF_B * torch.log(n_x0)))
