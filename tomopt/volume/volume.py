@@ -58,7 +58,9 @@ class Volume(nn.Module):
             ]
         )
         # bounds[2] = np.flip(bounds[2])  # z is reversed
-        return torch.tensor(bounds.reshape(3, -1).transpose(-1, -2), dtype=torch.float32, device=self.device)
+        return torch.tensor(
+            bounds.reshape(3, -1).transpose(-1, -2), dtype=torch.float32, device=self.device
+        )  # TODO: Check that xyz shape is expected, and not zxy
 
     def _check_passives(self) -> None:
         lw, sz = None, None

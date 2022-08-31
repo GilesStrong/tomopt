@@ -98,23 +98,23 @@ def test_passive_layer_methods():
 
 def test_passive_layer_forwards(batch):
     # Normal scattering
-    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=Z, size=SZ)
+    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=Z, size=SZ, dz_step=SZ)
     start = batch.copy()
-    pl(batch, n=1)
+    pl(batch)
     assert torch.abs(batch.z - Tensor([Z - SZ])) < 1e-5
     assert torch.all(batch.dtheta(start.theta[batch._keep_mask]) > 0)
     assert torch.all(batch.xy != start.xy[batch._keep_mask])
 
     # X0 affects scattering
-    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=0, size=SZ)
+    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=0, size=SZ, dz_step=SZ)
     batch2 = start.copy()
-    pl(batch2, n=1)
+    pl(batch2)
     assert batch2.dtheta(start.theta[batch._keep_mask]).mean() < batch.dtheta(start.theta[batch._keep_mask]).mean()
 
     # Small scattering
-    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=Z, size=1e-4)
+    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=Z, size=1e-4, dz_step=SZ)
     batch = start.copy()
-    pl(batch, n=1)
+    pl(batch)
     assert torch.abs(batch.z - Tensor([Z - 1e-4])) <= 1e-3
     assert (batch.dtheta(start.theta[batch._keep_mask]) < 1e-2).sum() / len(batch) > 0.9
     assert (torch.abs(batch.xy - start.xy[batch._keep_mask]) < 1e-3).sum() / len(batch) > 0.9
@@ -141,12 +141,12 @@ def test_passive_layer_pdg_scattering(mocker, batch, n):  # noqa: F811
     for m in ["propagate", "get_xy_mask", "scatter_dxy", "scatter_dtheta_dphi"]:
         mocker.patch.object(MuonBatch, m)
 
-    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, size=SZ, z=Z, scatter_model="pdg")
-    pl(batch, n)
+    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, size=SZ, z=Z, scatter_model="pdg", dz_step=SZ / n)
+    pl(batch)
     assert batch.propagate.call_count == n + 1
     assert batch.scatter_dxy.call_count == n
     assert batch.scatter_dtheta_dphi.call_count == n
-    batch.propagate.assert_called_with(SZ / n)
+    assert batch.propagate.called_with(SZ / n)
     assert batch.get_xy_mask.call_count == n
 
 

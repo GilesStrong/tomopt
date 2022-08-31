@@ -121,10 +121,14 @@ class PassiveLayer(Layer):
         z: float,
         size: float,
         rad_length_func: Optional[Callable[..., Tensor]] = None,
-        scatter_model: str = "geant4",
+        dz_step: float = 0.05,
+        scatter_model: str = "pdg",
         device: torch.device = DEVICE,
     ):
-        super().__init__(lw=lw, z=z, size=size, scatter_model=scatter_model, device=device)
+        super().__init__(lw=lw, z=z, size=size, device=device)
+        self.dz_step = dz_step
+        self.n_steps = int(np.round(self.size / self.dz_step))
+        self.scatter_model = scatter_model
         if rad_length_func is not None:
             self.load_rad_length(rad_length_func)
 
@@ -134,14 +138,14 @@ class PassiveLayer(Layer):
     def load_rad_length(self, rad_length_func: Callable[..., Tensor]) -> None:
         self.rad_length = rad_length_func(z=self.z, lw=self.lw, size=self.size).to(self.device)
 
-    def forward(self, mu: MuonBatch, n: int = 2) -> None:
+    def forward(self, mu: MuonBatch) -> None:
         if self.scatter_model == "geant4":
             if not SCATTER_MODEL.initialised:
                 SCATTER_MODEL.load_data()  # Delay loading until requrired
             n = int(self.size / SCATTER_MODEL.deltaz)
             dz = SCATTER_MODEL.deltaz
         elif self.scatter_model == "pdg":
-            dz = self.size / n
+            dz, n = self.dz_step, self.n_steps
         else:
             raise ValueError(f"Scatter model {self.scatter_model} is not currently supported.")
 

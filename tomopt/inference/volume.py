@@ -190,7 +190,7 @@ class AbsX0Inferer(AbsVolumeInferer):
                 return torch.prod(torch.stack([dists[d].cdf(high[i]) - dists[d].cdf(low[i]) for i, d in enumerate(dists)]), dim=0)
 
             prob = (
-                torch.stack([comp_int(l, l + self.volume.passive_size, dists) for l in self.volume.edges.unbind()])
+                torch.stack([comp_int(l, l + self.volume.passive_size, dists) for l in self.volume.edges.unbind()])  # TODO: Check this: edges are xyz
                 .transpose(-1, -2)
                 .reshape(shp_xyz)
                 .permute(0, 3, 1, 2)
