@@ -60,7 +60,7 @@ class ScatterModel:
             self.device = theta.device
 
         n = len(x0)
-        rnds = (self.n_bins * torch.rand((n, 4), device=self.device)).long()  # dtheta_x, dtheta_x, dy, dy
+        rnds = torch.randint(low=0, high=self.n_bins, size=(n, 4), device=self.device).long()  # dtheta_x, dtheta_x, dy, dy
         mom_idxs = torch.bucketize(mom, self.mom_lookup).long()[:, None]
 
         x0_idxs = torch.zeros_like(mom, device=self.device) - 1
