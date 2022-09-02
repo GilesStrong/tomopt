@@ -11,6 +11,7 @@ DEVICE = torch.device("cuda") if torch.cuda.is_available() else torch.device("cp
 SCATTER_COEF_A = 0.0136  # GeV
 SCATTER_COEF_B = 0.038  # Dimensionless
 
+# TODO: Update to numbers and materials used in scattering model
 X0 = {  # https://pdg.lbl.gov/2022/AtomicNuclearProperties/index.html
     "beryllium": 0.3528,  # m
     "graphite": 0.1932,
