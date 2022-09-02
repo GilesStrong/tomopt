@@ -17,7 +17,7 @@ __all__ = ["PassiveLayer", "VoxelDetectorLayer", "PanelDetectorLayer"]
 
 
 class Layer(nn.Module):
-    def __init__(self, lw: Tensor, z: float, size: float, scatter_model: str = "geant4", device: torch.device = DEVICE):
+    def __init__(self, lw: Tensor, z: float, size: float, scatter_model: str = "pdg", device: torch.device = DEVICE):
         super().__init__()
         self.lw, self.z, self.size, self.scatter_model, self.device = (
             lw.to(device),
