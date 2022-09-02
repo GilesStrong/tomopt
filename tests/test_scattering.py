@@ -9,6 +9,8 @@ import json
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pytest
+import os
+from fastcore.all import Path
 
 import torch
 from torch import Tensor
@@ -16,6 +18,8 @@ from torch import Tensor
 from tomopt.volume import SCATTER_MODEL, PassiveLayer
 from tomopt.muon import MuonBatch
 from tomopt.core import X0
+
+PKG_DIR = Path(os.path.dirname(os.path.abspath(__file__)))  # How robust is this? Could create hidden dir in home and download resources
 
 
 def get_scatters(grp: h5py.Group, plots: bool, verbose: bool) -> Dict[str, Any]:
@@ -246,48 +250,48 @@ def check_scatter_tests(
 
 @pytest.mark.flaky(max_runs=5, min_passes=1)
 def test_scatter_models_Al_1cm_5GeV_normal():
-    with h5py.File("tests/data/geant_scatter_validation.hdf5", "r") as geant_data:
+    with h5py.File(PKG_DIR / "data/geant_scatter_validation.hdf5", "r") as geant_data:
         results = get_scatters(geant_data["Al_1cm_5GeV_normal"], plots=False, verbose=False)
         assert check_scatter_tests(results["tests"], pdg_pmin=0.01, geant_pmin=None, ignore_vars=["dx_vol"])  # dx is strange in the geant sample
 
 
 @pytest.mark.flaky(max_runs=5, min_passes=1)
 def test_scatter_models_Cu_1cm_5GeV_normal():
-    with h5py.File("tests/data/geant_scatter_validation.hdf5", "r") as geant_data:
+    with h5py.File(PKG_DIR / "data/geant_scatter_validation.hdf5", "r") as geant_data:
         results = get_scatters(geant_data["Cu_1cm_5GeV_normal"], plots=False, verbose=False)
         assert check_scatter_tests(results["tests"], pdg_pmin=0.01, geant_pmin=None)
 
 
 @pytest.mark.flaky(max_runs=5, min_passes=1)
 def test_scatter_models_Fe_1cm_1GeV_normal():
-    with h5py.File("tests/data/geant_scatter_validation.hdf5", "r") as geant_data:
+    with h5py.File(PKG_DIR / "data/geant_scatter_validation.hdf5", "r") as geant_data:
         results = get_scatters(geant_data["Fe_1cm_1GeV_normal"], plots=False, verbose=False)
         assert check_scatter_tests(results["tests"], pdg_pmin=0.01, geant_pmin=None)
 
 
 @pytest.mark.flaky(max_runs=5, min_passes=1)
 def test_scatter_models_Fe_1cm_5GeV_normal():
-    with h5py.File("tests/data/geant_scatter_validation.hdf5", "r") as geant_data:
+    with h5py.File(PKG_DIR / "data/geant_scatter_validation.hdf5", "r") as geant_data:
         results = get_scatters(geant_data["Fe_1cm_5GeV_normal"], plots=False, verbose=False)
         assert check_scatter_tests(results["tests"], pdg_pmin=0.01, geant_pmin=None)
 
 
 @pytest.mark.flaky(max_runs=5, min_passes=1)
 def test_scatter_models_Fe_1cm_50GeV_normal():
-    with h5py.File("tests/data/geant_scatter_validation.hdf5", "r") as geant_data:
+    with h5py.File(PKG_DIR / "data/geant_scatter_validation.hdf5", "r") as geant_data:
         results = get_scatters(geant_data["Fe_1cm_50GeV_normal"], plots=False, verbose=False)
         assert check_scatter_tests(results["tests"], pdg_pmin=0.01, geant_pmin=None)
 
 
 @pytest.mark.flaky(max_runs=5, min_passes=1)
 def test_scatter_models_U_1cm_5GeV_normal():
-    with h5py.File("tests/data/geant_scatter_validation.hdf5", "r") as geant_data:
+    with h5py.File(PKG_DIR / "data/geant_scatter_validation.hdf5", "r") as geant_data:
         results = get_scatters(geant_data["U_1cm_5GeV_normal"], plots=False, verbose=False)
         assert check_scatter_tests(results["tests"], pdg_pmin=0.01, geant_pmin=None)
 
 
 @pytest.mark.flaky(max_runs=5, min_passes=1)
 def test_scatter_models_Fe_1cm_5GeV_piby4():
-    with h5py.File("tests/data/geant_scatter_validation.hdf5", "r") as geant_data:
+    with h5py.File(PKG_DIR / "data/geant_scatter_validation.hdf5", "r") as geant_data:
         results = get_scatters(geant_data["Fe_1cm_5GeV_ZenithAngle=pi4"], plots=False, verbose=False)
         assert check_scatter_tests(results["tests"], pdg_pmin=0.01, geant_pmin=None)
