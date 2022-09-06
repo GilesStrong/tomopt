@@ -42,8 +42,8 @@ class AbsScatterBatch(metaclass=ABCMeta):
     _phi_out_unc: Optional[Tensor] = None
     _dphi: Optional[Tensor] = None
     _dphi_unc: Optional[Tensor] = None
-    _theta_msc: Optional[Tensor] = None
-    _theta_msc_unc: Optional[Tensor] = None
+    _total_scattering: Optional[Tensor] = None
+    _total_scattering_unc: Optional[Tensor] = None
     _theta_xy_in: Optional[Tensor] = None
     _theta_xy_in_unc: Optional[Tensor] = None
     _theta_xy_out: Optional[Tensor] = None
@@ -223,12 +223,16 @@ class AbsScatterBatch(metaclass=ABCMeta):
         # Filter to remove same tracks:
         # This might seem heavy-handed, but tracks with invalid/extreme parameters can have NaN gradients, which can spoil the grads of all other muons.
         # Only include muons that scatter
-        theta_msc = self._compute_theta_msc(self.track_in, self.track_out)
-        keep_mask = (theta_msc != 0) * (~theta_msc.isnan()) * (~theta_msc.isinf())
-
-        # Remove muons with tracks parallel to volume
         theta_in = self._compute_theta(self.track_in)
         theta_out = self._compute_theta(self.track_out)
+        phi_in = self._compute_phi(x=self.track_in[:, 0:1], y=self.track_in[:, 1:2])
+        phi_out = self._compute_phi(x=self.track_out[:, 0:1], y=self.track_out[:, 1:2])
+
+        total_scatter = self._compute_dtheta_dphi_scatter(theta_in=theta_in, phi_in=phi_in, theta_out=theta_out, phi_out=phi_out)["total_scatter"]
+        print(total_scatter.shape)
+        keep_mask = (total_scatter != 0) * (~total_scatter.isnan()) * (~total_scatter.isinf())
+
+        # Remove muons with tracks parallel to volume
         keep_mask *= (theta_in - (torch.pi / 2) < -1e-5) * (theta_out - (torch.pi / 2) < -1e-5)
 
         # Remove muons with tracks entering or exiting far from the volume
@@ -314,10 +318,6 @@ class AbsScatterBatch(metaclass=ABCMeta):
         dz = self._track_start_out[:, 2:3] - (self.volume.get_passive_z_range()[0])  # volume end to first panel
         return self._track_start_out - ((dz / self._track_out[:, 2:3]) * self._track_out)
 
-    @staticmethod
-    def _compute_theta_msc(p: Tensor, q: Tensor) -> Tensor:
-        return torch.arccos((p * q).sum(-1, keepdim=True) / (p.norm(dim=-1, keepdim=True) * q.norm(dim=-1, keepdim=True)))
-
     def _compute_out_var_unc(self, var: Tensor) -> Tensor:
         r"""
         Behaviour tested only
@@ -332,6 +332,37 @@ class AbsScatterBatch(metaclass=ABCMeta):
         idxs = torch.combinations(torch.arange(0, unc.shape[-1]), with_replacement=True)
         unc_2 = (jac[:, :, idxs] * unc[:, :, idxs]).prod(-1)
         return unc_2.sum(-1).sqrt()
+
+    @staticmethod
+    def _compute_dtheta_dphi_scatter(theta_in: Tensor, phi_in: Tensor, theta_out: Tensor, phi_out: Tensor) -> Dict[str, Tensor]:
+        dtheta = torch.stack([(theta_in - theta_out).abs(), theta_in + theta_out], dim=-1)
+        dphi = torch.min(
+            torch.stack(
+                (
+                    ((2 * torch.pi) - phi_in) + phi_out,
+                    ((2 * torch.pi) - phi_out) + phi_in,
+                    torch.abs(phi_in - phi_out),
+                ),
+                dim=0,
+            ),
+            dim=0,
+        ).values
+        dphi = torch.stack([dphi, torch.pi - dphi], dim=-1)
+        total_scatter = (dtheta.square() + dphi.square()).sqrt()
+        # Pick set with smallest scattering
+        hypo = total_scatter.argmin(-1)
+        i = np.arange(len(total_scatter))
+        return {"dtheta": dtheta[i, 0, hypo], "dphi": dphi[i, 0, hypo], "total_scatter": total_scatter[i, 0, hypo]}
+
+    def _set_dtheta_dphi_scatter(self) -> None:
+        r"""
+        Compute dtheta and dphi under two scattering hypotheses: small theta + large phi, large theta + small phi.
+        Use assume that total scattering is small: pick hypothesis with smallest scattering
+        """
+
+        values = self._compute_dtheta_dphi_scattering(theta_in=self.theta_in, phi_in=self.phi_in, theta_out=self.theta_out, phi_out=self.phi_out)
+        self._dtheta, self._dphi, self._total_scatter = values["dtheta"], values["dphi"], values["total_scatter"]
+        self._dtheta_unc, self._dphi_unc, self._total_scatter_unc = None, None, None
 
     @property
     def location(self) -> Tensor:
@@ -419,8 +450,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
         """
 
         if self._dtheta is None:
-            self._dtheta = torch.abs(self.theta_in - self.theta_out)
-            self._dtheta_unc = None
+            self._set_dtheta_dphi_scatter()
         return self._dtheta
 
     @property
@@ -436,19 +466,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
         """
 
         if self._dphi is None:
-            # Is there a simpler formular?
-            self._dphi = torch.min(
-                torch.stack(
-                    (
-                        ((2 * torch.pi) - self.phi_in) + self.phi_out,
-                        ((2 * torch.pi) - self.phi_out) + self.phi_in,
-                        torch.abs(self.phi_in - self.phi_out),
-                    ),
-                    dim=0,
-                ),
-                dim=0,
-            ).values
-            self._dphi_unc = None
+            self._set_dtheta_dphi()
         return self._dphi
 
     @property
@@ -458,17 +476,20 @@ class AbsScatterBatch(metaclass=ABCMeta):
         return self._dphi_unc
 
     @property
-    def theta_msc(self) -> Tensor:
-        if self._theta_msc is None:
-            self._theta_msc = self._compute_theta_msc(self.track_in, self.track_out)
-            self._theta_msc_unc = None
-        return self._theta_msc
+    def total_scatter(self) -> Tensor:
+        r"""
+        Quadrature sum of dtheta & dphi
+        """
+
+        if self._total_scatter is None:
+            self._set_dtheta_dphi_scatter()
+        return self._total_scatter
 
     @property
-    def theta_msc_unc(self) -> Tensor:
-        if self._theta_msc_unc is None:
-            self._theta_msc_unc = self._compute_out_var_unc(self.theta_msc)
-        return self._theta_msc_unc
+    def total_scatter_unc(self) -> Tensor:
+        if self._total_scatter_unc is None:
+            self._total_scatter_unc = self._compute_out_var_unc(self.total_scatter)
+        return self._total_scatter_unc
 
     @property
     def theta_xy_in(self) -> Tensor:
