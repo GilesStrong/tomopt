@@ -35,10 +35,8 @@ class AbsVolumeInferer(metaclass=ABCMeta):
 class AbsX0Inferer(AbsVolumeInferer):
     def __init__(self, volume: Volume):
         super().__init__(volume=volume)
-        self.x0_dthetas: List[Optional[Tensor]] = []
-        self.x0_dtheta_uncs: List[Optional[Tensor]] = []
-        self.x0_dxys: List[Optional[Tensor]] = []
-        self.x0_dxy_uncs: List[Optional[Tensor]] = []
+        self.muon_x0s: List[Optional[Tensor]] = []
+        self.muon_x0_uncs: List[Optional[Tensor]] = []
         self.efficiencies: List[Tensor] = []
         self.voxel_preds: List[Tensor] = []
         self.voxel_weights: List[Tensor] = []
@@ -46,22 +44,15 @@ class AbsX0Inferer(AbsVolumeInferer):
     def add_scatters(self, scatters: AbsScatterBatch) -> None:
         super().add_scatters(scatters=scatters)
         # Compute muon-wise X0 predictions & efficiencies
-        x, u = self.x0_from_dtheta(scatters=scatters)
-        self.x0_dthetas.append(x)
-        self.x0_dtheta_uncs.append(u)
-
-        x, u = self.x0_from_dxy(scatters=scatters)
-        self.x0_dxys.append(x)
-        self.x0_dxy_uncs.append(u)
-
+        x, u = self.muon_x0_from_scatters(scatters=scatters)
+        self.muon_x0s.append(x)
+        self.muon_x0_uncs.append(u)
         self.efficiencies.append(self.compute_efficiency(scatters=scatters))
 
         # Get X0 prediction for all voxels
         p, w = self.get_voxel_x0_preds(
-            x0_dtheta=self.x0_dthetas[-1],
-            x0_dtheta_unc=self.x0_dtheta_uncs[-1],
-            x0_dxy=self.x0_dxys[-1],
-            x0_dxy_unc=self.x0_dxy_uncs[-1],
+            muon_x0s=self.muon_x0s[-1],
+            muon_x0_uncs=self.muon_x0_uncs[-1],
             efficiency=self.efficiencies[-1],
             scatters=scatters,
         )
@@ -69,12 +60,12 @@ class AbsX0Inferer(AbsVolumeInferer):
         self.voxel_weights.append(w)
 
     @staticmethod
-    def _x0_from_dtheta(delta_z: float, mom: Tensor, theta_msc: Tensor, theta_in: Tensor, theta_out: Tensor) -> Tensor:
+    def _muon_x0_from_scatters(delta_z: float, mom: Tensor, theta_msc: Tensor, theta_in: Tensor, theta_out: Tensor) -> Tensor:
         cos_theta = (theta_in.cos() + theta_out.cos()) / 2
         return 2 * ((SCATTER_COEF_A / mom) ** 2) * delta_z / (theta_msc.pow(2) * cos_theta)
 
     @staticmethod
-    def _x0_from_dtheta_unc(pred: Tensor, in_vars: Tensor, uncs: Tensor) -> Tensor:
+    def _muon_x0_from_scatters_unc(pred: Tensor, in_vars: Tensor, uncs: Tensor) -> Tensor:
         jac = torch.nan_to_num(jacobian(pred, in_vars)).sum(1)  # Compute dvar/dhit_x
 
         # Compute unc^2 = unc_x*unc_y*dvar/dhit_x*dvar/dhit_y summing over all x,y inclusive combinations
@@ -84,7 +75,7 @@ class AbsX0Inferer(AbsVolumeInferer):
         pred_unc = unc_2.sum(-1).sqrt()
         return pred_unc
 
-    def x0_from_dtheta(self, scatters: AbsScatterBatch) -> Tuple[Optional[Tensor], Optional[Tensor]]:
+    def muon_x0_from_scatters(self, scatters: AbsScatterBatch) -> Tuple[Optional[Tensor], Optional[Tensor]]:
         r"""
         TODO: Debias by considering each voxel on muon paths
         Maybe like:
@@ -127,25 +118,15 @@ class AbsX0Inferer(AbsVolumeInferer):
             dim=-1,
         )
 
-        pred = self._x0_from_dtheta(delta_z=self.size, mom=mom, theta_msc=theta_msc, theta_in=theta_in, theta_out=theta_out)
-        pred_unc = self._x0_from_dtheta_unc(pred=pred, in_vars=in_vars, uncs=uncs)
+        pred = self._muon_x0_from_scatters(delta_z=self.size, mom=mom, theta_msc=theta_msc, theta_in=theta_in, theta_out=theta_out)
+        pred_unc = self._muon_x0_from_scatters_unc(pred=pred, in_vars=in_vars, uncs=uncs)
 
         return pred, pred_unc
 
-    def x0_from_dxy(self, scatters: AbsScatterBatch) -> Tuple[Optional[Tensor], Optional[Tensor]]:
-        # TODO: FIX this
-        # dxy = torch.sqrt(scatters['dxy'][mask].pow(2).sum(1))
-        # dh = dxy/((math.sqrt(2)*torch.cos(scatters['theta_in'][mask].pow(2).sum(1)))+1e-17)
-        # theta0 = torch.arcsin(dh/self.size)
-        # x0_pred_dxy = (theta0*p/b)**2
-        return None, None
-
     def get_voxel_x0_preds(
         self,
-        x0_dtheta: Optional[Tensor],
-        x0_dtheta_unc: Optional[Tensor],
-        x0_dxy: Optional[Tensor],
-        x0_dxy_unc: Optional[Tensor],
+        muon_x0s: Optional[Tensor],
+        muon_x0_uncs: Optional[Tensor],
         efficiency: Tensor,
         scatters: AbsScatterBatch,
     ) -> Tuple[Optional[Tensor], Optional[Tensor]]:
@@ -159,10 +140,10 @@ class AbsX0Inferer(AbsVolumeInferer):
         loc, loc_unc = scatters.location, scatters.location_unc  # loc is (x,y,z)
         # Only consider non-NaN predictions
         mask = ((loc == loc).prod(1) * (loc_unc == loc_unc).prod(1)).bool()
-        if x0_dtheta is not None and x0_dtheta_unc is not None:
-            mask = (mask * (~x0_dtheta.isnan()) * (~x0_dtheta.isinf()) * (~x0_dtheta_unc.isnan()) * (~x0_dtheta_unc.isinf())).bool()
-        if x0_dxy is not None and x0_dxy_unc is not None:
-            mask = (mask * (~x0_dxy.isnan()) * (~x0_dxy.isinf()) * (~x0_dxy_unc.isnan()) * (~x0_dxy_unc.isinf())).bool()
+        if muon_x0s is not None and muon_x0_uncs is not None:
+            mask = (mask * (~muon_x0s.isnan()) * (~muon_x0s.isinf()) * (~muon_x0_uncs.isnan()) * (~muon_x0_uncs.isinf())).bool()
+        else:
+            return None, None
 
         loc, loc_unc, efficiency = loc[mask], loc_unc[mask], efficiency[mask]
         shp_xyz = (
@@ -173,38 +154,29 @@ class AbsX0Inferer(AbsVolumeInferer):
         )
         shp_zxy = shp_xyz[0], shp_xyz[3], shp_xyz[1], shp_xyz[2]
 
-        wpreds, weights = [], []
-        for x0, unc in ((x0_dtheta, x0_dtheta_unc), (x0_dxy, x0_dxy_unc)):
-            if x0 is None or unc is None:
-                continue
-            x0, unc = x0[mask], unc[mask]
-            x0 = x0[:, None, None, None].expand(shp_zxy).clone()
-            coef = efficiency[:, None, None, None].expand(shp_zxy).clone() / ((1e-17) + (unc[:, None, None, None].expand(shp_zxy).clone() ** 2))
+        x0, unc = muon_x0s[mask], muon_x0_uncs[mask]
+        x0 = x0[:, None, None, None].expand(shp_zxy).clone()
+        coef = efficiency[:, None, None, None].expand(shp_zxy).clone() / ((1e-17) + (unc[:, None, None, None].expand(shp_zxy).clone() ** 2))
 
-            # Gaussian spread
-            dists = {}
-            for i, d in enumerate(["x", "y", "z"]):
-                dists[d] = Normal(loc[:, i], loc_unc[:, i] + 1e-7)  # location uncertainty is sometimes zero, causing errors
+        # Gaussian spread
+        dists = {}
+        for i, d in enumerate(["x", "y", "z"]):
+            dists[d] = Normal(loc[:, i], loc_unc[:, i] + 1e-7)  # location uncertainty is sometimes zero, causing errors
 
-            def comp_int(low: Tensor, high: Tensor, dists: Dict[str, Normal]) -> Tensor:
-                return torch.prod(torch.stack([dists[d].cdf(high[i]) - dists[d].cdf(low[i]) for i, d in enumerate(dists)]), dim=0)
+        def comp_int(low: Tensor, high: Tensor, dists: Dict[str, Normal]) -> Tensor:
+            return torch.prod(torch.stack([dists[d].cdf(high[i]) - dists[d].cdf(low[i]) for i, d in enumerate(dists)]), dim=0)
 
-            prob = (
-                torch.stack([comp_int(l, l + self.volume.passive_size, dists) for l in self.volume.edges.unbind()])  # TODO: Check this: edges are xyz
-                .transpose(-1, -2)
-                .reshape(shp_xyz)
-                .permute(0, 3, 1, 2)
-            )  # preds are (z,x,y)  TODO: vmap this? Might not be possible since it tries to run Normal.cdf batchwise.
-            prob = prob + 1e-15  # Sometimes probability is zero
-            coef = coef * prob
+        prob = (
+            torch.stack([comp_int(l, l + self.volume.passive_size, dists) for l in self.volume.edges.unbind()])  # TODO: Check this: edges are xyz
+            .transpose(-1, -2)
+            .reshape(shp_xyz)
+            .permute(0, 3, 1, 2)
+        )  # preds are (z,x,y)  TODO: vmap this? Might not be possible since it tries to run Normal.cdf batchwise.
+        prob = prob + 1e-15  # Sometimes probability is zero
+        coef = coef * prob
 
-            wpreds.append(x0 * coef)
-            weights.append(coef)
-
-        if len(wpreds) == 0:
-            return None, None
-        wpred, weight = torch.cat(wpreds, dim=0), torch.cat(weights, dim=0)
-        wpred, weight = wpred.sum(0), weight.sum(0)
+        wpred = (x0 * coef).sum(0)
+        weight = coef.sum(0)
         pred = wpred / weight
 
         if weight.isnan().sum() > 0:
@@ -331,7 +303,7 @@ class DeepVolumeInferer(AbsVolumeInferer):
         return self.base_inferer.compute_efficiency(scatters=scatters)
 
     def get_base_predictions(self, scatters: AbsScatterBatch) -> Tuple[Tensor, Tensor]:
-        x, u = self.base_inferer.x0_from_dtheta(scatters=scatters)
+        x, u = self.base_inferer.muon_x0_from_scatters(scatters=scatters)
         return x[:, None], u[:, None]
 
     def _build_vars(self, scatters: AbsScatterBatch, pred_x0: Tensor, pred_x0_unc: Tensor) -> None:
