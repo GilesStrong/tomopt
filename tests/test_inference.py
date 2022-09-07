@@ -439,7 +439,7 @@ def test_voxel_x0_inferer_methods():
     sb = VoxelScatterBatch(mu=mu, volume=volume)
     inferer = VoxelX0Inferer(volume=volume)
 
-    pt, pt_unc = inferer.x0_from_dtheta(scatters=sb)
+    pt, pt_unc = inferer.muon_x0_from_scatters(scatters=sb)
     assert len(pt) == len(sb.location)
     assert pt.shape == pt_unc.shape
 
@@ -450,14 +450,11 @@ def test_voxel_x0_inferer_methods():
         assert torch.autograd.grad(pt[mask].abs().nansum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().nansum() > 0
         assert torch.autograd.grad(pt_unc[mask].abs().nansum(), l.resolution, retain_graph=True, allow_unused=True)[0].abs().nansum() > 0
 
-    pxy, pxy_unc = inferer.x0_from_dxy(scatters=sb)
-    assert pxy is None and pxy_unc is None  # modify tests when dxy predictions implemented
-
     eff = inferer.compute_efficiency(scatters=sb)
     assert eff.shape == pt.shape
     assert (eff - 0.0625).abs().mean() < 1e-5
 
-    p, w = inferer.get_voxel_x0_preds(x0_dtheta=pt, x0_dtheta_unc=pt_unc, x0_dxy=pxy, x0_dxy_unc=pxy_unc, efficiency=eff, scatters=sb)
+    p, w = inferer.get_voxel_x0_preds(muon_x0s=pt, muon_x0_uncs=pt_unc, efficiency=eff, scatters=sb)
     true = volume.get_rad_cube()
     assert p.shape == true.shape
     assert w.shape == true.shape
@@ -505,7 +502,7 @@ def test_panel_x0_inferer_methods():
     sb = PanelScatterBatch(mu=mu, volume=volume)
     inferer = PanelX0Inferer(volume=volume)
 
-    pt, pt_unc = inferer.x0_from_dtheta(scatters=sb)
+    pt, pt_unc = inferer.muon_x0_from_scatters(scatters=sb)
     assert len(pt) == len(sb.location)
     assert pt.shape == pt_unc.shape
 
@@ -517,14 +514,11 @@ def test_panel_x0_inferer_methods():
             assert torch.autograd.grad(pt[mask].abs().sum(), p.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
             assert torch.autograd.grad(pt_unc[mask].abs().sum(), p.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
 
-    pxy, pxy_unc = inferer.x0_from_dxy(scatters=sb)
-    assert pxy is None and pxy_unc is None  # modify tests when dxy predictions implemented
-
     eff = inferer.compute_efficiency(scatters=sb)
     assert eff.shape == pt.shape
     assert (eff > 0).all()
 
-    p, w = inferer.get_voxel_x0_preds(x0_dtheta=pt, x0_dtheta_unc=pt_unc, x0_dxy=pxy, x0_dxy_unc=pxy_unc, efficiency=eff, scatters=sb)
+    p, w = inferer.get_voxel_x0_preds(muon_x0s=pt, muon_x0_uncs=pt_unc, efficiency=eff, scatters=sb)
     true = volume.get_rad_cube()
     assert p.shape == true.shape
     assert w.shape == true.shape
@@ -637,7 +631,7 @@ def test_x0_inferer_scatter_inversion(mocker, voxel_scatter_batch):  # noqa F811
     mocker.patch.object(sb, "get_scatter_mask", lambda: mask)
 
     mocker.patch("tomopt.inference.volume.jacobian", lambda i, j: torch.ones((len(i), 1, 7), device=i.device))  # remove randomness
-    pred, _ = inferer.x0_from_dtheta(scatters=sb)
+    pred, _ = inferer.muon_x0_from_scatters(scatters=sb)
 
     assert (pred.mean() - x0).abs() < 1e-5
 
