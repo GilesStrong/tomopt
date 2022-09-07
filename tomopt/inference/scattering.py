@@ -42,8 +42,8 @@ class AbsScatterBatch(metaclass=ABCMeta):
     _phi_out_unc: Optional[Tensor] = None
     _dphi: Optional[Tensor] = None
     _dphi_unc: Optional[Tensor] = None
-    _total_scattering: Optional[Tensor] = None
-    _total_scattering_unc: Optional[Tensor] = None
+    _total_scatter: Optional[Tensor] = None
+    _total_scatter_unc: Optional[Tensor] = None
     _theta_xy_in: Optional[Tensor] = None
     _theta_xy_in_unc: Optional[Tensor] = None
     _theta_xy_out: Optional[Tensor] = None
@@ -360,7 +360,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
         Use assume that total scattering is small: pick hypothesis with smallest scattering
         """
 
-        values = self._compute_dtheta_dphi_scattering(theta_in=self.theta_in, phi_in=self.phi_in, theta_out=self.theta_out, phi_out=self.phi_out)
+        values = self._compute_dtheta_dphi_scatter(theta_in=self.theta_in, phi_in=self.phi_in, theta_out=self.theta_out, phi_out=self.phi_out)
         self._dtheta, self._dphi, self._total_scatter = values["dtheta"], values["dphi"], values["total_scatter"]
         self._dtheta_unc, self._dphi_unc, self._total_scatter_unc = None, None, None
 
@@ -466,7 +466,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
         """
 
         if self._dphi is None:
-            self._set_dtheta_dphi()
+            self._set_dtheta_dphi_scatter()
         return self._dphi
 
     @property
