@@ -28,8 +28,8 @@ class AbsScatterBatch(metaclass=ABCMeta):
     _cross_track: Optional[Tensor] = None
     _track_coefs: Optional[Tensor] = None
     # Inferred variables
-    _loc: Optional[Tensor] = None
-    _loc_unc: Optional[Tensor] = None
+    _poca_xyz: Optional[Tensor] = None
+    _poca_xyz_unc: Optional[Tensor] = None
     _theta_in: Optional[Tensor] = None
     _theta_in_unc: Optional[Tensor] = None
     _theta_out: Optional[Tensor] = None
@@ -365,18 +365,18 @@ class AbsScatterBatch(metaclass=ABCMeta):
         self._dtheta_unc, self._dphi_unc, self._total_scatter_unc = None, None, None
 
     @property
-    def location(self) -> Tensor:
-        if self._loc is None:
+    def poca_xyz(self) -> Tensor:
+        if self._poca_xyz is None:
             q1 = self.track_start_in + (self._track_coefs[:, 0:1] * self.track_in)  # closest point on v1
-            self._loc = q1 + (self._track_coefs[:, 2:3] * self._cross_track / 2)  # Move halfway along v3 from q1
-            self._loc_unc = None
-        return self._loc
+            self._poca_xyz = q1 + (self._track_coefs[:, 2:3] * self._cross_track / 2)  # Move halfway along v3 from q1
+            self._poca_xyz_unc = None
+        return self._poca_xyz
 
     @property
-    def location_unc(self) -> Tensor:
-        if self._loc_unc is None:
-            self._loc_unc = self._compute_out_var_unc(self.location)
-        return self._loc_unc
+    def poca_xyz_unc(self) -> Tensor:
+        if self._poca_xyz_unc is None:
+            self._poca_xyz_unc = self._compute_out_var_unc(self.poca_xyz)
+        return self._poca_xyz_unc
 
     @property
     def dxy(self) -> Tensor:
@@ -564,7 +564,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
         xin, xout = self.hits["above"]["reco_xy"][idx, :, 0].detach().cpu().numpy(), self.hits["below"]["reco_xy"][idx, :, 0].detach().cpu().numpy()
         yin, yout = self.hits["above"]["reco_xy"][idx, :, 1].detach().cpu().numpy(), self.hits["below"]["reco_xy"][idx, :, 1].detach().cpu().numpy()
         zin, zout = self.hits["above"]["z"][idx, :, 0].detach().cpu().numpy(), self.hits["below"]["z"][idx, :, 0].detach().cpu().numpy()
-        scatter = self.location[idx].detach().cpu().numpy()
+        scatter = self.poca_xyz[idx].detach().cpu().numpy()
         dtheta_xy = self.dtheta_xy[idx].detach().cpu().numpy()
         dphi = self.dphi[idx].detach().cpu().numpy()
         phi_in = self.phi_in[idx].detach().cpu().numpy()
@@ -648,12 +648,12 @@ class AbsScatterBatch(metaclass=ABCMeta):
     def get_scatter_mask(self) -> Tensor:
         z = self.volume.get_passive_z_range()
         return (
-            (self.location[:, 0] >= 0)
-            * (self.location[:, 0] < self.volume.lw[0])
-            * (self.location[:, 1] >= 0)
-            * (self.location[:, 1] < self.volume.lw[1])
-            * (self.location[:, 2] >= z[0])
-            * (self.location[:, 2] < z[1])
+            (self.poca_xyz[:, 0] >= 0)
+            * (self.poca_xyz[:, 0] < self.volume.lw[0])
+            * (self.poca_xyz[:, 1] >= 0)
+            * (self.poca_xyz[:, 1] < self.volume.lw[1])
+            * (self.poca_xyz[:, 2] >= z[0])
+            * (self.poca_xyz[:, 2] < z[1])
         )
 
 
