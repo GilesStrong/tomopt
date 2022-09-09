@@ -116,8 +116,8 @@ class AbsX0Inferer(AbsVolumeInferer):
 
     @staticmethod
     def _weighted_rms(x: Tensor, wgt: Tensor) -> Tensor:
-        # return ((x.square() * wgt).sum(0) / wgt.sum(0)).sqrt()
-        return (x * wgt).sum(0) / wgt.sum(0)
+        return ((x.square() * wgt).sum(0) / wgt.sum(0)).sqrt()
+        # return (x * wgt).sum(0) / wgt.sum(0)
 
     def get_voxel_zxy_x0_preds(self) -> Tensor:
         r"""
@@ -128,15 +128,15 @@ class AbsX0Inferer(AbsVolumeInferer):
 
         # Compute variable weights per voxel per muon, variable weights applied to squared variables, therefore use error propagation
         vox_prob_eff_wgt = self.muon_efficiency.reshape(self.n_mu, 1, 1, 1) * self.muon_probs_per_voxel_zxy  # (mu,z,x,y)
-        # mu_tot_scatter2_var = ((2 * self.muon_total_scatter * self.muon_total_scatter_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
-        # mu_theta_in2_var = ((2 * self.muon_theta_in * self.muon_theta_in_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
-        # mu_theta_out2_var = ((2 * self.muon_theta_out * self.muon_theta_out_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
-        # mu_mom2_var = ((2 * self.muon_mom * self.muon_mom_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
+        mu_tot_scatter2_var = ((2 * self.muon_total_scatter * self.muon_total_scatter_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
+        mu_theta_in2_var = ((2 * self.muon_theta_in * self.muon_theta_in_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
+        mu_theta_out2_var = ((2 * self.muon_theta_out * self.muon_theta_out_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
+        mu_mom2_var = ((2 * self.muon_mom * self.muon_mom_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
 
-        mu_tot_scatter2_var = (self.muon_total_scatter_unc**2).reshape(self.n_mu, 1, 1, 1)
-        mu_theta_in2_var = (self.muon_theta_in_unc**2).reshape(self.n_mu, 1, 1, 1)
-        mu_theta_out2_var = (self.muon_theta_out_unc**2).reshape(self.n_mu, 1, 1, 1)
-        mu_mom2_var = (self.muon_mom_unc**2).reshape(self.n_mu, 1, 1, 1)
+        # mu_tot_scatter2_var = (self.muon_total_scatter_unc**2).reshape(self.n_mu, 1, 1, 1)
+        # mu_theta_in2_var = (self.muon_theta_in_unc**2).reshape(self.n_mu, 1, 1, 1)
+        # mu_theta_out2_var = (self.muon_theta_out_unc**2).reshape(self.n_mu, 1, 1, 1)
+        # mu_mom2_var = (self.muon_mom_unc**2).reshape(self.n_mu, 1, 1, 1)
 
         # Compute weighted RMS of scatter variables per voxel
         vox_tot_scatter_rms = self._weighted_rms(
