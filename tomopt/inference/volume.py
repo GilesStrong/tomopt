@@ -38,8 +38,8 @@ class AbsX0Inferer(AbsVolumeInferer):
     _muon_scatter_var_uncs: Optional[Tensor] = None  # (mu, vars)
     _muon_probs_per_voxel_zxy: Optional[Tensor] = None  # (mu, z,x,y)
     _muon_efficiency: Tensor = None  # (mu, eff)
-    _vox_zxy_x0_preds: Optional[Tensor]  # (z,x,y)
-    _vox_zxy_x0_pred_uncs: Optional[Tensor]  # (z,x,y)
+    _vox_zxy_x0_preds: Optional[Tensor] = None  # (z,x,y)
+    _vox_zxy_x0_pred_uncs: Optional[Tensor] = None  # (z,x,y)
     _var_order_szs = [("poca", 3), ("tot_scatter", 1), ("theta_in", 1), ("theta_out", 1), ("mom", 1)]
 
     def __init__(self, volume: Volume):
@@ -51,7 +51,7 @@ class AbsX0Inferer(AbsVolumeInferer):
             round(self.lw.cpu().numpy()[1] / self.size),
             len(self.volume.get_passives()),
         ]
-        self.shp_zxy = [self.shp_xyz[3], self.shp_xyz[1], self.shp_xyz[2]]
+        self.shp_zxy = [self.shp_xyz[2], self.shp_xyz[0], self.shp_xyz[1]]
 
     def _set_var_dimensions(self) -> None:
         # Configure dimension indexing
@@ -69,6 +69,9 @@ class AbsX0Inferer(AbsVolumeInferer):
     def _combine_scatters(self) -> None:
         vals: Dict[str, Tensor] = {}
         uncs: Dict[str, Tensor] = {}
+
+        if len(self.scatter_batches) == 0:
+            raise ValueError("No scatter batches have been added")
 
         vals["poca"] = torch.cat([sb.poca_xyz for sb in self.scatter_batches], dim=0)
         uncs["poca"] = torch.cat([sb.poca_xyz_unc for sb in self.scatter_batches], dim=0)
@@ -99,14 +102,17 @@ class AbsX0Inferer(AbsVolumeInferer):
         return ((SCATTER_COEF_A / mom_rms) ** 2) * deltaz / (scatter_rms.pow(2) * cos_theta)
 
     def get_voxel_zxy_x0_pred_uncs(self) -> Tensor:
-        # TODO check the dimensions of this
-        jac = torch.nan_to_num(jacobian(self.vox_zxy_x0_preds, self._muon_scatter_vars)).sum(1)  # Compute dx0/dvar
+        jac = torch.nan_to_num(jacobian(self.vox_zxy_x0_preds, self._muon_scatter_vars))  # Compute dx0/dvar  (z,x,y,mu,var)
+        unc = self._muon_scatter_var_uncs
+        unc = torch.where(torch.isinf(unc), torch.tensor([0]).type(unc.type()), unc)[None, None, None]  # (1,1,1,mu,var)
+        jac, unc = jac.reshape(jac.shape[0], jac.shape[1], jac.shape[2], -1), unc.reshape(unc.shape[0], unc.shape[1], unc.shape[2], -1)  # (z,x,y,mu*var)
 
         # Compute unc^2 = unc_x*unc_y*dx0/dx*dx0/dy summing over all x,y inclusive combinations
-        idxs = torch.combinations(torch.arange(0, self._muon_scatter_var_uncs.shape[-1]), with_replacement=True)
-        unc_2 = (jac[:, idxs] * self._muon_scatter_var_uncs[:, idxs]).prod(-1)
+        idxs = torch.combinations(torch.arange(0, unc.shape[-1]), with_replacement=True)
+        print(unc.shape, jac.shape)
+        unc_2 = (jac[:, :, :, idxs] * unc[:, :, :, idxs]).prod(-1)  # (z,x,y,N)
 
-        pred_unc = unc_2.sum(-1).sqrt()
+        pred_unc = unc_2.sum(-1).sqrt()  # (z,x,y)
         return pred_unc
 
     @staticmethod
@@ -128,10 +134,12 @@ class AbsX0Inferer(AbsVolumeInferer):
         mu_mom2_var = ((2 * self.muon_mom * self.muon_mom_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
 
         # Compute weighted RMS of scatter variables per voxel
-        vox_tot_scatter_rms = self._weighted_rms(self.muon_total_scatter, vox_prob_eff_wgt / mu_tot_scatter2_var)  # (z,x,y)
-        vox_theta_in_rms = self._weighted_rms(self.muon_theta_in, vox_prob_eff_wgt / mu_theta_in2_var)
-        vox_theta_out_rms = self._weighted_rms(self.muon_theta_out, vox_prob_eff_wgt / mu_theta_out2_var)
-        vox_mom_rms = self._weighted_rms(self.muon_mom, vox_prob_eff_wgt / mu_mom2_var)
+        vox_tot_scatter_rms = self._weighted_rms(self.muon_total_scatter.reshape(self.n_mu, 1, 1, 1), vox_prob_eff_wgt / mu_tot_scatter2_var)  # (z,x,y)
+        vox_theta_in_rms = self._weighted_rms(self.muon_theta_in.reshape(self.n_mu, 1, 1, 1), vox_prob_eff_wgt / mu_theta_in2_var)
+        vox_theta_out_rms = self._weighted_rms(self.muon_theta_out.reshape(self.n_mu, 1, 1, 1), vox_prob_eff_wgt / mu_theta_out2_var)
+        vox_mom_rms = self._weighted_rms(
+            self.muon_mom.reshape(self.n_mu, 1, 1, 1), vox_prob_eff_wgt / (1 if (mu_mom2_var == 0).all() else mu_mom2_var)
+        )  # Muon momentum may not have uncertainty
 
         vox_x0_preds = self.x0_from_scatters(
             deltaz=self.size, scatter_rms=vox_tot_scatter_rms, theta_in_rms=vox_theta_in_rms, theta_out_rms=vox_theta_out_rms, mom_rms=vox_mom_rms
