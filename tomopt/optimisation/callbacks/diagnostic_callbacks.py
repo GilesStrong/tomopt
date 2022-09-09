@@ -28,7 +28,7 @@ class ScatterRecord(Callback):
         self._reset()
 
     def on_scatter_end(self) -> None:
-        self.record.append(self.wrapper.fit_params.sb.location[self.wrapper.fit_params.sb.get_scatter_mask()].detach().cpu().clone())
+        self.record.append(self.wrapper.fit_params.sb.poca_xyz[self.wrapper.fit_params.sb.get_scatter_mask()].detach().cpu().clone())
 
     def _to_df(self, record: Tensor) -> pd.DataFrame:
         df = pd.DataFrame(record.numpy(), columns=["x", "y", "z"])

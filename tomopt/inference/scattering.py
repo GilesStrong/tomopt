@@ -229,7 +229,6 @@ class AbsScatterBatch(metaclass=ABCMeta):
         phi_out = self._compute_phi(x=self.track_out[:, 0:1], y=self.track_out[:, 1:2])
 
         total_scatter = self._compute_dtheta_dphi_scatter(theta_in=theta_in, phi_in=phi_in, theta_out=theta_out, phi_out=phi_out)["total_scatter"]
-        print(total_scatter.shape)
         keep_mask = (total_scatter != 0) * (~total_scatter.isnan()) * (~total_scatter.isinf())
 
         # Remove muons with tracks parallel to volume
@@ -335,6 +334,11 @@ class AbsScatterBatch(metaclass=ABCMeta):
 
     @staticmethod
     def _compute_dtheta_dphi_scatter(theta_in: Tensor, phi_in: Tensor, theta_out: Tensor, phi_out: Tensor) -> Dict[str, Tensor]:
+        theta_in = theta_in.squeeze()
+        phi_in = phi_in.squeeze()
+        theta_out = theta_out.squeeze()
+        phi_out = phi_out.squeeze()
+
         dtheta = torch.stack([(theta_in - theta_out).abs(), theta_in + theta_out], dim=-1)
         dphi = torch.min(
             torch.stack(
@@ -352,7 +356,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
         # Pick set with smallest scattering
         hypo = total_scatter.argmin(-1)
         i = np.arange(len(total_scatter))
-        return {"dtheta": dtheta[i, 0, hypo], "dphi": dphi[i, 0, hypo], "total_scatter": total_scatter[i, 0, hypo]}
+        return {"dtheta": dtheta[i, hypo, None], "dphi": dphi[i, hypo, None], "total_scatter": total_scatter[i, hypo, None]}
 
     def _set_dtheta_dphi_scatter(self) -> None:
         r"""

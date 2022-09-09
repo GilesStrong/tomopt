@@ -1,8 +1,8 @@
 from abc import ABCMeta, abstractmethod
-from typing import Tuple, Optional, Dict, List, Union, Type, Callable
+from typing import Tuple, Optional, Dict, List, Type, Callable
 
 import torch
-from torch import Tensor, nn
+from torch import Tensor
 import torch.nn.functional as F
 from torch.distributions import Normal
 
@@ -11,7 +11,7 @@ from ..volume import VoxelDetectorLayer, PanelDetectorLayer, Volume
 from ..core import SCATTER_COEF_A
 from ..utils import jacobian
 
-__all__ = ["VoxelX0Inferer", "PanelX0Inferer", "DeepVolumeInferer", "WeightedDeepVolumeInferer", "DenseBlockClassifierFromX0s"]
+__all__ = ["VoxelX0Inferer", "PanelX0Inferer", "DenseBlockClassifierFromX0s"]  # "DeepVolumeInferer", "WeightedDeepVolumeInferer"]
 
 
 class AbsVolumeInferer(metaclass=ABCMeta):
@@ -33,180 +33,230 @@ class AbsVolumeInferer(metaclass=ABCMeta):
 
 
 class AbsX0Inferer(AbsVolumeInferer):
-    _muon_total_scatters: Optional[Tensor] = None
-    _muon_total_scatters_uncs: Optional[Tensor] = None
-    _muon_theta_ins: Optional[Tensor] = None
-    _muon_theta_in_uncs: Optional[Tensor] = None
-    _muon_theta_outs: Optional[Tensor] = None
-    _muon_theta_out_uncs: Optional[Tensor] = None
-    _muon_moms: Optional[Tensor] = None
-    _muon_moms_uncs: Optional[Tensor] = None
-    _efficiencies: Tensor = None
-    # def __init__(self, volume: Volume):
-    #     super().__init__(volume=volume)
-        
+    _n_mu: Optional[int] = None
+    _muon_scatter_vars: Optional[Tensor] = None  # (mu, vars)
+    _muon_scatter_var_uncs: Optional[Tensor] = None  # (mu, vars)
+    _muon_probs_per_voxel_zxy: Optional[Tensor] = None  # (mu, z,x,y)
+    _muon_efficiency: Tensor = None  # (mu, eff)
+    _vox_zxy_x0_preds: Optional[Tensor]  # (z,x,y)
+    _vox_zxy_x0_pred_uncs: Optional[Tensor]  # (z,x,y)
+    _var_order_szs = [("poca", 3), ("tot_scatter", 1), ("theta_in", 1), ("theta_out", 1), ("mom", 1)]
 
-    # def add_scatters(self, scatters: AbsScatterBatch) -> None:
-    #     super().add_scatters(scatters=scatters)
-    #     # Compute muon-wise X0 predictions & efficiencies
-    #     self.muon_total_scatters.append(scatters.total_scatter)
-    #     self.muon_total_scatters_uncs.append(scatters.total_scatter_unc)
-    #     self.muon_theta_ins.append(scatters.theta_in)
-    #     self.muon_theta_in_uncs.append(scatters.theta_in_unc)
-    #     self.muon_theta_outs.append(scatters.theta_out)
-    #     self.muon_theta_out_uncs.append(scatters.theta_out_unc)
-    #     self.muon_moms.append((scatters.mu.reco_mom)[:, None])
-    #     self.muon_moms_uncs.append(torch.zeros(len(self.muon_moms[-1]), 1))
-    #     self.efficiencies.append(self.compute_efficiency(scatters=scatters))
+    def __init__(self, volume: Volume):
+        super().__init__(volume=volume)
+        self._set_var_dimensions()
+        # set shapes
+        self.shp_xyz = [
+            round(self.lw.cpu().numpy()[0] / self.size),
+            round(self.lw.cpu().numpy()[1] / self.size),
+            len(self.volume.get_passives()),
+        ]
+        self.shp_zxy = [self.shp_xyz[3], self.shp_xyz[1], self.shp_xyz[2]]
+
+    def _set_var_dimensions(self) -> None:
+        # Configure dimension indexing
+        dims = {}
+        i = 0
+        for var, sz in self._var_order_szs:
+            dims[var] = slice(i, i + sz)
+            i += sz
+        self._poca_dim = dims["poca"]
+        self._tot_scatter_dim = dims["tot_scatter"]
+        self._theta_in_dim = dims["theta_in"]
+        self._theta_out_dim = dims["theta_out"]
+        self._mom_dim = dims["mom"]
+
+    def _combine_scatters(self) -> None:
+        vals: Dict[str, Tensor] = {}
+        uncs: Dict[str, Tensor] = {}
+
+        vals["poca"] = torch.cat([sb.poca_xyz for sb in self.scatter_batches], dim=0)
+        uncs["poca"] = torch.cat([sb.poca_xyz_unc for sb in self.scatter_batches], dim=0)
+        vals["tot_scatter"] = torch.cat([sb.total_scatter for sb in self.scatter_batches], dim=0)
+        uncs["tot_scatter"] = torch.cat([sb.total_scatter_unc for sb in self.scatter_batches], dim=0)
+        vals["theta_in"] = torch.cat([sb.theta_in for sb in self.scatter_batches], dim=0)
+        uncs["theta_in"] = torch.cat([sb.theta_in_unc for sb in self.scatter_batches], dim=0)
+        vals["theta_out"] = torch.cat([sb.theta_out for sb in self.scatter_batches], dim=0)
+        uncs["theta_out"] = torch.cat([sb.theta_out_unc for sb in self.scatter_batches], dim=0)
+        vals["mom"] = torch.cat([sb.mu.mom[:, None] for sb in self.scatter_batches], dim=0)
+        uncs["mom"] = torch.zeros_like(vals["mom"])
+
+        mask = torch.ones(len(vals["poca"])).bool()
+        for var_sz in self._var_order_szs:
+            mask *= ~(vals[var_sz[0]].isnan().any(1))
+            mask *= ~(vals[var_sz[0]].isinf().any(1))
+            mask *= ~(uncs[var_sz[0]].isnan().any(1))
+            mask *= ~(uncs[var_sz[0]].isinf().any(1))
+
+        self._muon_scatter_vars = torch.cat([vals[var_sz[0]][mask] for var_sz in self._var_order_szs], dim=1)  # (mu, vars)
+        self._muon_scatter_var_uncs = torch.cat([uncs[var_sz[0]][mask] for var_sz in self._var_order_szs], dim=1)  # (mu, vars)
+        self._muon_efficiency = torch.cat([self.compute_efficiency(scatters=sb) for sb in self.scatter_batches], dim=0)[mask]  # (mu, eff)
+        self._n_mu = len(self._muon_scatter_vars)
 
     @staticmethod
-    def _muon_x0_from_scatters(delta_z: float, mom: Tensor, theta_msc: Tensor, theta_in: Tensor, theta_out: Tensor) -> Tensor:
-        cos_theta = (theta_in.cos() + theta_out.cos()) / 2
-        return 2 * ((SCATTER_COEF_A / mom) ** 2) * delta_z / (theta_msc.pow(2) * cos_theta)
+    def x0_from_scatters(deltaz: float, scatter_rms: Tensor, theta_in_rms: Tensor, theta_out_rms: Tensor, mom_rms: Tensor) -> Tensor:
+        cos_theta = (theta_in_rms.cos() + theta_out_rms.cos()) / 2
+        return ((SCATTER_COEF_A / mom_rms) ** 2) * deltaz / (scatter_rms.pow(2) * cos_theta)
 
-    @staticmethod
-    def _muon_x0_from_scatters_unc(pred: Tensor, in_vars: Tensor, uncs: Tensor) -> Tensor:
-        jac = torch.nan_to_num(jacobian(pred, in_vars)).sum(1)  # Compute dvar/dhit_x
+    def get_voxel_zxy_x0_pred_uncs(self) -> Tensor:
+        # TODO check the dimensions of this
+        jac = torch.nan_to_num(jacobian(self.vox_zxy_x0_preds, self._muon_scatter_vars)).sum(1)  # Compute dx0/dvar
 
-        # Compute unc^2 = unc_x*unc_y*dvar/dhit_x*dvar/dhit_y summing over all x,y inclusive combinations
-        idxs = torch.combinations(torch.arange(0, uncs.shape[-1]), with_replacement=True)
-        unc_2 = (jac[:, idxs] * uncs[:, idxs]).prod(-1)
+        # Compute unc^2 = unc_x*unc_y*dx0/dx*dx0/dy summing over all x,y inclusive combinations
+        idxs = torch.combinations(torch.arange(0, self._muon_scatter_var_uncs.shape[-1]), with_replacement=True)
+        unc_2 = (jac[:, idxs] * self._muon_scatter_var_uncs[:, idxs]).prod(-1)
 
         pred_unc = unc_2.sum(-1).sqrt()
         return pred_unc
 
-    def muon_x0_from_scatters(self, scatters: AbsScatterBatch) -> Tuple[Optional[Tensor], Optional[Tensor]]:
-        r"""
-        TODO: Debias by considering each voxel on muon paths
-        Maybe like:
-        Debias dtheta
-        dtheta_unc2 = dtheta_unc.pow(2)
-        dtheta_dbias = dtheta.pow(2)-dtheta_unc2
-        m = [dtheta_dbias < dtheta_unc2]
-        dtheta_dbias[m] = dtheta_unc2[m]
-        dtheta_dbias = dtheta_dbias.sqrt()
-        dtheta = dtheta_dbias
-        """
+    @staticmethod
+    def _weighted_rms(x: Tensor, wgt: Tensor) -> Tensor:
+        return ((x.square() * wgt).sum(0) / wgt.sum(0)).sqrt()
 
-        mu = scatters.mu
-
-        scatter_vars, scatter_uncs = [], []
-        scatter_vars.append((mu.reco_mom)[:, None])  # 0
-        scatter_uncs.append(torch.zeros(len(scatter_vars[0]), 1))
-
-        scatter_vars.append(scatters.theta_msc)  # 1
-        scatter_uncs.append(scatters.theta_msc_unc)
-
-        scatter_vars.append(scatters.theta_in)  # 2
-        scatter_uncs.append(scatters.theta_in_unc)
-
-        scatter_vars.append(scatters.theta_out)  # 3
-        scatter_uncs.append(scatters.theta_out_unc)
-
-        in_vars = torch.cat(
-            scatter_vars,
-            dim=-1,
-        )
-
-        mom = in_vars[:, 0]
-        theta_msc = in_vars[:, 1]
-        theta_in = in_vars[:, 2]
-        theta_out = in_vars[:, 3]
-
-        uncs = torch.cat(
-            scatter_uncs,
-            dim=-1,
-        )
-
-        pred = self._muon_x0_from_scatters(delta_z=self.size, mom=mom, theta_msc=theta_msc, theta_in=theta_in, theta_out=theta_out)
-        pred_unc = self._muon_x0_from_scatters_unc(pred=pred, in_vars=in_vars, uncs=uncs)
-
-        return pred, pred_unc
-
-    def _get_muon_probs_per_voxel(self, poca_xyz:Tensor, poca_xyz_unc:Tensor) -> Tensor:
-        shp_xyz = (
-            len(poca_xyz),
-            round(self.volume.lw.cpu().numpy()[0] / self.volume.passive_size),
-            round(self.volume.lw.cpu().numpy()[1] / self.volume.passive_size),
-            len(self.volume.get_passives()),
-        )
-
-        # Gaussian spread
-        dists = {}
-        for i, d in enumerate(["x", "y", "z"]):
-            dists[d] = Normal(poca_xyz[:, i], poca_xyz_unc[:, i] + 1e-7)  # poca_xyz uncertainty is sometimes zero, causing errors
-
-        def comp_int(low: Tensor, high: Tensor, dists: Dict[str, Normal]) -> Tensor:
-            return torch.prod(torch.stack([dists[d].cdf(high[i]) - dists[d].cdf(low[i]) for i, d in enumerate(dists)]), dim=0)
-
-        probs = (
-            torch.stack([comp_int(l, l + self.volume.passive_size, dists) for l in self.volume.edges.unbind()])  # TODO: Check this: edges are xyz
-            .transpose(-1, -2)
-            .reshape(shp_xyz)
-            .permute(0, 3, 1, 2)
-        )  # preds are (z,x,y)  TODO: vmap this? Might not be possible since it tries to run Normal.cdf batchwise.
-
-
-    def get_voxel_x0_preds(
-        self
-    ) -> Tuple[Optional[Tensor], Optional[Tensor]]:
+    def get_voxel_zxy_x0_preds(self) -> Tensor:
         r"""
         Assign x0 inference to neighbourhood of voxels according to scatter-poca_xyz uncertainty
         TODO: Implement differing x0 accoring to poca_xyz via Gaussian spread
         TODO: Don't assume that poca_xyz uncertainties are uncorrelated
-        TODO: Rescale total probability to one (Gaussians extend outside passive volume)
         """
 
-        
+        # Compute variable weights per voxel per muon, variable weights applied to squared variables, therefore use error propagation
+        vox_prob_eff_wgt = self.muon_efficiency.reshape(self.n_mu, 1, 1, 1) * self.muon_probs_per_voxel_zxy  # (mu,z,x,y)
+        mu_tot_scatter2_var = ((2 * self.muon_total_scatter * self.muon_total_scatter_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
+        mu_theta_in2_var = ((2 * self.muon_theta_in * self.muon_theta_in_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
+        mu_theta_out2_var = ((2 * self.muon_theta_out * self.muon_theta_out_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
+        mu_mom2_var = ((2 * self.muon_mom * self.muon_mom_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
 
-        loc, loc_unc = scatters.poca_xyz, scatters.poca_xyz_unc  # loc is (x,y,z)
-        # Only consider non-NaN predictions
-        mask = ((loc == loc).prod(1) * (loc_unc == loc_unc).prod(1)).bool()
-        if muon_x0s is not None and muon_x0_uncs is not None:
-            mask = (mask * (~muon_x0s.isnan()) * (~muon_x0s.isinf()) * (~muon_x0_uncs.isnan()) * (~muon_x0_uncs.isinf())).bool()
-        else:
-            return None, None
-        loc, loc_unc, efficiency = loc[mask], loc_unc[mask], efficiency[mask]
+        # Compute weighted RMS of scatter variables per voxel
+        vox_tot_scatter_rms = self._weighted_rms(self.muon_total_scatter, vox_prob_eff_wgt / mu_tot_scatter2_var)  # (z,x,y)
+        vox_theta_in_rms = self._weighted_rms(self.muon_theta_in, vox_prob_eff_wgt / mu_theta_in2_var)
+        vox_theta_out_rms = self._weighted_rms(self.muon_theta_out, vox_prob_eff_wgt / mu_theta_out2_var)
+        vox_mom_rms = self._weighted_rms(self.muon_mom, vox_prob_eff_wgt / mu_mom2_var)
 
-        shp_zxy = shp_xyz[0], shp_xyz[3], shp_xyz[1], shp_xyz[2]
+        vox_x0_preds = self.x0_from_scatters(
+            deltaz=self.size, scatter_rms=vox_tot_scatter_rms, theta_in_rms=vox_theta_in_rms, theta_out_rms=vox_theta_out_rms, mom_rms=vox_mom_rms
+        )  # (z,x,y)
 
-        x0, unc = muon_x0s[mask], muon_x0_uncs[mask]
-        x0 = x0[:, None, None, None].expand(shp_zxy).clone()
-        coef = efficiency[:, None, None, None].expand(shp_zxy).clone() / ((1e-17) + (unc[:, None, None, None].expand(shp_zxy).clone() ** 2))
-        
-        prob = prob + 1e-15  # Sometimes probability is zero
-        coef = coef * prob
-
-        wpred = (x0 * coef).sum(0)
-        weight = coef.sum(0)
-        pred = wpred / weight
-
-        if weight.isnan().sum() > 0:
-            print(weight)
-            raise ValueError("Weight contains NaN values")
-        if (weight == 0).sum() > 0:
-            print(weight)
-            raise ValueError("Weight contains values at zero")
-        if pred.isnan().sum() > 0:
-            print(pred)
+        if vox_x0_preds.isnan().any():
+            print(vox_x0_preds)
             raise ValueError("Prediction contains NaN values")
 
-        return pred, weight
+        return vox_x0_preds
 
     def get_prediction(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
-        # Volume-level X0 prediciton per voxel already made per batch -> combine and reaverage
         if len(self.scatter_batches) == 0:
             print("Warning: unable to scan volume with prescribed number of muons.")
             return None, None
-        elif len(self.scatter_batches) == 1:
-            return self.voxel_preds[0], self.voxel_weights[0]
-        else:
-            preds = torch.stack(self.voxel_preds, dim=0)
-            weights = torch.stack(self.voxel_weights, dim=0)
-            wpred = (preds * weights).sum(0)
-            weight = weights.sum(0)
-            pred = wpred / weight
-            return pred, weight
+        return self.vox_zxy_x0_preds, self.vox_zxy_inv_weights
+
+    @property
+    def vox_zxy_x0_preds(self) -> Tensor:
+        if self._vox_zxy_x0_preds is None:
+            self._vox_zxy_x0_preds = self.get_voxel_zxy_x0_preds()
+            self._vox_zxy_x0_pred_uncs = None
+        return self._vox_zxy_x0_preds
+
+    @property
+    def vox_zxy_x0_pred_uncs(self) -> Tensor:
+        if self._vox_zxy_x0_pred_uncs is None:
+            self._vox_zxy_x0_pred_uncs = self.get_voxel_zxy_x0_pred_uncs()
+        return self._vox_zxy_x0_pred_uncs
+
+    @property
+    def vox_zxy_inv_weights(self) -> Tensor:
+        return self.muon_efficiency.reshape(self.n_mu, 1, 1, 1) / (self._vox_zxy_x0_pred_uncs**2)  # These divide the loss per voxel: vox_loss / inv_weight
+
+    @property
+    def muon_probs_per_voxel_zxy(self) -> Tensor:  # (mu,z,x,y)
+        if self._muon_probs_per_voxel_zxy is None:
+            # Gaussian spread
+            dists = {}
+            for i, d in enumerate(["x", "y", "z"]):
+                dists[d] = Normal(self.muon_poca_xyz[:, i], self.muon_poca_xyz_unc[:, i] + 1e-7)  # poca_xyz uncertainty is sometimes zero, causing errors
+
+            def comp_int(low: Tensor, high: Tensor, dists: Dict[str, Normal]) -> Tensor:
+                return torch.prod(torch.stack([dists[d].cdf(high[i]) - dists[d].cdf(low[i]) for i, d in enumerate(dists)], dim=0), dim=0)
+
+            probs = (
+                torch.stack([comp_int(l, l + self.volume.passive_size, dists) for l in self.volume.edges.unbind()])
+                .transpose(-1, -2)  # prob, mu --> mu, prob
+                .reshape([self.n_mu] + self.shp_xyz)  # mu, x, y, z
+                .permute(0, 3, 1, 2)  # mu, z, x, y
+            )
+            self._muon_probs_per_voxel_zxy = probs + 1e-15  # Sometimes probability is zero
+        return self._muon_probs_per_voxel_zxy
+
+    @property
+    def n_mu(self) -> int:
+        if self._muon_scatter_vars is None or self._muon_scatter_var_uncs is None:
+            self._combine_scatters()
+        return self._n_mu
+
+    @property
+    def muon_poca_xyz(self) -> Tensor:
+        if self._muon_scatter_vars is None or self._muon_scatter_var_uncs is None:
+            self._combine_scatters()
+        return self._muon_scatter_vars[:, self._poca_dim]
+
+    @property
+    def muon_poca_xyz_unc(self) -> Tensor:
+        if self._muon_scatter_vars is None or self._muon_scatter_var_uncs is None:
+            self._combine_scatters()
+        return self._muon_scatter_var_uncs[:, self._poca_dim]
+
+    @property
+    def muon_total_scatter(self) -> Tensor:
+        if self._muon_scatter_vars is None or self._muon_scatter_var_uncs is None:
+            self._combine_scatters()
+        return self._muon_scatter_vars[:, self._tot_scatter_dim]
+
+    @property
+    def muon_total_scatter_unc(self) -> Tensor:
+        if self._muon_scatter_vars is None or self._muon_scatter_var_uncs is None:
+            self._combine_scatters()
+        return self._muon_scatter_var_uncs[:, self._tot_scatter_dim]
+
+    @property
+    def muon_theta_in(self) -> Tensor:
+        if self._muon_scatter_vars is None or self._muon_scatter_var_uncs is None:
+            self._combine_scatters()
+        return self._muon_scatter_vars[:, self._theta_in_dim]
+
+    @property
+    def muon_theta_in_unc(self) -> Tensor:
+        if self._muon_scatter_vars is None or self._muon_scatter_var_uncs is None:
+            self._combine_scatters()
+        return self._muon_scatter_var_uncs[:, self._theta_in_dim]
+
+    @property
+    def muon_theta_out(self) -> Tensor:
+        if self._muon_scatter_vars is None or self._muon_scatter_var_uncs is None:
+            self._combine_scatters()
+        return self._muon_scatter_vars[:, self._theta_out_dim]
+
+    @property
+    def muon_theta_out_unc(self) -> Tensor:
+        if self._muon_scatter_vars is None or self._muon_scatter_var_uncs is None:
+            self._combine_scatters()
+        return self._muon_scatter_var_uncs[:, self._theta_out_dim]
+
+    @property
+    def muon_mom(self) -> Tensor:
+        if self._muon_scatter_vars is None or self._muon_scatter_var_uncs is None:
+            self._combine_scatters()
+        return self._muon_scatter_vars[:, self._mom_dim]
+
+    @property
+    def muon_mom_unc(self) -> Tensor:
+        if self._muon_scatter_vars is None or self._muon_scatter_var_uncs is None:
+            self._combine_scatters()
+        return self._muon_scatter_var_uncs[:, self._mom_dim]
+
+    @property
+    def muon_efficiency(self) -> Tensor:
+        if self._muon_scatter_vars is None or self._muon_scatter_var_uncs is None:
+            self._combine_scatters()
+        return self._muon_efficiency
 
 
 class VoxelX0Inferer(AbsX0Inferer):
@@ -260,154 +310,154 @@ class PanelX0Inferer(AbsX0Inferer):
         return eff
 
 
-class DeepVolumeInferer(AbsVolumeInferer):
-    def __init__(
-        self,
-        model: Union[torch.jit._script.RecursiveScriptModule, nn.Module],
-        base_inferer: AbsX0Inferer,
-        volume: Volume,
-        grp_feats: List[str],
-        include_unc: bool = False,
-    ):
-        super().__init__(volume=volume)
-        self.model, self.base_inferer, self.include_unc = model, base_inferer, include_unc
-        self.voxel_centres = self.volume.centres
-        self.tomopt_device = self.volume.device
-        self.model_device = next(self.model.parameters()).device
+# class DeepVolumeInferer(AbsVolumeInferer):
+#     def __init__(
+#         self,
+#         model: Union[torch.jit._script.RecursiveScriptModule, nn.Module],
+#         base_inferer: AbsX0Inferer,
+#         volume: Volume,
+#         grp_feats: List[str],
+#         include_unc: bool = False,
+#     ):
+#         super().__init__(volume=volume)
+#         self.model, self.base_inferer, self.include_unc = model, base_inferer, include_unc
+#         self.voxel_centres = self.volume.centres
+#         self.tomopt_device = self.volume.device
+#         self.model_device = next(self.model.parameters()).device
 
-        self.in_vars: List[Tensor] = []
-        self.in_var_uncs: List[Tensor] = []
-        self.efficiencies: List[Tensor] = []
-        self.in_var: Optional[Tensor] = None
-        self.in_var_unc: Optional[Tensor] = None
-        self.efficiency: Optional[Tensor] = None
+#         self.in_vars: List[Tensor] = []
+#         self.in_var_uncs: List[Tensor] = []
+#         self.efficiencies: List[Tensor] = []
+#         self.in_var: Optional[Tensor] = None
+#         self.in_var_unc: Optional[Tensor] = None
+#         self.efficiency: Optional[Tensor] = None
 
-        self.grp_feats = grp_feats
-        self.in_feats = []
-        if "pred_x0" in self.grp_feats:
-            self.in_feats += ["pred_x0"]
-        if "delta_angles" in self.grp_feats:
-            self.in_feats += ["dtheta", "dphi"]
-        if "theta_msc" in self.grp_feats:
-            self.in_feats += ["theta_msc"]
-        if "track_angles" in self.grp_feats:
-            self.in_feats += ["theta_x_in", "theta_y_in", "theta_x_out", "theta_y_out"]
-        if "track_xy" in self.grp_feats:
-            self.in_feats += ["x_in", "y_in", "x_out", "y_out"]
-        if "poca" in self.grp_feats:
-            self.in_feats += ["poca_x", "poca_y", "poca_z"]
-        if "dpoca" in self.grp_feats:
-            self.in_feats += ["dpoca_x", "dpoca_y", "dpoca_z", "dpoca_r"]
-        if "voxels" in self.grp_feats:
-            self.in_feats += ["vox_x", "vox_y", "vox_z"]
+#         self.grp_feats = grp_feats
+#         self.in_feats = []
+#         if "pred_x0" in self.grp_feats:
+#             self.in_feats += ["pred_x0"]
+#         if "delta_angles" in self.grp_feats:
+#             self.in_feats += ["dtheta", "dphi"]
+#         if "total_scatter" in self.grp_feats:
+#             self.in_feats += ["total_scatter"]
+#         if "track_angles" in self.grp_feats:
+#             self.in_feats += ["theta_x_in", "theta_y_in", "theta_x_out", "theta_y_out"]
+#         if "track_xy" in self.grp_feats:
+#             self.in_feats += ["x_in", "y_in", "x_out", "y_out"]
+#         if "poca" in self.grp_feats:
+#             self.in_feats += ["poca_x", "poca_y", "poca_z"]
+#         if "dpoca" in self.grp_feats:
+#             self.in_feats += ["dpoca_x", "dpoca_y", "dpoca_z", "dpoca_r"]
+#         if "voxels" in self.grp_feats:
+#             self.in_feats += ["vox_x", "vox_y", "vox_z"]
 
-    def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
-        return self.base_inferer.compute_efficiency(scatters=scatters)
+#     def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
+#         return self.base_inferer.compute_efficiency(scatters=scatters)
 
-    def get_base_predictions(self, scatters: AbsScatterBatch) -> Tuple[Tensor, Tensor]:
-        x, u = self.base_inferer.muon_x0_from_scatters(scatters=scatters)
-        return x[:, None], u[:, None]
+#     def get_base_predictions(self, scatters: AbsScatterBatch) -> Tuple[Tensor, Tensor]:
+#         x, u = self.base_inferer.muon_x0_from_scatters(scatters=scatters)
+#         return x[:, None], u[:, None]
 
-    def _build_vars(self, scatters: AbsScatterBatch, pred_x0: Tensor, pred_x0_unc: Tensor) -> None:
-        feats, uncs = [], []
-        if "pred_x0" in self.grp_feats:
-            feats += [pred_x0]
-            if self.include_unc:
-                uncs += [pred_x0_unc]
-        if "delta_angles" in self.grp_feats:
-            feats += [scatters.dtheta, scatters.dphi]
-            if self.include_unc:
-                uncs += [scatters.dtheta_unc, scatters.dphi_unc]
-        if "theta_msc" in self.grp_feats:
-            feats += [scatters.theta_msc]
-            if self.include_unc:
-                uncs += [scatters.theta_msc_unc]
-        if "track_angles" in self.grp_feats:
-            feats += [scatters.theta_xy_in, scatters.theta_xy_out]
-            if self.include_unc:
-                uncs += [scatters.theta_xy_in_unc, scatters.theta_xy_out_unc]
-        if "track_xy" in self.grp_feats:
-            feats += [scatters.xyz_in[:, :2], scatters.xyz_out[:, :2]]
-            if self.include_unc:
-                uncs += [scatters.xyz_in_unc[:, :2], scatters.xyz_out_unc[:, :2]]
-        if "poca" in self.grp_feats:
-            feats += [scatters.poca_xyz]
-            if self.include_unc:
-                uncs += [scatters.poca_xyz_unc]
-        if "dpoca" in self.grp_feats:
-            feats += [scatters.poca_xyz]
-            if self.include_unc:
-                uncs += [scatters.poca_xyz_unc]
+#     def _build_vars(self, scatters: AbsScatterBatch, pred_x0: Tensor, pred_x0_unc: Tensor) -> None:
+#         feats, uncs = [], []
+#         if "pred_x0" in self.grp_feats:
+#             feats += [pred_x0]
+#             if self.include_unc:
+#                 uncs += [pred_x0_unc]
+#         if "delta_angles" in self.grp_feats:
+#             feats += [scatters.dtheta, scatters.dphi]
+#             if self.include_unc:
+#                 uncs += [scatters.dtheta_unc, scatters.dphi_unc]
+#         if "total_scatter" in self.grp_feats:
+#             feats += [scatters.total_scatter]
+#             if self.include_unc:
+#                 uncs += [scatters.total_scatter_unc]
+#         if "track_angles" in self.grp_feats:
+#             feats += [scatters.theta_xy_in, scatters.theta_xy_out]
+#             if self.include_unc:
+#                 uncs += [scatters.theta_xy_in_unc, scatters.theta_xy_out_unc]
+#         if "track_xy" in self.grp_feats:
+#             feats += [scatters.xyz_in[:, :2], scatters.xyz_out[:, :2]]
+#             if self.include_unc:
+#                 uncs += [scatters.xyz_in_unc[:, :2], scatters.xyz_out_unc[:, :2]]
+#         if "poca" in self.grp_feats:
+#             feats += [scatters.poca_xyz]
+#             if self.include_unc:
+#                 uncs += [scatters.poca_xyz_unc]
+#         if "dpoca" in self.grp_feats:
+#             feats += [scatters.poca_xyz]
+#             if self.include_unc:
+#                 uncs += [scatters.poca_xyz_unc]
 
-        self.in_vars.append(torch.cat(feats, dim=-1))
-        if self.include_unc:
-            self.in_var_uncs.append(torch.cat(uncs, dim=-1))
-        self.efficiencies.append(self.compute_efficiency(scatters=scatters)[:, None])
+#         self.in_vars.append(torch.cat(feats, dim=-1))
+#         if self.include_unc:
+#             self.in_var_uncs.append(torch.cat(uncs, dim=-1))
+#         self.efficiencies.append(self.compute_efficiency(scatters=scatters)[:, None])
 
-    def add_scatters(self, scatters: AbsScatterBatch) -> None:
-        self.scatter_batches.append(scatters)
-        pred_x0, pred_x0_unc = self.get_base_predictions(scatters)
-        self._build_vars(scatters, pred_x0, pred_x0_unc)
+#     def add_scatters(self, scatters: AbsScatterBatch) -> None:
+#         self.scatter_batches.append(scatters)
+#         pred_x0, pred_x0_unc = self.get_base_predictions(scatters)
+#         self._build_vars(scatters, pred_x0, pred_x0_unc)
 
-    def _build_inputs(self, in_var: Tensor) -> Tensor:
-        data = in_var[None, :].repeat_interleave(len(self.voxel_centres), dim=0)
-        if "dpoca" in self.grp_feats:
-            i = self.in_feats.index("dpoca_x")
-            j = self.in_feats.index("dpoca_r")
-            data[:, :, i:j] -= self.voxel_centres[:, None].repeat_interleave(len(in_var), dim=1)
-            data = torch.cat((data, torch.norm(data[:, :, i:j], dim=-1, keepdim=True)), dim=-1)  # dR
-        # Add voxel centres
-        if "voxels" in self.grp_feats:
-            data = torch.cat((data, self.voxel_centres[:, None].repeat_interleave(len(in_var), dim=1)), dim=-1)
-        return data
+#     def _build_inputs(self, in_var: Tensor) -> Tensor:
+#         data = in_var[None, :].repeat_interleave(len(self.voxel_centres), dim=0)
+#         if "dpoca" in self.grp_feats:
+#             i = self.in_feats.index("dpoca_x")
+#             j = self.in_feats.index("dpoca_r")
+#             data[:, :, i:j] -= self.voxel_centres[:, None].repeat_interleave(len(in_var), dim=1)
+#             data = torch.cat((data, torch.norm(data[:, :, i:j], dim=-1, keepdim=True)), dim=-1)  # dR
+#         # Add voxel centres
+#         if "voxels" in self.grp_feats:
+#             data = torch.cat((data, self.voxel_centres[:, None].repeat_interleave(len(in_var), dim=1)), dim=-1)
+#         return data
 
-    def _get_weight(self) -> Tensor:
-        """Maybe alter this to include resolution/pred uncertainties"""
-        return self.efficiency.sum()
+#     def _get_weight(self) -> Tensor:
+#         """Maybe alter this to include resolution/pred uncertainties"""
+#         return self.efficiency.sum()
 
-    def get_prediction(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
-        self.in_var = torch.cat(self.in_vars, dim=0)
-        if self.include_unc:
-            self.in_var_unc = torch.cat(self.in_var_uncs, dim=0)
-        self.efficiency = torch.cat(self.efficiencies, dim=0)
+#     def get_prediction(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
+#         self.in_var = torch.cat(self.in_vars, dim=0)
+#         if self.include_unc:
+#             self.in_var_unc = torch.cat(self.in_var_uncs, dim=0)
+#         self.efficiency = torch.cat(self.efficiencies, dim=0)
 
-        inputs = self._build_inputs(self.in_var)
-        pred = self.model(inputs[None].to(self.model_device)).to(self.tomopt_device)
-        weight = self._get_weight()
-        return pred, weight
+#         inputs = self._build_inputs(self.in_var)
+#         pred = self.model(inputs[None].to(self.model_device)).to(self.tomopt_device)
+#         weight = self._get_weight()
+#         return pred, weight
 
 
-class WeightedDeepVolumeInferer(DeepVolumeInferer):
-    def __init__(
-        self,
-        model: Union[torch.jit._script.RecursiveScriptModule, nn.Module],
-        base_inferer: AbsX0Inferer,
-        volume: Volume,
-        grp_feats: List[str],
-        include_unc: bool = False,
-    ):
-        super().__init__(model=model, base_inferer=base_inferer, volume=volume, grp_feats=grp_feats, include_unc=include_unc)
-        self.in_var_weights: List[Tensor] = []
+# class WeightedDeepVolumeInferer(DeepVolumeInferer):
+#     def __init__(
+#         self,
+#         model: Union[torch.jit._script.RecursiveScriptModule, nn.Module],
+#         base_inferer: AbsX0Inferer,
+#         volume: Volume,
+#         grp_feats: List[str],
+#         include_unc: bool = False,
+#     ):
+#         super().__init__(model=model, base_inferer=base_inferer, volume=volume, grp_feats=grp_feats, include_unc=include_unc)
+#         self.in_var_weights: List[Tensor] = []
 
-    def add_scatters(self, scatters: AbsScatterBatch) -> None:
-        self.scatter_batches.append(scatters)
-        pred_x0, pred_x0_unc = self.get_base_predictions(scatters)
-        self._build_vars(scatters, pred_x0, pred_x0_unc)
-        self.in_var_weights.append((pred_x0_unc / pred_x0) ** 2)
+#     def add_scatters(self, scatters: AbsScatterBatch) -> None:
+#         self.scatter_batches.append(scatters)
+#         pred_x0, pred_x0_unc = self.get_base_predictions(scatters)
+#         self._build_vars(scatters, pred_x0, pred_x0_unc)
+#         self.in_var_weights.append((pred_x0_unc / pred_x0) ** 2)
 
-    def get_prediction(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
-        self.in_var = torch.cat(self.in_vars, dim=0)
-        if self.include_unc:
-            self.in_var_unc = torch.cat(self.in_var_uncs, dim=0)
-        self.efficiency = torch.cat(self.efficiencies, dim=0)
-        self.in_var_weight = torch.cat(self.in_var_weights, dim=0)
+#     def get_prediction(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
+#         self.in_var = torch.cat(self.in_vars, dim=0)
+#         if self.include_unc:
+#             self.in_var_unc = torch.cat(self.in_var_uncs, dim=0)
+#         self.efficiency = torch.cat(self.efficiencies, dim=0)
+#         self.in_var_weight = torch.cat(self.in_var_weights, dim=0)
 
-        weight = self.efficiency / self.in_var_weight
-        weighted_vars = torch.cat((weight, self.in_var), dim=1)
-        inputs = self._build_inputs(weighted_vars)
-        pred = self.model(inputs[None].to(self.model_device)).to(self.tomopt_device)
-        weight = self._get_weight()
-        return pred, weight
+#         weight = self.efficiency / self.in_var_weight
+#         weighted_vars = torch.cat((weight, self.in_var), dim=1)
+#         inputs = self._build_inputs(weighted_vars)
+#         pred = self.model(inputs[None].to(self.model_device)).to(self.tomopt_device)
+#         weight = self._get_weight()
+#         return pred, weight
 
 
 class DenseBlockClassifierFromX0s(AbsVolumeInferer):
@@ -430,23 +480,15 @@ class DenseBlockClassifierFromX0s(AbsVolumeInferer):
         self.x0_inferer = partial_x0_inferer(self.volume)
         self.frac = n_block_voxels / self.volume.centres.numel()
 
-        self.efficiency: Optional[Tensor] = None
-        self.scatter_batches = self.x0_inferer.scatter_batches
-        self.efficiencies = self.x0_inferer.efficiencies
-
-    def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
-        return self.x0_inferer.compute_efficiency(scatters=scatters)
-
     def add_scatters(self, scatters: AbsScatterBatch) -> None:
         self.x0_inferer.add_scatters(scatters)
 
-    def _get_weight(self) -> Tensor:
+    def _get_inv_weight(self) -> Tensor:
         """Maybe alter this to include resolution/pred uncertainties"""
-        return self.efficiency.sum()
+        return self.x0_inferer.muon_efficiency
 
     def get_prediction(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
-        self.efficiency = torch.cat(self.efficiencies, dim=0)
-        vox_preds, vox_weights = self.x0_inferer.get_prediction()
+        vox_preds, _ = self.x0_inferer.get_prediction()
         if self.use_avgpool:
             vox_preds = F.avg_pool3d(vox_preds[None], kernel_size=3, stride=1, padding=1, count_include_pad=False)[0]
 
@@ -462,7 +504,7 @@ class DenseBlockClassifierFromX0s(AbsVolumeInferer):
         r = 2 * (mean_bkg - mean_blk) / (mean_bkg + mean_blk)
         r = (r + self.ratio_offset) * self.ratio_coef
         pred = torch.sigmoid(r)
-        weight = self._get_weight()
+        weight = self._get_inv_weight()
         return pred[None, None], weight
 
 
@@ -480,31 +522,23 @@ class AbsIntClassifierFromX0(AbsVolumeInferer):
         self.output_probs, self.class2float = output_probs, class2float
         self.x0_inferer = partial_x0_inferer(self.volume)
 
-        self.efficiency: Optional[Tensor] = None
-        self.scatter_batches = self.x0_inferer.scatter_batches
-        self.efficiencies = self.x0_inferer.efficiencies
-
-    def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
-        return self.x0_inferer.compute_efficiency(scatters=scatters)
-
     def add_scatters(self, scatters: AbsScatterBatch) -> None:
         self.x0_inferer.add_scatters(scatters)
 
-    def _get_weight(self) -> Tensor:
+    def _get_inv_weight(self) -> Tensor:
         """Maybe alter this to include resolution/pred uncertainties"""
-        return self.efficiency.sum()
+        return self.x0_inferer.muon_efficiency
 
     @abstractmethod
-    def x02probs(self, vox_preds: Tensor, vox_weights: Tensor) -> Tensor:
+    def x02probs(self, vox_preds: Tensor, vox_inv_weights: Tensor) -> Tensor:
         """Convert voxelwise X0 predictions to int probabilities"""
         pass
 
     def get_prediction(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
-        self.efficiency = torch.cat(self.efficiencies, dim=0)
-        vox_preds, vox_weights = self.x0_inferer.get_prediction()
+        vox_preds, vox_inv_weights = self.x0_inferer.get_prediction()
 
-        probs = self.x02probs(vox_preds, vox_weights)
-        weight = self._get_weight()
+        probs = self.x02probs(vox_preds, vox_inv_weights)
+        weight = self._get_inv_weight()
         if self.output_probs:
             return probs, weight
         else:
