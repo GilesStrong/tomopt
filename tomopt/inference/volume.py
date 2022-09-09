@@ -116,7 +116,8 @@ class AbsX0Inferer(AbsVolumeInferer):
 
     @staticmethod
     def _weighted_rms(x: Tensor, wgt: Tensor) -> Tensor:
-        return ((x.square() * wgt).sum(0) / wgt.sum(0)).sqrt()
+        # return ((x.square() * wgt).sum(0) / wgt.sum(0)).sqrt()
+        return (x * wgt).sum(0) / wgt.sum(0)
 
     def get_voxel_zxy_x0_preds(self) -> Tensor:
         r"""
@@ -127,17 +128,24 @@ class AbsX0Inferer(AbsVolumeInferer):
 
         # Compute variable weights per voxel per muon, variable weights applied to squared variables, therefore use error propagation
         vox_prob_eff_wgt = self.muon_efficiency.reshape(self.n_mu, 1, 1, 1) * self.muon_probs_per_voxel_zxy  # (mu,z,x,y)
-        mu_tot_scatter2_var = ((2 * self.muon_total_scatter * self.muon_total_scatter_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
-        mu_theta_in2_var = ((2 * self.muon_theta_in * self.muon_theta_in_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
-        mu_theta_out2_var = ((2 * self.muon_theta_out * self.muon_theta_out_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
-        mu_mom2_var = ((2 * self.muon_mom * self.muon_mom_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
+        # mu_tot_scatter2_var = ((2 * self.muon_total_scatter * self.muon_total_scatter_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
+        # mu_theta_in2_var = ((2 * self.muon_theta_in * self.muon_theta_in_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
+        # mu_theta_out2_var = ((2 * self.muon_theta_out * self.muon_theta_out_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
+        # mu_mom2_var = ((2 * self.muon_mom * self.muon_mom_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
+
+        mu_tot_scatter2_var = (self.muon_total_scatter_unc**2).reshape(self.n_mu, 1, 1, 1)
+        mu_theta_in2_var = (self.muon_theta_in_unc**2).reshape(self.n_mu, 1, 1, 1)
+        mu_theta_out2_var = (self.muon_theta_out_unc**2).reshape(self.n_mu, 1, 1, 1)
+        mu_mom2_var = (self.muon_mom_unc**2).reshape(self.n_mu, 1, 1, 1)
 
         # Compute weighted RMS of scatter variables per voxel
-        vox_tot_scatter_rms = self._weighted_rms(self.muon_total_scatter.reshape(self.n_mu, 1, 1, 1), vox_prob_eff_wgt / mu_tot_scatter2_var)  # (z,x,y)
-        vox_theta_in_rms = self._weighted_rms(self.muon_theta_in.reshape(self.n_mu, 1, 1, 1), vox_prob_eff_wgt / mu_theta_in2_var)
-        vox_theta_out_rms = self._weighted_rms(self.muon_theta_out.reshape(self.n_mu, 1, 1, 1), vox_prob_eff_wgt / mu_theta_out2_var)
+        vox_tot_scatter_rms = self._weighted_rms(
+            self.muon_total_scatter.reshape(self.n_mu, 1, 1, 1), torch.nan_to_num(vox_prob_eff_wgt / mu_tot_scatter2_var)
+        )  # (z,x,y)
+        vox_theta_in_rms = self._weighted_rms(self.muon_theta_in.reshape(self.n_mu, 1, 1, 1), torch.nan_to_num(vox_prob_eff_wgt / mu_theta_in2_var))
+        vox_theta_out_rms = self._weighted_rms(self.muon_theta_out.reshape(self.n_mu, 1, 1, 1), torch.nan_to_num(vox_prob_eff_wgt / mu_theta_out2_var))
         vox_mom_rms = self._weighted_rms(
-            self.muon_mom.reshape(self.n_mu, 1, 1, 1), vox_prob_eff_wgt / (1 if (mu_mom2_var == 0).all() else mu_mom2_var)
+            self.muon_mom.reshape(self.n_mu, 1, 1, 1), torch.nan_to_num(vox_prob_eff_wgt / (1 if (mu_mom2_var == 0).all() else mu_mom2_var))
         )  # Muon momentum may not have uncertainty
 
         vox_x0_preds = self.x0_from_scatters(
@@ -145,7 +153,20 @@ class AbsX0Inferer(AbsVolumeInferer):
         )  # (z,x,y)
 
         if vox_x0_preds.isnan().any():
-            print(vox_x0_preds)
+            print(f"{vox_x0_preds=}")
+            print(f"{vox_prob_eff_wgt.isnan().any()=}")
+            print(f"{mu_tot_scatter2_var.isnan().any()=}")
+            print(f"{mu_theta_in2_var.isnan().any()=}")
+            print(f"{mu_theta_out2_var.isnan().any()=}")
+            print(f"{mu_theta_out2_var.isinf().any()=}")
+            print(f"{mu_theta_out2_var.max()=}")
+            print(f"{mu_mom2_var.isnan().any()=}")
+            print(f"{vox_tot_scatter_rms.isnan().any()=}")
+            print(f"{vox_theta_in_rms.isnan().any()=}")
+            print(f"{vox_theta_out_rms.isnan().any()=}")
+            print(f"{self.muon_theta_out.isnan().any()=}")
+            print(f"{vox_mom_rms.isnan().any()=}")
+            print("vox_prob_eff_wgt")
             raise ValueError("Prediction contains NaN values")
 
         return vox_x0_preds
