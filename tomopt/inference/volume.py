@@ -109,7 +109,6 @@ class AbsX0Inferer(AbsVolumeInferer):
 
         # Compute unc^2 = unc_x*unc_y*dx0/dx*dx0/dy summing over all x,y inclusive combinations
         idxs = torch.combinations(torch.arange(0, unc.shape[-1]), with_replacement=True)
-        print(unc.shape, jac.shape)
         unc_2 = (jac[:, :, :, idxs] * unc[:, :, :, idxs]).prod(-1)  # (z,x,y,N)
 
         pred_unc = unc_2.sum(-1).sqrt()  # (z,x,y)
