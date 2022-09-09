@@ -101,8 +101,8 @@ class LadleFurnaceFillLevelInferrer(AbsIntClassifierFromX0):
         """Assumes ladle is 1 voxel thick"""
         return x[:, 1:, 1:-1, 1:-1]
 
-    def x02probs(self, vox_preds: Tensor, vox_weights: Tensor) -> Tensor:
-        """Can we inlcude the vox_weights? e.g. weighted average?"""
+    def x02probs(self, vox_preds: Tensor, vox_inv_weights: Tensor) -> Tensor:
+        """Can we inlcude the vox_inv_weights? e.g. weighted average?"""
         if self.add_batch_dim:
             vox_preds = vox_preds[None]
         for f in self.pipeline:
