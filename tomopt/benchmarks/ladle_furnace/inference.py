@@ -17,12 +17,21 @@ class LadleFurnaceFillLevelInferrer(AbsIntClassifierFromX0):
     def __init__(
         self,
         partial_x0_inferer: Type[AbsX0Inferer],
+        use_per_mu_x0: bool,
+        use_rms: bool,
         volume: Volume,
         pipeline: List[str] = ["remove_ladle", "avg_3d", "avg_layers", "avg_1d", "ridge_1d_0", "negative", "max_div_min"],
         add_batch_dim: bool = True,
         output_probs: bool = True,
     ):
-        super().__init__(partial_x0_inferer=partial_x0_inferer, volume=volume, output_probs=output_probs, class2float=self._class2float)
+        super().__init__(
+            partial_x0_inferer=partial_x0_inferer,
+            use_per_mu_x0=use_per_mu_x0,
+            use_rms=use_rms,
+            volume=volume,
+            output_probs=output_probs,
+            class2float=self._class2float,
+        )
         self.pipeline, self.add_batch_dim = pipeline, add_batch_dim
 
     @staticmethod

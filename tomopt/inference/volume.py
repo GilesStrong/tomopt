@@ -40,10 +40,12 @@ class AbsX0Inferer(AbsVolumeInferer):
     _muon_efficiency: Tensor = None  # (mu, eff)
     _vox_zxy_x0_preds: Optional[Tensor] = None  # (z,x,y)
     _vox_zxy_x0_pred_uncs: Optional[Tensor] = None  # (z,x,y)
+    _muon_x0_preds: Optional[Tensor] = None  # (mu, x0)
     _var_order_szs = [("poca", 3), ("tot_scatter", 1), ("theta_in", 1), ("theta_out", 1), ("mom", 1)]
 
-    def __init__(self, volume: Volume):
+    def __init__(self, use_per_mu_x0: bool, use_rms: bool, volume: Volume):
         super().__init__(volume=volume)
+        self.use_per_mu_x0, self.use_rms = use_per_mu_x0, use_rms
         self._set_var_dimensions()
         # set shapes
         self.shp_xyz = [
@@ -97,9 +99,9 @@ class AbsX0Inferer(AbsVolumeInferer):
         self._n_mu = len(self._muon_scatter_vars)
 
     @staticmethod
-    def x0_from_scatters(deltaz: float, scatter_rms: Tensor, theta_in_rms: Tensor, theta_out_rms: Tensor, mom_rms: Tensor) -> Tensor:
-        cos_theta = (theta_in_rms.cos() + theta_out_rms.cos()) / 2
-        return ((SCATTER_COEF_A / mom_rms) ** 2) * deltaz / (scatter_rms.pow(2) * cos_theta)
+    def x0_from_scatters(deltaz: float, total_scatter: Tensor, theta_in: Tensor, theta_out: Tensor, mom: Tensor) -> Tensor:
+        cos_theta = (theta_in.cos() + theta_out.cos()) / 2
+        return ((SCATTER_COEF_A / mom) ** 2) * deltaz / (total_scatter.pow(2) * cos_theta)
 
     def get_voxel_zxy_x0_pred_uncs(self) -> Tensor:
         jac = torch.nan_to_num(jacobian(self.vox_zxy_x0_preds, self._muon_scatter_vars))  # Compute dx0/dvar  (z,x,y,mu,var)
@@ -114,10 +116,25 @@ class AbsX0Inferer(AbsVolumeInferer):
         pred_unc = unc_2.sum(-1).sqrt()  # (z,x,y)
         return pred_unc
 
+    def get_muon_x0_pred_uncs(self) -> Tensor:
+        jac = torch.nan_to_num(jacobian(self._muon_x0_preds, self._muon_scatter_vars)).sum(2)  # Compute dx0/dvar  (mu, 1, var)
+        unc = self._muon_scatter_var_uncs
+        unc = torch.where(torch.isinf(unc), torch.tensor([0]).type(unc.type()), unc)[:, None]  # (mu,1,var)
+
+        # Compute unc^2 = unc_x*unc_y*dx0/dx*dx0/dy summing over all x,y inclusive combinations
+        idxs = torch.combinations(torch.arange(0, unc.shape[-1]), with_replacement=True)
+        unc_2 = (jac[:, :, idxs] * unc[:, :, idxs]).prod(-1)  # (mu,N)
+
+        pred_unc = unc_2.sum(-1).sqrt()  # (mu,1)
+        return pred_unc
+
     @staticmethod
     def _weighted_rms(x: Tensor, wgt: Tensor) -> Tensor:
         return ((x.square() * wgt).sum(0) / wgt.sum(0)).sqrt()
-        # return (x * wgt).sum(0) / wgt.sum(0)
+
+    @staticmethod
+    def _weighted_mean(x: Tensor, wgt: Tensor) -> Tensor:
+        return (x * wgt).sum(0) / wgt.sum(0)
 
     def get_voxel_zxy_x0_preds(self) -> Tensor:
         r"""
@@ -128,45 +145,62 @@ class AbsX0Inferer(AbsVolumeInferer):
 
         # Compute variable weights per voxel per muon, variable weights applied to squared variables, therefore use error propagation
         vox_prob_eff_wgt = self.muon_efficiency.reshape(self.n_mu, 1, 1, 1) * self.muon_probs_per_voxel_zxy  # (mu,z,x,y)
-        mu_tot_scatter2_var = ((2 * self.muon_total_scatter * self.muon_total_scatter_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
-        mu_theta_in2_var = ((2 * self.muon_theta_in * self.muon_theta_in_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
-        mu_theta_out2_var = ((2 * self.muon_theta_out * self.muon_theta_out_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
-        mu_mom2_var = ((2 * self.muon_mom * self.muon_mom_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
 
-        # mu_tot_scatter2_var = (self.muon_total_scatter_unc**2).reshape(self.n_mu, 1, 1, 1)
-        # mu_theta_in2_var = (self.muon_theta_in_unc**2).reshape(self.n_mu, 1, 1, 1)
-        # mu_theta_out2_var = (self.muon_theta_out_unc**2).reshape(self.n_mu, 1, 1, 1)
-        # mu_mom2_var = (self.muon_mom_unc**2).reshape(self.n_mu, 1, 1, 1)
+        if self.use_per_mu_x0:
+            self._muon_x0_preds = self.x0_from_scatters(
+                deltaz=self.size, total_scatter=self.muon_total_scatter, theta_in=self.muon_theta_in, theta_out=self.muon_theta_out, mom=self.muon_mom
+            )  # (mu, x0)
 
-        # Compute weighted RMS of scatter variables per voxel
-        vox_tot_scatter_rms = self._weighted_rms(
-            self.muon_total_scatter.reshape(self.n_mu, 1, 1, 1), torch.nan_to_num(vox_prob_eff_wgt / mu_tot_scatter2_var)
-        )  # (z,x,y)
-        vox_theta_in_rms = self._weighted_rms(self.muon_theta_in.reshape(self.n_mu, 1, 1, 1), torch.nan_to_num(vox_prob_eff_wgt / mu_theta_in2_var))
-        vox_theta_out_rms = self._weighted_rms(self.muon_theta_out.reshape(self.n_mu, 1, 1, 1), torch.nan_to_num(vox_prob_eff_wgt / mu_theta_out2_var))
-        vox_mom_rms = self._weighted_rms(
-            self.muon_mom.reshape(self.n_mu, 1, 1, 1), torch.nan_to_num(vox_prob_eff_wgt / (1 if (mu_mom2_var == 0).all() else mu_mom2_var))
-        )  # Muon momentum may not have uncertainty
+            self._muon_x0_pred_uncs = self.get_muon_x0_pred_uncs()
+            if self.use_rms:
+                var = ((2 * self._muon_x0_preds * self._muon_x0_pred_uncs) ** 2).reshape(self.n_mu, 1, 1, 1)
+                vox_x0_preds = self._weighted_rms(self._muon_x0_preds.reshape(self.n_mu, 1, 1, 1), torch.nan_to_num(vox_prob_eff_wgt / var))
+            else:
+                var = (self._muon_x0_pred_uncs**2).reshape(self.n_mu, 1, 1, 1)
+                vox_x0_preds = self._weighted_mean(self._muon_x0_preds.reshape(self.n_mu, 1, 1, 1), torch.nan_to_num(vox_prob_eff_wgt / var))
 
-        vox_x0_preds = self.x0_from_scatters(
-            deltaz=self.size, scatter_rms=vox_tot_scatter_rms, theta_in_rms=vox_theta_in_rms, theta_out_rms=vox_theta_out_rms, mom_rms=vox_mom_rms
-        )  # (z,x,y)
+        else:
+            if self.use_rms:
+                mu_tot_scatter2_var = ((2 * self.muon_total_scatter * self.muon_total_scatter_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
+                mu_theta_in2_var = ((2 * self.muon_theta_in * self.muon_theta_in_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
+                mu_theta_out2_var = ((2 * self.muon_theta_out * self.muon_theta_out_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
+                mu_mom2_var = ((2 * self.muon_mom * self.muon_mom_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
+
+                # Compute weighted RMS of scatter variables per voxel
+                vox_tot_total_scatter = self._weighted_rms(
+                    self.muon_total_scatter.reshape(self.n_mu, 1, 1, 1), torch.nan_to_num(vox_prob_eff_wgt / mu_tot_scatter2_var)
+                )  # (z,x,y)
+                vox_theta_in = self._weighted_rms(self.muon_theta_in.reshape(self.n_mu, 1, 1, 1), torch.nan_to_num(vox_prob_eff_wgt / mu_theta_in2_var))
+                vox_theta_out = self._weighted_rms(self.muon_theta_out.reshape(self.n_mu, 1, 1, 1), torch.nan_to_num(vox_prob_eff_wgt / mu_theta_out2_var))
+                vox_mom = self._weighted_rms(
+                    self.muon_mom.reshape(self.n_mu, 1, 1, 1), torch.nan_to_num(vox_prob_eff_wgt / (1 if (mu_mom2_var == 0).all() else mu_mom2_var))
+                )  # Muon momentum may not have uncertainty
+
+                vox_x0_preds = self.x0_from_scatters(
+                    deltaz=self.size, total_scatter=vox_tot_total_scatter, theta_in=vox_theta_in, theta_out=vox_theta_out, mom=vox_mom
+                )  # (z,x,y)
+
+            else:  # Mean variables
+                mu_tot_scatter_var = (self.muon_total_scatter_unc**2).reshape(self.n_mu, 1, 1, 1)
+                mu_theta_in_var = (self.muon_theta_in_unc**2).reshape(self.n_mu, 1, 1, 1)
+                mu_theta_out_var = (self.muon_theta_out_unc**2).reshape(self.n_mu, 1, 1, 1)
+                mu_mom_var = (self.muon_mom_unc**2).reshape(self.n_mu, 1, 1, 1)
+
+                # Compute weighted mean of scatter variables per voxel
+                vox_tot_scatter_mean = self._weighted_mean(
+                    self.muon_total_scatter.reshape(self.n_mu, 1, 1, 1), torch.nan_to_num(vox_prob_eff_wgt / mu_tot_scatter_var)
+                )  # (z,x,y)
+                vox_theta_in_mean = self._weighted_mean(self.muon_theta_in.reshape(self.n_mu, 1, 1, 1), torch.nan_to_num(vox_prob_eff_wgt / mu_theta_in_var))
+                vox_theta_out_mean = self._weighted_mean(self.muon_theta_out.reshape(self.n_mu, 1, 1, 1), torch.nan_to_num(vox_prob_eff_wgt / mu_theta_out_var))
+                vox_mom_mean = self._weighted_mean(
+                    self.muon_mom.reshape(self.n_mu, 1, 1, 1), torch.nan_to_num(vox_prob_eff_wgt / (1 if (mu_mom_var == 0).all() else mu_mom_var))
+                )  # Muon momentum may not have uncertainty
+
+                vox_x0_preds = self.x0_from_scatters(
+                    deltaz=self.size, total_scatter=vox_tot_scatter_mean, theta_in=vox_theta_in_mean, theta_out=vox_theta_out_mean, mom=vox_mom_mean
+                )  # (z,x,y)
 
         if vox_x0_preds.isnan().any():
-            print(f"{vox_x0_preds=}")
-            print(f"{vox_prob_eff_wgt.isnan().any()=}")
-            print(f"{mu_tot_scatter2_var.isnan().any()=}")
-            print(f"{mu_theta_in2_var.isnan().any()=}")
-            print(f"{mu_theta_out2_var.isnan().any()=}")
-            print(f"{mu_theta_out2_var.isinf().any()=}")
-            print(f"{mu_theta_out2_var.max()=}")
-            print(f"{mu_mom2_var.isnan().any()=}")
-            print(f"{vox_tot_scatter_rms.isnan().any()=}")
-            print(f"{vox_theta_in_rms.isnan().any()=}")
-            print(f"{vox_theta_out_rms.isnan().any()=}")
-            print(f"{self.muon_theta_out.isnan().any()=}")
-            print(f"{vox_mom_rms.isnan().any()=}")
-            print("vox_prob_eff_wgt")
             raise ValueError("Prediction contains NaN values")
 
         return vox_x0_preds
@@ -176,6 +210,10 @@ class AbsX0Inferer(AbsVolumeInferer):
             print("Warning: unable to scan volume with prescribed number of muons.")
             return None, None
         return self.vox_zxy_x0_preds, self.vox_zxy_inv_weights
+
+    @property
+    def muon_x0_preds(self) -> Optional[Tensor]:
+        return self._muon_x0_preds
 
     @property
     def vox_zxy_x0_preds(self) -> Tensor:
@@ -500,6 +538,8 @@ class DenseBlockClassifierFromX0s(AbsVolumeInferer):
         n_block_voxels: int,
         partial_x0_inferer: Type[AbsX0Inferer],
         volume: Volume,
+        use_per_mu_x0: bool,
+        use_rms: bool,
         use_avgpool: bool = True,
         cut_coef: float = 1e4,
         ratio_offset: float = -1.0,
@@ -507,7 +547,7 @@ class DenseBlockClassifierFromX0s(AbsVolumeInferer):
     ):
         super().__init__(volume=volume)
         self.use_avgpool, self.cut_coef, self.ratio_offset, self.ratio_coef = use_avgpool, cut_coef, ratio_offset, ratio_coef
-        self.x0_inferer = partial_x0_inferer(self.volume)
+        self.x0_inferer = partial_x0_inferer(use_per_mu_x0=use_per_mu_x0, use_rms=use_rms, volume=self.volume)
         self.frac = n_block_voxels / self.volume.centres.numel()
 
     def add_scatters(self, scatters: AbsScatterBatch) -> None:
@@ -545,12 +585,14 @@ class AbsIntClassifierFromX0(AbsVolumeInferer):
         self,
         partial_x0_inferer: Type[AbsX0Inferer],
         volume: Volume,
+        use_per_mu_x0: bool,
+        use_rms: bool,
         output_probs: bool = True,
         class2float: Optional[Callable[[Tensor, Volume], Tensor]] = None,
     ):
         super().__init__(volume=volume)
         self.output_probs, self.class2float = output_probs, class2float
-        self.x0_inferer = partial_x0_inferer(self.volume)
+        self.x0_inferer = partial_x0_inferer(use_per_mu_x0=use_per_mu_x0, use_rms=use_rms, volume=self.volume)
 
     def add_scatters(self, scatters: AbsScatterBatch) -> None:
         self.x0_inferer.add_scatters(scatters)
