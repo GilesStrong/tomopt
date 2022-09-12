@@ -117,9 +117,9 @@ class AbsX0Inferer(AbsVolumeInferer):
         return pred_unc
 
     def get_muon_x0_pred_uncs(self) -> Tensor:
-        jac = torch.nan_to_num(jacobian(self._muon_x0_preds, self._muon_scatter_vars)).sum(2)  # Compute dx0/dvar  (mu, 1, var)
+        jac = torch.nan_to_num(jacobian(self._muon_x0_preds, self._muon_scatter_vars)).sum(2)[:, :, 3:]  # Compute dx0/dvar  (mu, 1, var)
         unc = self._muon_scatter_var_uncs
-        unc = torch.where(torch.isinf(unc), torch.tensor([0]).type(unc.type()), unc)[:, None]  # (mu,1,var)
+        unc = torch.where(torch.isinf(unc), torch.tensor([0]).type(unc.type()), unc)[:, None, 3:]  # (mu,1,var)
 
         # Compute unc^2 = unc_x*unc_y*dx0/dx*dx0/dy summing over all x,y inclusive combinations
         idxs = torch.combinations(torch.arange(0, unc.shape[-1]), with_replacement=True)
@@ -153,10 +153,12 @@ class AbsX0Inferer(AbsVolumeInferer):
 
             self._muon_x0_pred_uncs = self.get_muon_x0_pred_uncs()
             if self.use_rms:
-                var = ((2 * self._muon_x0_preds * self._muon_x0_pred_uncs) ** 2).reshape(self.n_mu, 1, 1, 1)
+                # var = ((2 * self._muon_x0_preds * self._muon_x0_pred_uncs) ** 2).reshape(self.n_mu, 1, 1, 1)
+                var = ((2 * self.muon_total_scatter * self.muon_total_scatter_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
                 vox_x0_preds = self._weighted_rms(self._muon_x0_preds.reshape(self.n_mu, 1, 1, 1), torch.nan_to_num(vox_prob_eff_wgt / var))
             else:
-                var = (self._muon_x0_pred_uncs**2).reshape(self.n_mu, 1, 1, 1)
+                # var = (self._muon_x0_pred_uncs**2).reshape(self.n_mu, 1, 1, 1)
+                var = (self.muon_total_scatter_unc**2).reshape(self.n_mu, 1, 1, 1)
                 vox_x0_preds = self._weighted_mean(self._muon_x0_preds.reshape(self.n_mu, 1, 1, 1), torch.nan_to_num(vox_prob_eff_wgt / var))
 
         else:
