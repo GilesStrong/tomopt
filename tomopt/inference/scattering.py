@@ -56,6 +56,8 @@ class AbsScatterBatch(metaclass=ABCMeta):
     _xyz_out_unc: Optional[Tensor] = None
     _dxy: Optional[Tensor] = None
     _dxy_unc: Optional[Tensor] = None
+    _theta_msc: Optional[Tensor] = None
+    _theta_msc_unc: Optional[Tensor] = None
 
     def __init__(self, mu: MuonBatch, volume: Volume):
         self.mu, self.volume = mu, volume
@@ -231,6 +233,9 @@ class AbsScatterBatch(metaclass=ABCMeta):
         total_scatter = self._compute_dtheta_dphi_scatter(theta_in=theta_in, phi_in=phi_in, theta_out=theta_out, phi_out=phi_out)["total_scatter"]
         keep_mask = (total_scatter != 0) * (~total_scatter.isnan()) * (~total_scatter.isinf())
 
+        theta_msc = self._compute_theta_msc(self.track_in, self.track_out)
+        keep_mask *= (theta_msc != 0) * (~theta_msc.isnan()) * (~theta_msc.isinf())
+
         # Remove muons with tracks parallel to volume
         keep_mask *= (theta_in - (torch.pi / 2) < -1e-5) * (theta_out - (torch.pi / 2) < -1e-5)
 
@@ -367,6 +372,10 @@ class AbsScatterBatch(metaclass=ABCMeta):
         values = self._compute_dtheta_dphi_scatter(theta_in=self.theta_in, phi_in=self.phi_in, theta_out=self.theta_out, phi_out=self.phi_out)
         self._dtheta, self._dphi, self._total_scatter = values["dtheta"], values["dphi"], values["total_scatter"]
         self._dtheta_unc, self._dphi_unc, self._total_scatter_unc = None, None, None
+
+    @staticmethod
+    def _compute_theta_msc(p: Tensor, q: Tensor) -> Tensor:
+        return torch.arccos((p * q).sum(-1, keepdim=True) / (p.norm(dim=-1, keepdim=True) * q.norm(dim=-1, keepdim=True)))
 
     @property
     def poca_xyz(self) -> Tensor:
@@ -563,6 +572,19 @@ class AbsScatterBatch(metaclass=ABCMeta):
         if self._xyz_out_unc is None:
             self._xyz_out_unc = self._compute_out_var_unc(self.xyz_out)
         return self._xyz_out_unc
+
+    @property
+    def theta_msc(self) -> Tensor:
+        if self._theta_msc is None:
+            self._theta_msc = self._compute_theta_msc(self.track_in, self.track_out)
+            self._theta_msc_unc = None
+        return self._theta_msc
+
+    @property
+    def theta_msc_unc(self) -> Tensor:
+        if self._theta_msc_unc is None:
+            self._theta_msc_unc = self._compute_out_var_unc(self.theta_msc)
+        return self._theta_msc_unc
 
     def plot_scatter(self, idx: int) -> None:
         xin, xout = self.hits["above"]["reco_xy"][idx, :, 0].detach().cpu().numpy(), self.hits["below"]["reco_xy"][idx, :, 0].detach().cpu().numpy()

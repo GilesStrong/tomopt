@@ -77,8 +77,8 @@ class AbsX0Inferer(AbsVolumeInferer):
 
         vals["poca"] = torch.cat([sb.poca_xyz for sb in self.scatter_batches], dim=0)
         uncs["poca"] = torch.cat([sb.poca_xyz_unc for sb in self.scatter_batches], dim=0)
-        vals["tot_scatter"] = torch.cat([sb.total_scatter for sb in self.scatter_batches], dim=0)
-        uncs["tot_scatter"] = torch.cat([sb.total_scatter_unc for sb in self.scatter_batches], dim=0)
+        vals["tot_scatter"] = torch.cat([sb.theta_msc if self.use_per_mu_x0 else sb.total_scatter for sb in self.scatter_batches], dim=0)
+        uncs["tot_scatter"] = torch.cat([sb.theta_msc_unc if self.use_per_mu_x0 else sb.total_scatter_unc for sb in self.scatter_batches], dim=0)
         vals["theta_in"] = torch.cat([sb.theta_in for sb in self.scatter_batches], dim=0)
         uncs["theta_in"] = torch.cat([sb.theta_in_unc for sb in self.scatter_batches], dim=0)
         vals["theta_out"] = torch.cat([sb.theta_out for sb in self.scatter_batches], dim=0)
@@ -152,8 +152,7 @@ class AbsX0Inferer(AbsVolumeInferer):
             )  # (mu, x0)
 
             self._muon_x0_pred_uncs = self.get_muon_x0_pred_uncs()
-            print(self._muon_x0_pred_uncs.min(), self._muon_x0_pred_uncs.max())
-            var = (self._muon_x0_pred_uncs**2).reshape(self.n_mu, 1, 1, 1)
+            var = (self._muon_x0_pred_uncs**2).reshape(self.n_mu, 1, 1, 1) + (1e-17)
             # var = (self.muon_total_scatter_unc**2).reshape(self.n_mu, 1, 1, 1)
             vox_x0_preds = self._weighted_mean(self._muon_x0_preds.reshape(self.n_mu, 1, 1, 1), torch.nan_to_num(vox_prob_eff_wgt / var))
 
