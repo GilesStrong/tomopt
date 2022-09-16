@@ -2,7 +2,7 @@ import pytest
 from pytest_mock import mocker  # noqa F401
 import numpy as np
 from unittest.mock import patch
-from typing import Tuple, Type
+from typing import Tuple
 import types
 
 import torch
@@ -18,8 +18,6 @@ from tomopt.inference import (
     PanelX0Inferer,
     PanelScatterBatch,
     GenScatterBatch,
-    DeepVolumeInferer,
-    WeightedDeepVolumeInferer,
     DenseBlockClassifierFromX0s,
 )
 from tomopt.inference.volume import AbsIntClassifierFromX0
@@ -636,61 +634,61 @@ def test_x0_inferer_scatter_inversion(mocker, voxel_scatter_batch):  # noqa F811
     assert (pred.mean() - x0).abs() < 1e-5
 
 
-@pytest.mark.flaky(max_runs=2, min_passes=1)
-@pytest.mark.parametrize("dvi_class, weighted", [[DeepVolumeInferer, False], [WeightedDeepVolumeInferer, True]])
-def test_deep_volume_inferer(dvi_class: Type[DeepVolumeInferer], weighted: bool):
-    volume = Volume(get_panel_layers(init_res=1e4))
-    gen = MuonGenerator2016.from_volume(volume)
-    mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
-    mu = MuonBatch(mus, init_z=volume.h)
-    volume(mu)
-    sb = PanelScatterBatch(mu=mu, volume=volume)
-    nvalid = len(mu)
+# @pytest.mark.flaky(max_runs=2, min_passes=1)
+# @pytest.mark.parametrize("dvi_class, weighted", [[DeepVolumeInferer, False], [WeightedDeepVolumeInferer, True]])
+# def test_deep_volume_inferer(dvi_class: Type[DeepVolumeInferer], weighted: bool):
+#     volume = Volume(get_panel_layers(init_res=1e4))
+#     gen = MuonGenerator2016.from_volume(volume)
+#     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
+#     mu = MuonBatch(mus, init_z=volume.h)
+#     volume(mu)
+#     sb = PanelScatterBatch(mu=mu, volume=volume)
+#     nvalid = len(mu)
 
-    grp_feats = ["pred_x0", "track_xy", "delta_angles", "theta_msc", "track_angles", "poca", "dpoca", "voxels"]  # 1  # 4  # 2  # 1  # 4  # 3  # 3->4  # 0->3
-    n_infeats = 18
+#     grp_feats = ["pred_x0", "track_xy", "delta_angles", "theta_msc", "track_angles", "poca", "dpoca", "voxels"]  # 1  # 4  # 2  # 1  # 4  # 3  # 3->4  # 0->3
+#     n_infeats = 18
 
-    class MockModel(nn.Module):
-        def __init__(self) -> None:
-            super().__init__()
-            self.layer = nn.Linear(600 * (n_infeats + 4 + weighted), 1)
-            self.act = nn.Sigmoid()
+#     class MockModel(nn.Module):
+#         def __init__(self) -> None:
+#             super().__init__()
+#             self.layer = nn.Linear(600 * (n_infeats + 4 + weighted), 1)
+#             self.act = nn.Sigmoid()
 
-        def forward(self, x: Tensor) -> Tensor:
-            return self.act(self.layer(x.mean(2).flatten()[None]))
+#         def forward(self, x: Tensor) -> Tensor:
+#             return self.act(self.layer(x.mean(2).flatten()[None]))
 
-    inferer = dvi_class(model=MockModel(), base_inferer=PanelX0Inferer(volume=volume), volume=volume, grp_feats=grp_feats, include_unc=True)
+#     inferer = dvi_class(model=MockModel(), base_inferer=PanelX0Inferer(volume=volume), volume=volume, grp_feats=grp_feats, include_unc=True)
 
-    pt, pt_unc = inferer.get_base_predictions(scatters=sb)
-    assert len(pt) == len(sb.location)
-    assert pt.shape == pt_unc.shape
+#     pt, pt_unc = inferer.get_base_predictions(scatters=sb)
+#     assert len(pt) == len(sb.location)
+#     assert pt.shape == pt_unc.shape
 
-    assert len(inferer.in_vars) == 0
-    assert len(inferer.in_var_uncs) == 0
-    assert len(inferer.efficiencies) == 0
-    inferer.add_scatters(sb)
-    assert len(inferer.in_vars) == 1
-    assert len(inferer.in_var_uncs) == 1
-    assert len(inferer.efficiencies) == 1
-    assert inferer.in_vars[-1].shape == torch.Size((nvalid, n_infeats))
-    assert inferer.in_var_uncs[-1].shape == torch.Size((nvalid, n_infeats))
-    assert len(inferer.efficiencies[-1]) == nvalid
+#     assert len(inferer.in_vars) == 0
+#     assert len(inferer.in_var_uncs) == 0
+#     assert len(inferer.efficiencies) == 0
+#     inferer.add_scatters(sb)
+#     assert len(inferer.in_vars) == 1
+#     assert len(inferer.in_var_uncs) == 1
+#     assert len(inferer.efficiencies) == 1
+#     assert inferer.in_vars[-1].shape == torch.Size((nvalid, n_infeats))
+#     assert inferer.in_var_uncs[-1].shape == torch.Size((nvalid, n_infeats))
+#     assert len(inferer.efficiencies[-1]) == nvalid
 
-    inputs = inferer._build_inputs(inferer.in_vars[0])
-    assert inputs.shape == torch.Size((600, nvalid, n_infeats + 4))  # +4 since voxels and dpoca_r
+#     inputs = inferer._build_inputs(inferer.in_vars[0])
+#     assert inputs.shape == torch.Size((600, nvalid, n_infeats + 4))  # +4 since voxels and dpoca_r
 
-    pred, weight = inferer.get_prediction()
-    assert pred.shape == torch.Size((1, 1))
-    assert weight.shape == torch.Size(())
+#     pred, weight = inferer.get_prediction()
+#     assert pred.shape == torch.Size((1, 1))
+#     assert weight.shape == torch.Size(())
 
-    for l in volume.get_detectors():
-        for panel in l.panels:
-            assert torch.autograd.grad(pred.abs().sum(), panel.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-            assert torch.autograd.grad(pred.abs().sum(), panel.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-            assert torch.autograd.grad(pred.abs().sum(), panel.z, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-            assert torch.autograd.grad(weight.abs().sum(), panel.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-            assert torch.autograd.grad(weight.abs().sum(), panel.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-            assert torch.autograd.grad(weight.abs().sum(), panel.z, retain_graph=True, allow_unused=True)[0].abs().sum() == 0
+#     for l in volume.get_detectors():
+#         for panel in l.panels:
+#             assert torch.autograd.grad(pred.abs().sum(), panel.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+#             assert torch.autograd.grad(pred.abs().sum(), panel.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+#             assert torch.autograd.grad(pred.abs().sum(), panel.z, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+#             assert torch.autograd.grad(weight.abs().sum(), panel.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+#             assert torch.autograd.grad(weight.abs().sum(), panel.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+#             assert torch.autograd.grad(weight.abs().sum(), panel.z, retain_graph=True, allow_unused=True)[0].abs().sum() == 0
 
 
 @pytest.mark.flaky(max_runs=2, min_passes=1)

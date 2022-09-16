@@ -9,7 +9,7 @@ import torch.nn.functional as F
 from tomopt.core import X0
 from tomopt.volume import Volume, PassiveLayer, VoxelDetectorLayer, PanelDetectorLayer, DetectorPanel, DetectorHeatMap
 from tomopt.muon import MuonBatch, MuonGenerator2016
-from tomopt.inference import VoxelScatterBatch, VoxelX0Inferer, PanelScatterBatch, PanelX0Inferer, DeepVolumeInferer
+from tomopt.inference import VoxelScatterBatch, VoxelX0Inferer, PanelScatterBatch, PanelX0Inferer
 from tomopt.optimisation import VoxelX0Loss, VolumeClassLoss, MuonResampler
 
 LW = Tensor([1, 1])
@@ -167,30 +167,30 @@ def heatmap_inferer() -> PanelX0Inferer:
     return inf
 
 
-@pytest.fixture
-def deep_inferer() -> DeepVolumeInferer:
-    volume = Volume(get_panel_layers())
-    gen = MuonGenerator2016.from_volume(volume)
-    mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
-    mu = MuonBatch(mus, init_z=volume.h)
-    volume._target = Tensor([1])
-    volume(mu)
-    sb = PanelScatterBatch(mu=mu, volume=volume)
-    grp_feats = ["pred_x0", "delta_angles", "theta_msc", "voxels"]
-    n_infeats = 4
+# @pytest.fixture
+# def deep_inferer() -> DeepVolumeInferer:
+#     volume = Volume(get_panel_layers())
+#     gen = MuonGenerator2016.from_volume(volume)
+#     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
+#     mu = MuonBatch(mus, init_z=volume.h)
+#     volume._target = Tensor([1])
+#     volume(mu)
+#     sb = PanelScatterBatch(mu=mu, volume=volume)
+#     grp_feats = ["pred_x0", "delta_angles", "theta_msc", "voxels"]
+#     n_infeats = 4
 
-    class MockModel(nn.Module):
-        def __init__(self) -> None:
-            super().__init__()
-            self.layer = nn.Linear(600 * (n_infeats + 3), 1)
-            self.act = nn.Sigmoid()
+#     class MockModel(nn.Module):
+#         def __init__(self) -> None:
+#             super().__init__()
+#             self.layer = nn.Linear(600 * (n_infeats + 3), 1)
+#             self.act = nn.Sigmoid()
 
-        def forward(self, x: Tensor) -> Tensor:
-            return self.act(self.layer(x.mean(2).flatten()[None]))
+#         def forward(self, x: Tensor) -> Tensor:
+#             return self.act(self.layer(x.mean(2).flatten()[None]))
 
-    inf = DeepVolumeInferer(model=MockModel(), base_inferer=PanelX0Inferer(volume=volume), volume=volume, grp_feats=grp_feats)
-    inf.add_scatters(sb)
-    return inf
+#     inf = DeepVolumeInferer(model=MockModel(), base_inferer=PanelX0Inferer(volume=volume), volume=volume, grp_feats=grp_feats)
+#     inf.add_scatters(sb)
+#     return inf
 
 
 def test_forwards_voxel(voxel_inferer):
