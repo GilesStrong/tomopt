@@ -177,9 +177,7 @@ class AbsX0Inferer(AbsVolumeInferer):
 
     @property
     def vox_zxy_inv_weights(self) -> Tensor:
-        return (
-            None  # self.muon_efficiency.reshape(self.n_mu, 1, 1, 1) / (self.vox_zxy_x0_pred_uncs**2)  # These divide the loss per voxel: vox_loss / inv_weight
-        )
+        return self.muon_efficiency.sum()
 
     @property
     def muon_probs_per_voxel_zxy(self) -> Tensor:  # (mu,z,x,y)
