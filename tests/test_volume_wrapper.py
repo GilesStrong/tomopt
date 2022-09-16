@@ -298,7 +298,7 @@ def test_volume_wrapper_scan_volume(state, mocker):  # noqa F811
     assert cb.on_x0_pred_begin.call_count == 1
     assert cb.on_x0_pred_end.call_count == 1
     assert vw.fit_params.pred.shape == torch.Size((6, 10, 10))
-    assert vw.fit_params.inv_weight.shape == torch.Size((6, 10, 10))
+    assert vw.fit_params.inv_weight.shape == torch.Size([])
 
     if state == "test":
         assert vw.loss_func.call_count == 0
