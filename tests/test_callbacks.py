@@ -390,11 +390,11 @@ def test_scatter_record():
     vw.fit_params = FitParams(sb=MockScatterBatch(5))
     sr.set_wrapper(vw)
 
-    vw.fit_params.sb.location = locs[:5]
+    vw.fit_params.sb.poca_xyz = locs[:5]
     sr.on_scatter_end()
     assert len(sr.record) == 1
     assert len(sr.record[0]) == 5
-    vw.fit_params.sb.location = locs[5:]
+    vw.fit_params.sb.poca_xyz = locs[5:]
     sr.on_scatter_end()
     assert len(sr.record) == 2
     assert len(sr.record[1]) == 5

@@ -131,8 +131,8 @@ def test_voxel_scatter_batch(mock_show, voxel_scatter_batch):
         assert (sb.above_gen_hits[:, i, :2] == hits["above"]["gen_xy"][:, i]).all()
         assert (sb.below_gen_hits[:, i, :2] == hits["below"]["gen_xy"][:, i]).all()
 
-    assert (loc_xy_unc := sb.location_unc[:, :2].mean()) < 1.0
-    assert (loc_z_unc := sb.location_unc[:, 2].mean()) < 1.5
+    assert (loc_xy_unc := sb.poca_xyz_unc[:, :2].mean()) < 1.0
+    assert (loc_z_unc := sb.poca_xyz_unc[:, 2].mean()) < 1.5
     assert (dxy_unc := sb.dxy_unc.mean()) < 1.0
     assert sb.dtheta_unc.mean() / sb.dtheta.mean() < 10
     assert sb.dphi_unc.mean() / sb.dphi.mean() < 10
@@ -161,8 +161,8 @@ def test_voxel_scatter_batch(mock_show, voxel_scatter_batch):
     sb.plot_scatter(0)
 
     mask = sb.get_scatter_mask()
-    assert sb.location[mask][:, 2].max() < 0.8
-    assert sb.location[mask][:, 2].min() > 0.2
+    assert sb.poca_xyz[mask][:, 2].max() < 0.8
+    assert sb.poca_xyz[mask][:, 2].min() > 0.2
     assert mask.sum() > N / 10  # At least a few of the muons stay inside volume and scatter loc inside passive volume
 
     for l in volume.get_detectors():
@@ -175,8 +175,8 @@ def test_voxel_scatter_batch(mock_show, voxel_scatter_batch):
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
     sb = VoxelScatterBatch(mu=mu, volume=volume)
-    assert sb.location_unc[:, :2].mean() < loc_xy_unc
-    assert sb.location_unc[:, 2].mean() < loc_z_unc
+    assert sb.poca_xyz_unc[:, :2].mean() < loc_xy_unc
+    assert sb.poca_xyz_unc[:, 2].mean() < loc_z_unc
     assert sb.dxy_unc.mean() < dxy_unc
     assert sb.theta_msc_unc.mean() / sb.theta_msc.abs().mean() < theta_msc_unc
     assert sb.theta_out_unc.mean() / sb.theta_out.abs().mean() < theta_out_unc
@@ -199,8 +199,8 @@ def test_panel_scatter_batch(mock_show, panel_scatter_batch):
         assert (sb.above_gen_hits[:, i, :2] == hits["above"]["gen_xy"][:, i]).all()
         assert (sb.below_gen_hits[:, i, :2] == hits["below"]["gen_xy"][:, i]).all()
 
-    assert (loc_xy_unc := sb.location_unc[:, :2].mean()) < 1.0
-    assert (loc_z_unc := sb.location_unc[:, 2].mean()) < 1.5
+    assert (loc_xy_unc := sb.poca_xyz_unc[:, :2].mean()) < 1.0
+    assert (loc_z_unc := sb.poca_xyz_unc[:, 2].mean()) < 1.5
     assert (dxy_unc := sb.dxy_unc.mean()) < 1.0
     assert sb.dtheta_unc.mean() / sb.dtheta.mean() < 10
     assert sb.dphi_unc.mean() / sb.dphi.mean() < 10
@@ -234,8 +234,8 @@ def test_panel_scatter_batch(mock_show, panel_scatter_batch):
     sb.plot_scatter(0)
 
     mask = sb.get_scatter_mask()
-    assert sb.location[mask][:, 2].max() < 0.8
-    assert sb.location[mask][:, 2].min() > 0.2
+    assert sb.poca_xyz[mask][:, 2].max() < 0.8
+    assert sb.poca_xyz[mask][:, 2].min() > 0.2
     assert mask.sum() > N / 4  # At least a quarter of the muons stay inside volume and scatter loc inside passive volume
 
     for l in volume.get_detectors():
@@ -251,8 +251,8 @@ def test_panel_scatter_batch(mock_show, panel_scatter_batch):
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
     sb = PanelScatterBatch(mu=mu, volume=volume)
-    assert sb.location_unc[:, :2].mean() < loc_xy_unc
-    assert sb.location_unc[:, 2].mean() < loc_z_unc
+    assert sb.poca_xyz_unc[:, :2].mean() < loc_xy_unc
+    assert sb.poca_xyz_unc[:, 2].mean() < loc_z_unc
     assert sb.dxy_unc.mean() < dxy_unc
     assert sb.theta_msc_unc.mean() / sb.theta_msc.abs().mean() < theta_msc_unc
     assert sb.theta_out_unc.mean() / sb.theta_out.abs().mean() < theta_out_unc
@@ -343,7 +343,7 @@ def test_scatter_batch_compute(mocker, voxel_scatter_batch):  # noqa F811
     mocker.patch("tomopt.inference.scattering.jacobian", mock_jac)
 
     sb = VoxelScatterBatch(mu=mu, volume=volume)
-    assert (sb.location - Tensor([[0.0, 0.5, 0.5]])).sum().abs() < 1e-3
+    assert (sb.poca_xyz - Tensor([[0.0, 0.5, 0.5]])).sum().abs() < 1e-3
     assert (sb.dxy - Tensor([[0.0, 0.0]])).sum().abs() < 1e-3
     assert (sb.theta_in - (torch.pi / 4)).sum().abs() < 1e-3
     assert (sb.theta_out - (torch.pi / 4)).sum().abs() < 1e-3
@@ -398,7 +398,7 @@ def test_gen_scatter_batch_compute(mocker, voxel_scatter_batch):  # noqa F811
 
     sb = GenScatterBatch(mu=mu, volume=volume)
 
-    assert (sb.location - Tensor([[0.0, 0.5, 0.5]])).sum().abs() < 1e-3
+    assert (sb.poca_xyz - Tensor([[0.0, 0.5, 0.5]])).sum().abs() < 1e-3
     assert (sb.dxy - Tensor([[0.0, 0.0]])).sum().abs() < 1e-3
     assert (sb.theta_in - (torch.pi / 4)).sum().abs() < 1e-3
     assert (sb.theta_out - (torch.pi / 4)).sum().abs() < 1e-3
@@ -437,8 +437,8 @@ def test_voxel_x0_inferer_methods():
     sb = VoxelScatterBatch(mu=mu, volume=volume)
     inferer = VoxelX0Inferer(volume=volume)
 
-    pt, pt_unc = inferer.muon_x0_from_scatters(scatters=sb)
-    assert len(pt) == len(sb.location)
+    pt, pt_unc = inferer.x0_from_scatters(scatters=sb)
+    assert len(pt) == len(sb.poca_xyz)
     assert pt.shape == pt_unc.shape
 
     mask = ((~pt.isnan()) * (~pt_unc.isnan())).bool()
@@ -500,8 +500,8 @@ def test_panel_x0_inferer_methods():
     sb = PanelScatterBatch(mu=mu, volume=volume)
     inferer = PanelX0Inferer(volume=volume)
 
-    pt, pt_unc = inferer.muon_x0_from_scatters(scatters=sb)
-    assert len(pt) == len(sb.location)
+    pt, pt_unc = inferer.x0_from_scatters(scatters=sb)
+    assert len(pt) == len(sb.poca_xyz)
     assert pt.shape == pt_unc.shape
 
     mask = ((~pt.isnan()) * (~pt_unc.isnan())).bool()
@@ -629,7 +629,7 @@ def test_x0_inferer_scatter_inversion(mocker, voxel_scatter_batch):  # noqa F811
     mocker.patch.object(sb, "get_scatter_mask", lambda: mask)
 
     mocker.patch("tomopt.inference.volume.jacobian", lambda i, j: torch.ones((len(i), 1, 7), device=i.device))  # remove randomness
-    pred, _ = inferer.muon_x0_from_scatters(scatters=sb)
+    pred, _ = inferer.x0_from_scatters(scatters=sb)
 
     assert (pred.mean() - x0).abs() < 1e-5
 
@@ -660,7 +660,7 @@ def test_x0_inferer_scatter_inversion(mocker, voxel_scatter_batch):  # noqa F811
 #     inferer = dvi_class(model=MockModel(), base_inferer=PanelX0Inferer(volume=volume), volume=volume, grp_feats=grp_feats, include_unc=True)
 
 #     pt, pt_unc = inferer.get_base_predictions(scatters=sb)
-#     assert len(pt) == len(sb.location)
+#     assert len(pt) == len(sb.poca_xyz)
 #     assert pt.shape == pt_unc.shape
 
 #     assert len(inferer.in_vars) == 0

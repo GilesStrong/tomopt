@@ -10,7 +10,7 @@ from tomopt.core import X0
 from tomopt.volume import Volume, PassiveLayer, VoxelDetectorLayer, PanelDetectorLayer, DetectorPanel, DetectorHeatMap
 from tomopt.muon import MuonBatch, MuonGenerator2016
 from tomopt.inference import VoxelScatterBatch, VoxelX0Inferer, PanelScatterBatch, PanelX0Inferer
-from tomopt.optimisation import VoxelX0Loss, VolumeClassLoss, MuonResampler
+from tomopt.optimisation import VoxelX0Loss, MuonResampler
 
 LW = Tensor([1, 1])
 SZ = 0.1
@@ -241,16 +241,16 @@ def test_forwards_heatmap(heatmap_inferer):
             assert torch.autograd.grad(loss_val, p.z, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
 
 
-def test_forwards_deep_panel(deep_inferer):
-    pred, weight = deep_inferer.get_prediction()
-    loss_func = VolumeClassLoss(target_budget=1, cost_coef=1e-5, x02id={1: 1})
-    loss_val = loss_func(pred, weight, deep_inferer.volume)
+# def test_forwards_deep_panel(deep_inferer):
+#     pred, weight = deep_inferer.get_prediction()
+#     loss_func = VolumeClassLoss(target_budget=1, cost_coef=1e-5, x02id={1: 1})
+#     loss_val = loss_func(pred, weight, deep_inferer.volume)
 
-    for l in deep_inferer.volume.get_detectors():
-        for p in l.panels:
-            assert torch.autograd.grad(loss_val, p.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-            assert torch.autograd.grad(loss_val, p.z, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-            assert torch.autograd.grad(loss_val, p.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+#     for l in deep_inferer.volume.get_detectors():
+#         for p in l.panels:
+#             assert torch.autograd.grad(loss_val, p.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+#             assert torch.autograd.grad(loss_val, p.z, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+#             assert torch.autograd.grad(loss_val, p.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
 
 
 def test_backwards_voxel(voxel_inferer):
@@ -342,23 +342,23 @@ def test_backwards_heatmap(heatmap_inferer):
             assert p.norm != Tensor([1])
 
 
-def test_backwards_deep_panel(deep_inferer):
-    pred, weight = deep_inferer.get_prediction()
-    loss_func = VolumeClassLoss(target_budget=1, cost_coef=0.15, x02id={1: 1})
-    loss_val = loss_func(pred, weight, deep_inferer.volume)
-    opt = torch.optim.SGD(deep_inferer.volume.parameters(), lr=1)
-    opt.zero_grad()
-    loss_val.backward()
-    for p in deep_inferer.volume.parameters():
-        assert p.grad is not None
-    opt.step()
-    for l in deep_inferer.volume.get_detectors():
-        for i, p in enumerate(l.panels):
-            assert (p.xy != Tensor([0.5, 0.5])).all()
-            if l.pos == "above":
-                assert (p.z != Tensor([1 - (i * (2 * SZ) / N_PANELS)])).all()
-            else:
-                assert (p.z != Tensor([0.2 - (i * (2 * SZ) / N_PANELS)])).all()
-            assert (p.xy_span != Tensor([0.5, 0.5])).all()
-            assert p.resolution == Tensor([INIT_RES])
-            assert p.efficiency == Tensor([INIT_EFF])
+# def test_backwards_deep_panel(deep_inferer):
+#     pred, weight = deep_inferer.get_prediction()
+#     loss_func = VolumeClassLoss(target_budget=1, cost_coef=0.15, x02id={1: 1})
+#     loss_val = loss_func(pred, weight, deep_inferer.volume)
+#     opt = torch.optim.SGD(deep_inferer.volume.parameters(), lr=1)
+#     opt.zero_grad()
+#     loss_val.backward()
+#     for p in deep_inferer.volume.parameters():
+#         assert p.grad is not None
+#     opt.step()
+#     for l in deep_inferer.volume.get_detectors():
+#         for i, p in enumerate(l.panels):
+#             assert (p.xy != Tensor([0.5, 0.5])).all()
+#             if l.pos == "above":
+#                 assert (p.z != Tensor([1 - (i * (2 * SZ) / N_PANELS)])).all()
+#             else:
+#                 assert (p.z != Tensor([0.2 - (i * (2 * SZ) / N_PANELS)])).all()
+#             assert (p.xy_span != Tensor([0.5, 0.5])).all()
+#             assert p.resolution == Tensor([INIT_RES])
+#             assert p.efficiency == Tensor([INIT_EFF])
