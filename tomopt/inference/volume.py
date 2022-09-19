@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from typing import Tuple, Optional, Dict, List, Type, Callable
+import math
 
 import torch
 from torch import Tensor
@@ -162,7 +163,7 @@ class AbsX0Inferer(AbsVolumeInferer):
         )  # Muon momentum may not have uncertainty
 
         vox_x0_preds = self.x0_from_scatters(
-            deltaz=self.size, total_scatter=vox_tot_total_scatter, theta_in=vox_theta_in, theta_out=vox_theta_out, mom=vox_mom
+            deltaz=self.size, total_scatter=vox_tot_total_scatter / math.sqrt(2), theta_in=vox_theta_in, theta_out=vox_theta_out, mom=vox_mom
         )  # (z,x,y)
 
         if vox_x0_preds.isnan().any():
@@ -485,6 +486,9 @@ class DenseBlockClassifierFromX0s(AbsVolumeInferer):
     def add_scatters(self, scatters: AbsScatterBatch) -> None:
         self.x0_inferer.add_scatters(scatters)
 
+    def _reset_vars(self) -> None:
+        self.x0_inferer._reset_vars()
+
     def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
         return self.x0_inferer.compute_efficiency(scatters=scatters)
 
@@ -524,6 +528,9 @@ class AbsIntClassifierFromX0(AbsVolumeInferer):
 
     def add_scatters(self, scatters: AbsScatterBatch) -> None:
         self.x0_inferer.add_scatters(scatters)
+
+    def _reset_vars(self) -> None:
+        self.x0_inferer._reset_vars()
 
     def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
         return self.x0_inferer.compute_efficiency(scatters=scatters)

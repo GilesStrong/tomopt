@@ -4,6 +4,7 @@ import numpy as np
 from unittest.mock import patch
 from typing import Tuple
 import types
+import math
 
 import torch
 from torch import Tensor, nn
@@ -500,21 +501,58 @@ def test_x0_inferer_scatter_inversion(mocker, panel_scatter_batch):  # noqa F811
     dtheta, dphi = scatters["dtheta_vol"], scatters["dphi_vol"]
 
     mu_start = mu.copy()
-    sb._theta_in = mu_start.theta[:, None]
-    sb._theta_in_unc = torch.ones_like(dtheta[:, None])
     mu.scatter_dtheta_dphi(dtheta_vol=dtheta, dphi_vol=dphi)
-    sb._theta_out = mu.theta[:, None]
-    sb._theta_out_unc = torch.ones_like(dtheta[:, None])
-    sb._theta_msc = torch.sqrt((dtheta**2) + (dphi**2))[:, None]
-    sb._theta_msc_unc = torch.ones_like(dtheta[:, None])
-
-    mask = torch.ones_like(mu.theta) > 0
-    mocker.patch.object(sb, "get_scatter_mask", lambda: mask)
-
-    mocker.patch("tomopt.inference.volume.jacobian", lambda i, j: torch.ones((len(i), 1, 7), device=i.device))  # remove randomness
-    pred, _ = inferer.x0_from_scatters(scatters=sb)
+    pred = inferer.x0_from_scatters(
+        deltaz=SZ,
+        total_scatter=torch.sqrt((dtheta**2) + (dphi**2))[:, None] / math.sqrt(2),
+        theta_in=mu_start.theta[:, None],
+        theta_out=mu.theta[:, None],
+        mom=mu.mom[:, None],
+    )
 
     assert (pred.mean() - x0).abs() < 1e-4
+
+
+def test_x0_inferer_scatter_inversion_via_scatter_batch():
+    gen = MuonGenerator2016((0, 1), (0, 1), fixed_mom=5)
+    muons = MuonBatch(gen(10000), init_z=1)
+    x0 = torch.ones(len(muons)) * X0["lead"]
+    layer = PassiveLayer(lw=Tensor([1, 1]), z=1, size=0.1)
+    pdg_scattering = layer._pdg_scatter(x0=x0[:, None], deltaz=0.01, theta_xy=muons.theta_xy, mom=muons.mom[:, None])
+
+    muons.append_hits({"reco_xy": muons.xy.detach().clone(), "gen_xy": muons.xy.detach().clone(), "z": muons.z.expand_as(muons.x)[:, None]}, pos="above")
+    muons.propagate(0.1)
+    muons.append_hits({"reco_xy": muons.xy.detach().clone(), "gen_xy": muons.xy.detach().clone(), "z": muons.z.expand_as(muons.x)[:, None]}, pos="above")
+    muons.propagate(0.01)
+    muons.scatter_dtheta_dphi(dtheta_vol=pdg_scattering["dtheta_vol"], dphi_vol=pdg_scattering["dphi_vol"])
+    muons.append_hits({"reco_xy": muons.xy.detach().clone(), "gen_xy": muons.xy.detach().clone(), "z": muons.z.expand_as(muons.x)[:, None]}, pos="below")
+    muons.propagate(0.1)
+    muons.append_hits({"reco_xy": muons.xy.detach().clone(), "gen_xy": muons.xy.detach().clone(), "z": muons.z.expand_as(muons.x)[:, None]}, pos="below")
+
+    class MockVolume:
+        lw = Tensor([10, 10])
+        passive_size = 0.01
+        device = torch.device("cpu")
+
+        def get_passive_z_range(self):
+            return (0.89, 0.9)
+
+        def get_passives(self):
+            return [1]
+
+    volume = MockVolume()
+    sb = GenScatterBatch(muons, volume=volume)
+    inferer = PanelX0Inferer(volume=volume)
+
+    pred = inferer.x0_from_scatters(
+        deltaz=0.01,
+        total_scatter=sb.total_scatter.square().mean().sqrt() / math.sqrt(2),
+        theta_in=sb.theta_in.square().mean().sqrt(),
+        theta_out=sb.theta_out.square().mean().sqrt(),
+        mom=sb.mu.mom[:, None].square().mean().sqrt(),
+    )
+
+    assert (pred - X0["lead"]).abs() < 1e-4
 
 
 # @pytest.mark.flaky(max_runs=2, min_passes=1)
