@@ -19,7 +19,7 @@ class ULorryPassiveGenerator(AbsPassiveGenerator):
     def __init__(
         self,
         volume: Volume,
-        u_volume: float,
+        u_volume: float,  # [m3]
         u_prob: float = 0.5,
         fill_frac: float = 0.8,
         x0_lorry: float = X0["iron"],
@@ -28,24 +28,30 @@ class ULorryPassiveGenerator(AbsPassiveGenerator):
         super().__init__(volume=volume, materials=["iron", "uranium"])
         self.u_volume, self.u_prob, self.fill_frac, self.x0_lorry, self.bkg_materials = u_volume, u_prob, fill_frac, x0_lorry, bkg_materials
         self.bkg_x0s = Tensor([X0[m] for m in self.bkg_materials], device=self.volume.device)
-        self.n_u_voxels = np.max((1, self.u_volume // (self.size**3)))
+        self.n_u_voxels = np.max((1, np.round(self.u_volume / (self.size**3), decimals=3)))
         self.xy_shp = (self.lw / self.size).astype(int).tolist()
         self.bkg_z_range = ((self.z_range[0]) + self.size, self.fill_frac * self.z_range[1])
+        self._compute_sizes()
+
+    def _compute_sizes(self) -> None:
+        max_n = max((np.max(self.xy_shp), np.round((self.bkg_z_range[1] - self.bkg_z_range[0]) / self.size)))
+        print(max_n)
+        szs = torch.combinations(torch.arange(1, max_n + 1), r=3, with_replacement=True)
+        self.szs = szs[szs.prod(-1) * (self.size**3) == self.u_volume].numpy().astype(float)
+        if len(self.szs) == 0:
+            raise ValueError(f"Unable to form blocks of specified volume ({self.u_volume}) from voxels of size {self.size}")
 
     def _get_block_coords(self) -> Tuple[np.ndarray, np.ndarray]:
-        w = int(np.random.uniform(1, np.min(((self.u_volume / (self.size**2)) // self.size, self.xy_shp[0]))))
-        h = int(
-            np.random.uniform(1, np.min(((self.u_volume / (self.size * w * self.size)) // self.size, (self.bkg_z_range[1] - self.bkg_z_range[0]) / self.size)))
-        )
-        l = int(np.min(((self.u_volume / (w * self.size * h * self.size)) // self.size, self.xy_shp[1])))
-        block_size = np.hstack((w, l, h)).astype(float)
-        block_size[2] *= self.size
+        i = np.random.randint(len(self.szs))
+        block_size = np.random.choice(self.szs[i], size=3, replace=False)
+        block_size[2] = block_size[2] * self.size
 
+        print(block_size)
         block_low = np.hstack(
             (
-                int(np.random.uniform(0, self.xy_shp[0] - block_size[0])),
-                int(np.random.uniform(0, self.xy_shp[1] - block_size[1])),
-                np.random.uniform(self.bkg_z_range[0], self.bkg_z_range[1] - block_size[2]),
+                int(np.random.uniform(0, self.xy_shp[0] - block_size[0])),  # voxels
+                int(np.random.uniform(0, self.xy_shp[1] - block_size[1])),  # voxels
+                np.random.uniform(self.bkg_z_range[0], self.bkg_z_range[1] - block_size[2]),  # m
             )
         )
         block_high = block_low + block_size

@@ -7,7 +7,7 @@ from torch import Tensor, nn
 import torch.nn.functional as F
 
 from tomopt.volume.layer import Layer
-from tomopt.volume import PassiveLayer, VoxelDetectorLayer, Volume, PanelDetectorLayer, DetectorPanel
+from tomopt.volume import PassiveLayer, Volume, PanelDetectorLayer, DetectorPanel
 from tomopt.optimisation import MuonResampler
 from tomopt.muon import MuonBatch, MuonGenerator2016
 from tomopt.core import X0
@@ -18,23 +18,6 @@ LW = Tensor([1, 1])
 SZ = 0.1
 N = 1000
 Z = 1
-
-
-def get_voxel_layers():
-    layers = []
-    init_eff = 0.5
-    init_res = 1000
-    pos = "above"
-    for z, d in zip(np.arange(Z, 0, -SZ), [1, 1, 0, 0, 0, 0, 0, 0, 1, 1]):
-        if d:
-            layers.append(
-                VoxelDetectorLayer(pos=pos, init_eff=init_eff, init_res=init_res, lw=LW, z=z, size=SZ, eff_cost_func=eff_cost, res_cost_func=res_cost)
-            )
-        else:
-            pos = "below"
-            layers.append(PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=z, size=SZ))
-
-    return nn.ModuleList(layers)
 
 
 def get_panel_layers(init_res: float = 1e4, init_eff: float = 0.5, n_panels: int = 4) -> nn.ModuleList:
@@ -156,43 +139,6 @@ def eff_cost(x: Tensor) -> Tensor:
 
 def res_cost(x: Tensor) -> Tensor:
     return F.relu(x / 100) ** 2
-
-
-def test_voxel_detector_layer(batch):
-    dl = VoxelDetectorLayer(pos="above", init_eff=1, init_res=1e3, lw=LW, z=Z, size=SZ, eff_cost_func=eff_cost, res_cost_func=res_cost)
-    assert dl.resolution.mean() == Tensor([1e3])
-    assert dl.efficiency.mean() == Tensor([1])
-    assert dl.type_label == "voxel"
-    assert dl._n_costs == 0
-    with pytest.raises(NotImplementedError):
-        dl.assign_budget(Tensor([2]))
-
-    start = batch.copy()
-    dl(batch)
-    assert torch.abs(batch.z - Tensor([Z - SZ])) < 1e-5
-    assert torch.all(batch.dtheta(start.theta) == 0)  # Detector layers don't scatter
-    assert torch.all(batch.xy != start.xy)
-
-    hits = batch.get_hits((0, 0), LW)
-    assert len(hits) == 1
-    assert hits["above"]["reco_xy"].shape == torch.Size([batch.get_xy_mask((0, 0), LW).sum(), 1, 2])
-    assert hits["above"]["gen_xy"].shape == torch.Size([batch.get_xy_mask((0, 0), LW).sum(), 1, 2])
-    assert torch.abs(hits["above"]["z"][0, 0, 0] - Z + (SZ / 2)) < 1e-5  # Hits located at z-centre of layer
-
-    # every reco hit (x,y) is function of resolution
-    grad = jacobian(hits["above"]["reco_xy"][:, 0], dl.resolution).sum((-1, -2))
-    assert not grad.isnan().any()
-    assert (grad != 0).sum() > 0
-
-    # Conform detector
-    dl = VoxelDetectorLayer(pos="above", init_eff=-1, init_res=1e14, lw=LW, z=Z, size=SZ, eff_cost_func=eff_cost, res_cost_func=res_cost)
-    dl.conform_detector()
-    assert (dl.resolution == 1e7).all()
-    assert (dl.efficiency == 1e-7).all()
-    dl = VoxelDetectorLayer(pos="above", init_eff=10.0, init_res=-10.0, lw=LW, z=Z, size=SZ, eff_cost_func=eff_cost, res_cost_func=res_cost)
-    dl.conform_detector()
-    assert (dl.resolution == 1).all()
-    assert (dl.efficiency == 1).all()
 
 
 def test_panel_detector_layer(mocker, batch):  # noqa F811
@@ -374,30 +320,6 @@ def test_volume_methods(mocker):  # noqa F811
     for i in [0, -1]:
         assert layers[i].assign_budget.call_count == 1
         assert (layers[i].assign_budget.call_args.args[0] == Tensor([1, 1, 1, 1])).all()
-
-
-def test_volume_forward_voxel(batch):
-    layers = get_voxel_layers()
-    volume = Volume(layers=layers)
-    start = batch.copy()
-    volume(batch)
-
-    assert torch.abs(batch.z) <= 1e-5  # Muons traverse whole volume
-    mask = batch.get_xy_mask((0, 0), LW)
-    assert torch.all(batch.dtheta(start.theta)[mask] > 0)  # All masked muons scatter
-
-    hits = batch.get_hits((0, 0), LW)
-    assert "above" in hits and "below" in hits
-    assert hits["above"]["reco_xy"].shape[1] == 2
-    assert hits["below"]["reco_xy"].shape[1] == 2
-    assert hits["above"]["gen_xy"].shape[1] == 2
-    assert hits["below"]["gen_xy"].shape[1] == 2
-    assert torch.abs(hits["below"]["z"][0, 1, 0] - (SZ / 2)) < 1e-5  # Last Hit located at z-centre of last layer
-
-    for i, l in enumerate(volume.get_detectors()):
-        grad = jacobian(hits["above" if l.z > 0.5 else "below"]["reco_xy"][:, i % 2], l.resolution).sum((-1, -2))
-        assert not grad.isnan().any()
-        assert (grad != 0).sum() > 0  # every reco hit (x,y) is function of resolution
 
 
 @pytest.mark.flaky(max_runs=3, min_passes=2)

@@ -8,10 +8,10 @@ from torch import Tensor
 
 from ..muon import MuonBatch
 from ..volume import Volume, DetectorPanel
-from ..volume.layer import AbsDetectorLayer, VoxelDetectorLayer, PanelDetectorLayer
+from ..volume.layer import PanelDetectorLayer
 from ..utils import jacobian
 
-__all__ = ["VoxelScatterBatch", "PanelScatterBatch", "GenScatterBatch"]
+__all__ = ["PanelScatterBatch", "GenScatterBatch"]
 
 
 class AbsScatterBatch(metaclass=ABCMeta):
@@ -684,28 +684,6 @@ class AbsScatterBatch(metaclass=ABCMeta):
             * (self.poca_xyz[:, 2] >= z[0])
             * (self.poca_xyz[:, 2] < z[1])
         )
-
-
-class VoxelScatterBatch(AbsScatterBatch):
-    def _get_hits(self) -> Dict[str, Dict[str, Tensor]]:
-        self.mu.filter_muons(self.mu.get_xy_mask((0, 0), self.volume.lw))
-        return self.mu.get_hits()
-
-    @staticmethod
-    def _get_hit_uncs(dets: List[AbsDetectorLayer], hits: Tensor) -> Tensor:
-        uncs = []
-        for i, (l, h) in enumerate(zip(dets, hits.unbind(1))):
-            if not isinstance(l, VoxelDetectorLayer):
-                raise ValueError(f"Detector {l} is not a VoxelDetectorLayer")
-            x = l.abs2idx(h)
-            r = 1 / l.resolution[x[:, 0], x[:, 1]]
-            uncs.append(torch.stack([r, r, torch.zeros_like(r, device=r.device)], dim=-1))
-        return torch.stack(uncs, dim=1)  # muons, panels, unc xyz
-
-    def _compute_tracks(self) -> None:
-        self._hit_uncs = self._get_hit_uncs(self.volume.get_detectors(), self.reco_hits)
-        self._track_in, self._track_start_in = self.get_muon_trajectory(self.above_hits, self.above_hit_uncs, self.volume.lw)
-        self._track_out, self._track_start_out = self.get_muon_trajectory(self.below_hits, self.below_hit_uncs, self.volume.lw)
 
 
 class PanelScatterBatch(AbsScatterBatch):

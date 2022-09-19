@@ -19,7 +19,6 @@ from tomopt.optimisation.callbacks import (
     NoMoreNaNs,
     PredHandler,
     MetricLogger,
-    VoxelMetricLogger,
     PanelMetricLogger,
     ScatterRecord,
     HitRecord,
@@ -32,7 +31,7 @@ from tomopt.optimisation.callbacks import (
 )
 from tomopt.optimisation.loss import VoxelX0Loss
 from tomopt.optimisation.wrapper.volume_wrapper import AbsVolumeWrapper, FitParams, PanelVolumeWrapper
-from tomopt.volume import VoxelDetectorLayer, PanelDetectorLayer, DetectorPanel, DetectorHeatMap
+from tomopt.volume import PanelDetectorLayer, DetectorPanel, DetectorHeatMap
 from tomopt.muon import MuonBatch, MuonGenerator2016
 
 LW = Tensor([1, 1])
@@ -57,10 +56,6 @@ def check_callback_base(cb: Callback) -> bool:
     cb.set_wrapper(1)
     assert cb.wrapper == 1
     return True
-
-
-def get_voxel_detector() -> VoxelDetectorLayer:
-    return VoxelDetectorLayer("above", init_res=1, init_eff=1, lw=LW, z=1, size=SZ, eff_cost_func=eff_cost, res_cost_func=res_cost)
 
 
 def get_panel_detector() -> PanelDetectorLayer:
@@ -102,31 +97,6 @@ class MockScatterBatch:
 
     def get_scatter_mask(self):
         return torch.ones(self.n) > 0
-
-
-def test_no_more_nans_voxel():
-    cb = NoMoreNaNs()
-    assert check_callback_base(cb)
-
-    vw = MockWrapper()
-    vw.volume = MockVolume()
-    vw.volume.budget_weights.grad = Tensor([np.nan, np.nan, np.nan])
-    vw.volume.get_detectors = lambda: [l]
-
-    l = get_voxel_detector()
-    l.resolution.grad = l.resolution.data
-    l.efficiency.grad = l.efficiency.data
-    l.resolution.grad[:5, :5] = Tensor([np.nan])
-    l.efficiency.grad[:5, :5] = Tensor([np.nan])
-    assert l.resolution.grad.sum().isnan()
-    assert l.efficiency.grad.sum().isnan()
-    assert vw.volume.budget_weights.grad.sum().isnan()
-
-    cb.set_wrapper(vw)
-    cb.on_backwards_end()
-    assert not l.resolution.grad.sum().isnan()
-    assert not l.efficiency.grad.sum().isnan()
-    assert not vw.volume.budget_weights.grad.sum().isnan()
 
 
 def test_no_more_nans_panel():
@@ -259,16 +229,12 @@ def test_float_pred_handler():
     assert preds[0][1] == 0.5
 
 
-@pytest.mark.parametrize("detector", ["none", "voxel", "panel"])
+@pytest.mark.parametrize("detector", ["none", "panel"])
 def test_metric_logger(detector, mocker):  # noqa F811
     vw = MockWrapper()
     vw.volume = MockVolume()
     if detector == "none":
         logger = MetricLogger()
-    if detector == "voxel":
-        logger = VoxelMetricLogger()
-        det = get_voxel_detector()
-        vw.get_detectors = lambda: [det]
     if detector == "panel":
         logger = PanelMetricLogger()
         det = get_panel_detector()
