@@ -65,6 +65,9 @@ class AbsScatterBatch(metaclass=ABCMeta):
         self._hits = self._get_hits()
         self._compute_scatters()
 
+    def __len__(self) -> int:
+        return len(self.mu)
+
     def _get_hits(self) -> Dict[str, Dict[str, Tensor]]:
         return self.mu.get_hits()
 

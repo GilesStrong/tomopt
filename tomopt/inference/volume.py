@@ -21,7 +21,12 @@ class AbsVolumeInferer(metaclass=ABCMeta):
         self.size, self.lw, self.device = self.volume.passive_size, self.volume.lw, self.volume.device
 
     def add_scatters(self, scatters: AbsScatterBatch) -> None:
+        self._reset_vars()
         self.scatter_batches.append(scatters)
+
+    @abstractmethod
+    def _reset_vars(self) -> None:
+        pass
 
     @abstractmethod
     def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
@@ -52,6 +57,15 @@ class AbsX0Inferer(AbsVolumeInferer):
             len(self.volume.get_passives()),
         ]
         self.shp_zxy = [self.shp_xyz[2], self.shp_xyz[0], self.shp_xyz[1]]
+
+    def _reset_vars(self) -> None:
+        self._n_mu = None
+        self._muon_scatter_vars = None  # (mu, vars)
+        self._muon_scatter_var_uncs = None  # (mu, vars)
+        self._muon_probs_per_voxel_zxy = None  # (mu, z,x,y)
+        self._muon_efficiency = None  # (mu, eff)
+        self._vox_zxy_x0_preds = None  # (z,x,y)
+        self._vox_zxy_x0_pred_uncs = None  # (z,x,y)
 
     def _set_var_dimensions(self) -> None:
         # Configure dimension indexing
@@ -160,7 +174,7 @@ class AbsX0Inferer(AbsVolumeInferer):
         if len(self.scatter_batches) == 0:
             print("Warning: unable to scan volume with prescribed number of muons.")
             return None, None
-        return self.vox_zxy_x0_preds, self.vox_zxy_inv_weights
+        return self.vox_zxy_x0_preds, self.inv_weights
 
     @property
     def vox_zxy_x0_preds(self) -> Tensor:
@@ -171,16 +185,18 @@ class AbsX0Inferer(AbsVolumeInferer):
 
     @property
     def vox_zxy_x0_pred_uncs(self) -> Tensor:
+        r"""Not recommended for use: long calculation; not unit-tested"""
         if self._vox_zxy_x0_pred_uncs is None:
             self._vox_zxy_x0_pred_uncs = self.get_voxel_zxy_x0_pred_uncs()
         return self._vox_zxy_x0_pred_uncs
 
     @property
-    def vox_zxy_inv_weights(self) -> Tensor:
+    def inv_weights(self) -> Tensor:
         return self.muon_efficiency.sum()
 
     @property
     def muon_probs_per_voxel_zxy(self) -> Tensor:  # (mu,z,x,y)
+        r"""Integration tested only"""
         if self._muon_probs_per_voxel_zxy is None:
             # Gaussian spread
             dists = {}
