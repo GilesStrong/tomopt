@@ -1,4 +1,4 @@
-from ...volume import VoxelDetectorLayer, PanelDetectorLayer
+from ...volume import PanelDetectorLayer
 from .callback import Callback
 
 import torch
@@ -11,10 +11,7 @@ class NoMoreNaNs(Callback):
         if hasattr(self.wrapper.volume, "budget_weights"):
             torch.nan_to_num_(self.wrapper.volume.budget_weights.grad, 0)
         for l in self.wrapper.volume.get_detectors():
-            if isinstance(l, VoxelDetectorLayer):
-                torch.nan_to_num_(l.resolution.grad, 0)
-                torch.nan_to_num_(l.efficiency.grad, 0)
-            elif isinstance(l, PanelDetectorLayer):
+            if isinstance(l, PanelDetectorLayer):
                 for p in l.panels:
                     if l.type_label == "heatmap":
                         torch.nan_to_num_(p.mu.grad, 0)

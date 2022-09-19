@@ -5,7 +5,6 @@ import math
 
 import torch
 from torch import nn, Tensor
-import torch.nn.functional as F
 
 from .scatter_model import SCATTER_MODEL
 from ..core import DEVICE, SCATTER_COEF_A, SCATTER_COEF_B
@@ -13,7 +12,7 @@ from ..muon import MuonBatch
 from tomopt.volume.panel import DetectorPanel
 from tomopt.volume.heatmap import DetectorHeatMap
 
-__all__ = ["PassiveLayer", "VoxelDetectorLayer", "PanelDetectorLayer"]
+__all__ = ["PassiveLayer", "PanelDetectorLayer"]
 
 
 class Layer(nn.Module):
@@ -187,65 +186,6 @@ class AbsDetectorLayer(Layer, metaclass=ABCMeta):
         """
 
         pass
-
-
-class VoxelDetectorLayer(AbsDetectorLayer):
-    def __init__(
-        self,
-        pos: str,
-        *,
-        init_res: float,
-        init_eff: float,
-        lw: Tensor,
-        z: float,
-        size: float,
-        eff_cost_func: Callable[[Tensor], Tensor],
-        res_cost_func: Callable[[Tensor], Tensor],
-        device: torch.device = DEVICE,
-    ):
-        super().__init__(pos=pos, lw=lw, z=z, size=size, device=device)
-        self.resolution = nn.Parameter(torch.zeros(list((self.lw / size).long()), device=self.device) + init_res)
-        self.efficiency = nn.Parameter(torch.zeros(list((self.lw / size).long()), device=self.device) + init_eff)
-        self.eff_cost_func, self.res_cost_func = eff_cost_func, res_cost_func
-        self.type_label = "voxel"
-
-    def conform_detector(self) -> None:
-        with torch.no_grad():
-            self.resolution.clamp_(min=1, max=1e7)
-            self.efficiency.clamp_(min=1e-7, max=1)
-
-    def get_hits(self, mu: MuonBatch) -> Dict[str, Tensor]:  # to dense and add precision
-        mask = mu.get_xy_mask((0, 0), self.lw)
-        res = torch.zeros(len(mu), device=self.device)  # Zero detection outside detector
-        xy_idxs = self.mu_abs2idx(mu, mask)
-        res[mask] = self.resolution[xy_idxs[:, 0], xy_idxs[:, 1]]
-        res = F.relu(res[:, None]) + 1e-17  # Negative resolution --> zero+eps due to cost function def
-
-        xy0 = torch.zeros((len(mu), 2), device=self.device)
-        xy0[mask] = xy_idxs.float() * self.size  # Low-left of voxel
-        rel_xy = mu.xy - xy0
-        reco_rel_xy = rel_xy + (torch.randn((len(mu), 2), device=self.device) / res)
-        reco_rel_xy = torch.clamp(reco_rel_xy, 0, self.size - 1e-7)  # Prevent reco hit from exiting triggering voxel
-        reco_xy = xy0 + reco_rel_xy
-
-        hits = {
-            "reco_xy": reco_xy,
-            "gen_xy": mu.xy.detach().clone(),
-            "z": self.z.expand_as(mu.x)[:, None] - (self.size / 2),
-        }
-        return hits
-
-    def forward(self, mu: MuonBatch) -> None:
-        self.scatter_and_propagate(mu, self.size / 2)
-        mu.append_hits(self.get_hits(mu), self.pos)
-        self.scatter_and_propagate(mu, self.size / 2)
-
-    def get_cost(self) -> Tensor:
-        return self.eff_cost_func(self.efficiency).sum() + self.res_cost_func(self.resolution).sum()
-
-    def assign_budget(self, budget: Optional[Tensor]) -> None:
-        if budget is not None:
-            raise NotImplementedError("Please update me to work with a budget!")
 
 
 class PanelDetectorLayer(AbsDetectorLayer):
