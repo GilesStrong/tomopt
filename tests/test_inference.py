@@ -347,10 +347,10 @@ def test_scatter_batch_compute(mocker, voxel_scatter_batch):  # noqa F811
     assert (sb.dxy - Tensor([[0.0, 0.0]])).sum().abs() < 1e-3
     assert (sb.theta_in - (torch.pi / 4)).sum().abs() < 1e-3
     assert (sb.theta_out - (torch.pi / 4)).sum().abs() < 1e-3
-    assert (sb.dtheta).sum().abs() < 1e-3
+    assert (sb.dtheta - (torch.pi / 2)).sum().abs() < 1e-3  # Smallest scattering is in dtheta, rather than dphi
     assert (sb.phi_in).sum().abs() < 1e-3
     assert (sb.phi_out - torch.pi).sum().abs() < 1e-3
-    assert (sb.dphi - torch.pi).sum().abs() < 1e-3
+    assert (sb.dphi).sum().abs() < 1e-3
     assert (sb.dtheta_xy - Tensor([[0, torch.pi / 2]])).sum().abs() < 1e-3
     assert (sb.theta_msc - Tensor([torch.pi / 2])).sum().abs() < 1e-3
 
@@ -402,10 +402,10 @@ def test_gen_scatter_batch_compute(mocker, voxel_scatter_batch):  # noqa F811
     assert (sb.dxy - Tensor([[0.0, 0.0]])).sum().abs() < 1e-3
     assert (sb.theta_in - (torch.pi / 4)).sum().abs() < 1e-3
     assert (sb.theta_out - (torch.pi / 4)).sum().abs() < 1e-3
-    assert (sb.dtheta).sum().abs() < 1e-3
+    assert (sb.dtheta - (torch.pi / 2)).sum().abs() < 1e-3  # Smallest scattering is in dtheta, rather than dphi
     assert (sb.phi_in).sum().abs() < 1e-3
     assert (sb.phi_out - torch.pi).sum().abs() < 1e-3
-    assert (sb.dphi - torch.pi).sum().abs() < 1e-3
+    assert (sb.dphi).sum().abs() < 1e-3
     assert (sb.dtheta_xy - Tensor([[0, torch.pi / 2]])).sum().abs() < 1e-3
     assert (sb.theta_msc - Tensor([torch.pi / 2])).sum().abs() < 1e-3
 
