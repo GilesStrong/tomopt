@@ -339,10 +339,10 @@ class AbsScatterBatch(metaclass=ABCMeta):
 
     @staticmethod
     def _compute_dtheta_dphi_scatter(theta_in: Tensor, phi_in: Tensor, theta_out: Tensor, phi_out: Tensor) -> Dict[str, Tensor]:
-        theta_in = theta_in.squeeze()
-        phi_in = phi_in.squeeze()
-        theta_out = theta_out.squeeze()
-        phi_out = phi_out.squeeze()
+        theta_in = theta_in.squeeze(-1)
+        phi_in = phi_in.squeeze(-1)
+        theta_out = theta_out.squeeze(-1)
+        phi_out = phi_out.squeeze(-1)
 
         dtheta = torch.stack([(theta_in - theta_out).abs(), theta_in + theta_out], dim=-1)
         dphi = torch.min(
