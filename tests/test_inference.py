@@ -729,7 +729,7 @@ def test_abs_int_classifier_from_x0():
     sb = PanelScatterBatch(mu=mu, volume=volume)
 
     class Inf(AbsIntClassifierFromX0):
-        def x02probs(self, vox_preds: Tensor, vox_inv_weights: Tensor) -> Tensor:
+        def x02probs(self, vox_preds: Tensor) -> Tensor:
             return F.softmax(vox_preds.mean([1, 2]), dim=-1)
 
     # Raw probs

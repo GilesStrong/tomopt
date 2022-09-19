@@ -496,12 +496,11 @@ class DenseBlockClassifierFromX0s(AbsVolumeInferer):
     def add_scatters(self, scatters: AbsScatterBatch) -> None:
         self.x0_inferer.add_scatters(scatters)
 
-    def _get_inv_weight(self) -> Tensor:
-        """Maybe alter this to include resolution/pred uncertainties"""
-        return self.x0_inferer.muon_efficiency
+    def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
+        return self.x0_inferer.compute_efficiency(scatters=scatters)
 
     def get_prediction(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
-        vox_preds, _ = self.x0_inferer.get_prediction()
+        vox_preds, inv_weights = self.x0_inferer.get_prediction()
         if self.use_avgpool:
             vox_preds = F.avg_pool3d(vox_preds[None], kernel_size=3, stride=1, padding=1, count_include_pad=False)[0]
 
@@ -517,8 +516,7 @@ class DenseBlockClassifierFromX0s(AbsVolumeInferer):
         r = 2 * (mean_bkg - mean_blk) / (mean_bkg + mean_blk)
         r = (r + self.ratio_offset) * self.ratio_coef
         pred = torch.sigmoid(r)
-        weight = self._get_inv_weight()
-        return pred[None, None], weight
+        return pred[None, None], inv_weights
 
 
 class AbsIntClassifierFromX0(AbsVolumeInferer):
@@ -538,25 +536,23 @@ class AbsIntClassifierFromX0(AbsVolumeInferer):
     def add_scatters(self, scatters: AbsScatterBatch) -> None:
         self.x0_inferer.add_scatters(scatters)
 
-    def _get_inv_weight(self) -> Tensor:
-        """Maybe alter this to include resolution/pred uncertainties"""
-        return self.x0_inferer.muon_efficiency
+    def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
+        return self.x0_inferer.compute_efficiency(scatters=scatters)
 
     @abstractmethod
-    def x02probs(self, vox_preds: Tensor, vox_inv_weights: Tensor) -> Tensor:
+    def x02probs(self, vox_preds: Tensor) -> Tensor:
         """Convert voxelwise X0 predictions to int probabilities"""
         pass
 
     def get_prediction(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
-        vox_preds, vox_inv_weights = self.x0_inferer.get_prediction()
+        vox_preds, inv_weights = self.x0_inferer.get_prediction()
 
-        probs = self.x02probs(vox_preds, vox_inv_weights)
-        weight = self._get_inv_weight()
+        probs = self.x02probs(vox_preds)
         if self.output_probs:
-            return probs, weight
+            return probs, inv_weights
         else:
             pred = torch.argmax(probs, dim=-1)
             if self.class2float is None:
-                return pred, weight
+                return pred, inv_weights
             else:
-                return self.class2float(pred, self.volume), weight
+                return self.class2float(pred, self.volume), inv_weights
