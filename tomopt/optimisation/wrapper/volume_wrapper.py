@@ -16,15 +16,15 @@ from ..callbacks.callback import Callback
 from ..callbacks.cyclic_callbacks import CyclicCallback
 from ..callbacks.eval_metric import EvalMetric
 from ...optimisation.loss.loss import AbsDetectorLoss
-from ...volume import Volume, VoxelDetectorLayer, PanelDetectorLayer
+from ...volume import Volume, PanelDetectorLayer
 from ...volume.layer import AbsDetectorLayer
 from ...core import PartialOpt, DEVICE
 from ...muon import MuonGenerator2016, MuonBatch
 from ...muon.generation import AbsMuonGenerator
-from ...inference.scattering import AbsScatterBatch, VoxelScatterBatch, PanelScatterBatch
-from ...inference.volume import AbsVolumeInferer, VoxelX0Inferer, PanelX0Inferer
+from ...inference.scattering import AbsScatterBatch, PanelScatterBatch
+from ...inference.volume import AbsVolumeInferer, PanelX0Inferer
 
-__all__ = ["VoxelVolumeWrapper", "PanelVolumeWrapper", "HeatMapVolumeWrapper"]
+__all__ = ["PanelVolumeWrapper", "HeatMapVolumeWrapper"]
 
 r"""
 This FitParams and AbsVolumeWrapper are modified versions of the FitParams in LUMIN (https://github.com/GilesStrong/lumin/blob/v0.7.2/lumin/nn/models/abs_model.py#L16)
@@ -351,54 +351,6 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
             self.opts[opt].param_groups[0]["betas"] = (mom, self.opts[opt].param_groups[0]["betas"][1])
         else:
             self.opts[opt].param_groups[0]["momentum"] = mom
-
-
-class VoxelVolumeWrapper(AbsVolumeWrapper):
-    def __init__(
-        self,
-        volume: Volume,
-        *,
-        res_opt: PartialOpt,
-        eff_opt: PartialOpt,
-        loss_func: Optional[AbsDetectorLoss],
-        mu_generator: Optional[AbsMuonGenerator] = None,
-        partial_scatter_inferer: Type[AbsScatterBatch] = VoxelScatterBatch,
-        partial_volume_inferer: Type[AbsVolumeInferer] = VoxelX0Inferer,
-    ):
-        super().__init__(
-            volume=volume,
-            partial_opts={"res_opt": res_opt, "eff_opt": eff_opt},
-            loss_func=loss_func,
-            mu_generator=mu_generator,
-            partial_scatter_inferer=partial_scatter_inferer,
-            partial_volume_inferer=partial_volume_inferer,
-        )
-
-    def _build_opt(self, **kwargs: PartialOpt) -> None:
-        all_dets = self.volume.get_detectors()
-        dets: List[VoxelDetectorLayer] = []
-        for l in all_dets:
-            if isinstance(l, VoxelDetectorLayer):
-                dets.append(l)
-        self.opts = {
-            "res_opt": kwargs["res_opt"]((l.resolution for l in dets)),
-            "eff_opt": kwargs["eff_opt"]((l.efficiency for l in dets)),
-        }
-
-    @classmethod
-    def from_save(
-        cls,
-        name: str,
-        *,
-        volume: Volume,
-        res_opt: PartialOpt,
-        eff_opt: PartialOpt,
-        loss_func: Optional[AbsDetectorLoss],
-        mu_generator: Optional[AbsMuonGenerator] = None,
-    ) -> AbsVolumeWrapper:
-        vw = cls(volume=volume, res_opt=res_opt, eff_opt=eff_opt, loss_func=loss_func, mu_generator=mu_generator)
-        vw.load(name)
-        return vw
 
 
 class PanelVolumeWrapper(AbsVolumeWrapper):

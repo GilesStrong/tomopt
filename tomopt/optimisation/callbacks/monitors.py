@@ -7,7 +7,7 @@ import matplotlib.lines as mlines
 from matplotlib.gridspec import GridSpec
 import seaborn as sns
 import numpy as np
-from typing import List, Dict, Tuple, Optional, TYPE_CHECKING
+from typing import List, Dict, Tuple, Optional
 from collections import defaultdict
 import os
 import imageio
@@ -19,10 +19,7 @@ import torch
 
 from .callback import Callback
 from .eval_metric import EvalMetric
-from ...volume import VoxelDetectorLayer, PanelDetectorLayer
-
-if TYPE_CHECKING:
-    from ...optimisation.wrapper.volume_wrapper import AbsVolumeWrapper
+from ...volume import PanelDetectorLayer
 
 r"""
 This MetricLogger is a modified version of the MetricLogger in LUMIN (https://github.com/GilesStrong/lumin/blob/v0.7.2/lumin/nn/callbacks/monitors.py#L125), distributed under the following lincence:
@@ -44,7 +41,7 @@ Usage is compatible with the AGPL licence underwhich TomOpt is distributed.
 Stated changes: adaption to work with `VolumeWrapper` class, replacement of the telemtry plots with task specific information.
 """
 
-__all__ = ["MetricLogger", "VoxelMetricLogger", "PanelMetricLogger"]
+__all__ = ["MetricLogger", "PanelMetricLogger"]
 
 
 class MetricLogger(Callback):
@@ -291,68 +288,6 @@ class MetricLogger(Callback):
             for c, v in zip(self.metric_cbs, np.array(self.metric_vals)[:, idx]):
                 results[c.name] = v
         return results
-
-
-class VoxelMetricLogger(MetricLogger):
-    def set_wrapper(self, wrapper: AbsVolumeWrapper) -> None:
-        super().set_wrapper(wrapper)
-        self.dets: List[VoxelDetectorLayer] = []
-        for l in self.wrapper.get_detectors():
-            if not isinstance(l, VoxelDetectorLayer):
-                raise ValueError(f"Detector {l} is not a VoxelDetectorLayer")
-            self.dets.append(l)
-
-    def _build_grid_spec(self) -> GridSpec:
-        self.n_dets = len(self.dets)
-        return self.fig.add_gridspec(5 + (self.main_metric_idx is None), self.n_dets)
-
-    def _set_axes_labels(self) -> None:
-        for i in range(self.n_dets):
-            self.eff_axes[i].set_xlabel(f"Det. {i}", fontsize=0.8 * self.lbl_sz, color=self.lbl_col)
-        self.res_axes[0].set_ylabel("Resolution", fontsize=0.8 * self.lbl_sz, color=self.lbl_col)
-        self.eff_axes[0].set_ylabel("Efficiency", fontsize=0.8 * self.lbl_sz, color=self.lbl_col)
-
-    def _prep_plots(self) -> None:
-        super()._prep_plots()
-        if self.show_plots:
-            with sns.axes_style(**self.style):
-                self.res_axes = [self.fig.add_subplot(self.grid_spec[-2:-1, i : i + 1]) for i in range(self.n_dets)]
-                self.eff_axes = [self.fig.add_subplot(self.grid_spec[-1:, i : i + 1]) for i in range(self.n_dets)]
-                self.res_cbar_ax = self.fig.add_axes([1.0, 0.04, 0.03, 0.31])
-                self.eff_cbar_ax = self.fig.add_axes([1.1, 0.04, 0.03, 0.31])
-
-    def update_plot(self) -> None:
-        super().update_plot()
-        with sns.axes_style(**self.style):
-            res = np.array([l.resolution.data.cpu().numpy() for l in self.dets])
-            eff = np.array([l.efficiency.data.cpu().numpy() for l in self.dets])
-            res_min, res_max = res.min(), res.max()
-            eff_min, eff_max = eff.min(), eff.max()
-
-            for i, l in enumerate(self.dets):
-                self.res_axes[i].clear()
-                self.eff_axes[i].clear()
-                sns.heatmap(
-                    res[i],
-                    ax=self.res_axes[i],
-                    cmap="viridis",
-                    square=True,
-                    cbar=(i == 0),
-                    vmin=res_min,
-                    vmax=res_max,
-                    cbar_ax=self.res_cbar_ax if i == 0 else None,
-                )
-                sns.heatmap(
-                    eff[i],
-                    ax=self.eff_axes[i],
-                    cmap="plasma",
-                    square=True,
-                    cbar=(i == 0),
-                    vmin=eff_min,
-                    vmax=eff_max,
-                    cbar_ax=self.eff_cbar_ax if i == 0 else None,
-                )
-            self._set_axes_labels()
 
 
 class PanelMetricLogger(MetricLogger):

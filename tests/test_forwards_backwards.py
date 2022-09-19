@@ -1,15 +1,14 @@
 from collections import defaultdict
 import pytest
-import numpy as np
 
 import torch
 from torch import nn, Tensor
 import torch.nn.functional as F
 
 from tomopt.core import X0
-from tomopt.volume import Volume, PassiveLayer, VoxelDetectorLayer, PanelDetectorLayer, DetectorPanel, DetectorHeatMap
+from tomopt.volume import Volume, PassiveLayer, PanelDetectorLayer, DetectorPanel, DetectorHeatMap
 from tomopt.muon import MuonBatch, MuonGenerator2016
-from tomopt.inference import VoxelScatterBatch, VoxelX0Inferer, PanelScatterBatch, PanelX0Inferer, DeepVolumeInferer
+from tomopt.inference import PanelScatterBatch, PanelX0Inferer, DeepVolumeInferer
 from tomopt.optimisation import VoxelX0Loss, VolumeClassLoss, MuonResampler
 
 LW = Tensor([1, 1])
@@ -34,22 +33,6 @@ def eff_cost(x: Tensor) -> Tensor:
 
 def res_cost(x: Tensor) -> Tensor:
     return F.relu(x / 100) ** 2
-
-
-def get_voxel_layers() -> nn.ModuleList:
-    layers = []
-
-    pos = "above"
-    for z, d in zip(np.arange(Z, 0, -SZ), [1, 1, 0, 0, 0, 0, 0, 0, 1, 1]):
-        if d:
-            layers.append(
-                VoxelDetectorLayer(pos=pos, init_eff=INIT_EFF, init_res=INIT_RES, lw=LW, z=z, size=SZ, eff_cost_func=eff_cost, res_cost_func=res_cost)
-            )
-        else:
-            pos = "below"
-            layers.append(PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=z, size=SZ))
-
-    return nn.ModuleList(layers)
 
 
 def get_panel_layers() -> nn.ModuleList:
@@ -113,19 +96,6 @@ def get_heatmap_layers() -> nn.ModuleList:
     )
 
     return nn.ModuleList(layers)
-
-
-@pytest.fixture
-def voxel_inferer() -> VoxelX0Inferer:
-    volume = Volume(get_voxel_layers())
-    gen = MuonGenerator2016.from_volume(volume)
-    mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
-    mu = MuonBatch(mus, init_z=volume.h)
-    volume(mu)
-    sb = VoxelScatterBatch(mu=mu, volume=volume)
-    inf = VoxelX0Inferer(volume=volume)
-    inf.add_scatters(sb)
-    return inf
 
 
 @pytest.fixture
@@ -193,16 +163,6 @@ def deep_inferer() -> DeepVolumeInferer:
     return inf
 
 
-def test_forwards_voxel(voxel_inferer):
-    pred, weight = voxel_inferer.get_prediction()
-    loss_func = VoxelX0Loss(target_budget=1, cost_coef=1e-5)
-    loss_val = loss_func(pred, weight, voxel_inferer.volume)
-
-    for l in voxel_inferer.volume.get_detectors():
-        assert torch.nan_to_num(torch.autograd.grad(loss_val, l.resolution, retain_graph=True, allow_unused=True)[0].abs(), 0).sum() > 0
-        assert torch.autograd.grad(loss_val, l.efficiency, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-
-
 def test_forwards_panel(panel_inferer):
     pred, weight = panel_inferer.get_prediction()
     loss_func = VoxelX0Loss(target_budget=1, cost_coef=1e-5)
@@ -253,21 +213,6 @@ def test_forwards_deep_panel(deep_inferer):
             assert torch.autograd.grad(loss_val, p.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
 
 
-def test_backwards_voxel(voxel_inferer):
-    pred, weight = voxel_inferer.get_prediction()
-    loss_func = VoxelX0Loss(target_budget=1, cost_coef=0.15)
-    loss_val = loss_func(pred, weight, voxel_inferer.volume)
-    opt = torch.optim.SGD(voxel_inferer.volume.parameters(), lr=1)
-    opt.zero_grad()
-    loss_val.backward()
-    for p in voxel_inferer.volume.parameters():
-        assert p.grad is not None
-    opt.step()
-    for l in voxel_inferer.volume.get_detectors():
-        assert l.resolution.mean() != Tensor([INIT_RES])
-        assert l.efficiency.mean() != Tensor([INIT_EFF])
-
-
 def test_backwards_panel(panel_inferer):
     pred, weight = panel_inferer.get_prediction()
     loss_func = VoxelX0Loss(target_budget=1, cost_coef=0.15)
@@ -313,6 +258,7 @@ def test_backwards_fixed_budget_panel(fixed_budget_panel_inferer):
             assert p.efficiency == Tensor([INIT_EFF])
 
 
+@pytest.mark.flaky(max_runs=2, min_passes=1)
 def test_backwards_heatmap(heatmap_inferer):
     pred, weight = heatmap_inferer.get_prediction()
     init_params = defaultdict(lambda: defaultdict(dict))

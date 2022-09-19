@@ -1,5 +1,4 @@
 import pytest
-import numpy as np
 
 import torch
 from torch import nn, Tensor
@@ -13,7 +12,7 @@ from tomopt.optimisation.data.passives import (
     BlockPresentPassiveGenerator,
     AbsPassiveGenerator,
 )
-from tomopt.volume import Volume, PassiveLayer, VoxelDetectorLayer, PanelDetectorLayer, DetectorPanel
+from tomopt.volume import Volume, PassiveLayer, PanelDetectorLayer, DetectorPanel
 
 LW = Tensor([1, 1])
 SZ = 0.1
@@ -37,22 +36,6 @@ def eff_cost(x: Tensor) -> Tensor:
 
 def res_cost(x: Tensor) -> Tensor:
     return F.relu(x / 100) ** 2
-
-
-def get_voxel_layers() -> nn.ModuleList:
-    layers = []
-
-    pos = "above"
-    for z, d in zip(np.arange(Z, 0, -SZ), [1, 1, 0, 0, 0, 0, 0, 0, 1, 1]):
-        if d:
-            layers.append(
-                VoxelDetectorLayer(pos=pos, init_eff=INIT_EFF, init_res=INIT_RES, lw=LW, z=z, size=SZ, eff_cost_func=eff_cost, res_cost_func=res_cost)
-            )
-        else:
-            pos = "below"
-            layers.append(PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=z, size=SZ))
-
-    return nn.ModuleList(layers)
 
 
 def get_panel_layers() -> nn.ModuleList:
@@ -88,7 +71,7 @@ def get_panel_layers() -> nn.ModuleList:
 
 @pytest.fixture
 def volume() -> Volume:
-    return Volume(get_voxel_layers())
+    return Volume(get_panel_layers())
 
 
 def test_passive_yielder_list():

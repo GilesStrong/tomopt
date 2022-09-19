@@ -7,11 +7,11 @@ import torch.nn.functional as F
 from torch.distributions import Normal
 
 from .scattering import AbsScatterBatch
-from ..volume import VoxelDetectorLayer, PanelDetectorLayer, Volume
+from ..volume import PanelDetectorLayer, Volume
 from ..core import SCATTER_COEF_A
 from ..utils import jacobian
 
-__all__ = ["VoxelX0Inferer", "PanelX0Inferer", "DeepVolumeInferer", "WeightedDeepVolumeInferer", "DenseBlockClassifierFromX0s"]
+__all__ = ["PanelX0Inferer", "DeepVolumeInferer", "WeightedDeepVolumeInferer", "DenseBlockClassifierFromX0s"]
 
 
 class AbsVolumeInferer(metaclass=ABCMeta):
@@ -205,33 +205,6 @@ class AbsX0Inferer(AbsVolumeInferer):
             weight = weights.sum(0)
             pred = wpred / weight
             return pred, weight
-
-
-class VoxelX0Inferer(AbsX0Inferer):
-    def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
-        r"""
-        Does not yet handle more than two detectors per position
-        """
-
-        hits = scatters.hits
-
-        dets = self.volume.get_detectors()
-        if len(dets) != 4:
-            raise NotImplementedError("VoxelX0Inferer.compute_efficiency does not yet handle more than two detectros per position")
-
-        eff = None
-        for p, l, i in zip(("above", "above", "below", "below"), dets, (0, 1, 0, 1)):
-            if not isinstance(l, VoxelDetectorLayer):
-                raise ValueError(f"Detector {l} is not a VoxelDetectorLayer")
-            x = l.abs2idx(hits[p]["reco_xy"][:, i])
-            e = torch.clamp(l.efficiency[x[:, 0], x[:, 1]], min=0.0, max=1.0)
-            if eff is None:
-                eff = e
-            else:
-                eff = eff * e
-        if eff is None:
-            eff = torch.zeros(0, device=self.device)
-        return eff
 
 
 class PanelX0Inferer(AbsX0Inferer):
