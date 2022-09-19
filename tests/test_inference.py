@@ -544,6 +544,7 @@ def test_x0_inferer_scatter_inversion_via_scatter_batch():
     sb = GenScatterBatch(muons, volume=volume)
     inferer = PanelX0Inferer(volume=volume)
 
+    print(sb.total_scatter.square().mean().sqrt() / math.sqrt(2))
     pred = inferer.x0_from_scatters(
         deltaz=0.01,
         total_scatter=sb.total_scatter.square().mean().sqrt() / math.sqrt(2),
