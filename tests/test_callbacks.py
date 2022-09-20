@@ -248,7 +248,7 @@ def test_metric_logger(detector, mocker):  # noqa F811
         passive_bs=2,
         state="train",
         metric_cbs=[EvalMetric(name="test", main_metric=True, lower_metric_better=True)],
-        cb_savepath=Path("tests"),
+        cb_savepath=Path(PKG_DIR),
     )
     logger.set_wrapper(vw)
     mocker.spy(logger, "_reset")
@@ -600,12 +600,12 @@ def test_no_more_nans_heatmap():
 
 
 def test_heat_map_gif():
-    cb = HeatMapGif("heatmap.gif")
+    cb = HeatMapGif(PKG_DIR / "heatmap.gif")
     assert check_callback_base(cb)
 
     l = get_heatmap_detector()
     vw = MockWrapper()
-    vw.fit_params = FitParams(state="valid", cb_savepath=Path("tests"))
+    vw.fit_params = FitParams(state="valid", cb_savepath=Path(PKG_DIR))
     vw.volume = MockVolume()
     vw.volume.get_detectors = lambda: [l]
     cb.set_wrapper(vw)
@@ -618,17 +618,17 @@ def test_heat_map_gif():
     cb.on_epoch_begin()
     cb.on_epoch_begin()
     assert len(cb._buffer_files) == 2
-    assert len(glob(PKG_DIR / "temp_heatmap_*.png")) == 2
+    assert len(glob(str(PKG_DIR / "temp_heatmap_*.png"))) == 2
 
     cb.on_train_end()
     assert len(cb._buffer_files) == 3
-    assert len(glob(PKG_DIR / "temp_heatmap_*.png")) == 0
-    assert len(glob(PKG_DIR / "heatmap.gif")) == 1
+    assert len(glob(str(PKG_DIR / "temp_heatmap_*.png"))) == 0
+    assert len(glob(str(PKG_DIR / "heatmap.gif"))) == 1
 
 
 def test_save_2_hdf5_pred_handler():
     try:
-        out_path = Path("test_pred_save.h5")
+        out_path = Path(PKG_DIR / "test_pred_save.h5")
         if out_path.exists():
             out_path.unlink()
         cb = Save2HDF5PredHandler(out_path, use_volume_target=False)
