@@ -22,7 +22,12 @@ class LadleFurnaceFillLevelInferrer(AbsIntClassifierFromX0):
         add_batch_dim: bool = True,
         output_probs: bool = True,
     ):
-        super().__init__(partial_x0_inferer=partial_x0_inferer, volume=volume, output_probs=output_probs, class2float=self._class2float)
+        super().__init__(
+            partial_x0_inferer=partial_x0_inferer,
+            volume=volume,
+            output_probs=output_probs,
+            class2float=self._class2float,
+        )
         self.pipeline, self.add_batch_dim = pipeline, add_batch_dim
 
     @staticmethod
@@ -101,8 +106,7 @@ class LadleFurnaceFillLevelInferrer(AbsIntClassifierFromX0):
         """Assumes ladle is 1 voxel thick"""
         return x[:, 1:, 1:-1, 1:-1]
 
-    def x02probs(self, vox_preds: Tensor, vox_weights: Tensor) -> Tensor:
-        """Can we inlcude the vox_weights? e.g. weighted average?"""
+    def x02probs(self, vox_preds: Tensor) -> Tensor:
         if self.add_batch_dim:
             vox_preds = vox_preds[None]
         for f in self.pipeline:

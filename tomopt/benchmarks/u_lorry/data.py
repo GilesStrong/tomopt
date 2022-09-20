@@ -35,7 +35,6 @@ class ULorryPassiveGenerator(AbsPassiveGenerator):
 
     def _compute_sizes(self) -> None:
         max_n = max((np.max(self.xy_shp), np.round((self.bkg_z_range[1] - self.bkg_z_range[0]) / self.size)))
-        print(max_n)
         szs = torch.combinations(torch.arange(1, max_n + 1), r=3, with_replacement=True)
         self.szs = szs[szs.prod(-1) * (self.size**3) == self.u_volume].numpy().astype(float)
         if len(self.szs) == 0:
@@ -46,7 +45,6 @@ class ULorryPassiveGenerator(AbsPassiveGenerator):
         block_size = np.random.choice(self.szs[i], size=3, replace=False)
         block_size[2] = block_size[2] * self.size
 
-        print(block_size)
         block_low = np.hstack(
             (
                 int(np.random.uniform(0, self.xy_shp[0] - block_size[0])),  # voxels

@@ -3,6 +3,7 @@ from pytest_mock import mocker  # noqa F401
 from unittest.mock import patch
 import numpy as np
 from fastcore.all import Path
+import os
 
 import torch
 from torch import Tensor, nn
@@ -19,6 +20,7 @@ LW = Tensor([1, 1])
 SZ = 0.1
 N = 1000
 Z = 1
+PKG_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
 
 
 @pytest.fixture
@@ -370,7 +372,7 @@ def test_plot_map(mock_show):
         n_cluster=30,
     )
 
-    fname = Path("tests/heatmap_test_plot.png")
+    fname = Path(PKG_DIR / "heatmap_test_plot.png")
     panel.plot_map(bpixelate=False, bsavefig=False, filename=fname)
     panel.plot_map(bpixelate=True, bsavefig=False, filename=fname)
     assert not fname.exists()

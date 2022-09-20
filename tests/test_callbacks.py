@@ -8,6 +8,7 @@ from glob import glob
 from fastcore.all import Path
 import matplotlib.pyplot as plt
 import h5py
+import os
 
 import torch
 from torch import Tensor
@@ -37,6 +38,7 @@ from tomopt.muon import MuonBatch, MuonGenerator2016
 LW = Tensor([1, 1])
 SZ = 0.1
 Z = 1
+PKG_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
 
 
 def eff_cost(x: Tensor) -> Tensor:
@@ -246,7 +248,7 @@ def test_metric_logger(detector, mocker):  # noqa F811
         passive_bs=2,
         state="train",
         metric_cbs=[EvalMetric(name="test", main_metric=True, lower_metric_better=True)],
-        cb_savepath=Path("tests"),
+        cb_savepath=Path(PKG_DIR),
     )
     logger.set_wrapper(vw)
     mocker.spy(logger, "_reset")
@@ -274,7 +276,7 @@ def test_metric_logger(detector, mocker):  # noqa F811
     assert len(logger.tmp_sub_losses.keys()) == 0
     assert logger._snapshot_monitor.call_count == 1
     assert len(logger._buffer_files) == 1
-    assert logger._buffer_files[-1] == Path("tests/temp_monitor_0.png")
+    assert logger._buffer_files[-1] == Path(PKG_DIR / "temp_monitor_0.png")
     assert logger._buffer_files[-1].exists()
 
     for state in ["train", "valid"]:
@@ -326,10 +328,10 @@ def test_metric_logger(detector, mocker):  # noqa F811
     assert history[0]["Validation"] == [val_loss]
     assert history[1]["test"] == [3]
     assert len(logger._buffer_files) == 2
-    assert logger._buffer_files[-1] == Path("tests/temp_monitor_1.png")
+    assert logger._buffer_files[-1] == Path(PKG_DIR / "temp_monitor_1.png")
     for f in logger._buffer_files:
         assert not f.exists()
-    assert Path("tests/optimisation_history.gif").exists()
+    assert Path(PKG_DIR / "optimisation_history.gif").exists()
 
     logger.loss_vals["Validation"] = [9, 8, 7, 6, 5, 9]
     logger.metric_vals = [[10, 3, 5, 6, 7, 5]]
@@ -356,11 +358,11 @@ def test_scatter_record():
     vw.fit_params = FitParams(sb=MockScatterBatch(5))
     sr.set_wrapper(vw)
 
-    vw.fit_params.sb.location = locs[:5]
+    vw.fit_params.sb.poca_xyz = locs[:5]
     sr.on_scatter_end()
     assert len(sr.record) == 1
     assert len(sr.record[0]) == 5
-    vw.fit_params.sb.location = locs[5:]
+    vw.fit_params.sb.poca_xyz = locs[5:]
     sr.on_scatter_end()
     assert len(sr.record) == 2
     assert len(sr.record[1]) == 5
@@ -598,12 +600,12 @@ def test_no_more_nans_heatmap():
 
 
 def test_heat_map_gif():
-    cb = HeatMapGif("heatmap.gif")
+    cb = HeatMapGif(PKG_DIR / "heatmap.gif")
     assert check_callback_base(cb)
 
     l = get_heatmap_detector()
     vw = MockWrapper()
-    vw.fit_params = FitParams(state="valid", cb_savepath=Path("tests"))
+    vw.fit_params = FitParams(state="valid", cb_savepath=Path(PKG_DIR))
     vw.volume = MockVolume()
     vw.volume.get_detectors = lambda: [l]
     cb.set_wrapper(vw)
@@ -616,17 +618,17 @@ def test_heat_map_gif():
     cb.on_epoch_begin()
     cb.on_epoch_begin()
     assert len(cb._buffer_files) == 2
-    assert len(glob("tests/temp_heatmap_*.png")) == 2
+    assert len(glob(str(PKG_DIR / "temp_heatmap_*.png"))) == 2
 
     cb.on_train_end()
     assert len(cb._buffer_files) == 3
-    assert len(glob("tests/temp_heatmap_*.png")) == 0
-    assert len(glob("tests/heatmap.gif")) == 1
+    assert len(glob(str(PKG_DIR / "temp_heatmap_*.png"))) == 0
+    assert len(glob(str(PKG_DIR / "heatmap.gif"))) == 1
 
 
 def test_save_2_hdf5_pred_handler():
     try:
-        out_path = Path("test_pred_save.h5")
+        out_path = Path(PKG_DIR / "test_pred_save.h5")
         if out_path.exists():
             out_path.unlink()
         cb = Save2HDF5PredHandler(out_path, use_volume_target=False)

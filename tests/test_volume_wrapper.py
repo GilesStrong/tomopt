@@ -2,6 +2,7 @@ from functools import partial
 from pathlib import Path
 import pytest
 from pytest_mock import mocker  # noqa F401
+import os
 
 import torch
 from torch import nn, Tensor, optim
@@ -25,6 +26,7 @@ LW = Tensor([1, 1])
 SZ = 0.1
 N = 100
 Z = 1
+PKG_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
 
 
 def arb_rad_length(*, z: float, lw: Tensor, size: float) -> float:
@@ -125,8 +127,8 @@ def test_panel_volume_wrapper_methods():
         vw.set_opt_lr(0, "xy_span_opt")
         vw.set_opt_lr(0, "budget_opt")
 
-    path = Path("tests/test_panel_save.pt")
-    vw.save("tests/test_panel_save.pt")
+    path = Path(PKG_DIR / "test_panel_save.pt")
+    vw.save(PKG_DIR / "test_panel_save.pt")
     assert path.exists()
     zero_params(volume, vw)
 
@@ -232,7 +234,7 @@ def test_volume_wrapper_scan_volume(state, mocker):  # noqa F811
     assert cb.on_x0_pred_begin.call_count == 1
     assert cb.on_x0_pred_end.call_count == 1
     assert vw.fit_params.pred.shape == torch.Size((6, 10, 10))
-    assert vw.fit_params.inv_weight.shape == torch.Size((6, 10, 10))
+    assert vw.fit_params.inv_weight.shape == torch.Size([])
 
     if state == "test":
         assert vw.loss_func.call_count == 0
@@ -592,8 +594,8 @@ def test_heatmap_volume_wrapper_methods():
         vw.set_opt_lr(0, "sig_opt")
         vw.set_opt_lr(0, "norm_opt")
 
-    path = Path("tests/test_panel_save.pt")
-    vw.save("tests/test_panel_save.pt")
+    path = Path(PKG_DIR / "test_panel_save.pt")
+    vw.save(PKG_DIR / "test_panel_save.pt")
     assert path.exists()
     zero_params(volume, vw)
 

@@ -199,6 +199,16 @@ class MuonBatch:
             "Please use the scatter_dtheta_dphi method to modify the direction of muons. Or modify the _muons attribute if you really know what you're doing"
         )
 
+    @property
+    def theta_xy(self) -> Tensor:
+        return torch.stack((self.theta_x, self.theta_x), dim=-1)
+
+    @theta_xy.setter
+    def theta_xy(self, theta_xy: Tensor) -> None:
+        raise AttributeError(
+            "Please use the scatter_dtheta_dphi method to modify the direction of muons. Or modify the _muons attribute if you really know what you're doing"
+        )
+
     def scatter_dxy(self, dx_vol: Optional[Tensor] = None, dy_vol: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
         r"""
         dx & dy are expected to be the volume reference frame, not the muons'

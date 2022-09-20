@@ -79,7 +79,6 @@ class Layer(nn.Module):
         """
         This function produces a model of multiple scattering through a layer of material
         of depth deltaz
-
         TODO: Expand to sum over traversed voxels
         """
 
