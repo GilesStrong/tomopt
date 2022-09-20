@@ -52,15 +52,15 @@ def get_scatters(grp: h5py.Group, plots: bool, verbose: bool) -> Dict[str, Any]:
     xy_m_t_p[:, 3] = theta
     xy_m_t_p[:, 4] = phi
     muons = MuonBatch(xy_m_t_p, init_z=1)
-    x0 = (torch.ones(len(muons)) * X0[mat])[:, None]
+    x0 = torch.ones(len(muons)) * X0[mat]
 
     # New param model
-    geant_scattering = layer._geant_scatter(x0=x0, deltaz=0.01, theta_xy=muons.theta_xy, mom=muons.mom[:, None])
+    geant_scattering = layer._geant_scatter(x0=x0, deltaz=0.01, theta=muons.theta, theta_x=muons.theta_x, theta_y=muons.theta_y, mom=muons.mom)
     geant_scattering["dangle_vol"] = np.sqrt((geant_scattering["dtheta_vol"] ** 2) + (geant_scattering["dphi_vol"] ** 2))
     geant_scattering["dspace_vol"] = np.sqrt((geant_scattering["dx_vol"] ** 2) + (geant_scattering["dy_vol"] ** 2))
 
     # New PDG model
-    pdg_scattering = layer._pdg_scatter(x0=x0, deltaz=0.01, theta_xy=muons.theta_xy, mom=muons.mom[:, None])
+    pdg_scattering = layer._pdg_scatter(x0=x0, deltaz=0.01, theta=muons.theta, theta_x=muons.theta_x, theta_y=muons.theta_y, mom=muons.mom)
     pdg_scattering["dangle_vol"] = np.sqrt((pdg_scattering["dtheta_vol"] ** 2) + (pdg_scattering["dphi_vol"] ** 2))
     pdg_scattering["dspace_vol"] = np.sqrt((pdg_scattering["dx_vol"] ** 2) + (pdg_scattering["dy_vol"] ** 2))
 
