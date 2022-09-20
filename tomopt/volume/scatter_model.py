@@ -53,16 +53,16 @@ class ScatterModel:
         self.dxy_params = self.dxy_params.to(self._device)  # Is this alredy in the volume frame or still in the muon's ref frame?
         self.mom_lookup = self.mom_lookup.to(self._device)
 
-    def compute_scattering(self, x0: Tensor, deltaz: Union[Tensor, float], theta_xy: Tensor, mom: Tensor) -> Dict[str, Tensor]:
+    def compute_scattering(self, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor) -> Dict[str, Tensor]:
         if deltaz != self.deltaz:
             raise ValueError(f"Model only works for a fixed delta z step of {self.deltaz}.")
         if self._device is None:
-            self.device = theta_xy.device
+            self.device = theta.device
 
         n = len(x0)
-        rnds = torch.randint(low=0, high=self.n_bins, size=(n, 4), device=self.device).long()  # dtheta_x, dtheta_x, dy, dy
+        rnds = torch.randint(low=0, high=self.n_bins, size=(4, n), device=self.device).long()  # dtheta_x, dtheta_x, dy, dy
         mom_idxs = torch.bucketize(mom, self.mom_lookup).long()
-        sign = (torch.rand((n, 4), device=self.device) - 0.5).sign()
+        sign = (torch.rand((4, n), device=self.device) - 0.5).sign()
 
         x0_idxs = torch.zeros_like(mom, device=self.device) - 1
         for m in x0.detach().unique().cpu().numpy():
@@ -71,24 +71,25 @@ class ScatterModel:
             raise ValueError("Something went wrong in the x0 indexing")
         x0_idxs = x0_idxs.long()
 
-        inv_costheta = 1 / (1e-17 + torch.cos(theta_xy))
-        dtheta_xy_mu = self.dtheta_params[x0_idxs, mom_idxs, rnds[:, :2]]
+        inv_costheta = 1 / (1e-17 + torch.cos(theta))
+        dtheta_xy_mu = self.dtheta_params[x0_idxs, mom_idxs, rnds[:2]]
         dtheta_xy_mu = self.extrapolate_dtheta(dtheta_xy_mu, inv_costheta)
-        dtheta_xy_mu = sign[:, :2] * dtheta_xy_mu
+        dtheta_xy_mu = sign[:2] * dtheta_xy_mu
         # We compute dtheta_xy in muon ref frame, but we're free to rotate the muon,
         # since dtheta_xy doesn't depend on muon position
         # Therefore assign theta_x axis (muon ref) to be in the theta direction (vol ref),
         # and theta_y axis (muon ref) to be in the phi direction (vol ref)
-        dtheta_vol = dtheta_xy_mu[:, 0]  # dtheta_x in muon ref
-        dphi_vol = dtheta_xy_mu[:, 1]  # dtheta_y in muon ref
+        dtheta_vol = dtheta_xy_mu[0]  # dtheta_x in muon ref
+        dphi_vol = dtheta_xy_mu[1]  # dtheta_y in muon ref
 
-        dxy_mu = self.dxy_params[x0_idxs, mom_idxs, rnds[:, 2:]]
+        dxy_mu = self.dxy_params[x0_idxs, mom_idxs, rnds[2:]]
         dxy_mu = self.extrapolate_dxy(dxy_mu, inv_costheta)
-        dxy_mu = sign[:, 2:] * dxy_mu
+        dxy_mu = sign[2:] * dxy_mu
         # dxy is still in the muon ref frame, rescale by costheta_xy into volume frame
-        dxy_vol = dxy_mu * torch.cos(theta_xy)
+        dx_vol = dxy_mu[0] * torch.cos(theta_x)
+        dy_vol = dxy_mu[1] * torch.cos(theta_y)
 
-        return {"dtheta_vol": dtheta_vol, "dphi_vol": dphi_vol, "dx_vol": dxy_vol[:, 0], "dy_vol": dxy_vol[:, 1]}
+        return {"dtheta_vol": dtheta_vol, "dphi_vol": dphi_vol, "dx_vol": dx_vol, "dy_vol": dy_vol}
 
 
 SCATTER_MODEL = ScatterModel()

@@ -27,20 +27,22 @@ class Layer(nn.Module):
         )
         self.rad_length: Optional[Tensor] = None
 
-    def _geant_scatter(self, *, x0: Tensor, deltaz: Union[Tensor, float], theta_xy: Tensor, mom: Tensor) -> Dict[str, Tensor]:
-        return SCATTER_MODEL.compute_scattering(x0=x0, deltaz=deltaz, theta_xy=theta_xy, mom=mom)
+    def _geant_scatter(self, *, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor) -> Dict[str, Tensor]:
+        return SCATTER_MODEL.compute_scattering(x0=x0, deltaz=deltaz, theta=theta, theta_x=theta_x, theta_y=theta_y, mom=mom)
 
-    def _pdg_scatter(self, *, x0: Tensor, deltaz: Union[Tensor, float], theta_xy: Tensor, mom: Tensor, log_term: bool = True) -> Dict[str, Tensor]:
+    def _pdg_scatter(
+        self, *, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor, log_term: bool = True
+    ) -> Dict[str, Tensor]:
         r"""
         Returns dx, dy, dtheta_x, dtheta_y of the muons in the refernce frame of the volume
         """
 
-        flight = deltaz / torch.cos(theta_xy)
+        flight = deltaz / torch.cos(theta)
         n_x0 = flight / x0
 
         n = len(n_x0)
-        z1 = torch.randn((n, 2), device=self.device)
-        z2 = torch.randn((n, 2), device=self.device)
+        z1 = torch.randn((2, n), device=self.device)
+        z2 = torch.randn((2, n), device=self.device)
         theta0 = (SCATTER_COEF_A / mom) * torch.sqrt(n_x0)
         if log_term:
             theta0 = theta0 * (1 + (SCATTER_COEF_B * torch.log(n_x0)))
@@ -52,21 +54,24 @@ class Layer(nn.Module):
         # since dtheta_xy doesn't depend on muon position
         # Therefore assign theta_x axis (muon ref) to be in the theta direction (vol ref),
         # and theta_y axis (muon ref) to be in the phi direction (vol ref)
-        dtheta_vol = dtheta_xy_mu[:, 0]  # dtheta_x in muon ref
-        dphi_vol = dtheta_xy_mu[:, 1]  # dtheta_y in muon ref
+        dtheta_vol = dtheta_xy_mu[0]  # dtheta_x in muon ref
+        dphi_vol = dtheta_xy_mu[1]  # dtheta_y in muon ref
 
         # Note that if a track incides on a layer
         # with angle theta_mu, the dx and dy displacements are relative to zero angle
         # (generation of MSC formulas are oblivious of angle of incidence) so we need
         # to rescale them by cos of thetax and thetay
-        dxy_vol = dxy_mu * torch.cos(theta_xy)
-        return {"dtheta_vol": dtheta_vol, "dphi_vol": dphi_vol, "dx_vol": dxy_vol[:, 0], "dy_vol": dxy_vol[:, 1]}
+        dx_vol = dxy_mu[0] * torch.cos(theta_x)
+        dy_vol = dxy_mu[1] * torch.cos(theta_y)
+        return {"dtheta_vol": dtheta_vol, "dphi_vol": dphi_vol, "dx_vol": dx_vol, "dy_vol": dy_vol}
 
-    def _compute_scattering(self, *, x0: Tensor, deltaz: Union[Tensor, float], theta_xy: Tensor, mom: Tensor) -> Dict[str, Tensor]:
+    def _compute_scattering(
+        self, *, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor
+    ) -> Dict[str, Tensor]:
         if self.scatter_model == "pdg":
-            return self._pdg_scatter(x0=x0, deltaz=deltaz, theta_xy=theta_xy, mom=mom)
+            return self._pdg_scatter(x0=x0, deltaz=deltaz, theta=theta, theta_x=theta_x, theta_y=theta_y, mom=mom)
         elif self.scatter_model == "geant4":
-            return self._geant_scatter(x0=x0, deltaz=deltaz, theta_xy=theta_xy, mom=mom)
+            return self._geant_scatter(x0=x0, deltaz=deltaz, theta=theta, theta_x=theta_x, theta_y=theta_y, mom=mom)
         else:
             raise ValueError(f"Scatter model {self.scatter_model} is not currently supported.")
 
@@ -74,7 +79,6 @@ class Layer(nn.Module):
         """
         This function produces a model of multiple scattering through a layer of material
         of depth deltaz
-
         TODO: Expand to sum over traversed voxels
         """
 
@@ -82,8 +86,10 @@ class Layer(nn.Module):
             mask = mu.get_xy_mask((0, 0), self.lw)  # Only scatter muons inside volume
             xy_idx = self.mu_abs2idx(mu, mask)
 
-            x0 = self.rad_length[xy_idx[:, 0], xy_idx[:, 1]][:, None]
-            scatterings = self._compute_scattering(x0=x0, deltaz=deltaz, theta_xy=mu.theta_xy[mask], mom=mu.mom[mask][:, None])
+            x0 = self.rad_length[xy_idx[:, 0], xy_idx[:, 1]]
+            scatterings = self._compute_scattering(
+                x0=x0, deltaz=deltaz, theta=mu.theta[mask], theta_x=mu.theta_x[mask], theta_y=mu.theta_y[mask], mom=mu.mom[mask]
+            )
 
             # Update to position at scattering.
             mu.scatter_dxy(dx_vol=scatterings["dx_vol"], dy_vol=scatterings["dy_vol"], mask=mask)
