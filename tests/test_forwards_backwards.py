@@ -258,7 +258,7 @@ def test_backwards_fixed_budget_panel(fixed_budget_panel_inferer):
             assert p.efficiency == Tensor([INIT_EFF])
 
 
-@pytest.mark.flaky(max_runs=2, min_passes=1)
+@pytest.mark.flaky(max_runs=3, min_passes=1)
 def test_backwards_heatmap(heatmap_inferer):
     pred, weight = heatmap_inferer.get_prediction()
     init_params = defaultdict(lambda: defaultdict(dict))

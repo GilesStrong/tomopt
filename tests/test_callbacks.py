@@ -8,6 +8,7 @@ from glob import glob
 from fastcore.all import Path
 import matplotlib.pyplot as plt
 import h5py
+import os
 
 import torch
 from torch import Tensor
@@ -37,6 +38,7 @@ from tomopt.muon import MuonBatch, MuonGenerator2016
 LW = Tensor([1, 1])
 SZ = 0.1
 Z = 1
+PKG_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
 
 
 def eff_cost(x: Tensor) -> Tensor:
@@ -274,7 +276,7 @@ def test_metric_logger(detector, mocker):  # noqa F811
     assert len(logger.tmp_sub_losses.keys()) == 0
     assert logger._snapshot_monitor.call_count == 1
     assert len(logger._buffer_files) == 1
-    assert logger._buffer_files[-1] == Path("tests/temp_monitor_0.png")
+    assert logger._buffer_files[-1] == Path(PKG_DIR / "temp_monitor_0.png")
     assert logger._buffer_files[-1].exists()
 
     for state in ["train", "valid"]:
@@ -326,10 +328,10 @@ def test_metric_logger(detector, mocker):  # noqa F811
     assert history[0]["Validation"] == [val_loss]
     assert history[1]["test"] == [3]
     assert len(logger._buffer_files) == 2
-    assert logger._buffer_files[-1] == Path("tests/temp_monitor_1.png")
+    assert logger._buffer_files[-1] == Path(PKG_DIR / "temp_monitor_1.png")
     for f in logger._buffer_files:
         assert not f.exists()
-    assert Path("tests/optimisation_history.gif").exists()
+    assert Path(PKG_DIR / "optimisation_history.gif").exists()
 
     logger.loss_vals["Validation"] = [9, 8, 7, 6, 5, 9]
     logger.metric_vals = [[10, 3, 5, 6, 7, 5]]
@@ -616,12 +618,12 @@ def test_heat_map_gif():
     cb.on_epoch_begin()
     cb.on_epoch_begin()
     assert len(cb._buffer_files) == 2
-    assert len(glob("tests/temp_heatmap_*.png")) == 2
+    assert len(glob(PKG_DIR / "temp_heatmap_*.png")) == 2
 
     cb.on_train_end()
     assert len(cb._buffer_files) == 3
-    assert len(glob("tests/temp_heatmap_*.png")) == 0
-    assert len(glob("tests/heatmap.gif")) == 1
+    assert len(glob(PKG_DIR / "temp_heatmap_*.png")) == 0
+    assert len(glob(PKG_DIR / "heatmap.gif")) == 1
 
 
 def test_save_2_hdf5_pred_handler():
