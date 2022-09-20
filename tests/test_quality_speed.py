@@ -4,6 +4,7 @@ from timeit import default_timer
 import os
 from unittest.mock import patch
 from functools import partial
+import pytest
 
 import torch
 from torch import Tensor, nn
@@ -17,7 +18,7 @@ DEVICE = torch.device("cpu")
 PKG_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
 
 
-# @pytest.mark.flaky(max_runs=2, min_passes=1)
+@pytest.mark.flaky(max_runs=2, min_passes=1)
 @patch("matplotlib.pyplot.show")
 def test_lead_beryllium(mock_show):
     def get_layers():
