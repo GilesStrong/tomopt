@@ -5,6 +5,10 @@ from torch import nn
 
 __all__ = ["DEVICE", "SCATTER_COEF_A", "SCATTER_COEF_B", "X0", "DENSITIES", "PartialOpt"]
 
+r"""
+Common global constants, custom variable types, etc.
+"""
+
 DEVICE = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
 # https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf
