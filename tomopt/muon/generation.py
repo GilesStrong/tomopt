@@ -103,7 +103,13 @@ class AbsMuonGenerator:
     @abstractmethod
     def flux(self, energy: Union[float, np.ndarray], theta: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
         r"""
-        Inheriting classes should overide this to implement their flux model
+        Inheriting classes should overide this to implement their flux model for the supplied pairs of energies and thetas
+        Arguments:
+            energy: energy values at which to compute the flux, in GeV
+            theta: theta values at which to compute the flux, in radians
+
+        Returns:
+            muon flux for every energy & theta pair
         """
 
         pass
@@ -157,6 +163,13 @@ class MuonGenerator2015(AbsMuonGenerator):
         """
         Function returning modified Gaisser formula for cosmic muon flux given energy (float/np.array) and incidence angle (float/np.array)
         Uses model defined in Guan et al. 2015 (arXiv:1509.06176)
+
+        Arguments:
+            energy: energy values at which to compute the flux, in GeV
+            theta: theta values at which to compute the flux, in radians
+
+        Returns:
+            muon flux for every energy & theta pair
         """
 
         cosTheta = np.cos(theta)
@@ -188,8 +201,14 @@ class MuonGenerator2016(AbsMuonGenerator):
         """
         Function returning modified Gaisser formula for cosmic muon flux given energy (float/np.array) and incidence angle (float/np.array)
         Uses model defined in Shukla and Sanskrith 2018 arXiv:1606.06907
+
+        Arguments:
+            energy: energy values at which to compute the flux, in GeV
+            theta: theta values at which to compute the flux, in radians
+
+        Returns:
+            muon flux for every energy & theta pair
         """
-        #  initialize cosmic variables
 
         Cosine = (np.sqrt(self.Rod**2 * np.cos(theta) ** 2 + 2 * self.Rod + 1) - self.Rod * np.cos(theta)) ** (-(self.n - 1))
         flux = self.I_0 * self.N * (self.E_0 + energy) ** (-self.n) * (1 + energy * self.epinv) ** (-1) * Cosine
