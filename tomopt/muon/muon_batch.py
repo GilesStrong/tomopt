@@ -13,6 +13,40 @@ __all__ = ["MuonBatch"]
 
 
 class MuonBatch:
+    r"""
+    Container class for a batch of many muons, defined by their position and kinematics.
+
+    Each muon has its own:
+        x and y position in metres, which are absolute coordinates in the volume frame.
+        theta, the angle in radians [0,pi) between the muon trajectory and the negative z-axis in the volume frame
+            muons with a theta > pi/2 (i.e. travel upwwards) may be removed automatically
+        phi, the anticlockwise angle in radians [0,2pi) between the muon trajectory and the positive x-axis, in the x-y plane of the volume frame.
+        momentum (mom), the absolute value of the muon momentum in GeV
+    All the muons in the batch share the same z-position in metres, which is an absolute coordinate in the volume frame.
+
+    Muon properties should not be updated manually.  Instead, call:
+        `.propagate(dz)` to update the x,y,z positions of the muons for a given propagation dz in the z-axis.
+        `.scatter_dxy(dx_vol, dy_vol, mask)` to shift the x,y positions of the muons,
+            for which the values of the optional Boolean mask is true, by the speocifed amount.
+        `.scatter_dtheta_dphi(dtheta_vol, dphi_vol, mask)` to alter the theta,phi angles of the muons,
+            for which the values of the optional Boolean mask is true, by the speocifed amount.
+
+    .. important::
+        Muon momenta is currently constant
+
+    .. important::
+        Eventually the muon batch will be extended to store information about the inferred momentum of the muons `reco_mom`.
+        However currently the `reco_mom` property will return the TRUE momentum of the muons, with no simulation of measurement precision.
+
+    By default, the `MuonBatch` class only contains the current position of the muons,
+    however the `.snapshot_xyz` method can be used to store the xy positions of the muons at any time, to a dictionary with float z-position keys, `xy_hist`.
+
+    In addition to storing the properties of the muons, the `MuonBatch` class is also used to store the detector hits associated with each muon.
+    Hits may be added via the `.append_hits` method, and stored in the `_hits` attribute.
+    Hits can then be retreaved by the `.get_hits` method.
+
+    """
+
     x_dim = 0
     y_dim = 1
     p_dim = 2
@@ -22,8 +56,14 @@ class MuonBatch:
 
     def __init__(self, xy_p_theta_phi: Tensor, init_z: Union[Tensor, float], device: torch.device = DEVICE):
         r"""
-        N.B. xy [m], p [GeV], theta [r] (0, pi/2) defined w.r.t z axis, phi [r] (0, 2pi) defined anticlockwise from x axis
+        Initalise class from `xy_p_theta_phi`, a (N_muon, 5) tensor, and an initial z position for the batch.
         Muon trajectories (theta & phi) and positions (x,y,z) are in the reference frame of the volume.
+
+        Arguments:
+            xy_p_theta_phi: (N_muon, 5) tensor,
+                with xy [m], p [GeV], theta [r] (0, pi/2) defined w.r.t z axis, phi [r] (0, 2pi) defined anticlockwise from x axis
+            init_z: inital z position of all muons in the batch
+            device: device on which to place the muon tensors
         """
 
         self.device = device
@@ -211,7 +251,13 @@ class MuonBatch:
 
     def scatter_dxy(self, dx_vol: Optional[Tensor] = None, dy_vol: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
         r"""
-        dx & dy are expected to be the volume reference frame, not the muons'
+        Displaces the muons in xy by the specified amounts, with no change in their z position.
+        If a mask is supplied, then only muons with True mask elements are displaced.
+
+        Arguments:
+            dx_vol: (N) tensor of displacements in x
+            dy_vol: (N) tensor of displacements in y
+            mask: (N) Boolean tensor. If not None, only muons with True mask elements are displaced.
         """
 
         if mask is None:
@@ -222,6 +268,16 @@ class MuonBatch:
             self._y[mask] = self._y[mask] + dy_vol
 
     def scatter_dtheta_dphi(self, dtheta_vol: Optional[Tensor] = None, dphi_vol: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
+        r"""
+        Changes the trajectory of the muons in theta-phi by the specified amounts, with no change in their x,y,z positions.
+        If a mask is supplied, then only muons with True mask elements are altered.
+
+        Arguments:
+            dtheta_vol: (N) tensor of angular changes in theta
+            dphi_vol: (N) tensor of angular changes in phi
+            mask: (N) Boolean tensor. If not None, only muons with True mask elements are altered.
+        """
+
         if mask is None:
             mask = torch.ones(len(self._muons), device=self.device).bool()
         if dphi_vol is not None:
@@ -240,14 +296,21 @@ class MuonBatch:
 
     def remove_upwards_muons(self) -> None:
         r"""
-        Remove muons, and their hits, if their theta >= pi/2, i.e. they are travelling upwards after a large scattering.
-        Should be run after any changes to theta, but make sure that references (e.g. masks) to the complete set of muons are no longer required
+        Removes muons, and their hits, if their theta >= pi/2, i.e. they are travelling upwards after a large scattering.
+        Should be run after any changes to theta, but make sure that references (e.g. masks) to the complete set of muons are no longer required.2
         """
 
         self._keep_mask = self._theta < torch.pi / 2  # To keep
         self.filter_muons(self._keep_mask)
 
     def filter_muons(self, keep_mask: Tensor) -> None:
+        r"""
+        Removes all muons, and their associated hits, except for muons specifed as True in `keep_mask`.
+
+        Arguments:
+            keep_mask: (N) Boolean tensor. Muons with False elements will be removed, along with their hits.
+        """
+
         if keep_mask.sum() < len(self):
             # Save muons, just in case they're useful for diagnostics
             if self._removed_muons is None:
@@ -265,7 +328,16 @@ class MuonBatch:
     @staticmethod
     def phi_from_theta_xy(theta_x: Tensor, theta_y: Tensor) -> Tensor:
         r"""
-        N.B. this function does NOT work if theta is > pi/2
+        Computes the phi angle from theta_x and theta_y.
+        .. important::
+            This function does NOT work if theta is > pi/2
+
+        Arguments:
+            theta_x: angle from the negative z-axis in the xz plane
+            theta_y: angle from the negative z-axis in the yz plane
+
+        Returns:
+            phi, the anti-clockwise angle from the positive x axis, in the xy plane
         """
 
         phi = torch.arctan(theta_y.tan() / theta_x.tan())  # (-pi/2, pi/2)
@@ -280,7 +352,16 @@ class MuonBatch:
     @staticmethod
     def theta_from_theta_xy(theta_x: Tensor, theta_y: Tensor) -> Tensor:
         r"""
-        N.B. this function does NOT work if theta is > pi/2
+        Computes the theta angle from theta_x and theta_y.
+        .. important::
+            This function does NOT work if theta is > pi/2
+
+        Arguments:
+            theta_x: angle from the negative z-axis in the xz plane
+            theta_y: angle from the negative z-axis in the yz plane
+
+        Returns:
+            theta, the anti-clockwise angle from the negativte z axis, in the xyz plane
         """
 
         theta = (theta_x.tan().square() + theta_y.tan().square()).sqrt().arctan()
@@ -290,7 +371,16 @@ class MuonBatch:
     @staticmethod
     def theta_x_from_theta_phi(theta: Tensor, phi: Tensor) -> Tensor:
         r"""
-        N.B. this function does NOT work if theta is > pi/2
+        Computes the angle from the negative z-axis in the xz plane from theta and phi
+        .. important::
+            This function does NOT work if theta is > pi/2
+
+        Arguments:
+            theta: the anti-clockwise angle from the negativte z axis, in the xyz plane
+            phi: the anti-clockwise angle from the positive x axis, in the xy plane
+
+        Returns:
+            theta_x, the angle from the negative z-axis in the xz plane
         """
 
         tx = (theta.tan() * phi.cos()).arctan()
@@ -300,7 +390,16 @@ class MuonBatch:
     @staticmethod
     def theta_y_from_theta_phi(theta: Tensor, phi: Tensor) -> Tensor:
         r"""
-        N.B. this function does NOT work if theta is > pi/2
+        Computes the angle from the negative z-axis in the yz plane from theta and phi
+        .. important::
+            This function does NOT work if theta is > pi/2
+
+        Arguments:
+            theta: the anti-clockwise angle from the negativte z axis, in the xyz plane
+            phi: the anti-clockwise angle from the positive x axis, in the xy plane
+
+        Returns:
+            theta_y, the angle from the negative z-axis in the yz plane
         """
 
         ty = (theta.tan() * phi.sin()).arctan()
@@ -308,6 +407,13 @@ class MuonBatch:
         return ty
 
     def propagate(self, dz: Union[Tensor, float]) -> None:
+        r"""
+        Propagates all muons in their direction of flight such that afterwards they will all have moved a specified distance in the negative z direction.
+
+        Arguments:
+            dz: distance in metres to move in the negative z direction, i.e. a positive dz results in the muons travelling downwards.
+        """
+
         r = dz / self._theta.cos()
         rst = r * self._theta.sin()
         self._x = self._x + (rst * self._phi.cos())
@@ -315,6 +421,17 @@ class MuonBatch:
         self._z = self._z - dz
 
     def get_xy_mask(self, xy_low: Optional[Union[Tuple[float, float], Tensor]], xy_high: Optional[Union[Tuple[float, float], Tensor]]) -> Tensor:
+        r"""
+        Computes a (N) Boolean tensor, with True values corresponding to muons which are within the supplied ranges in xy.
+
+        Arguments:
+            xy_low: (2,N) optional lower limit on xy positions
+            xy_high: (2,N) optional upper limit on xy positions
+
+        Returns:
+            (N) Boolean mask with True values corresponding to muons which are with xy positons >= xy_low and < xy_high
+        """
+
         if xy_low is None:
             xy_low = (-math.inf, -math.inf)
         if xy_high is None:
@@ -322,15 +439,40 @@ class MuonBatch:
         return (self.x >= xy_low[0]) * (self.x < xy_high[0]) * (self.y >= xy_low[1]) * (self.y < xy_high[1])
 
     def snapshot_xyz(self) -> None:
+        r"""
+        Store the current xy positons of the muons in `.xy_hist`, indexed by the current z position.
+        """
+
         self.xy_hist[self.z.detach().cpu().clone().numpy()[0]] = self.xy.detach().cpu().clone().numpy()
 
     def append_hits(self, hits: Dict[str, Tensor], pos: str) -> None:
+        r"""
+        Record hits to `_hits`.
+
+        Arguments:
+            hits: dictionary of 'reco_xy', 'gen_xy', 'z' keys to (N, *) tensors.
+            pos: Position of detector array in which the hits were recorded, currently either 'above' or 'below'.
+        """
+
         for k in hits:
             self._hits[pos][k].append(hits[k])
 
     def get_hits(
         self, xy_low: Optional[Union[Tuple[float, float], Tensor]] = None, xy_high: Optional[Union[Tuple[float, float], Tensor]] = None
     ) -> Dict[str, Dict[str, Tensor]]:
+        r"""
+        Retrieve the recorded hits for the muons, optionally only for muons between the specifed xy ranges.
+        For ease of use, the list of hits are stacked into single tensors, resulting in
+        a dictionary mapping detector-array positon to a dictionary mapping hit variables to (N_muons, N_hits, *) tensors.
+
+        Arguments:
+            xy_low: (2,N) optional lower limit on xy positions
+            xy_high: (2,N) optional upper limit on xy positions
+
+        Returns:
+            Hits, a dictionary mapping detector-array positon to a dictionary mapping hit variables to (N_muons, N_hits, *) tensors.
+        """
+
         if len(self._hits) == 0:
             raise ValueError("MuonBatch has no recorded hits")
         if xy_low is None and xy_high is None:
@@ -339,14 +481,55 @@ class MuonBatch:
             m = self.get_xy_mask(xy_low, xy_high)
             return {p: {c: torch.stack(self._hits[p][c], dim=1)[m] for c in self._hits[p]} for p in self._hits}
 
-    def dtheta_x(self, theta_ref: Tensor) -> Tensor:
-        return torch.abs(self.theta_x - theta_ref)
+    def dtheta_x(self, theta_ref_x: Tensor) -> Tensor:
+        r"""
+        Computes absolute difference in the theta_x between the muons and the supplied theta_x angles
 
-    def dtheta_y(self, theta_ref: Tensor) -> Tensor:
-        return torch.abs(self.theta_y - theta_ref)
+        Arguments:
+            theta_ref_x: (N) tensor to compare with the muon theta_x values
+
+        Returns:
+            Absolute difference between muons' theta_x and the supplied refernce theta_x
+        """
+
+        return torch.abs(self.theta_x - theta_ref_x)
+
+    def dtheta_y(self, theta_ref_y: Tensor) -> Tensor:
+        r"""
+        Computes absolute difference in the theta_y between the muons and the supplied theta_y angles
+
+        Arguments:
+            theta_ref_y: (N) tensor to compare with the muon theta_y values
+
+        Returns:
+            Absolute difference between muons' theta_y and the supplied refernce theta_y
+        """
+
+        return torch.abs(self.theta_y - theta_ref_y)
 
     def dtheta(self, theta_ref: Tensor) -> Tensor:
+        r"""
+        Computes absolute difference in the theta between the muons and the supplied theta angles
+
+        Arguments:
+            theta_ref: (N) tensor to compare with the muon theta values
+
+        Returns:
+            Absolute difference between muons' theta and the supplied refernce theta
+        """
+
         return torch.abs(self.theta - theta_ref)
 
     def copy(self) -> MuonBatch:
+        r"""
+        Creates a copy of the muon batch at the current position and trajectories.
+        Tensors are detached and cloned.
+
+        .. important::
+            This does NOT copy of hits
+
+        Returns:
+            New `MuonBatch` with xyz, and theta,phi equal to those of the current `MuonBatch`.
+        """
+
         return MuonBatch(self._muons.detach().clone(), init_z=self.z.detach().clone(), device=self.device)
