@@ -7,11 +7,43 @@ from torch import nn, Tensor
 from ..muon import MuonBatch
 from ..core import DEVICE
 
+r"""
+Provides implementations of class simulating panel-style detectors with learnable positions and xy sizes.
+"""
+
 
 __all__ = ["DetectorPanel"]
 
 
 class DetectorPanel(nn.Module):
+    r"""
+    Provides an infinetly thin, rectangular panel in the xy plane, centred at a learnable xyz position (metres, in absolute position in the volume frame),
+    with a learnable width in x and y (`xy_span`).
+    Whilst this class can be used manually, it is designed to be used by the :class:`~tomopt.volume.layer.PanelDetectorLayer` class.
+
+    Depsite inheriting from `nn.Module`, the `forward` method should not be called, instead passing a :class:`~tomopt.muon.muon_batch.MuonBatch` to the
+    `get_hits` method will return hits corresponding to the muons.
+
+    During training model (`.train()` or `.training` is True), a continuos model of the resolution and efficiency will be used, such that hits are differentiable w.r.t.
+    the learnable parameters of the panel. This means that muons outside of the physical panel will have hits at non-zero resolution.
+    The current model is a 2D uncorrelated Gaussian in xy, centred over the panel, with width parameters equal to the xy_spans/4,
+    i.e. the panel is 4-sigma across.
+
+    Efficiency is accounted for via a weighting approach, rather than deciding whether to record hits or not, i.e. muons will always record hits,
+    but the probability of the hit actually being recorded is computable.
+
+    During evaluation mode (`.eval()` or `.training` is False), if the panel is set to use `realistic_validation`, then the physical panel will be simulated:
+    Muons outside the panel have zero resolution and efficiency, resulting in NaN hits positions.
+    Muons inside the panel will have the full resolution and efficiency of the panel,
+    but hits will not be differentiable w.r.t. the panel xy-position or xy-span.
+    If `realistic_validation` is False, then the continuous model will be used also in evaluation mode.
+
+    The cost of the panel is based on the supplied cost per metre squared, and the current area of the panel, accorrding to its learnt xy-span.
+    Panels can also be run in "fixed-budget" mode, in which a cost of the panel is specified via the `.assign_budget` method.
+    Based on the cost per m^2, the panel will change in effective width, based on its learn xy_span (now an aspect ratio), such that its area results in a cost
+    equal to the specified cost of the panel.
+    """
+
     def __init__(
         self,
         *,
@@ -24,6 +56,23 @@ class DetectorPanel(nn.Module):
         realistic_validation: bool = False,
         device: torch.device = DEVICE,
     ):
+        r"""
+        Panel initialiser with user-supplied initial positions and widths.
+        The resolution and efficiency remain fixed at the specifed values.
+        If intending to run in "fixed-budget" mode, then a budget can be specified here,
+        however the :class"`~tomopt.volume.volume.Volume` class will pass through all panels and initialise their budgets.
+
+        Arguments:
+            res: resoltuion of the panel in m^-1, i.e. a higher value improves the precision on the hit recording
+            eff: efficiency of the hit recording of the panel, inidcated as a probability [0,1]
+            init_xyz: initial xyz position of the panel in metres in the volume frame
+            init_xy_span: initial xy-span (total width) of the panel in metres
+            m2_cost: the cost in unit currency of the 1 square metre of detector
+            budget: optional required cost of the panel. Based on the span and cost per m^2, the panel will resize to meet the required cost
+            realistic_validation: if True, will use the physicial interpreation of the panel during evaluation
+            device: deivce on which to place tensors
+        """
+
         if res <= 0:
             raise ValueError("Resolution must be positive")
         if eff <= 0:
@@ -41,24 +90,62 @@ class DetectorPanel(nn.Module):
         self.assign_budget(budget)
 
     def get_scaled_xy_span(self) -> Tensor:
+        r"""
+        Compues the effective size of the panel by rescaling based on the xy-span, cost per m^2, and budget.
+
+        Returns:
+            Rescaled xy-span such that the panel has a cost euqal to the specified budget
+        """
+
         return self.xy_span * self.budget_scale
 
     def __repr__(self) -> str:
         return f"""{self.__class__} located at xy={self.xy.data}, z={self.z.data}, and xy span {self.get_scaled_xy_span().data} with budget scale {self.budget_scale.data}"""
 
     def get_xy_mask(self, xy: Tensor) -> Tensor:
+        r"""
+        Computes which of the xy points lie inside the physical panel.
+
+        Arguments:
+            xy: (N,2) tensor of points
+
+        Returns:
+            (N) Boolean mask, where True indicates the point lies inside the panel
+        """
+
         span = self.get_scaled_xy_span()
         xy_low = self.xy - (span / 2)
         xy_high = self.xy + (span / 2)
         return (xy[:, 0] >= xy_low[0]) * (xy[:, 0] < xy_high[0]) * (xy[:, 1] >= xy_low[1]) * (xy[:, 1] < xy_high[1])
 
     def get_gauss(self) -> torch.distributions.Normal:
+        r"""
+        Returns:
+            A Gaussian distribution, with 2 uncorrelated components corresponding to x and y, centred at the xy position of the panel, and sigma = panel span/4
+        """
+
         try:
             return torch.distributions.Normal(self.xy, self.get_scaled_xy_span() / 4)  # We say that the panel widths corresponds to 2-sigma of the Gaussian
         except ValueError:
             raise ValueError(f"Invalid parameters for Gaussian: loc={self.xy}, scale={self.get_scaled_xy_span() / 4}")
 
     def get_resolution(self, xy: Tensor, mask: Optional[Tensor] = None) -> Tensor:
+        r"""
+        Computes the xy resolutions of panel at the supplied list of xy points.
+        If running in evaluation mode with `realistic_validation`,
+        then these will be the full resolution of the panel for points inside the panel (indicated by the mask), and zero outside.
+        Otherwise, the Gaussian model will be used.
+
+        Arguments:
+            xy: (N,2) tensor of positions
+            mask: optional pre-computed (N) Boolean mask, where True indicates that the xy point is inside the panel.
+                Only used in evaluation mode and if `realistic_validation` is True.
+                If required, but not supplied, than will be computed automatically.
+
+        Returns:
+            Res, a (N,2) tensor of the resolution at the xy points
+        """
+
         if not isinstance(self.resolution, Tensor):
             raise ValueError(f"{self.resolution} is not a Tensor for some reason.")  # To appease MyPy
         if self.training or not self.realistic_validation:
@@ -134,3 +221,6 @@ class DetectorPanel(nn.Module):
     @property
     def y(self) -> Tensor:
         return self.xy[1]
+
+    def forward(self) -> None:
+        raise NotImplementedError("Please do not use forward, instead use get_hits")
