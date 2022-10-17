@@ -143,7 +143,7 @@ class DetectorPanel(nn.Module):
                 If required, but not supplied, than will be computed automatically.
 
         Returns:
-            Res, a (N,2) tensor of the resolution at the xy points
+            res, a (N,2) tensor of the resolution at the xy points
         """
 
         if not isinstance(self.resolution, Tensor):
@@ -160,6 +160,24 @@ class DetectorPanel(nn.Module):
         return res
 
     def get_efficiency(self, xy: Tensor, mask: Optional[Tensor] = None, as_2d: bool = False) -> Tensor:
+        r"""
+        Computes the efficiency of panel at the supplied list of xy points.
+        If running in evaluation mode with `realistic_validation`,
+        then these will be the full efficiency of the panel for points inside the panel (indicated by the mask), and zero outside.
+        Otherwise, the Gaussian model will be used.
+        By default, a single efficiency will be computed, but xy components can be requested (efficiency is the product of these)
+
+        Arguments:
+            xy: (N) or (N,2) tensor of positions
+            mask: optional pre-computed (N) Boolean mask, where True indicates that the xy point is inside the panel.
+                Only used in evaluation mode and if `realistic_validation` is True.
+                If required, but not supplied, than will be computed automatically.
+            as_2d: if True, will return the x,y compnents of the efficiency model, otherwise will return their product
+
+        Returns:
+            eff, a (N) or (N,2) tensor of the efficiency (components) at the xy points
+        """
+
         if not isinstance(self.efficiency, Tensor):
             raise ValueError(f"{self.efficiency} is not a Tensor for some reason.")  # To appease MyPy
         if self.training or not self.realistic_validation:
@@ -178,10 +196,30 @@ class DetectorPanel(nn.Module):
         return eff
 
     def assign_budget(self, budget: Optional[Tensor] = None) -> None:
+        r"""
+        Sets the budget for the panel. This is then used to set a multiplicative coeficient, `budget_scale`, based on the `m2_cost`
+        which rescales the `xy_span` such that the area of the resulting panel matches the assugned budget.
+
+        Arguments:
+            budget: required cost of the panel in unit currency
+        """
+
         if budget is not None:
             self.budget_scale = torch.sqrt(budget / (self.m2_cost * self.xy_span.prod()))
 
     def get_hits(self, mu: MuonBatch) -> Dict[str, Tensor]:
+        r"""
+        The main interaction method with the panel: returns hits for the supplied muons.
+        Hits consist of:
+            reco_xy: (N,2) tensor of reconstructed xy positions of muons included simulated resolution
+            gen_xy: (N,2) tensor of generator-level (true) xy positions of muons
+            z: z position of the panel
+
+        If running in evaluation mode with `realistic_validation`,
+        then these will be the full resolution of the panel for points inside the panel (indicated by the mask), and zero outside.
+        Otherwise, the Gaussian model will be used.
+        """
+
         span = self.get_scaled_xy_span()
         mask = mu.get_xy_mask(self.xy - (span / 2), self.xy + (span / 2))  # Muons in panel
 
@@ -203,9 +241,24 @@ class DetectorPanel(nn.Module):
         return hits
 
     def get_cost(self) -> Tensor:
-        return self.m2_cost * self.xy_span.prod()
+        r"""
+        Returns:
+            current cost of the panel according to its area and m2_cost
+        """
+
+        return self.m2_cost * self.get_scaled_xy_span().prod()
 
     def clamp_params(self, xyz_low: Tuple[float, float, float], xyz_high: Tuple[float, float, float]) -> None:
+        r"""
+        Ensures that the panel is centred within the supplied xyz range,
+        and that the span of the panel is between xyz_high/20 and xyz_high*10.
+        A small random number < 1e-3 is added/subtracted to the min/max z position of the panel, to ensure it doesn't overlap with other panels.
+
+        Arguments:
+            xyz_low: minimum x,y,z values for the panel centre in metres
+            xyz_high: maximum x,y,z values for the panel centre in metres
+        """
+
         with torch.no_grad():
             eps = np.random.uniform(0, 1e-3)  # prevent hits at same z due to clamping
             self.x.clamp_(min=xyz_low[0], max=xyz_high[0])
