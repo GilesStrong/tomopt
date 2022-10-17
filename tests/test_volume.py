@@ -104,11 +104,11 @@ def test_passive_layer_forwards(batch):
 
 
 @pytest.mark.parametrize("sz", [(0.01), (0.1), (0.2), (0.205)])
-def test_passive_layer_geant_scattering(mocker, batch, sz):  # noqa: F811
+def test_passive_layer_pgeant_scattering(mocker, batch, sz):  # noqa: F811
     for m in ["propagate", "get_xy_mask", "scatter_dxy", "scatter_dtheta_dphi"]:
         mocker.patch.object(MuonBatch, m)
 
-    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, size=sz, z=Z, scatter_model="geant4")
+    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, size=sz, z=Z, scatter_model="pgeant")
     pl(batch)
     dz = 0.01
     n = int(sz / dz)

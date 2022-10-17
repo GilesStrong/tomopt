@@ -12,10 +12,29 @@ from ..muon import MuonBatch
 from tomopt.volume.panel import DetectorPanel
 from tomopt.volume.heatmap import DetectorHeatMap
 
+r"""
+Provides implementations of the layers in z, which are used to construct volumes, both the passive scattering layers, and the active detection layers.
+"""
+
 __all__ = ["PassiveLayer", "PanelDetectorLayer"]
 
 
 class Layer(nn.Module):
+    r"""
+    Abstract base class forr volume layers.
+    The length and width (lw) is the spans of the layer in metres in x and y, and the layer begins at x=0, y=0.
+    z indicates the position of the top of the layer, in meters, and size is the distance from the top of the layer to the bottom.
+    size is also used to set the lenght, width, and height of the voxels that make up the layer.
+
+    ..important::
+        Users must ensure that both the length and width of the layer are divisible by size
+
+    If the layer is meant to scatter muons (`rad_length` is not None), then two scattering models are available:
+        'pdg': The default and currently recommended model based on the Gaussian scattering model described in
+            https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf
+        'pgeant': An under-development model based on a parameterised fit to data sampled from GEANT 4
+    """
+
     def __init__(self, lw: Tensor, z: float, size: float, scatter_model: str = "pdg", device: torch.device = DEVICE):
         super().__init__()
         self.lw, self.z, self.size, self.scatter_model, self.device = (
@@ -27,7 +46,7 @@ class Layer(nn.Module):
         )
         self.rad_length: Optional[Tensor] = None
 
-    def _geant_scatter(self, *, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor) -> Dict[str, Tensor]:
+    def _pgeant_scatter(self, *, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor) -> Dict[str, Tensor]:
         return SCATTER_MODEL.compute_scattering(x0=x0, deltaz=deltaz, theta=theta, theta_x=theta_x, theta_y=theta_y, mom=mom)
 
     def _pdg_scatter(
@@ -70,8 +89,8 @@ class Layer(nn.Module):
     ) -> Dict[str, Tensor]:
         if self.scatter_model == "pdg":
             return self._pdg_scatter(x0=x0, deltaz=deltaz, theta=theta, theta_x=theta_x, theta_y=theta_y, mom=mom)
-        elif self.scatter_model == "geant4":
-            return self._geant_scatter(x0=x0, deltaz=deltaz, theta=theta, theta_x=theta_x, theta_y=theta_y, mom=mom)
+        elif self.scatter_model == "pgeant":
+            return self._pgeant_scatter(x0=x0, deltaz=deltaz, theta=theta, theta_x=theta_x, theta_y=theta_y, mom=mom)
         else:
             raise ValueError(f"Scatter model {self.scatter_model} is not currently supported.")
 
@@ -137,7 +156,7 @@ class PassiveLayer(Layer):
         self.rad_length = rad_length_func(z=self.z, lw=self.lw, size=self.size).to(self.device)
 
     def forward(self, mu: MuonBatch) -> None:
-        if self.scatter_model == "geant4":
+        if self.scatter_model == "pgeant":
             if not SCATTER_MODEL.initialised:
                 SCATTER_MODEL.load_data()  # Delay loading until requrired
             n = int(self.size / SCATTER_MODEL.deltaz)
