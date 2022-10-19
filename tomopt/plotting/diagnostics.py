@@ -15,7 +15,7 @@ def plot_scatter_density(scatter_df: pd.DataFrame, savename: Optional[str] = Non
         fig, axs = plt.subplots(n, 1, figsize=(2 * H_MID / n, 2 * H_MID))
         for i, z in enumerate(zs):
             sns.histplot(data=scatter_df[(scatter_df.layer == z)], x="x", y="y", cmap="viridis", ax=axs[i], cbar=True)
-            axs[i].set_ylabel(f"Layer {z}", fontsize=LBL_SZ, color=LBL_COL)
+            axs[i].set_ylabel(f"AbsLayer {z}", fontsize=LBL_SZ, color=LBL_COL)
             axs[i].set_xlabel("", fontsize=LBL_SZ, color=LBL_COL)
         if savename is not None:
             plt.savefig(savename, bbox_inches="tight")

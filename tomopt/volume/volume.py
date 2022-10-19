@@ -1,4 +1,4 @@
-from tomopt.volume.layer import Layer
+from tomopt.volume.layer import AbsLayer
 from typing import Tuple, List, Callable, Optional
 import numpy as np
 
@@ -90,7 +90,7 @@ class Volume(nn.Module):
                     raise ValueError("All layers must use the same device, but found multiple devices")
         return device
 
-    def __getitem__(self, idx: int) -> Layer:
+    def __getitem__(self, idx: int) -> AbsLayer:
         return self.layers[idx]
 
     def get_detectors(self) -> List[AbsDetectorLayer]:

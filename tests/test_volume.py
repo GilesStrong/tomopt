@@ -6,7 +6,7 @@ import torch
 from torch import Tensor, nn
 import torch.nn.functional as F
 
-from tomopt.volume.layer import Layer
+from tomopt.volume.layer import AbsLayer
 from tomopt.volume import PassiveLayer, Volume, PanelDetectorLayer, DetectorPanel
 from tomopt.optimisation import MuonResampler
 from tomopt.muon import MuonBatch, MuonGenerator2016
@@ -65,7 +65,7 @@ def arb_rad_length(*, z: float, lw: Tensor, size: float) -> float:
 
 
 def test_layer(batch):
-    l = Layer(lw=LW, z=1, size=SZ)
+    l = AbsLayer(lw=LW, z=1, size=SZ)
     batch._x = 0.5
     batch._y = 0.7
     assert torch.all(l.mu_abs2idx(batch)[0] == Tensor([5, 7]))

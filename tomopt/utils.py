@@ -6,11 +6,11 @@ import torch
 from torch import Tensor
 from torch._vmap_internals import _vmap as vmap
 
-__all__ = ["jacobian", "class_to_x0preds", "x0targs_to_classtargs", "x0_from_mixture"]
-
 r"""
 Common utility functions
 """
+
+__all__ = ["jacobian", "class_to_x0preds", "x0targs_to_classtargs", "x0_from_mixture"]
 
 
 if (ver := LooseVersion(torch.__version__)) < LooseVersion("1.10.0"):

@@ -6,7 +6,7 @@ import torch
 from torch import Tensor, nn
 
 from ...volume import Volume, PanelDetectorLayer, PassiveLayer, DetectorPanel
-from ...volume.layer import Layer
+from ...volume.layer import AbsLayer
 from ...optimisation.wrapper import PanelVolumeWrapper
 from ...muon import MuonGenerator2016
 
@@ -22,7 +22,7 @@ def get_small_walls_volume(
     det_height: float = 1.0,
     device: torch.device = torch.device("cpu"),
 ) -> Volume:
-    layers: List[Layer] = []
+    layers: List[AbsLayer] = []
     n_panels = 4
     layers.append(
         PanelDetectorLayer(

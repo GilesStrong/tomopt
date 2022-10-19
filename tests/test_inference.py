@@ -20,7 +20,7 @@ from tomopt.inference import (
     DenseBlockClassifierFromX0s,
 )
 from tomopt.inference.volume import AbsIntClassifierFromX0
-from tomopt.volume.layer import Layer
+from tomopt.volume.layer import AbsLayer
 from tomopt.optimisation import MuonResampler
 from tomopt.utils import jacobian
 
@@ -241,7 +241,7 @@ def test_scatter_batch_compute(mocker, panel_scatter_batch):  # noqa F811
         },
     }
     mocker.patch.object(mu, "get_hits", return_value=hits)
-    mocker.patch("tomopt.volume.layer.Layer.abs2idx", return_value=torch.zeros((1, 3), dtype=torch.long))
+    mocker.patch("tomopt.volume.layer.AbsLayer.abs2idx", return_value=torch.zeros((1, 3), dtype=torch.long))
 
     def mock_jac(y: Tensor, x: Tensor, create_graph: bool = False, allow_unused: bool = True) -> Tensor:
         return torch.zeros(y.shape + x.shape)
@@ -300,7 +300,7 @@ def test_gen_scatter_batch_compute(mocker, panel_scatter_batch):  # noqa F811
         },
     }
     mocker.patch.object(mu, "get_hits", return_value=hits)
-    mocker.patch("tomopt.volume.layer.Layer.abs2idx", return_value=torch.zeros((1, 3), dtype=torch.long))
+    mocker.patch("tomopt.volume.layer.AbsLayer.abs2idx", return_value=torch.zeros((1, 3), dtype=torch.long))
 
     sb = GenScatterBatch(mu=mu, volume=volume)
 
@@ -492,7 +492,7 @@ def test_panel_x0_inferer_efficiency(mocker, panel_scatter_batch):  # noqa F811
 
 @pytest.mark.flaky(max_runs=3, min_passes=1)
 def test_x0_inferer_scatter_inversion(mocker, panel_scatter_batch):  # noqa F811
-    layer = Layer(LW, Z, SZ)
+    layer = AbsLayer(LW, Z, SZ)
     mu, volume, sb = panel_scatter_batch
     inferer = PanelX0Inferer(volume=volume)
     inferer.size = SZ

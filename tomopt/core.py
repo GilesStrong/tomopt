@@ -3,11 +3,12 @@ from typing import Callable, Iterator
 import torch
 from torch import nn
 
-__all__ = ["DEVICE", "SCATTER_COEF_A", "SCATTER_COEF_B", "X0", "DENSITIES", "PartialOpt"]
-
 r"""
 Common global constants, custom variable types, etc.
 """
+
+__all__ = ["DEVICE", "SCATTER_COEF_A", "SCATTER_COEF_B", "X0", "DENSITIES", "PartialOpt"]
+
 
 DEVICE = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 

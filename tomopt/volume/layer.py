@@ -6,7 +6,7 @@ import math
 import torch
 from torch import nn, Tensor
 
-from .scatter_model import SCATTER_MODEL
+from .scatter_model import PGEANT_SCATTER_MODEL
 from ..core import DEVICE, SCATTER_COEF_A, SCATTER_COEF_B
 from ..muon import MuonBatch
 from tomopt.volume.panel import DetectorPanel
@@ -19,7 +19,7 @@ Provides implementations of the layers in z, which are used to construct volumes
 __all__ = ["PassiveLayer", "PanelDetectorLayer"]
 
 
-class Layer(nn.Module, metaclass=ABCMeta):
+class AbsLayer(nn.Module, metaclass=ABCMeta):
     r"""
     Abstract base class for volume layers.
     The length and width (`lw`) is the spans of the layer in metres in x and y, and the layer begins at x=0, y=0.
@@ -71,7 +71,7 @@ class Layer(nn.Module, metaclass=ABCMeta):
             A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, & dy_vol
         """
 
-        return SCATTER_MODEL.compute_scattering(x0=x0, deltaz=deltaz, theta=theta, theta_x=theta_x, theta_y=theta_y, mom=mom)
+        return PGEANT_SCATTER_MODEL.compute_scattering(x0=x0, deltaz=deltaz, theta=theta, theta_x=theta_x, theta_y=theta_y, mom=mom)
 
     def _pdg_scatter(
         self, *, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor, log_term: bool = True
@@ -224,7 +224,7 @@ class Layer(nn.Module, metaclass=ABCMeta):
         pass
 
 
-class PassiveLayer(Layer):
+class PassiveLayer(AbsLayer):
     r"""
     Default layer of containing passive material that scatters the muons.
     The length and width (`lw`) is the spans of the layer in metres in x and y, and the layer begins at x=0, y=0.
@@ -307,10 +307,10 @@ class PassiveLayer(Layer):
         """
 
         if self.scatter_model == "pgeant":
-            if not SCATTER_MODEL.initialised:
-                SCATTER_MODEL.load_data()  # Delay loading until requrired
-            n = int(self.size / SCATTER_MODEL.deltaz)
-            dz = SCATTER_MODEL.deltaz
+            if not PGEANT_SCATTER_MODEL.initialised:
+                PGEANT_SCATTER_MODEL.load_data()  # Delay loading until requrired
+            n = int(self.size / PGEANT_SCATTER_MODEL.deltaz)
+            dz = PGEANT_SCATTER_MODEL.deltaz
         elif self.scatter_model == "pdg":
             dz, n = self.dz_step, self.n_steps
         else:
@@ -321,7 +321,7 @@ class PassiveLayer(Layer):
         mu.propagate(mu.z - (self.z - self.size))  # In case of floating point-precision, ensure muons are at the bottom of the layer
 
 
-class AbsDetectorLayer(Layer, metaclass=ABCMeta):
+class AbsDetectorLayer(AbsLayer, metaclass=ABCMeta):
     r"""
     Abstract base class for layers designed to record muon positions (hits) using detectors.
     Inheriting classes should override a number methods to do with costs/budgets, and hit rrecording.

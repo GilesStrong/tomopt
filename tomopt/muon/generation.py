@@ -10,11 +10,11 @@ from torch import Tensor
 if TYPE_CHECKING:
     from ..volume import Volume
 
-__all__ = ["MuonGenerator2015", "MuonGenerator2016"]
-
 r"""
 Provides generator classes for sampling inital muon kinematics according to literature models.
 """
+
+__all__ = ["MuonGenerator2015", "MuonGenerator2016"]
 
 
 class AbsMuonGenerator:

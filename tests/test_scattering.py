@@ -15,7 +15,7 @@ from fastcore.all import Path
 import torch
 from torch import Tensor
 
-from tomopt.volume import SCATTER_MODEL, PassiveLayer
+from tomopt.volume import PGEANT_SCATTER_MODEL, PassiveLayer
 from tomopt.muon import MuonBatch
 from tomopt.core import X0
 
@@ -29,7 +29,7 @@ def get_scatters(grp: h5py.Group, plots: bool, verbose: bool) -> Dict[str, Any]:
 
     # Init layer
     layer = PassiveLayer(lw=Tensor([1, 1]), z=1, size=0.1)
-    SCATTER_MODEL.load_data()
+    PGEANT_SCATTER_MODEL.load_data()
 
     # Get data & settings
     settings = json.loads(grp["settings"][()])

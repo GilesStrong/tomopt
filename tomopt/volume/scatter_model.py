@@ -7,12 +7,37 @@ import json
 import torch
 from torch import Tensor
 
+r"""
+Provides container classes for different scattering models.
+
+To save on memory and loading time, each scatter model is only loaded once, and all :class:`~tomopt.volume.layer.AbsLayer` will use the same object.
+To avoid loading whenever this file is accessed, the models begin uninitalised, and will only load data when their `load_data` method is called.
+"""
+
 PKG_DIR = Path(os.path.dirname(os.path.abspath(__file__)))  # How robust is this? Could create hidden dir in home and download resources
 
-__all__ = ["SCATTER_MODEL"]
+__all__ = ["PGEANT_SCATTER_MODEL"]
 
 
-class ScatterModel:
+class PGeantScatterModel:
+    r"""
+    Class implementing access to the parameterised GEANT 4 model,
+    as stored in an HDF5 file created by code in https://github.com/GilesStrong/mode_muon_tomography_scattering.
+    The data file should be included in the TomOpt repository, and the package as installed by PIP.
+
+    Data in the file is loaded into tensors and act as a lookup table to provide scattering in terms of angles (`dtheta_params`) and positions (`dxy_params`).
+    These tensors have shapes (8, 35, 10000), corresponding to (material type, momentum bin, scattering),
+    where 'scattering' is designed to be indexed by uniformly distributed random indicies.
+    The materials and momentum bin edges are included in meta data in the HDF5 file.
+
+    .. warning::
+        Currently no interpolation of X0s, or other handling for scattering in materials that were not considered in the fitting of the model, is performed.
+        Instead, 'missing' materials are mapped to the nearest X0 that was used when fitting the model.
+
+    To avoid unecessary loading of data, the model begins uninitalised, and will only load data when `load_data` method is called.
+    Prior to this, certain class attributes relating to the scattering model will not defined.
+    """
+
     dtheta_params: Tensor  # (8, 35, 10000), (x0, mom, rnd)
     dxy_params: Tensor  # (8, 35, 10000), (x0, mom, rnd)
     deltaz: float
@@ -92,4 +117,4 @@ class ScatterModel:
         return {"dtheta_vol": dtheta_vol, "dphi_vol": dphi_vol, "dx_vol": dx_vol, "dy_vol": dy_vol}
 
 
-SCATTER_MODEL = ScatterModel()
+PGEANT_SCATTER_MODEL = PGeantScatterModel()

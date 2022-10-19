@@ -9,6 +9,10 @@ from torch import Tensor
 
 from ..core import DEVICE
 
+r"""
+Provides container classes for a batch of many muons
+"""
+
 __all__ = ["MuonBatch"]
 
 
@@ -27,7 +31,7 @@ class MuonBatch:
     Muon properties should not be updated manually.  Instead, call:
         `.propagate(dz)` to update the x,y,z positions of the muons for a given propagation dz in the z-axis.
         `.scatter_dxy(dx_vol, dy_vol, mask)` to shift the x,y positions of the muons,
-            for which the values of the optional Boolean mask is true, by the speocifed amount.
+            for which the values of the optional Boolean mask is true, by the specifed amount.
         `.scatter_dtheta_dphi(dtheta_vol, dphi_vol, mask)` to alter the theta,phi angles of the muons,
             for which the values of the optional Boolean mask is true, by the speocifed amount.
 
