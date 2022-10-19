@@ -19,10 +19,10 @@ Provides implementations of the layers in z, which are used to construct volumes
 __all__ = ["PassiveLayer", "PanelDetectorLayer"]
 
 
-class Layer(nn.Module):
+class Layer(nn.Module, metaclass=ABCMeta):
     r"""
-    Abstract base class forr volume layers.
-    The length and width (lw) is the spans of the layer in metres in x and y, and the layer begins at x=0, y=0.
+    Abstract base class for volume layers.
+    The length and width (`lw`) is the spans of the layer in metres in x and y, and the layer begins at x=0, y=0.
     z indicates the position of the top of the layer, in meters, and size is the distance from the top of the layer to the bottom.
     size is also used to set the lenght, width, and height of the voxels that make up the layer.
 
@@ -225,6 +225,34 @@ class Layer(nn.Module):
 
 
 class PassiveLayer(Layer):
+    r"""
+    Default layer of containing passive material that scatters the muons.
+    The length and width (`lw`) is the spans of the layer in metres in x and y, and the layer begins at x=0, y=0.
+    z indicates the position of the top of the layer, in meters, and size is the distance from the top of the layer to the bottom.
+    size is also used to set the lenght, width, and height of the voxels that make up the layer.
+
+    ..important::
+        Users must ensure that both the length and width of the layer are divisible by size
+
+    If the layer is set to scatter muons (`rad_length` is not None), then two scattering models are available:
+        'pdg': The default and currently recommended model based on the Gaussian scattering model described in
+            https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf
+        'pgeant': An under-development model based on a parameterised fit to data sampled from GEANT 4
+
+    The X0 values of each voxel is defined via a "radiation-length function", which should return an (n_x,n_y) tensor of voxel X0 values,
+    when called with the `z`, `lw`, and `size` of the layer. For example:
+
+    ```python
+    def arb_rad_length(*, z: float, lw: Tensor, size: float) -> float:
+        rad_length = torch.ones(list((lw / size).long())) * X0["lead"]
+        if z < 0.5:
+            rad_length[...] = X0["beryllium"]
+        return rad_length
+    ```
+
+    This function can either be supplied during initialisation, or later via the `load_rad_length` method.
+    """
+
     def __init__(
         self,
         lw: Tensor,
@@ -235,6 +263,19 @@ class PassiveLayer(Layer):
         scatter_model: str = "pdg",
         device: torch.device = DEVICE,
     ):
+        r"""
+        Arguments:
+            lw: the length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0).
+            z: the z position of the top of layer in metres. The bottom of the layer will be located at z-size
+            size: the voxel size in metres. Must be such that lw is divisible by the specified size.
+            rad_length_func: lookup function that returns an (n_x,n_y) tensor of voxel X0 values for the layer.
+                After initialisation, the `load_rad_length` method may be used to load X0 layouts.
+            dz_step: The step size in metres over which to compute muon propagation and scattering.
+                Should be such that the `size` of the layer is divisble by `dz_step`.
+            scatter_model: String selection for the scattering model to use. Currently either 'pdg' or 'pgeant'.
+            device: device on which to place tensors
+        """
+
         super().__init__(lw=lw, z=z, size=size, device=device)
         self.dz_step = dz_step
         self.n_steps = int(np.round(self.size / self.dz_step))
@@ -246,9 +287,25 @@ class PassiveLayer(Layer):
         return f"""PassiveLayer located at z={self.z}"""
 
     def load_rad_length(self, rad_length_func: Callable[..., Tensor]) -> None:
+        r"""
+        Loads a new X0 layout into the layer voxels.
+
+        Arguments:
+            rad_length_func: lookup function that returns an (n_x,n_y) tensor of voxel X0 values for the layer.
+        """
+
         self.rad_length = rad_length_func(z=self.z, lw=self.lw, size=self.size).to(self.device)
 
     def forward(self, mu: MuonBatch) -> None:
+        r"""
+        Propagates the muons through the layer to the bottom in a series of scattering steps.
+        If the 'pdg' model is used, then the step size is the `dz_step` of the layer, as supplied during intiialisation.
+        If the 'pgeant' model is used, the the step size specified as part of the fitting of the scattering model.
+
+        Arguments:
+            mu: the incoming batch of muons
+        """
+
         if self.scatter_model == "pgeant":
             if not SCATTER_MODEL.initialised:
                 SCATTER_MODEL.load_data()  # Delay loading until requrired
@@ -265,7 +322,30 @@ class PassiveLayer(Layer):
 
 
 class AbsDetectorLayer(Layer, metaclass=ABCMeta):
-    _n_costs = 0
+    r"""
+    Abstract base class for layers designed to record muon positions (hits) using detectors.
+    Inheriting classes should override a number methods to do with costs/budgets, and hit rrecording.
+
+    When optimisation of operating in 'fixed budget' mode, the :class:`~tomopt.volume.volume.Volume` will check the `_n_costs` class attribute of the layer
+    and will add this to the total number of leanrable budget assignements, and pass that number of budgets as an (_n_costs) tensor.
+    By default this is zero, and inheriting classes should set the correct number during initialisation, or via a new default value.
+
+    Some parts of TomOpt act differently on detector layers, according to how the detectors are modelled.
+    A `type_label` attribute is used to encode extra information, rather than relying purely on the object-instance type.
+
+    Multiple detection layers can be grouped together, via their `pos` attribute (position); a string-encoded value.
+    By dfault, the inferrence methods expect detectors above the passive layer to have `pos=='above'`,
+    and those below the passive volume to have `pos=='below'`.
+    When retriving hits from the muon batch, hits will be stacked together with other hits from the same `pos`.
+
+    The length and width (`lw`) is the spans of the layer in metres in x and y, and the layer begins at x=0, y=0.
+    z indicates the position of the top of the layer, in meters, and size is the distance from the top of the layer to the bottom.
+
+    .. important::
+        By default, the detectors will not scatter muons.
+    """
+
+    _n_costs = 0  # number of budgets that the detector layer requests
 
     def __init__(
         self,
@@ -276,43 +356,120 @@ class AbsDetectorLayer(Layer, metaclass=ABCMeta):
         size: float,
         device: torch.device = DEVICE,
     ):
+        r"""
+        Arguments:
+            pos: string-encoding of the detector-layer group
+            lw: the length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0).
+            z: the z position of the top of layer in metres. The bottom of the layer will be located at z-size
+            size: the voxel size in metres. Must be such that lw is divisible by the specified size.
+            device: device on which to place tensors
+        """
+
         super().__init__(lw=lw, z=z, size=size, device=device)
         self.pos = pos
         self.type_label = ""
 
     @abstractmethod
     def forward(self, mu: MuonBatch) -> None:
+        r"""
+        Inheriting classes should override this method to implement the passage of the muons through the layer,
+        and record muon positions (hits) according to tthe detector model.
+
+        Arguments:
+            mu: the incoming batch of muons
+        """
         pass
 
     @abstractmethod
     def get_cost(self) -> Tensor:
+        r"""
+        Inheriting classes should override this method to return the total, current cost of the detector(s) in the layer.
+
+        Returns:
+            Single-element tensor with the current total cost of the detector in the layer.
+        """
+
         pass
 
     def conform_detector(self) -> None:
+        r"""
+        Optional method deisgned to ensure that the detector parameters lie within any require boundaries, etc.
+        It will be called via the :class:`~tomopt.optimisation.wrapper.AbsVolumeWrapper` after any update to the detector layers, but by default does nothing.
+        """
+
         pass
 
     def assign_budget(self, budget: Optional[Tensor]) -> None:
         r"""
-        For assigning budget withput calling forward
+        Inheriting classes should override this method to correctly assign elements of an (_n_costs) tensor to the parts of the detector to which they relate.
+        All ordering of the tensor is defined using the function,
+        but proper optimisation of the budgets may rerquire that the same ordering is used, or that it is deterministic.
+
+        Arguments:
+            budget: (_n_costs) tensor of budget assignments in unit currency
         """
 
         pass
 
 
 class PanelDetectorLayer(AbsDetectorLayer):
-    def __init__(self, pos: str, lw: Tensor, z: float, size: float, panels: Union[List[DetectorPanel], List[DetectorHeatMap], nn.ModuleList]):
+    r"""
+    A detector layer class that uses multiple "panels" to record muon positions (hits).
+    Currently, two "panel" types are available: :class:`~tomopt.volume.panel.DetectorPanel` and :class:`~tomopt.volume.heatmap.DetectorHeatMap`
+    Each detector layer, however, should contain the same type of panel, as this is used to set the `type_label` of the layer.
+
+    When optimisation of operating in 'fixed budget' mode, the :class:`~tomopt.volume.volume.Volume` will check the `_n_costs` class attribute of the layer
+    and will add this to the total number of leanrable budget assignements, and pass that number of budgets as an (_n_costs) tensor.
+    During initialisation, this is set to the number of panels in the layer, at time of initialisation.
+
+    Multiple detection layers can be grouped together, via their `pos` attribute (position); a string-encoded value.
+    By dfault, the inferrence methods expect detectors above the passive layer to have `pos=='above'`,
+    and those below the passive volume to have `pos=='below'`.
+    When retriving hits from the muon batch, hits will be stacked together with other hits from the same `pos`.
+
+    The length and width (`lw`) is the spans of the layer in metres in x and y, and the layer begins at x=0, y=0.
+    z indicates the position of the top of the layer, in meters, and size is the distance from the top of the layer to the bottom.
+
+    .. important::
+        The detector panels do not scatter muons.
+    """
+
+    def __init__(self, pos: str, *, lw: Tensor, z: float, size: float, panels: Union[List[DetectorPanel], List[DetectorHeatMap], nn.ModuleList]):
+        r"""
+        Arguments:
+            pos: string-encoding of the detector-layer group
+            lw: the length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0).
+            z: the z position of the top of layer in metres. The bottom of the layer will be located at z-size
+            size: the voxel size in metres. Must be such that lw is divisible by the specified size.
+            panels: The set of initialised panels to contain in the detector layer
+        """
+
         if isinstance(panels, list):
             panels = nn.ModuleList(panels)
         super().__init__(pos=pos, lw=lw, z=z, size=size, device=self.get_device(panels))
+
         self.panels = panels
-        self._n_costs = len(self.panels)
         if isinstance(panels[0], DetectorHeatMap):
             self.type_label = "heatmap"
+            self._n_costs = len(self.panels)
+
         elif isinstance(panels[0], DetectorPanel):
             self.type_label = "panel"
+            self._n_costs = len(self.panels)
 
     @staticmethod
     def get_device(panels: nn.ModuleList) -> torch.device:
+        r"""
+        Helper method to ensure that all panels are on the same device, and return that device.
+        If not all the panels are on the same device, then an exception will be raised.
+
+        Arguments:
+            panels: ModuleLists of either :class:`~tomopt.volume.panel.DetectorPanel` or :class:`~tomopt.volume.heatmap.DetectorHeatMap` objects on device
+
+        Returns:
+            Device on which all the panels are.
+        """
+
         device = panels[0].device
         if len(panels) > 1:
             for p in panels[1:]:
@@ -321,13 +478,30 @@ class PanelDetectorLayer(AbsDetectorLayer):
         return device
 
     def get_panel_zorder(self) -> List[int]:
+        r"""
+        Returns:
+            The indices of the panels in order of decreasing z-position.
+        """
+
         return list(np.argsort([p.z.detach().cpu().item() for p in self.panels])[::-1])
 
     def yield_zordered_panels(self) -> Union[Iterator[Tuple[int, DetectorPanel]], Iterator[Tuple[int, DetectorHeatMap]]]:
+        r"""
+        Yields the index of the panel, and the panel, in order of decreasing z-position.
+
+        Returns:
+            Iterator yielding panel indicies and panels in order of decreasing z-position.
+        """
+
         for i in self.get_panel_zorder():
             yield i, self.panels[i]
 
     def conform_detector(self) -> None:
+        r"""
+        Loops through panels and calls their `clamp_params` method, to ensure that panels are located within the bounds of the detector layer.
+        It will be called via the :class:`~tomopt.optimisation.wrapper.AbsVolumeWrapper` after any update to the detector layers.
+        """
+
         lw = self.lw.detach().cpu().numpy()
         z = self.z.detach().cpu()[0]
         for p in self.panels:
@@ -348,6 +522,14 @@ class PanelDetectorLayer(AbsDetectorLayer):
                 )
 
     def forward(self, mu: MuonBatch) -> None:
+        r"""
+        Propagates muons to each detector panel, in order of decreasing z-position, and calls their `get_hits` method to record hits to the muon batch.
+        After this, the muons will be propagated to the bottom of the detector layer.
+
+        Arguments:
+            mu: the incoming batch of muons
+        """
+
         for i, p in self.yield_zordered_panels():
             self.scatter_and_propagate(mu, mu.z - p.z.detach())  # Move to panel
             hits = p.get_hits(mu)
@@ -355,12 +537,29 @@ class PanelDetectorLayer(AbsDetectorLayer):
         self.scatter_and_propagate(mu, mu.z - (self.z - self.size))  # Move to bottom of layer
 
     def get_cost(self) -> Tensor:
+        r"""
+        Returns the total, current cost of the detector(s) in the layer, as compuyted by looping over the panels and summing the returned values of calls to
+        their `get_cost` methods.
+
+        Returns:
+            Single-element tensor with the current total cost of the detector in the layer.
+        """
+
         cost = None
         for p in self.panels:
             cost = p.get_cost() if cost is None else cost + p.get_cost()
         return cost
 
     def assign_budget(self, budget: Optional[Tensor]) -> None:
+        r"""
+        Passes elements of an (_n_costs) tensor to each of the panels' `assign_budget` method.
+        Panels are ordered by decreasing z-position, i.e. the zeroth budget element will relate always to the highest panel,
+        rather than necessarily to the same panel through the optimisation process
+        # TODO investigate whether it would be better to instead assign budgets based on a fixed ordering, rather than the z-order of the panels.
+
+        Arguments:
+            budget: (_n_costs) tensor of budget assignments in unit currency
+        """
         if budget is not None:
             i = 0
             for _, p in self.yield_zordered_panels():  # This really should be an enumerate, but MyPy then thinks assign_budget is a Tensor...
