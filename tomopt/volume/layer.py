@@ -29,13 +29,22 @@ class Layer(nn.Module):
     ..important::
         Users must ensure that both the length and width of the layer are divisible by size
 
-    If the layer is meant to scatter muons (`rad_length` is not None), then two scattering models are available:
+    If the layer is set to scatter muons (`rad_length` is not None), then two scattering models are available:
         'pdg': The default and currently recommended model based on the Gaussian scattering model described in
             https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf
         'pgeant': An under-development model based on a parameterised fit to data sampled from GEANT 4
     """
 
     def __init__(self, lw: Tensor, z: float, size: float, scatter_model: str = "pdg", device: torch.device = DEVICE):
+        r"""
+        Arguments:
+            lw: the length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0).
+            z: the z position of the top of layer in metres. The bottom of the layer will be located at z-size
+            size: the voxel size in metres. Must be such that lw is divisible by the specified size.
+            scatter_model: String selection for the scattering model to use. Currently either 'pdg' or 'pgeant'.
+            device: device on which to place tensors
+        """
+
         super().__init__()
         self.lw, self.z, self.size, self.scatter_model, self.device = (
             lw.to(device),
@@ -47,13 +56,39 @@ class Layer(nn.Module):
         self.rad_length: Optional[Tensor] = None
 
     def _pgeant_scatter(self, *, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor) -> Dict[str, Tensor]:
+        r"""
+        Computes the scattering of the muons using the parametersised GEANT 4 model.
+
+        Arguments:
+            x0: (N) tensor of the X0 of the voxel each muon is traversing
+            deltaz: The amound of distance the muons will travel in the z direction in metres
+            theta: (N) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons
+            theta_x: (N) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons' frame to the volume's
+            theta_y: (N) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons' frame to the volume's
+            mom: (N) tensor of the absolute value of the momentum of each muon
+
+        Retruns:
+            A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, & dy_vol
+        """
+
         return SCATTER_MODEL.compute_scattering(x0=x0, deltaz=deltaz, theta=theta, theta_x=theta_x, theta_y=theta_y, mom=mom)
 
     def _pdg_scatter(
         self, *, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor, log_term: bool = True
     ) -> Dict[str, Tensor]:
         r"""
-        Returns dx, dy, dtheta_x, dtheta_y of the muons in the refernce frame of the volume
+        Computes the scattering of the muons using the PDG model https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf
+
+        Arguments:
+            x0: (N) tensor of the X0 of the voxel each muon is traversing
+            deltaz: The amound of distance the muons will travel in the z direction in metres
+            theta: (N) tensor of the theta angles of the muons. This is used to compute teh total flight path of the muons
+            theta_x: (N) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons' frames to the volume's
+            theta_y: (N) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons' frames to the volume's
+            mom: (N) tensor of the absolute value of the momentum of each muon
+
+        Retruns:
+            A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, & dy_vol
         """
 
         flight = deltaz / torch.cos(theta)
@@ -87,6 +122,20 @@ class Layer(nn.Module):
     def _compute_scattering(
         self, *, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor
     ) -> Dict[str, Tensor]:
+        r"""
+        Computes the scattering of the muons using the chosen model
+
+        Arguments:
+            x0: (N) tensor of the X0 of the voxel each muon is traversing
+            deltaz: The amound of distance the muons will travel in the z direction in metres
+            theta: (N) tensor of the theta angles of the muons. This is used to compute teh total flight path of the muons
+            theta_x: (N) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons' frames to the volume's
+            theta_y: (N) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons' frames to the volume's
+            mom: (N) tensor of the absolute value of the momentum of each muon
+
+        Retruns:
+            A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, & dy_vol
+        """
         if self.scatter_model == "pdg":
             return self._pdg_scatter(x0=x0, deltaz=deltaz, theta=theta, theta_x=theta_x, theta_y=theta_y, mom=mom)
         elif self.scatter_model == "pgeant":
@@ -95,10 +144,18 @@ class Layer(nn.Module):
             raise ValueError(f"Scatter model {self.scatter_model} is not currently supported.")
 
     def scatter_and_propagate(self, mu: MuonBatch, deltaz: Union[Tensor, float]) -> None:
-        """
-        This function produces a model of multiple scattering through a layer of material
-        of depth deltaz
-        TODO: Expand to sum over traversed voxels
+        r"""
+        Propagates the muons through (part of) the layer, such that afterwards all the muons are deltaz lower than their starting position.
+        If the layer is set to scatter muons (`rad_length` is not None),
+        then the muons will also undergo scattering (changes in their trajectories and positions) according to the scatter model of the layer.
+
+        .. warning::
+            When computing scatterings, the X0 used for eaach muon is that of the starting voxel:
+            If a muon moves into a neighbouring voxel of differing X0, then this will only be accounted for in the next deltaz step.
+
+        Arguments:
+            mu: muons to propagate
+            deltaz: amount of distance in metres in the negative z direction that the muons shoudl travel (positive number lowers the muon position)
         """
 
         if self.rad_length is not None:
@@ -118,16 +175,52 @@ class Layer(nn.Module):
             mu.propagate(deltaz)
 
     def mu_abs2idx(self, mu: MuonBatch, mask: Optional[Tensor] = None) -> Tensor:
+        r"""
+        Helper method to return the voxel indices in the layer that muons currently occupy.
+
+        .. warning::
+            This method does NOT account for the possibility of muons being outside the layer.
+            Please also supply a mask, to only select muons inside the layer.
+
+        Arguments:
+            mu: muons to look up
+            mask: Optional (N) Boolean tensor where True indicates that the muon position should be checked
+
+        Returns:
+            (N,2) tensor of voxel indices in x,y
+        """
+
         xy = mu.xy
         if mask is not None:
             xy = xy[mask]
         return self.abs2idx(xy)
 
     def abs2idx(self, xy: Tensor) -> Tensor:
+        r"""
+        Helper method to return the voxel indices in the layer of the supplied tensor of xy positions.
+
+        .. warning::
+            This method does NOT account for the possibility of positions may be outside the layer.
+            Please ensure that positions are inside the layer.
+
+        Arguments:
+            xy: (N,2) tensor of absolute xy postions in metres in the volume frame
+
+        Returns:
+            (N,2) tensor of voxel indices in x,y
+        """
+
         return torch.floor(xy / self.size).long()
 
     @abstractmethod
     def forward(self, mu: MuonBatch) -> None:
+        r"""
+        Inheriting classes should override this method to implement the passage of the muons through the layer.
+
+        Arguments:
+            mu: the incoming batch of muons
+        """
+
         pass
 
 
