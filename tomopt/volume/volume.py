@@ -9,11 +9,46 @@ import torch.nn.functional as F
 from .layer import AbsDetectorLayer, PassiveLayer
 from ..muon import MuonBatch
 
+r"""
+Provides implementation of wrapper classes for containing multiple passive layers and detector layers, which act as interfaces to them.
+"""
+
 __all__ = ["Volume"]
 
 
 class Volume(nn.Module):
+    r"""
+    The `Volume` class is used to contain both passive layers and detector layers.
+    It is designed to act as an interface to them for the convenicence of e.g. :class:`~tomopt.optimisation.wrapper.volume_wrapper.VolumeWrapper`,
+    and to allow new passive-volume layouts to be loaded.
+
+    When optimisation is acting in `fixed-budget` mode, the volume is also responsible for learning the optimal assignments of the budget to detector parts.
+
+    Volumes can also have a "target" value. This could be e.g. the class ID of the passive-volume configuration which is currently loaded.
+    See e.g. :class:`~tomopt.optimisation.loss.VolumeClassLoss`.
+    The target can be set as part of the call to :meth:`~tomopt.volume.volume.Volume.load_rad_length`
+
+    The volume is expected to have its low-left-front (zxy) corner located at (0,0,0) metres.
+
+    .. important::
+        Currently this class expects that all :class:`~tomopt.volume.layer.PassiveLayer`s form a single contiguous block,
+        i.e. it does not currently support sparse, or multiple, passive volumes.
+    """
+
     def __init__(self, layers: nn.ModuleList, budget: Optional[float] = None):
+        r"""
+        Initialises the volule with the set of layers (both detector and passive),
+        which should be supplied as a `torch.nn.ModuleList` ordered in decreasing z position.
+        Supplying a value for the optional budget, here, will preparet he volume to learn budget assignments to the detectors,
+        and configure the detectors for the budget.
+
+        Arguments:
+            layers: `torch.nn.ModuleList` of instatiated :class:`~tomopt.volume.layer.AbsLayer`s, ordered in decreasing z position.
+            budget: optional budget of the detector in currency units.
+                Supplying a value for the optional budget, here, will preparet he volume to learn budget assignments to the detectors,
+                and configure the detectors for the budget.
+        """
+
         super().__init__()
         self.layers = layers
         self._device = self._get_device()
@@ -27,7 +62,18 @@ class Volume(nn.Module):
 
     def _configure_budget(self) -> None:
         r"""
-        Currently only accounts for detector costs
+        Creates a list of learnable parameters, which acts as the fractional assignement of the total budget to various parts of the detectors.
+        The `budget_weights` contains all these assignments with no explicit heirachy.
+
+        Ordering of the elements is thus:
+            Each layer, as ordered in `layers` is checked for a `get_cost` attribute.
+                If the layer has this attribute, then the number of costs that that layer has `layer._n_costs` is appended to a list, `_n_layer_costs`
+            A tensor, `budget_weights`, is then instatiated with a number of zero-valued elements equal to the total number of individual detector costs
+
+        When assigning budgets to layers, the budget weights are softmax-normalised to one, and multiplied by the total budget.
+        Slices of these budgets are then passed to the layers, with the length of the slices being taken from `_n_layer_costs`.
+
+        After the `budget_weights` are initialised, the :meth:`~tomopt.volume.volume.Volume.assign_budget` is called automatically.
         """
 
         self._n_layer_costs = [l._n_costs for l in self.layers if hasattr(l, "get_cost")]  # Number of different costs in the detector layer
@@ -36,17 +82,29 @@ class Volume(nn.Module):
 
     @property
     def edges(self) -> Tensor:
+        r"""
+        zxy locations of low-left-front edges of voxels in the passive layers of the volume.
+        """
+
         if self._edges is None:
             self._edges = self.build_edges()
         return self._edges
 
     @property
     def centres(self) -> Tensor:
+        r"""
+        zxy locations of the centres of voxels in the passive layers of the volume.
+        """
+
         if self._edges is None:
             self._edges = self.build_edges()
         return self._edges + (self.passive_size / 2)
 
     def build_edges(self) -> Tensor:
+        r"""
+        Computes the zxy locations of low-left-front edges of voxels in the passive layers of the volume.
+        """
+
         bounds = (
             self.passive_size
             * np.mgrid[
@@ -63,6 +121,10 @@ class Volume(nn.Module):
         )  # TODO: Check that xyz shape is expected, and not zxy
 
     def _check_passives(self) -> None:
+        r"""
+        Ensures that all :class:`~tomopt.volume.layer.PassiveLayer`s have the same sizes
+        """
+
         lw, sz = None, None
         for l in self.get_passives():
             if lw is None:
@@ -80,6 +142,13 @@ class Volume(nn.Module):
 
     @property
     def target(self) -> Optional[Tensor]:
+        r"""
+        Returns:
+            The "target" value of the volume. This could be e.g. the class ID of the passive-volume configuration which is currently loaded.
+            See e.g. :class:`~tomopt.optimisation.loss.VolumeClassLoss`.
+            The target can be set as part of the call to :meth:`~tomopt.volume.volume.Volume.load_rad_length`
+        """
+
         return self._target
 
     def _get_device(self) -> torch.device:
@@ -94,12 +163,27 @@ class Volume(nn.Module):
         return self.layers[idx]
 
     def get_detectors(self) -> List[AbsDetectorLayer]:
+        r"""
+        Returns:
+            A list of all :class:`~tomopt.volume.layer.AbsDetectorLayer`s in the volume, in the order of `layers` (normally decresing z position)
+        """
+
         return [l for l in self.layers if isinstance(l, AbsDetectorLayer)]
 
     def get_passives(self) -> List[PassiveLayer]:
+        r"""
+        Returns:
+            A list of all :class:`~tomopt.volume.layer.PassiveLayer`s in the volume, in the order of `layers` (normally decresing z position)
+        """
+
         return [l for l in self.layers if isinstance(l, PassiveLayer)]
 
     def get_rad_cube(self) -> Tensor:
+        r"""
+        Returns:
+            zxy tensor of the values stored in the voxels of the passive volume, with the lowest layer being found in the zeroth z index position.
+        """
+
         vols = list(reversed(self.get_passives()))  # reversed to match lookup_xyz_coords: layer zero = bottom layer
         if len(vols) == 0:
             raise ValueError("self.layers contains no passive layers")
@@ -110,7 +194,19 @@ class Volume(nn.Module):
             raise AttributeError("None of volume layers have a non-None rad_length attribute")
 
     def lookup_passive_xyz_coords(self, xyz: Tensor) -> Tensor:
-        r"""Assume same size for all layers for now and no intermedeate detector layers"""
+        r"""
+        Looks up the voxel indicies of the supplied list of absolute positions in the volume frame
+
+        .. warning::
+            Assumes the same size for all passive layers, and that they form a single contiguous block
+
+        Arguments:
+            xyz: an (N,3) tensor of absolute positions in the volume frame
+
+        Returns:
+            an (N,3) tensor of zero-ordered voxel indicies, which correspond to the supplied positions
+        """
+
         if len(xyz.shape) == 1:
             xyz = xyz[None, :]
 
@@ -122,11 +218,28 @@ class Volume(nn.Module):
         return torch.floor(xyz / self.passive_size).long()
 
     def load_rad_length(self, rad_length_func: Callable[..., Tensor], target: Optional[Tensor] = None) -> None:
+        r"""
+        Loads a new passive-volume configuration.
+        Optionally, a "target" for the configuration may also be supplied.
+        This could be e.g. the class ID of the passive-volume configuration which is currently loaded.
+        See e.g. :class:`~tomopt.optimisation.loss.VolumeClassLoss`.
+
+        Arguments:
+            rad_length_func: lookup function that returns an (n_x,n_y) tensor of voxel X0 values for the layer.
+            target: optional target for the new layout
+        """
+
         self._target = target
         for p in self.get_passives():
             p.load_rad_length(rad_length_func)
 
     def assign_budget(self) -> None:
+        r"""
+        Distributed the total budget for the detector system amongst the various sub-detectors.
+        When assigning budgets to layers, the budget weights are softmax-normalised to one, and multiplied by the total budget.
+        Slices of these budgets are then passed to the layers, with the length of the slices being taken from `_n_layer_costs`.
+        """
+
         if self.budget is not None:
             budget_idx, layer_idx = 0, 0
             layer_budgets = self.budget * F.softmax(self.budget_weights, dim=-1)
@@ -137,7 +250,15 @@ class Volume(nn.Module):
                     budget_idx += n
                     layer_idx += 1
 
-    def forward(self, mu: MuonBatch) -> None:  # Expand to take volume as input, too
+    def forward(self, mu: MuonBatch) -> None:
+        r"""
+        Propagates muons through each layer in turn.
+        Prior to propagating muons, the :meth:`~tomopt.volume.volume.Volume.assign_budget` method is called.
+
+        Arguments:
+            mu: the incoming batch of muons
+        """
+
         self.assign_budget()
 
         for l in self.layers:
@@ -145,6 +266,12 @@ class Volume(nn.Module):
             mu.snapshot_xyz()
 
     def get_cost(self) -> Tensor:
+        r"""
+        Returns:
+            The total, current cost of the layers in the volume,
+                or the assigned budget for the volume (these two values should be the same but, the actual cost won't be evaluated explicitly)
+        """
+
         cost = None
         if self.budget is not None:
             return self.budget
@@ -161,16 +288,36 @@ class Volume(nn.Module):
 
     @property
     def lw(self) -> Tensor:
+        r"""
+        Returns:
+            The length and width of the passive volume
+        """
+
         return self.get_passives()[-1].lw  # Same LW for each passive layer
 
     @property
     def passive_size(self) -> float:
+        r"""
+        Returns:
+            The size of voxels in the passive volume
+        """
+
         return self.get_passives()[-1].size  # Same size for each passive layer
 
     @property
     def h(self) -> Tensor:
+        r"""
+        Returns:
+            The height of the volume (including both passive and detector layers), as computed from the z position of the zeroth layer.
+        """
+
         return self.layers[0].z
 
     def get_passive_z_range(self) -> Tuple[Tensor, Tensor]:
+        r"""
+        Returns:
+            The z position of the bottom of the lowest passive layer, and the z position of the top of the highest passive layer.
+        """
+
         ps = self.get_passives()
         return ps[-1].z - self.passive_size, ps[0].z
