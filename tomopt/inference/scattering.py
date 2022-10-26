@@ -171,25 +171,6 @@ class AbsScatterBatch(metaclass=ABCMeta):
 
         return vec, start
 
-    @staticmethod
-    def _compute_theta_msc(p: Tensor, q: Tensor) -> Tensor:
-        r"""
-        Computes the angle between sets of vectors p and q via the cosine dot-product.
-
-        .. warning::
-            This angle is NOT the total amount of scattering; please use `total_scatter`.
-            This code is kept in case the angle is still useful for inference.
-
-        Arguments:
-            p: (N,xyz) vectors 1
-            q: (N,xyz) vectors 2
-
-        Returns:
-           (N,1) angles between vectors
-        """
-
-        return torch.arccos((p * q).sum(-1, keepdim=True) / (p.norm(dim=-1, keepdim=True) * q.norm(dim=-1, keepdim=True)))
-
     def get_scatter_mask(self) -> Tensor:
         r"""
         Returns:
@@ -297,6 +278,25 @@ class AbsScatterBatch(metaclass=ABCMeta):
         axs[2].set_ylabel("y")
         axs[2].legend()
         plt.show()
+
+    @staticmethod
+    def _compute_theta_msc(p: Tensor, q: Tensor) -> Tensor:
+        r"""
+        Computes the angle between sets of vectors p and q via the cosine dot-product.
+
+        .. warning::
+            This angle is NOT the total amount of scattering; please use `total_scatter`.
+            This code is kept in case the angle is still useful for inference.
+
+        Arguments:
+            p: (N,xyz) vectors 1
+            q: (N,xyz) vectors 2
+
+        Returns:
+           (N,1) angles between vectors
+        """
+
+        return torch.arccos((p * q).sum(-1, keepdim=True) / (p.norm(dim=-1, keepdim=True) * q.norm(dim=-1, keepdim=True)))
 
     @staticmethod
     def _compute_theta(track: Tensor) -> Tensor:

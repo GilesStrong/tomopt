@@ -389,14 +389,14 @@ def test_panel_x0_inferer_methods(mocker):  # noqa F811
         assert p is None
 
     mocker.spy(inferer, "_combine_scatters")
-    mocker.spy(inferer, "get_voxel_zxy_x0_preds")
+    mocker.spy(inferer, "_get_voxel_zxy_x0_preds")
     inferer.vox_zxy_x0_preds
     assert inferer._combine_scatters.call_count == 1
-    assert inferer.get_voxel_zxy_x0_preds.call_count == 1
+    assert inferer._get_voxel_zxy_x0_preds.call_count == 1
 
     p1, w1 = inferer.get_prediction()
     assert inferer._combine_scatters.call_count == 1
-    assert inferer.get_voxel_zxy_x0_preds.call_count == 1
+    assert inferer._get_voxel_zxy_x0_preds.call_count == 1
     assert isinstance(inferer._muon_probs_per_voxel_zxy, Tensor)
 
     true = volume.get_rad_cube()
@@ -438,7 +438,7 @@ def test_panel_x0_inferer_methods(mocker):  # noqa F811
     p2, w2 = inferer.get_prediction()  # Averaged prediction slightly changes with new batch
     assert (p2 - p1).abs().sum() > 1e-2
     assert (w2 - w1).abs().sum() > 1e-2
-    assert inferer.get_voxel_zxy_x0_preds.call_count == 2
+    assert inferer._get_voxel_zxy_x0_preds.call_count == 2
 
 
 def test_panel_inferer_multi_batch():
