@@ -9,6 +9,14 @@ __all__ = ["plot_scatter_density", "plot_hit_density"]
 
 
 def plot_scatter_density(scatter_df: pd.DataFrame, savename: Optional[str] = None) -> None:
+    r"""
+    Plots the position of PoCAs in the passive volume, as recorded using :class:`~tomopt.optimisation.callbacks.diagnostic_callbacks.ScatterRecord`.
+
+    Arguments:
+        scatter_df: Dataframe of recorded PoCAs, as returned by :meth:`~tomopt.optimisation.callbacks.diagnostic_callbacks.ScatterRecord.get_record`
+        savename: optional savename to save the plot
+    """
+
     with sns.axes_style(style="whitegrid", rc={"patch.edgecolor": "none"}):
         zs = sorted(scatter_df.layer.unique())
         n = len(zs)
@@ -23,4 +31,12 @@ def plot_scatter_density(scatter_df: pd.DataFrame, savename: Optional[str] = Non
 
 
 def plot_hit_density(hit_df: pd.DataFrame, savename: Optional[str] = None) -> None:
+    r"""
+    Plots the position of muon hits in the detectors, as recorded using :class:`~tomopt.optimisation.callbacks.diagnostic_callbacks.HitRecord`.
+
+    Arguments:
+        hit_df: Dataframe of recorded hits, as returned by :meth:`~tomopt.optimisation.callbacks.diagnostic_callbacks.HitRecord.get_record`
+        savename: optional savename to save the plot
+    """
+
     plot_scatter_density(hit_df, savename)
