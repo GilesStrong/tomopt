@@ -55,6 +55,86 @@ class AbsLayer(nn.Module, metaclass=ABCMeta):
         )
         self.rad_length: Optional[Tensor] = None
 
+    @abstractmethod
+    def forward(self, mu: MuonBatch) -> None:
+        r"""
+        Inheriting classes should override this method to implement the passage of the muons through the layer.
+
+        Arguments:
+            mu: the incoming batch of muons
+        """
+
+        pass
+
+    def scatter_and_propagate(self, mu: MuonBatch, deltaz: Union[Tensor, float]) -> None:
+        r"""
+        Propagates the muons through (part of) the layer, such that afterwards all the muons are deltaz lower than their starting position.
+        If the layer is set to scatter muons (`rad_length` is not None),
+        then the muons will also undergo scattering (changes in their trajectories and positions) according to the scatter model of the layer.
+
+        .. warning::
+            When computing scatterings, the X0 used for eaach muon is that of the starting voxel:
+            If a muon moves into a neighbouring voxel of differing X0, then this will only be accounted for in the next deltaz step.
+
+        Arguments:
+            mu: muons to propagate
+            deltaz: amount of distance in metres in the negative z direction that the muons shoudl travel (positive number lowers the muon position)
+        """
+
+        if self.rad_length is not None:
+            mask = mu.get_xy_mask((0, 0), self.lw)  # Only scatter muons inside volume
+            xy_idx = self.mu_abs2idx(mu, mask)
+
+            x0 = self.rad_length[xy_idx[:, 0], xy_idx[:, 1]]
+            scatterings = self._compute_scattering(
+                x0=x0, deltaz=deltaz, theta=mu.theta[mask], theta_x=mu.theta_x[mask], theta_y=mu.theta_y[mask], mom=mu.mom[mask]
+            )
+
+            # Update to position at scattering.
+            mu.scatter_dxy(dx_vol=scatterings["dx_vol"], dy_vol=scatterings["dy_vol"], mask=mask)
+            mu.propagate(deltaz)
+            mu.scatter_dtheta_dphi(dtheta_vol=scatterings["dtheta_vol"], dphi_vol=scatterings["dphi_vol"], mask=mask)
+        else:
+            mu.propagate(deltaz)
+
+    def mu_abs2idx(self, mu: MuonBatch, mask: Optional[Tensor] = None) -> Tensor:
+        r"""
+        Helper method to return the voxel indices in the layer that muons currently occupy.
+
+        .. warning::
+            This method does NOT account for the possibility of muons being outside the layer.
+            Please also supply a mask, to only select muons inside the layer.
+
+        Arguments:
+            mu: muons to look up
+            mask: Optional (muons) Boolean tensor where True indicates that the muon position should be checked
+
+        Returns:
+            (muons,2) tensor of voxel indices in x,y
+        """
+
+        xy = mu.xy
+        if mask is not None:
+            xy = xy[mask]
+        return self.abs2idx(xy)
+
+    def abs2idx(self, xy: Tensor) -> Tensor:
+        r"""
+        Helper method to return the voxel indices in the layer of the supplied tensor of xy positions.
+
+        .. warning::
+            This method does NOT account for the possibility of positions may be outside the layer.
+            Please ensure that positions are inside the layer.
+
+        Arguments:
+            xy: (N,xy) tensor of absolute xy postions in metres in the volume frame
+
+        Returns:
+            (N,xy) tensor of voxel indices in x,y
+        """
+
+        return torch.floor(xy / self.size).long()
+
     def _pgeant_scatter(self, *, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor) -> Dict[str, Tensor]:
         r"""
         Computes the scattering of the muons using the parametersised GEANT 4 model.
@@ -142,86 +222,6 @@ class AbsLayer(nn.Module, metaclass=ABCMeta):
             return self._pgeant_scatter(x0=x0, deltaz=deltaz, theta=theta, theta_x=theta_x, theta_y=theta_y, mom=mom)
         else:
             raise ValueError(f"Scatter model {self.scatter_model} is not currently supported.")
-
-    def scatter_and_propagate(self, mu: MuonBatch, deltaz: Union[Tensor, float]) -> None:
-        r"""
-        Propagates the muons through (part of) the layer, such that afterwards all the muons are deltaz lower than their starting position.
-        If the layer is set to scatter muons (`rad_length` is not None),
-        then the muons will also undergo scattering (changes in their trajectories and positions) according to the scatter model of the layer.
-
-        .. warning::
-            When computing scatterings, the X0 used for eaach muon is that of the starting voxel:
-            If a muon moves into a neighbouring voxel of differing X0, then this will only be accounted for in the next deltaz step.
-
-        Arguments:
-            mu: muons to propagate
-            deltaz: amount of distance in metres in the negative z direction that the muons shoudl travel (positive number lowers the muon position)
-        """
-
-        if self.rad_length is not None:
-            mask = mu.get_xy_mask((0, 0), self.lw)  # Only scatter muons inside volume
-            xy_idx = self.mu_abs2idx(mu, mask)
-
-            x0 = self.rad_length[xy_idx[:, 0], xy_idx[:, 1]]
-            scatterings = self._compute_scattering(
-                x0=x0, deltaz=deltaz, theta=mu.theta[mask], theta_x=mu.theta_x[mask], theta_y=mu.theta_y[mask], mom=mu.mom[mask]
-            )
-
-            # Update to position at scattering.
-            mu.scatter_dxy(dx_vol=scatterings["dx_vol"], dy_vol=scatterings["dy_vol"], mask=mask)
-            mu.propagate(deltaz)
-            mu.scatter_dtheta_dphi(dtheta_vol=scatterings["dtheta_vol"], dphi_vol=scatterings["dphi_vol"], mask=mask)
-        else:
-            mu.propagate(deltaz)
-
-    def mu_abs2idx(self, mu: MuonBatch, mask: Optional[Tensor] = None) -> Tensor:
-        r"""
-        Helper method to return the voxel indices in the layer that muons currently occupy.
-
-        .. warning::
-            This method does NOT account for the possibility of muons being outside the layer.
-            Please also supply a mask, to only select muons inside the layer.
-
-        Arguments:
-            mu: muons to look up
-            mask: Optional (muons) Boolean tensor where True indicates that the muon position should be checked
-
-        Returns:
-            (muons,2) tensor of voxel indices in x,y
-        """
-
-        xy = mu.xy
-        if mask is not None:
-            xy = xy[mask]
-        return self.abs2idx(xy)
-
-    def abs2idx(self, xy: Tensor) -> Tensor:
-        r"""
-        Helper method to return the voxel indices in the layer of the supplied tensor of xy positions.
-
-        .. warning::
-            This method does NOT account for the possibility of positions may be outside the layer.
-            Please ensure that positions are inside the layer.
-
-        Arguments:
-            xy: (N,xy) tensor of absolute xy postions in metres in the volume frame
-
-        Returns:
-            (N,xy) tensor of voxel indices in x,y
-        """
-
-        return torch.floor(xy / self.size).long()
-
-    @abstractmethod
-    def forward(self, mu: MuonBatch) -> None:
-        r"""
-        Inheriting classes should override this method to implement the passage of the muons through the layer.
-
-        Arguments:
-            mu: the incoming batch of muons
-        """
-
-        pass
 
 
 class PassiveLayer(AbsLayer):

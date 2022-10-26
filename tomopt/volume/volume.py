@@ -60,45 +60,17 @@ class Volume(nn.Module):
         if self.budget is not None:
             self._configure_budget()
 
-    def _configure_budget(self) -> None:
+    def __getitem__(self, idx: int) -> AbsLayer:
+        return self.layers[idx]
+
+    def get_passive_z_range(self) -> Tuple[Tensor, Tensor]:
         r"""
-        Creates a list of learnable parameters, which acts as the fractional assignement of the total budget to various parts of the detectors.
-        The `budget_weights` contains all these assignments with no explicit heirachy.
-
-        Ordering of the elements is thus:
-            Each layer, as ordered in `layers` is checked for a `get_cost` attribute.
-                If the layer has this attribute, then the number of costs that that layer has `layer._n_costs` is appended to a list, `_n_layer_costs`
-            A tensor, `budget_weights`, is then instatiated with a number of zero-valued elements equal to the total number of individual detector costs
-
-        When assigning budgets to layers, the budget weights are softmax-normalised to one, and multiplied by the total budget.
-        Slices of these budgets are then passed to the layers, with the length of the slices being taken from `_n_layer_costs`.
-
-        After the `budget_weights` are initialised, the :meth:`~tomopt.volume.volume.Volume.assign_budget` is called automatically.
+        Returns:
+            The z position of the bottom of the lowest passive layer, and the z position of the top of the highest passive layer.
         """
 
-        self._n_layer_costs = [l._n_costs for l in self.layers if hasattr(l, "get_cost")]  # Number of different costs in the detector layer
-        self.budget_weights = nn.Parameter(torch.zeros(np.sum(self._n_layer_costs), device=self._device))  # Assignment of budget amongst all costs
-        self.assign_budget()
-
-    @property
-    def edges(self) -> Tensor:
-        r"""
-        zxy locations of low-left-front edges of voxels in the passive layers of the volume.
-        """
-
-        if self._edges is None:
-            self._edges = self.build_edges()
-        return self._edges
-
-    @property
-    def centres(self) -> Tensor:
-        r"""
-        zxy locations of the centres of voxels in the passive layers of the volume.
-        """
-
-        if self._edges is None:
-            self._edges = self.build_edges()
-        return self._edges + (self.passive_size / 2)
+        ps = self.get_passives()
+        return ps[-1].z - self.passive_size, ps[0].z
 
     def build_edges(self) -> Tensor:
         r"""
@@ -119,48 +91,6 @@ class Volume(nn.Module):
         return torch.tensor(
             bounds.reshape(3, -1).transpose(-1, -2), dtype=torch.float32, device=self.device
         )  # TODO: Check that xyz shape is expected, and not zxy
-
-    def _check_passives(self) -> None:
-        r"""
-        Ensures that all :class:`~tomopt.volume.layer.PassiveLayer`s have the same sizes
-        """
-
-        lw, sz = None, None
-        for l in self.get_passives():
-            if lw is None:
-                lw = l.lw
-            elif (lw != l.lw).any():
-                raise ValueError("All passive layers must have the same length and width (LW)")
-            if sz is None:
-                sz = l.size
-            elif sz != l.size:
-                raise ValueError("All passive layers must have the same size")
-
-    @property
-    def device(self) -> torch.device:
-        return self._device
-
-    @property
-    def target(self) -> Optional[Tensor]:
-        r"""
-        Returns:
-            The "target" value of the volume. This could be e.g. the class ID of the passive-volume configuration which is currently loaded.
-            See e.g. :class:`~tomopt.optimisation.loss.VolumeClassLoss`.
-            The target can be set as part of the call to :meth:`~tomopt.volume.volume.Volume.load_rad_length`
-        """
-
-        return self._target
-
-    def _get_device(self) -> torch.device:
-        device = self.layers[0].device
-        if len(self.layers) > 1:
-            for l in self.layers[1:]:
-                if l.device != device:
-                    raise ValueError("All layers must use the same device, but found multiple devices")
-        return device
-
-    def __getitem__(self, idx: int) -> AbsLayer:
-        return self.layers[idx]
 
     def get_detectors(self) -> List[AbsDetectorLayer]:
         r"""
@@ -286,6 +216,50 @@ class Volume(nn.Module):
             cost = torch.zeros((1), device=self.device)
         return cost
 
+    def _configure_budget(self) -> None:
+        r"""
+        Creates a list of learnable parameters, which acts as the fractional assignement of the total budget to various parts of the detectors.
+        The `budget_weights` contains all these assignments with no explicit heirachy.
+
+        Ordering of the elements is thus:
+            Each layer, as ordered in `layers` is checked for a `get_cost` attribute.
+                If the layer has this attribute, then the number of costs that that layer has `layer._n_costs` is appended to a list, `_n_layer_costs`
+            A tensor, `budget_weights`, is then instatiated with a number of zero-valued elements equal to the total number of individual detector costs
+
+        When assigning budgets to layers, the budget weights are softmax-normalised to one, and multiplied by the total budget.
+        Slices of these budgets are then passed to the layers, with the length of the slices being taken from `_n_layer_costs`.
+
+        After the `budget_weights` are initialised, the :meth:`~tomopt.volume.volume.Volume.assign_budget` is called automatically.
+        """
+
+        self._n_layer_costs = [l._n_costs for l in self.layers if hasattr(l, "get_cost")]  # Number of different costs in the detector layer
+        self.budget_weights = nn.Parameter(torch.zeros(np.sum(self._n_layer_costs), device=self._device))  # Assignment of budget amongst all costs
+        self.assign_budget()
+
+    def _get_device(self) -> torch.device:
+        device = self.layers[0].device
+        if len(self.layers) > 1:
+            for l in self.layers[1:]:
+                if l.device != device:
+                    raise ValueError("All layers must use the same device, but found multiple devices")
+        return device
+
+    def _check_passives(self) -> None:
+        r"""
+        Ensures that all :class:`~tomopt.volume.layer.PassiveLayer`s have the same sizes
+        """
+
+        lw, sz = None, None
+        for l in self.get_passives():
+            if lw is None:
+                lw = l.lw
+            elif (lw != l.lw).any():
+                raise ValueError("All passive layers must have the same length and width (LW)")
+            if sz is None:
+                sz = l.size
+            elif sz != l.size:
+                raise ValueError("All passive layers must have the same size")
+
     @property
     def lw(self) -> Tensor:
         r"""
@@ -313,11 +287,37 @@ class Volume(nn.Module):
 
         return self.layers[0].z
 
-    def get_passive_z_range(self) -> Tuple[Tensor, Tensor]:
+    @property
+    def edges(self) -> Tensor:
         r"""
-        Returns:
-            The z position of the bottom of the lowest passive layer, and the z position of the top of the highest passive layer.
+        zxy locations of low-left-front edges of voxels in the passive layers of the volume.
         """
 
-        ps = self.get_passives()
-        return ps[-1].z - self.passive_size, ps[0].z
+        if self._edges is None:
+            self._edges = self.build_edges()
+        return self._edges
+
+    @property
+    def centres(self) -> Tensor:
+        r"""
+        zxy locations of the centres of voxels in the passive layers of the volume.
+        """
+
+        if self._edges is None:
+            self._edges = self.build_edges()
+        return self._edges + (self.passive_size / 2)
+
+    @property
+    def device(self) -> torch.device:
+        return self._device
+
+    @property
+    def target(self) -> Optional[Tensor]:
+        r"""
+        Returns:
+            The "target" value of the volume. This could be e.g. the class ID of the passive-volume configuration which is currently loaded.
+            See e.g. :class:`~tomopt.optimisation.loss.VolumeClassLoss`.
+            The target can be set as part of the call to :meth:`~tomopt.volume.volume.Volume.load_rad_length`
+        """
+
+        return self._target

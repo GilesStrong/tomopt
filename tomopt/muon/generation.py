@@ -72,6 +72,20 @@ class AbsMuonGenerator:
     def __call__(self, n_muons: int) -> Tensor:
         return self.generate_set(n_muons)
 
+    @abstractmethod
+    def flux(self, energy: Union[float, np.ndarray], theta: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
+        r"""
+        Inheriting classes should overide this to implement their flux model for the supplied pairs of energies and thetas
+        Arguments:
+            energy: energy values at which to compute the flux, in GeV
+            theta: theta values at which to compute the flux, in radians
+
+        Returns:
+            muon flux for every energy & theta pair
+        """
+
+        pass
+
     @classmethod
     def from_volume(
         cls,
@@ -99,20 +113,6 @@ class AbsMuonGenerator:
         x, y = volume.lw.detach().cpu().numpy().tolist()
         d = np.tan(min_angle) * (volume.h.detach().cpu().item() - volume.get_passive_z_range()[0].detach().cpu().item() + volume.passive_size)
         return cls(x_range=(0 - d, x + d), y_range=(0 - d, y + d), fixed_mom=fixed_mom, energy_range=energy_range, theta_range=theta_range)
-
-    @abstractmethod
-    def flux(self, energy: Union[float, np.ndarray], theta: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
-        r"""
-        Inheriting classes should overide this to implement their flux model for the supplied pairs of energies and thetas
-        Arguments:
-            energy: energy values at which to compute the flux, in GeV
-            theta: theta values at which to compute the flux, in radians
-
-        Returns:
-            muon flux for every energy & theta pair
-        """
-
-        pass
 
     def generate_set(self, n_muons: int) -> Tensor:
         """

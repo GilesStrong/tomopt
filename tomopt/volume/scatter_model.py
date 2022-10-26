@@ -104,17 +104,6 @@ class PGeantScatterModel:
 
         return dxy_mu * (inv_costheta**self.exp_disp_model)
 
-    @property
-    def device(self) -> Optional[torch.device]:
-        return self._device
-
-    @device.setter
-    def device(self, device: torch.device) -> None:
-        self._device = device
-        self.dtheta_params = self.dtheta_params.to(self._device)  # Is this dtheta_xy in the muon's ref frame = dtheta dphi in the volume ref frame?
-        self.dxy_params = self.dxy_params.to(self._device)  # Is this alredy in the volume frame or still in the muon's ref frame?
-        self.mom_lookup = self.mom_lookup.to(self._device)
-
     def compute_scattering(self, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor) -> Dict[str, Tensor]:
         r"""
         Computes the scattering of the muons using the parametersised GEANT 4 model.
@@ -167,6 +156,17 @@ class PGeantScatterModel:
         dy_vol = dxy_mu[1] * torch.cos(theta_y)
 
         return {"dtheta_vol": dtheta_vol, "dphi_vol": dphi_vol, "dx_vol": dx_vol, "dy_vol": dy_vol}
+
+    @property
+    def device(self) -> Optional[torch.device]:
+        return self._device
+
+    @device.setter
+    def device(self, device: torch.device) -> None:
+        self._device = device
+        self.dtheta_params = self.dtheta_params.to(self._device)  # Is this dtheta_xy in the muon's ref frame = dtheta dphi in the volume ref frame?
+        self.dxy_params = self.dxy_params.to(self._device)  # Is this alredy in the volume frame or still in the muon's ref frame?
+        self.mom_lookup = self.mom_lookup.to(self._device)
 
 
 PGEANT_SCATTER_MODEL = PGeantScatterModel()

@@ -89,6 +89,9 @@ class DetectorPanel(nn.Module):
         self.budget_scale = torch.ones(1, device=device)
         self.assign_budget(budget)
 
+    def __repr__(self) -> str:
+        return f"""{self.__class__} located at xy={self.xy.data}, z={self.z.data}, and xy span {self.get_scaled_xy_span().data} with budget scale {self.budget_scale.data}"""
+
     def get_scaled_xy_span(self) -> Tensor:
         r"""
         Compues the effective size of the panel by rescaling based on the xy-span, cost per m^2, and budget.
@@ -98,9 +101,6 @@ class DetectorPanel(nn.Module):
         """
 
         return self.xy_span * self.budget_scale
-
-    def __repr__(self) -> str:
-        return f"""{self.__class__} located at xy={self.xy.data}, z={self.z.data}, and xy span {self.get_scaled_xy_span().data} with budget scale {self.budget_scale.data}"""
 
     def get_xy_mask(self, xy: Tensor) -> Tensor:
         r"""
@@ -267,6 +267,9 @@ class DetectorPanel(nn.Module):
             self.xy_span[0].clamp_(min=xyz_high[0] / 20, max=10 * xyz_high[0])
             self.xy_span[1].clamp_(min=xyz_high[1] / 20, max=10 * xyz_high[1])
 
+    def forward(self) -> None:
+        raise NotImplementedError("Please do not use forward, instead use get_hits")
+
     @property
     def x(self) -> Tensor:
         return self.xy[0]
@@ -274,6 +277,3 @@ class DetectorPanel(nn.Module):
     @property
     def y(self) -> Tensor:
         return self.xy[1]
-
-    def forward(self) -> None:
-        raise NotImplementedError("Please do not use forward, instead use get_hits")
