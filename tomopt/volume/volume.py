@@ -201,10 +201,10 @@ class Volume(nn.Module):
             Assumes the same size for all passive layers, and that they form a single contiguous block
 
         Arguments:
-            xyz: an (N,3) tensor of absolute positions in the volume frame
+            xyz: an (N,xyz) tensor of absolute positions in the volume frame
 
         Returns:
-            an (N,3) tensor of zero-ordered voxel indicies, which correspond to the supplied positions
+            an (N,xyz) tensor of zero-ordered voxel indicies, which correspond to the supplied positions
         """
 
         if len(xyz.shape) == 1:

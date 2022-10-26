@@ -107,7 +107,7 @@ class DetectorPanel(nn.Module):
         Computes which of the xy points lie inside the physical panel.
 
         Arguments:
-            xy: (N,2) tensor of points
+            xy: xy2) tensor of points
 
         Returns:
             (N) Boolean mask, where True indicates the point lies inside the panel
@@ -137,13 +137,13 @@ class DetectorPanel(nn.Module):
         Otherwise, the Gaussian model will be used.
 
         Arguments:
-            xy: (N,2) tensor of positions
+            xy: (N,xy) tensor of positions
             mask: optional pre-computed (N) Boolean mask, where True indicates that the xy point is inside the panel.
                 Only used in evaluation mode and if `realistic_validation` is True.
                 If required, but not supplied, than will be computed automatically.
 
         Returns:
-            res, a (N,2) tensor of the resolution at the xy points
+            res, a (N,xy) tensor of the resolution at the xy points
         """
 
         if not isinstance(self.resolution, Tensor):
@@ -168,14 +168,14 @@ class DetectorPanel(nn.Module):
         By default, a single efficiency will be computed, but xy components can be requested (efficiency is the product of these)
 
         Arguments:
-            xy: (N) or (N,2) tensor of positions
+            xy: (N) or (N,xy) tensor of positions
             mask: optional pre-computed (N) Boolean mask, where True indicates that the xy point is inside the panel.
                 Only used in evaluation mode and if `realistic_validation` is True.
                 If required, but not supplied, than will be computed automatically.
             as_2d: if True, will return the x,y compnents of the efficiency model, otherwise will return their product
 
         Returns:
-            eff, a (N) or (N,2) tensor of the efficiency (components) at the xy points
+            eff, a (N) or (N,xy) tensor of the efficiency (components) at the xy points
         """
 
         if not isinstance(self.efficiency, Tensor):
@@ -211,8 +211,8 @@ class DetectorPanel(nn.Module):
         r"""
         The main interaction method with the panel: returns hits for the supplied muons.
         Hits consist of:
-            reco_xy: (N,2) tensor of reconstructed xy positions of muons included simulated resolution
-            gen_xy: (N,2) tensor of generator-level (true) xy positions of muons
+            reco_xy: (muons,xy) tensor of reconstructed xy positions of muons included simulated resolution
+            gen_xy: (muons,xy) tensor of generator-level (true) xy positions of muons
             z: z position of the panel
 
         If running in evaluation mode with `realistic_validation`,

@@ -184,10 +184,10 @@ class AbsLayer(nn.Module, metaclass=ABCMeta):
 
         Arguments:
             mu: muons to look up
-            mask: Optional (N) Boolean tensor where True indicates that the muon position should be checked
+            mask: Optional (muons) Boolean tensor where True indicates that the muon position should be checked
 
         Returns:
-            (N,2) tensor of voxel indices in x,y
+            (muons,2) tensor of voxel indices in x,y
         """
 
         xy = mu.xy
@@ -204,10 +204,10 @@ class AbsLayer(nn.Module, metaclass=ABCMeta):
             Please ensure that positions are inside the layer.
 
         Arguments:
-            xy: (N,2) tensor of absolute xy postions in metres in the volume frame
+            xy: (N,xy) tensor of absolute xy postions in metres in the volume frame
 
         Returns:
-            (N,2) tensor of voxel indices in x,y
+            (N,xy) tensor of voxel indices in x,y
         """
 
         return torch.floor(xy / self.size).long()
@@ -334,7 +334,7 @@ class AbsDetectorLayer(AbsLayer, metaclass=ABCMeta):
     A `type_label` attribute is used to encode extra information, rather than relying purely on the object-instance type.
 
     Multiple detection layers can be grouped together, via their `pos` attribute (position); a string-encoded value.
-    By dfault, the inferrence methods expect detectors above the passive layer to have `pos=='above'`,
+    By default, the inference methods expect detectors above the passive layer to have `pos=='above'`,
     and those below the passive volume to have `pos=='below'`.
     When retriving hits from the muon batch, hits will be stacked together with other hits from the same `pos`.
 
@@ -423,7 +423,7 @@ class PanelDetectorLayer(AbsDetectorLayer):
     During initialisation, this is set to the number of panels in the layer, at time of initialisation.
 
     Multiple detection layers can be grouped together, via their `pos` attribute (position); a string-encoded value.
-    By dfault, the inferrence methods expect detectors above the passive layer to have `pos=='above'`,
+    By default, the inference methods expect detectors above the passive layer to have `pos=='above'`,
     and those below the passive volume to have `pos=='below'`.
     When retriving hits from the muon batch, hits will be stacked together with other hits from the same `pos`.
 

@@ -454,7 +454,7 @@ class MuonBatch:
         Record hits to `_hits`.
 
         Arguments:
-            hits: dictionary of 'reco_xy', 'gen_xy', 'z' keys to (N, *) tensors.
+            hits: dictionary of 'reco_xy', 'gen_xy', 'z' keys to (muons, *) tensors.
             pos: Position of detector array in which the hits were recorded, currently either 'above' or 'below'.
         """
 
