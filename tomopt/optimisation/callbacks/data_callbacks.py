@@ -7,18 +7,31 @@ from .callback import Callback
 from ...muon import MuonBatch
 from ...muon.generation import AbsMuonGenerator
 
+r"""
+Provides callbacks designed to affect the data used during fitting/predicions.
+"""
+
 __all__ = ["MuonResampler"]
 
 
 class MuonResampler(Callback):
-    """Resmaple muons to only inlcude those which will impact the passive volume at somepoint"""
-
-    def on_mu_batch_begin(self) -> None:
-        # TODO Add check for realistic validation
-        self.wrapper.fit_params.mu.muons = self.resample(self.wrapper.fit_params.mu.muons, volume=self.wrapper.volume, gen=self.wrapper.mu_generator)
+    r"""
+    Resmaples muons to only inlcude those which will impact the passive volume at somepoint, even if they only hit the bottom layer.
+    """
 
     @staticmethod
     def check_mu_batch(mu: MuonBatch, volume: Volume) -> Tensor:
+        r"""
+        Checks the provided muon batch to determine which muons will impact the passive volume at anypoint
+
+        Arguments:
+            mu: incoming batch of muons
+            volume: Volume containing the passive volume to test against
+
+        Returns:
+            (muons) Boolean tensor where True indicates that the muon will hit the passive volume
+        """
+
         mu = mu.copy()
         ok_mask = torch.zeros(len(mu)).bool()
         for l in volume.get_passives():
@@ -28,6 +41,18 @@ class MuonResampler(Callback):
 
     @staticmethod
     def resample(mus: Tensor, volume: Volume, gen: AbsMuonGenerator) -> Tensor:
+        r"""
+        Resamples muons until all muons will hit the passive volume.
+
+        Arguments:
+            mus: xy_p_theta_phi tensor designed to initialise a :class:`~tomopt.muon.muon_batch.MuonBatch`
+            volume: Volume containing the passive volume to test against
+            gen: Muon generator for sampling replacement muons
+
+        Returns:
+            xy_p_theta_phi tensor designed to initialise a :class:`~tomopt.muon.muon_batch.MuonBatch`
+        """
+
         n = len(mus)
         ok_mask = torch.zeros(len(mus)).bool()
         while ok_mask.sum() < n:
@@ -43,3 +68,12 @@ class MuonResampler(Callback):
             mus[check_mask] = check
             ok_mask[check_mask] += tmp_ok_mask
         return mus
+
+    def on_mu_batch_begin(self) -> None:
+        r"""
+        Resamples muons prior to propagation through the volume such that all muons will hit the passive volume.
+
+        # TODO Add check for realistic validation
+        """
+
+        self.wrapper.fit_params.mu.muons = self.resample(self.wrapper.fit_params.mu.muons, volume=self.wrapper.volume, gen=self.wrapper.mu_generator)

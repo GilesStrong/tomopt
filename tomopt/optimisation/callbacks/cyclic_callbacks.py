@@ -3,7 +3,7 @@ from typing import List
 from .callback import Callback
 
 r"""
-Provides implementations of callbacks designed to act in cycles over a number of epochs, e.g. to affect learning rates.
+Provides callbacks designed to act in cycles over a number of epochs, e.g. to affect learning rates.
 """
 
 __all__: List[str] = []
