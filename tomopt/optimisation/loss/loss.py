@@ -81,6 +81,24 @@ class AbsDetectorLoss(nn.Module, metaclass=ABCMeta):
 
         pass
 
+    def forward(self, pred: Tensor, inv_pred_weight: Tensor, volume: Volume) -> Tensor:
+        r"""
+        Computes the loss for the predictions of a single volume using the current state of the detector
+
+        Arguments:
+            pred: the predictions from the inference
+            inv_pred_weight: weight(s) that should divide the (unreduced) loss between the predictions and targets
+            volume: Volume containing the passive volume that was being predicted and the detector being optimised
+
+        Returns:
+            The loss for the predictions and detector
+        """
+
+        self.sub_losses = {}
+        self.sub_losses["error"] = self._get_inference_loss(pred, inv_pred_weight, volume)
+        self.sub_losses["cost"] = self._get_cost_loss(volume)
+        return self.sub_losses["error"] + self.sub_losses["cost"]
+
     def _get_budget_coef(self, cost: Tensor) -> Tensor:
         r"""
         Compuutes the budget loss term from the current cost of the detectors.
@@ -137,24 +155,6 @@ class AbsDetectorLoss(nn.Module, metaclass=ABCMeta):
                 f'cost {cost}, cost coef {self.cost_coef}, budget coef {self._get_budget_coef(cost)}. error loss {self.sub_losses["error"]}, cost loss {cost_loss}'
             )
         return cost_loss
-
-    def forward(self, pred: Tensor, inv_pred_weight: Tensor, volume: Volume) -> Tensor:
-        r"""
-        Computes the loss for the predictions of a single volume using the current state of the detector
-
-        Arguments:
-            pred: the predictions from the inference
-            inv_pred_weight: weight(s) that should divide the (unreduced) loss between the predictions and targets
-            volume: Volume containing the passive volume that was being predicted and the detector being optimised
-
-        Returns:
-            The loss for the predictions and detector
-        """
-
-        self.sub_losses = {}
-        self.sub_losses["error"] = self._get_inference_loss(pred, inv_pred_weight, volume)
-        self.sub_losses["cost"] = self._get_cost_loss(volume)
-        return self.sub_losses["error"] + self.sub_losses["cost"]
 
 
 class VoxelX0Loss(AbsDetectorLoss):
