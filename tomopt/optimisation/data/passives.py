@@ -1,4 +1,4 @@
-from typing import Tuple, Callable, List, Optional, Union, Generator
+from typing import Tuple, List, Optional, Union, Generator
 from random import shuffle
 from abc import abstractmethod, ABCMeta
 import numpy as np
@@ -6,18 +6,41 @@ import numpy as np
 import torch
 from torch import Tensor
 
-from ...core import X0
+from ...core import X0, RadLengthFunc
 from ...volume import Volume
+
+r"""
+Provides classes that generate and yield passive volume layouts
+"""
 
 __all__ = ["VoxelPassiveGenerator", "RandomBlockPassiveGenerator", "BlockPresentPassiveGenerator", "PassiveYielder"]
 
 
 class AbsPassiveGenerator(metaclass=ABCMeta):
+    r"""
+    Abstract base class for classes that generate new passive layouts.
+
+    The :meth:`~tomopt.optimisation.data.passives.AbsPassiveGenerator._generate` method should be overridden to return:
+        A function that provides an xy tensor for a given layer when called with its z position, length and width, and size.
+        An optional "target" value for the layout
+
+    The :meth:`~tomopt.optimisation.data.passives.AbsPassiveGenerator.generate` method will return only the layout function and no target
+    The :meth:`~tomopt.optimisation.data.passives.AbsPassiveGenerator.get_data` method will return both the layout function and the target
+    """
+
     def __init__(
         self,
         volume: Volume,
         materials: Optional[List[str]] = None,
     ) -> None:
+        r"""
+        Initialises the generator for a given volume, in case any volume parameters are required by the inheriting generators
+
+        Arguments:
+            volume: Volume that the passive laypout will be loaded into
+            materials: list of material names that can be used in the volume, None -> all materials known to TomOpt
+        """
+
         self.volume = volume
         self.device = self.volume.device
         if materials is None:
@@ -27,19 +50,49 @@ class AbsPassiveGenerator(metaclass=ABCMeta):
         self.z_range = [z.detach().cpu().item() for z in self.volume.get_passive_z_range()]
         self.size = volume.passive_size
 
-    def get_data(self) -> Tuple[Callable[..., Tensor], Optional[Tensor]]:
+    @abstractmethod
+    def _generate(self) -> Tuple[RadLengthFunc, Optional[Tensor]]:
+        r"""
+        Inheriting classes should override this.
+
+        Returns:
+            RadLengthFunc: A function that provides an xy tensor for a given layer when called with its z position, length and width, and size.
+            Target: An optional "target" value for the layout
+        """
+
+        pass
+
+    def get_data(self) -> Tuple[RadLengthFunc, Optional[Tensor]]:
+        r"""
+        Returns:
+            RadLengthFunc: A function that provides an xy tensor for a given layer when called with its z position, length and width, and size.
+            Target: An optional "target" value for the layout
+        """
+
         return self._generate()
 
-    def generate(self) -> Callable[..., Tensor]:
+    def generate(self) -> RadLengthFunc:
+        r"""
+        Returns:
+            The layout function and no target
+        """
+
         f, _ = self._generate()
         return f
 
-    @abstractmethod
-    def _generate(self) -> Tuple[Callable[..., Tensor], Optional[Tensor]]:
-        pass
-
 
 class AbsBlockPassiveGenerator(AbsPassiveGenerator):
+    r"""
+    Abstract base class for classes that generate new passive layouts which contain a single cuboid of material (block).
+
+    The :meth:`~tomopt.optimisation.data.passives.AbsPassiveGenerator._generate` method should be overridden to return:
+        A function that provides an xy tensor for a given layer when called with its z position, length and width, and size.
+        An optional "target" value for the layout
+
+    The :meth:`~tomopt.optimisation.data.passives.AbsPassiveGenerator.generate` method will return only the layout function and no target
+    The :meth:`~tomopt.optimisation.data.passives.AbsPassiveGenerator.get_data` method will return both the layout function and the target
+    """
+
     def __init__(
         self,
         volume: Volume,
@@ -47,6 +100,17 @@ class AbsBlockPassiveGenerator(AbsPassiveGenerator):
         block_size_max_half: Optional[bool] = None,
         materials: Optional[List[str]] = None,
     ) -> None:
+        r"""
+        Initialises the generator for a given volume, in case any volume parameters are required by the inheriting generators.
+        The block will be centered radmonly in the volume, and can either be of fixed or random size.
+
+        Arguments:
+            volume: Volume that the passive laypout will be loaded into
+            block_size: if set, will generate blocks of the specified size and random orientation, otherwise will randomly set the size of the blocks
+            block_size_max_half: if True and block_size is None, the maximum size of blocks will be set to half the size of the passive volume
+            materials: list of material names that can be used in the volume, None -> all materials known to TomOpt
+        """
+
         super().__init__(volume=volume, materials=materials)
         self.block_size = block_size
         self.block_size_max = [self.lw[0], self.lw[1], self.z_range[1] - self.z_range[0]]
@@ -80,6 +144,15 @@ class AbsBlockPassiveGenerator(AbsPassiveGenerator):
 
 
 class RandomBlockPassiveGenerator(AbsBlockPassiveGenerator):
+    r"""
+    Generates new passive layouts which contain a single cuboid of material (block) of random material against a random background material.
+    Blocks are always present, but can potentially be of the same material as the background.
+    The target for the volumes is the X0 of the block material.
+
+    The :meth:`~tomopt.optimisation.data.passives.AbsPassiveGenerator.generate` method will return only the layout function and no target
+    The :meth:`~tomopt.optimisation.data.passives.AbsPassiveGenerator.get_data` method will return both the layout function and the target
+    """
+
     def __init__(
         self,
         volume: Volume,
@@ -89,10 +162,31 @@ class RandomBlockPassiveGenerator(AbsBlockPassiveGenerator):
         block_size_max_half: Optional[bool] = None,
         materials: Optional[List[str]] = None,
     ) -> None:
+        r"""
+        Initialises the generator for a given volume, in case any volume parameters are required by the inheriting generators.
+        The block will be centered radmonly in the volume, and can either be of fixed or random size.
+
+        Arguments:
+            volume: Volume that the passive laypout will be loaded into
+            block_size: if set, will generate blocks of the specified size and random orientation, otherwise will randomly set the size of the blocks
+            sort_x0: if True, the block will always have a lower X0 than the background, unless they are of the same material
+            enforce_diff_mat: if True, the block will always be of a different material to the background
+            block_size_max_half: if True and block_size is None, the maximum size of blocks will be set to half the size of the passive volume
+            materials: list of material names that can be used in the volume, None -> all materials known to TomOpt
+        """
+
         super().__init__(volume=volume, block_size=block_size, materials=materials, block_size_max_half=block_size_max_half)
         self.sort_x0, self.enforce_diff_mat = sort_x0, enforce_diff_mat
 
-    def _generate(self) -> Tuple[Callable[..., Tensor], Tensor]:
+    def _generate(self) -> Tuple[RadLengthFunc, Tensor]:
+        r"""
+        Generates passive layouts containing a (randomly sized) block of random material at a random location surrounded by a random background.
+
+        Returns:
+            RadLengthFunc: A function that provides an xy tensor for a given layer when called with its z position, length and width, and size.
+            Target: The X0 of the block material
+        """
+
         bkg_mat, block_mat = None, None
         while bkg_mat is None or block_mat is None or (bkg_mat == block_mat and self.enforce_diff_mat):
             bkg_mat = np.random.randint(0, len(self.materials))
@@ -104,7 +198,7 @@ class RandomBlockPassiveGenerator(AbsBlockPassiveGenerator):
 
         block_low, block_high = self._get_block_coords()
 
-        def generator(*, z: float, lw: Tensor, size: float) -> Tensor:
+        def generator(*, z: Tensor, lw: Tensor, size: float) -> Tensor:
             shp = (lw / size).long()
             low_xy = np.round(block_low[:2] / size).astype(int)
             high_xy = np.round(block_high[:2] / size).astype(int)
@@ -117,7 +211,26 @@ class RandomBlockPassiveGenerator(AbsBlockPassiveGenerator):
 
 
 class BlockPresentPassiveGenerator(AbsBlockPassiveGenerator):
-    def _generate(self) -> Tuple[Callable[..., Tensor], Tensor]:
+    r"""
+    Generates new passive layouts which contain a single cuboid of material (block) of random material against a fixed background material.
+    Blocks are always present, but can potentially be of the same material as the background.
+    The target for the volumes is the X0 of the block material.
+    The background material for the background will always be the zeroth material provided during initialisation.
+
+    The :meth:`~tomopt.optimisation.data.passives.AbsPassiveGenerator.generate` method will return only the layout function and no target
+    The :meth:`~tomopt.optimisation.data.passives.AbsPassiveGenerator.get_data` method will return both the layout function and the target
+    """
+
+    def _generate(self) -> Tuple[RadLengthFunc, Tensor]:
+        r"""
+        Generates passive layouts containing a (randomly sized) block of random material at a random location surrounded by a fixed background.
+        The background material for the background will always be the zeroth material provided during initialisation.
+
+        Returns:
+            RadLengthFunc: A function that provides an xy tensor for a given layer when called with its z position, length and width, and size.
+            Target: The X0 of the block material
+        """
+
         bkg_mat = 0
         block_mat = np.random.randint(0, len(self.materials))
         base_x0 = X0[self.materials[bkg_mat]]
@@ -125,7 +238,7 @@ class BlockPresentPassiveGenerator(AbsBlockPassiveGenerator):
 
         block_low, block_high = self._get_block_coords()
 
-        def generator(*, z: float, lw: Tensor, size: float) -> Tensor:
+        def generator(*, z: Tensor, lw: Tensor, size: float) -> Tensor:
             shp = (lw / size).long()
             low_xy = np.round(block_low[:2] / size).astype(int)
             high_xy = np.round(block_high[:2] / size).astype(int)
@@ -138,8 +251,23 @@ class BlockPresentPassiveGenerator(AbsBlockPassiveGenerator):
 
 
 class VoxelPassiveGenerator(AbsPassiveGenerator):
-    def _generate(self) -> Tuple[Callable[..., Tensor], None]:
-        def generator(*, z: float, lw: Tensor, size: float) -> Tensor:
+    r"""
+    Generates new passive layouts where every voxel is of a random material.
+
+    The :meth:`~tomopt.optimisation.data.passives.AbsPassiveGenerator.generate` method will return only the layout function and no target
+    The :meth:`~tomopt.optimisation.data.passives.AbsPassiveGenerator.get_data` method will return both the layout function and the target
+    """
+
+    def _generate(self) -> Tuple[RadLengthFunc, None]:
+        r"""
+        Generates new passive layouts where ever voxel is of a random material.
+
+        Returns:
+            RadLengthFunc: A function that provides an xy tensor for a given layer when called with its z position, length and width, and size.
+            Target: None
+        """
+
+        def generator(*, z: Tensor, lw: Tensor, size: float) -> Tensor:
             x0s = lw.new_tensor([X0[m] for m in self.materials])
             shp = (lw / size).long()
             return x0s[torch.randint(high=len(x0s), size=(shp.prod().numpy(),), device=x0s.device)].reshape(list(shp))
@@ -148,12 +276,25 @@ class VoxelPassiveGenerator(AbsPassiveGenerator):
 
 
 class PassiveYielder:
+    r"""
+    Dataset class that can either:
+        Yield from a set of prespecified passive-volume layouts, and optional targets
+        Generate and yield random layouts and optional targets from a provided generator
+    """
+
     def __init__(
         self,
-        passives: Union[List[Union[Tuple[Callable[..., Tensor], Optional[Tensor]], Callable[..., Tensor]]], AbsPassiveGenerator],
+        passives: Union[List[Union[Tuple[RadLengthFunc, Optional[Tensor]], RadLengthFunc]], AbsPassiveGenerator],
         n_passives: Optional[int] = None,
         shuffle: bool = True,
     ):
+        r"""
+        Arguments:
+            passives: Either a list of passive-volume functions (and optional targets together in a tuple), or a passive-volume generator
+            n_passives: if a generator is used, this determines the number of volumes to generator per epoch in training, or in total when predicting
+            shuffle: If a list of prespecified layouts is provided, their order will be shuffled if this is True
+        """
+
         self.passives, self.n_passives, self.shuffle = passives, n_passives, shuffle
         if isinstance(self.passives, AbsPassiveGenerator):
             if self.n_passives is None:
@@ -164,7 +305,7 @@ class PassiveYielder:
     def __len__(self) -> int:
         return self.n_passives
 
-    def __iter__(self) -> Generator[Tuple[Callable[..., Tensor], Optional[Tensor]], None, None]:
+    def __iter__(self) -> Generator[Tuple[RadLengthFunc, Optional[Tensor]], None, None]:
         if isinstance(self.passives, AbsPassiveGenerator):
             for _ in range(self.n_passives):
                 yield self.passives.get_data()

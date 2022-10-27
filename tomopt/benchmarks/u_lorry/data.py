@@ -1,4 +1,4 @@
-from typing import Tuple, Callable, List
+from typing import Tuple, List
 import numpy as np
 
 import torch
@@ -6,7 +6,7 @@ from torch import Tensor
 
 from ...optimisation.data.passives import AbsPassiveGenerator
 from ...volume import Volume
-from ...core import X0
+from ...core import X0, RadLengthFunc
 
 __all__ = ["ULorryPassiveGenerator"]
 
@@ -56,12 +56,12 @@ class ULorryPassiveGenerator(AbsPassiveGenerator):
 
         return block_low, block_high
 
-    def _generate(self) -> Tuple[Callable[..., Tensor], Tensor]:
+    def _generate(self) -> Tuple[RadLengthFunc, Tensor]:
         block_present = torch.rand(1) < self.u_prob
         if block_present:
             block_low, block_high = self._get_block_coords()
 
-        def generator(*, z: float, lw: Tensor, size: float) -> Tensor:
+        def generator(*, z: Tensor, lw: Tensor, size: float) -> Tensor:
             if z <= self.bkg_z_range[0]:
                 x0 = self.x0_lorry * torch.ones(self.xy_shp)
             elif z > self.bkg_z_range[0] and z <= self.bkg_z_range[1]:

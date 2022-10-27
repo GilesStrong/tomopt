@@ -1,5 +1,5 @@
 from tomopt.volume.layer import AbsLayer
-from typing import Tuple, List, Callable, Optional
+from typing import Tuple, List, Optional
 import numpy as np
 
 import torch
@@ -8,6 +8,7 @@ import torch.nn.functional as F
 
 from .layer import AbsDetectorLayer, PassiveLayer
 from ..muon import MuonBatch
+from ..core import RadLengthFunc
 
 r"""
 Provides implementation of wrapper classes for containing multiple passive layers and detector layers, which act as interfaces to them.
@@ -147,7 +148,7 @@ class Volume(nn.Module):
         xyz[:, 2] = xyz[:, 2] - self.get_passive_z_range()[0]
         return torch.floor(xyz / self.passive_size).long()
 
-    def load_rad_length(self, rad_length_func: Callable[..., Tensor], target: Optional[Tensor] = None) -> None:
+    def load_rad_length(self, rad_length_func: RadLengthFunc, target: Optional[Tensor] = None) -> None:
         r"""
         Loads a new passive-volume configuration.
         Optionally, a "target" for the configuration may also be supplied.

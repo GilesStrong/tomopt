@@ -1,7 +1,8 @@
 from typing import Callable, Iterator
+from mypy_extensions import NamedArg
 
 import torch
-from torch import nn
+from torch import nn, Tensor
 
 r"""
 Common global constants, custom variable types, etc.
@@ -57,3 +58,4 @@ DENSITIES = {  # https://pdg.lbl.gov/2022/AtomicNuclearProperties/index.html
 }
 
 PartialOpt = Callable[[Iterator[nn.Parameter]], torch.optim.Optimizer]
+RadLengthFunc = Callable[[NamedArg(Tensor, "z"), NamedArg(Tensor, "lw"), NamedArg(float, "size")], Tensor]  # noqa F821

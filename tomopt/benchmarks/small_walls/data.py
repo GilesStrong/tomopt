@@ -1,4 +1,4 @@
-from typing import Tuple, Callable
+from typing import Tuple
 import numpy as np
 
 import torch
@@ -6,7 +6,7 @@ from torch import Tensor
 
 from ...optimisation.data.passives import AbsPassiveGenerator
 from ...volume import Volume
-from ...core import X0, DENSITIES
+from ...core import X0, DENSITIES, RadLengthFunc
 from ...utils import x0_from_mixture
 
 __all__ = ["SmallWallsPassiveGenerator"]
@@ -40,7 +40,7 @@ class SmallWallsPassiveGenerator(AbsPassiveGenerator):
         self.zxy_shp = [int(np.round((self.z_range[1] - self.z_range[0]) / self.size))] + (self.lw / self.size).astype(int).tolist()
         self.wall_z_range = (self.z_range[0], self.z_range[1] - self.size)  # Atleast top layer is soil
 
-    def _generate(self) -> Tuple[Callable[..., Tensor], Tensor]:
+    def _generate(self) -> Tuple[RadLengthFunc, Tensor]:
         n_walls = np.random.randint(1, 5)
         zxy_map = torch.zeros(self.zxy_shp)
         ground_z = np.random.randint(self.zxy_shp[0] // 2)
@@ -91,7 +91,7 @@ class SmallWallsPassiveGenerator(AbsPassiveGenerator):
         x0_map = zxy_map * self.x0_wall
         x0_map[x0_map == 0] = self.x0_soil
 
-        def generator(*, z: float, lw: Tensor, size: float) -> Tensor:
+        def generator(*, z: Tensor, lw: Tensor, size: float) -> Tensor:
             return x0_map[np.round((z - self.z_range[0]) / self.size).long() - 1].squeeze()
 
         return generator, zxy_map

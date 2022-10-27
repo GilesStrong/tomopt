@@ -1,4 +1,4 @@
-from typing import Iterator, Optional, Callable, Dict, List, Union, Tuple
+from typing import Iterator, Optional, Dict, List, Union, Tuple
 import numpy as np
 from abc import ABCMeta, abstractmethod
 import math
@@ -7,7 +7,7 @@ import torch
 from torch import nn, Tensor
 
 from .scatter_model import PGEANT_SCATTER_MODEL
-from ..core import DEVICE, SCATTER_COEF_A, SCATTER_COEF_B
+from ..core import DEVICE, SCATTER_COEF_A, SCATTER_COEF_B, RadLengthFunc
 from ..muon import MuonBatch
 from tomopt.volume.panel import DetectorPanel
 from tomopt.volume.heatmap import DetectorHeatMap
@@ -258,7 +258,7 @@ class PassiveLayer(AbsLayer):
         lw: Tensor,
         z: float,
         size: float,
-        rad_length_func: Optional[Callable[..., Tensor]] = None,
+        rad_length_func: Optional[RadLengthFunc] = None,
         dz_step: float = 0.05,
         scatter_model: str = "pdg",
         device: torch.device = DEVICE,
@@ -286,7 +286,7 @@ class PassiveLayer(AbsLayer):
     def __repr__(self) -> str:
         return f"""PassiveLayer located at z={self.z}"""
 
-    def load_rad_length(self, rad_length_func: Callable[..., Tensor]) -> None:
+    def load_rad_length(self, rad_length_func: RadLengthFunc) -> None:
         r"""
         Loads a new X0 layout into the layer voxels.
 
