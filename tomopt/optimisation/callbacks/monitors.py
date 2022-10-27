@@ -75,6 +75,7 @@ class MetricLogger(Callback):
         """
 
         self.gif_filename, self.show_plots = gif_filename, show_plots
+        self._reset()
 
     def _reset(self) -> None:
         r"""
