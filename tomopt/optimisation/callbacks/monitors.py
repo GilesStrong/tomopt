@@ -25,7 +25,7 @@ r"""
 Provides callbacks that produce live feedback of fitting, and record losses and metrics.
 
 This MetricLogger is a modified version of the MetricLogger in LUMIN (https://github.com/GilesStrong/lumin/blob/v0.7.2/lumin/nn/callbacks/monitors.py#L125),
-distributed under the following lincence:
+distributed under the following licence:
 
     Copyright 2018 onwards Giles Strong
 
@@ -41,8 +41,8 @@ distributed under the following lincence:
     See the License for the specific language governing permissions and
     limitations under the License.
 
-Usage is compatible with the AGPL licence underwhich TomOpt is distributed.
-Stated changes: adaption to work with `VolumeWrapper` class, replacement of the telemtry plots with task specific information.
+Usage is compatible with the AGPL licence under-which TomOpt is distributed.
+Stated changes: adaption to work with `VolumeWrapper` class, replacement of the telemetry plots with task specific information.
 """
 
 __all__ = ["MetricLogger", "PanelMetricLogger"]
@@ -249,7 +249,7 @@ class MetricLogger(Callback):
             self._snapshot_monitor()
             self._create_gif()
         plt.clf()  # prevent plot be shown twice
-        self.metric_cbs = self.wrapper.fit_params.metric_cbs  # Copy referenece since fit_params gets set to None at end of training
+        self.metric_cbs = self.wrapper.fit_params.metric_cbs  # Copy reference since fit_params gets set to None at end of training
 
     def get_loss_history(self) -> Tuple[Dict[str, List[float]], Dict[str, List[float]]]:
         r"""
@@ -304,7 +304,7 @@ class MetricLogger(Callback):
 
     def _prep_plots(self) -> None:
         r"""
-        Creates the plots for a new optimisaiton
+        Creates the plots for a new optimisation
         """
 
         if self.show_plots:
@@ -438,7 +438,7 @@ class PanelMetricLogger(MetricLogger):
 
     def _prep_plots(self) -> None:
         r"""
-        Creates the plots for a new optimisaiton
+        Creates the plots for a new optimisation
         """
 
         super()._prep_plots()

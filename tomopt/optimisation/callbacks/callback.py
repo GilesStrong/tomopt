@@ -161,7 +161,7 @@ class Callback:
 
     def on_x0_pred_end(self) -> None:
         r"""
-        Runs after the volume inferrer has made its final prediciton, but before the loss is computed.
+        Runs after the volume inferrer has made its final prediction, but before the loss is computed.
         """
 
         pass

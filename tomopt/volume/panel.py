@@ -17,14 +17,14 @@ __all__ = ["DetectorPanel"]
 
 class DetectorPanel(nn.Module):
     r"""
-    Provides an infinetly thin, rectangular panel in the xy plane, centred at a learnable xyz position (metres, in absolute position in the volume frame),
+    Provides an infinitely thin, rectangular panel in the xy plane, centred at a learnable xyz position (metres, in absolute position in the volume frame),
     with a learnable width in x and y (`xy_span`).
     Whilst this class can be used manually, it is designed to be used by the :class:`~tomopt.volume.layer.PanelDetectorLayer` class.
 
-    Depsite inheriting from `nn.Module`, the `forward` method should not be called, instead passing a :class:`~tomopt.muon.muon_batch.MuonBatch` to the
+    Despite inheriting from `nn.Module`, the `forward` method should not be called, instead passing a :class:`~tomopt.muon.muon_batch.MuonBatch` to the
     `get_hits` method will return hits corresponding to the muons.
 
-    During training model (`.train()` or `.training` is True), a continuos model of the resolution and efficiency will be used, such that hits are differentiable w.r.t.
+    During training model (`.train()` or `.training` is True), a continuous model of the resolution and efficiency will be used, such that hits are differentiable w.r.t.
     the learnable parameters of the panel. This means that muons outside of the physical panel will have hits at non-zero resolution.
     The current model is a 2D uncorrelated Gaussian in xy, centred over the panel, with width parameters equal to the xy_spans/4,
     i.e. the panel is 4-sigma across.
@@ -38,7 +38,7 @@ class DetectorPanel(nn.Module):
     but hits will not be differentiable w.r.t. the panel xy-position or xy-span.
     If `realistic_validation` is False, then the continuous model will be used also in evaluation mode.
 
-    The cost of the panel is based on the supplied cost per metre squared, and the current area of the panel, accorrding to its learnt xy-span.
+    The cost of the panel is based on the supplied cost per metre squared, and the current area of the panel, according to its learnt xy-span.
     Panels can also be run in "fixed-budget" mode, in which a cost of the panel is specified via the `.assign_budget` method.
     Based on the cost per m^2, the panel will change in effective width, based on its learn xy_span (now an aspect ratio), such that its area results in a cost
     equal to the specified cost of the panel.
@@ -58,19 +58,19 @@ class DetectorPanel(nn.Module):
     ):
         r"""
         Panel initialiser with user-supplied initial positions and widths.
-        The resolution and efficiency remain fixed at the specifed values.
+        The resolution and efficiency remain fixed at the specified values.
         If intending to run in "fixed-budget" mode, then a budget can be specified here,
         however the :class"`~tomopt.volume.volume.Volume` class will pass through all panels and initialise their budgets.
 
         Arguments:
-            res: resoltuion of the panel in m^-1, i.e. a higher value improves the precision on the hit recording
-            eff: efficiency of the hit recording of the panel, inidcated as a probability [0,1]
+            res: resolution of the panel in m^-1, i.e. a higher value improves the precision on the hit recording
+            eff: efficiency of the hit recording of the panel, indicated as a probability [0,1]
             init_xyz: initial xyz position of the panel in metres in the volume frame
             init_xy_span: initial xy-span (total width) of the panel in metres
             m2_cost: the cost in unit currency of the 1 square metre of detector
             budget: optional required cost of the panel. Based on the span and cost per m^2, the panel will resize to meet the required cost
-            realistic_validation: if True, will use the physicial interpreation of the panel during evaluation
-            device: deivce on which to place tensors
+            realistic_validation: if True, will use the physical interpretation of the panel during evaluation
+            device: device on which to place tensors
         """
 
         if res <= 0:
@@ -94,10 +94,10 @@ class DetectorPanel(nn.Module):
 
     def get_scaled_xy_span(self) -> Tensor:
         r"""
-        Compues the effective size of the panel by rescaling based on the xy-span, cost per m^2, and budget.
+        Computes the effective size of the panel by rescaling based on the xy-span, cost per m^2, and budget.
 
         Returns:
-            Rescaled xy-span such that the panel has a cost euqal to the specified budget
+            Rescaled xy-span such that the panel has a cost equal to the specified budget
         """
 
         return self.xy_span * self.budget_scale
@@ -172,7 +172,7 @@ class DetectorPanel(nn.Module):
             mask: optional pre-computed (N) Boolean mask, where True indicates that the xy point is inside the panel.
                 Only used in evaluation mode and if `realistic_validation` is True.
                 If required, but not supplied, than will be computed automatically.
-            as_2d: if True, will return the x,y compnents of the efficiency model, otherwise will return their product
+            as_2d: if True, will return the x,y components of the efficiency model, otherwise will return their product
 
         Returns:
             eff, a (N) or (N,xy) tensor of the efficiency (components) at the xy points
@@ -197,8 +197,8 @@ class DetectorPanel(nn.Module):
 
     def assign_budget(self, budget: Optional[Tensor] = None) -> None:
         r"""
-        Sets the budget for the panel. This is then used to set a multiplicative coeficient, `budget_scale`, based on the `m2_cost`
-        which rescales the `xy_span` such that the area of the resulting panel matches the assugned budget.
+        Sets the budget for the panel. This is then used to set a multiplicative coefficient, `budget_scale`, based on the `m2_cost`
+        which rescales the `xy_span` such that the area of the resulting panel matches the assigned budget.
 
         Arguments:
             budget: required cost of the panel in unit currency

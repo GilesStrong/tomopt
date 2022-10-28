@@ -8,7 +8,7 @@ import torch.nn.functional as F
 from tomopt.core import X0
 from tomopt.volume import Volume, PassiveLayer, PanelDetectorLayer, DetectorPanel, DetectorHeatMap
 from tomopt.muon import MuonBatch, MuonGenerator2016
-from tomopt.inference import PanelScatterBatch, PanelX0Inferer
+from tomopt.inference import PanelScatterBatch, PanelX0Inferrer
 from tomopt.optimisation import VoxelX0Loss, MuonResampler
 
 LW = Tensor([1, 1])
@@ -99,46 +99,46 @@ def get_heatmap_layers() -> nn.ModuleList:
 
 
 @pytest.fixture
-def panel_inferrer() -> PanelX0Inferer:
+def panel_inferrer() -> PanelX0Inferrer:
     volume = Volume(get_panel_layers())
     gen = MuonGenerator2016.from_volume(volume)
     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
     sb = PanelScatterBatch(mu=mu, volume=volume)
-    inf = PanelX0Inferer(volume=volume)
+    inf = PanelX0Inferrer(volume=volume)
     inf.add_scatters(sb)
     return inf
 
 
 @pytest.fixture
-def fixed_budget_panel_inferrer() -> PanelX0Inferer:
+def fixed_budget_panel_inferrer() -> PanelX0Inferrer:
     volume = Volume(get_panel_layers(), budget=32)
     gen = MuonGenerator2016.from_volume(volume)
     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
     sb = PanelScatterBatch(mu=mu, volume=volume)
-    inf = PanelX0Inferer(volume=volume)
+    inf = PanelX0Inferrer(volume=volume)
     inf.add_scatters(sb)
     return inf
 
 
 @pytest.fixture
-def heatmap_inferrer() -> PanelX0Inferer:
+def heatmap_inferrer() -> PanelX0Inferrer:
     volume = Volume(get_heatmap_layers())
     gen = MuonGenerator2016.from_volume(volume)
     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
     sb = PanelScatterBatch(mu=mu, volume=volume)
-    inf = PanelX0Inferer(volume=volume)
+    inf = PanelX0Inferrer(volume=volume)
     inf.add_scatters(sb)
     return inf
 
 
 # @pytest.fixture
-# def deep_inferrer() -> DeepVolumeInferer:
+# def deep_inferrer() -> DeepVolumeInferrer:
 #     volume = Volume(get_panel_layers())
 #     gen = MuonGenerator2016.from_volume(volume)
 #     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
@@ -158,7 +158,7 @@ def heatmap_inferrer() -> PanelX0Inferer:
 #         def forward(self, x: Tensor) -> Tensor:
 #             return self.act(self.layer(x.mean(2).flatten()[None]))
 
-#     inf = DeepVolumeInferer(model=MockModel(), base_inferrer=PanelX0Inferer(volume=volume), volume=volume, grp_feats=grp_feats)
+#     inf = DeepVolumeInferrer(model=MockModel(), base_inferrer=PanelX0Inferrer(volume=volume), volume=volume, grp_feats=grp_feats)
 #     inf.add_scatters(sb)
 #     return inf
 

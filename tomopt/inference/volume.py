@@ -17,16 +17,16 @@ Provides implementations of classes designed to infer targets of passive volumes
 using the variables computed by e.g. :class:`~tomopt.inference.scattering.AbsScatterBatch`.
 """
 
-__all__ = ["PanelX0Inferer", "DenseBlockClassifierFromX0s"]  # "DeepVolumeInferer", "WeightedDeepVolumeInferer"]
+__all__ = ["PanelX0Inferrer", "DenseBlockClassifierFromX0s"]  # "DeepVolumeInferrer", "WeightedDeepVolumeInferrer"]
 
 
-class AbsVolumeInferer(metaclass=ABCMeta):
+class AbsVolumeInferrer(metaclass=ABCMeta):
     r"""
     Abstract base class for volume inference.
 
     Inheriting classes are expected to be fed multiple :class:`~tomopt.inference.scattering.AbsScatterBatch`s,
-    via :meth:`~tomopt.inference.volume.AbsVolumeInferer.add_scatters`, for a single :class:`~tomopt.volume.volume.Volume`
-    and return a volume prediction based on all of the muon batches when :meth:`~tomopt.inference.volume.AbsVolumeInferer.get_prediction` is called.
+    via :meth:`~tomopt.inference.volume.AbsVolumeInferrer.add_scatters`, for a single :class:`~tomopt.volume.volume.Volume`
+    and return a volume prediction based on all of the muon batches when :meth:`~tomopt.inference.volume.AbsVolumeInferrer.get_prediction` is called.
     """
 
     def __init__(self, volume: Volume):
@@ -52,7 +52,7 @@ class AbsVolumeInferer(metaclass=ABCMeta):
     @abstractmethod
     def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
         r"""
-        Inheriting classes must override this method to provide a compuation of the per-muon efficiency, given the individual muon hit efficiencies.
+        Inheriting classes must override this method to provide a computation of the per-muon efficiency, given the individual muon hit efficiencies.
         """
 
         pass
@@ -61,7 +61,7 @@ class AbsVolumeInferer(metaclass=ABCMeta):
     def get_prediction(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
         r"""
         Inheriting classes must override this method to provide a prediction computed using the added scatter batches.
-        Predicitons can be accompanied by an optional "inverse weight" designed to divide the loss of the predictions: loss(pred,targs)/inv_weight
+        Predictions can be accompanied by an optional "inverse weight" designed to divide the loss of the predictions: loss(pred,targs)/inv_weight
         E.g. the sum of muon efficiencies.
         """
 
@@ -69,8 +69,8 @@ class AbsVolumeInferer(metaclass=ABCMeta):
 
     def add_scatters(self, scatters: AbsScatterBatch) -> None:
         r"""
-        Appends a new set of muon scatter vairables.
-        When :meth:`~tomopt.inference.volume.AbsVolumeInferer.get_prediction` is called, the prediction will be based on all
+        Appends a new set of muon scatter variables.
+        When :meth:`~tomopt.inference.volume.AbsVolumeInferrer.get_prediction` is called, the prediction will be based on all
         :class:`~tomopt.inference.scattering.AbsScatterBatch`s added up to that point
         """
 
@@ -78,9 +78,9 @@ class AbsVolumeInferer(metaclass=ABCMeta):
         self.scatter_batches.append(scatters)
 
 
-class AbsX0Inferer(AbsVolumeInferer):
+class AbsX0Inferrer(AbsVolumeInferrer):
     r"""
-    Abstract base class for infering the X0 of every voxel in the passive volume.
+    Abstract base class for inferring the X0 of every voxel in the passive volume.
 
     The inference is based on the PoCA approach of assigning the entirety of the muon scattering to a single point,
     and the X0 computation is based on inversion of the PDG scattering model described in
@@ -98,13 +98,13 @@ class AbsX0Inferer(AbsVolumeInferer):
         In order to account for the muon weights and compute different X0s for the voxels whilst using the whole muon population,
         weighted RMSs are computed for each of the scattering terms in the right-hand side of the equation.
         In addition to the muon weight w_ij, the variances of the squared values of the scattering variables is used to divide w_ij.
-        The result is a set of X0 predicions X0_j.
+        The result is a set of X0 predictions X0_j.
 
     .. important::
         Inversion of the PDG model does NOT account for the natural log term.
 
     .. important::
-        To simplify the computation code, this class relies heavily on lazy compuation and memoisation; be careful if calling private methods manually.
+        To simplify the computation code, this class relies heavily on lazy computation and memoisation; be careful if calling private methods manually.
     """
 
     _n_mu: Optional[int] = None
@@ -195,7 +195,7 @@ class AbsX0Inferer(AbsVolumeInferer):
             wgt: (N,*) weight to assign per row in the x tensor
 
         Returns:
-            Wieghted mean of the variable
+            Weighted mean of the variable
         """
 
         return (x * wgt).sum(0) / wgt.sum(0)
@@ -235,7 +235,7 @@ class AbsX0Inferer(AbsVolumeInferer):
         Combines scatter data from all the batches added so far.
         Any muons with NaN or Inf entries will be filtered out of the resulting tensors.
 
-        To aid in uncertainty compuation, a pair of tensors are created with the all scatter variables and their uncertainies.
+        To aid in uncertainty computation, a pair of tensors are created with the all scatter variables and their uncertainties.
         These are then indexed to retrieve the scatter variables.
         """
 
@@ -270,8 +270,8 @@ class AbsX0Inferer(AbsVolumeInferer):
 
     def _get_voxel_zxy_x0_pred_uncs(self) -> Tensor:
         r"""
-        Computes the uncertainty on the predicted voxelwise X0s, via graditient-based error propagation.
-        This computation uses the triangle of the error matrix and does not assume zero-valued off-diagnonal elements.
+        Computes the uncertainty on the predicted voxelwise X0s, via gradient-based error propagation.
+        This computation uses the triangle of the error matrix and does not assume zero-valued off-diagonal elements.
 
         .. warning::
             This method is incredibly slow and not recommended for use
@@ -296,10 +296,10 @@ class AbsX0Inferer(AbsVolumeInferer):
         r"""
         Computes the X0 predictions per voxel using the scatter batched added.
 
-        TODO: Implement differing x0 accoring to poca_xyz via Gaussian spread
+        TODO: Implement differing x0 according to poca_xyz via Gaussian spread
 
         Returns:
-            (z,x,y) tensor of voxelwise X0 predicitons
+            (z,x,y) tensor of voxelwise X0 predictions
         """
 
         # Compute variable weights per voxel per muon, variable weights applied to squared variables, therefore use error propagation
@@ -333,7 +333,7 @@ class AbsX0Inferer(AbsVolumeInferer):
     def vox_zxy_x0_preds(self) -> Tensor:
         r"""
         Returns:
-            (z,x,y) tensor of voxelwise X0 predicitons
+            (z,x,y) tensor of voxelwise X0 predictions
         """
 
         if self._vox_zxy_x0_preds is None:
@@ -419,7 +419,7 @@ class AbsX0Inferer(AbsVolumeInferer):
     def muon_poca_xyz_unc(self) -> Tensor:
         r"""
         Returns:
-            (muons,xyz) tensor of PoCA location uncertainies
+            (muons,xyz) tensor of PoCA location uncertainties
         """
 
         if self._muon_scatter_vars is None or self._muon_scatter_var_uncs is None:
@@ -526,9 +526,9 @@ class AbsX0Inferer(AbsVolumeInferer):
         return self._muon_efficiency
 
 
-class PanelX0Inferer(AbsX0Inferer):
+class PanelX0Inferrer(AbsX0Inferrer):
     r"""
-    Class for infering the X0 of every voxel in the passive volume using hits recorded by :class:`~tomopt.volume.layer.PanelDetectorLayer`s.
+    Class for inferring the X0 of every voxel in the passive volume using hits recorded by :class:`~tomopt.volume.layer.PanelDetectorLayer`s.
 
     The inference is based on the PoCA approach of assigning the entirety of the muon scattering to a single point,
     and the X0 computation is based on inversion of the PDG scattering model described in
@@ -546,18 +546,18 @@ class PanelX0Inferer(AbsX0Inferer):
         In order to account for the muon weights and compute different X0s for the voxels whilst using the whole muon population,
         weighted RMSs are computed for each of the scattering terms in the right-hand side of the equation.
         In addition to the muon weight w_ij, the variances of the squared values of the scattering variables is used to divide w_ij.
-        The result is a set of X0 predicions X0_j.
+        The result is a set of X0 predictions X0_j.
 
     .. important::
         Inversion of the PDG model does NOT account for the natural log term.
 
     .. important::
-        To simplify the computation code, this class relies heavily on lazy compuation and memoisation; be careful if calling private methods manually.
+        To simplify the computation code, this class relies heavily on lazy computation and memoisation; be careful if calling private methods manually.
     """
 
     def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
         r"""
-        Compuates the per-muon efficiency, given the individual muon hit efficiencies,
+        Computes the per-muon efficiency, given the individual muon hit efficiencies,
         as the probability of at least two hits above and below the passive volume.
 
         Arguments:
@@ -589,11 +589,11 @@ class PanelX0Inferer(AbsX0Inferer):
         return eff
 
 
-# class DeepVolumeInferer(AbsVolumeInferer):
+# class DeepVolumeInferrer(AbsVolumeInferrer):
 #     def __init__(
 #         self,
 #         model: Union[torch.jit._script.RecursiveScriptModule, nn.Module],
-#         base_inferrer: AbsX0Inferer,
+#         base_inferrer: AbsX0Inferrer,
 #         volume: Volume,
 #         grp_feats: List[str],
 #         include_unc: bool = False,
@@ -706,11 +706,11 @@ class PanelX0Inferer(AbsX0Inferer):
 #         return pred, weight
 
 
-# class WeightedDeepVolumeInferer(DeepVolumeInferer):
+# class WeightedDeepVolumeInferrer(DeepVolumeInferrer):
 #     def __init__(
 #         self,
 #         model: Union[torch.jit._script.RecursiveScriptModule, nn.Module],
-#         base_inferrer: AbsX0Inferer,
+#         base_inferrer: AbsX0Inferrer,
 #         volume: Volume,
 #         grp_feats: List[str],
 #         include_unc: bool = False,
@@ -739,7 +739,7 @@ class PanelX0Inferer(AbsX0Inferer):
 #         return pred, weight
 
 
-class DenseBlockClassifierFromX0s(AbsVolumeInferer):
+class DenseBlockClassifierFromX0s(AbsVolumeInferrer):
     r"""
     Class for inferreing the presence of a small amount of denser material in the passive volume.
 
@@ -764,7 +764,7 @@ class DenseBlockClassifierFromX0s(AbsVolumeInferer):
     def __init__(
         self,
         n_block_voxels: int,
-        partial_x0_inferrer: Type[AbsX0Inferer],
+        partial_x0_inferrer: Type[AbsX0Inferrer],
         volume: Volume,
         use_avgpool: bool = True,
         cut_coef: float = 1e4,
@@ -781,7 +781,7 @@ class DenseBlockClassifierFromX0s(AbsVolumeInferer):
             volume: volume through which the muons will be passed
             use_avgpool: wether to blur voxelwise X0 predicitons with a stride-1 kernel-size-3 average pooling
                 useful when the dense material is expected to form a contiguous block
-            cut_coef: the "shaprness" of the sigmoid weight that splits voxels into block and background.
+            cut_coef: the "sharpness" of the sigmoid weight that splits voxels into block and background.
                 Higher values results in a sharper cut.
             ratio_offset: additive constant for the X0 ratio
             ratio_coef: multiplicative coefficient for the offset X0 ratio
@@ -850,7 +850,7 @@ class DenseBlockClassifierFromX0s(AbsVolumeInferer):
         self.x0_inferrer._reset_vars()
 
 
-class AbsIntClassifierFromX0(AbsVolumeInferer):
+class AbsIntClassifierFromX0(AbsVolumeInferrer):
     r"""
     Abstract base class for inferring integer targets through multiclass classification from voxelwise X0 predictions.
     Inheriting classes must provide a way to convert voxelwise X0s into class probabilities of the required dimension.
@@ -858,7 +858,7 @@ class AbsIntClassifierFromX0(AbsVolumeInferer):
 
     def __init__(
         self,
-        partial_x0_inferrer: Type[AbsX0Inferer],
+        partial_x0_inferrer: Type[AbsX0Inferrer],
         volume: Volume,
         output_probs: bool = True,
         class2float: Optional[Callable[[Tensor, Volume], Tensor]] = None,

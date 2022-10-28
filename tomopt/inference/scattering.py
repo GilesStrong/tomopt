@@ -22,7 +22,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
     r"""
     Abstract base class for computing scattering information from the hits via incoming/outgoing trajectory fitting.
 
-    Linear fits are performed seperately to all hits associated with layer groups, as indicated by the `pos` attribute of the layers which recorded hits.
+    Linear fits are performed separately to all hits associated with layer groups, as indicated by the `pos` attribute of the layers which recorded hits.
     Currently, the inference methods expect detectors above the passive layer to have `pos=='above'`,
     and those below the passive volume to have `pos=='below'`.
     Trajectory fitting is performed using an analytic likelihood minimisation, which considers "uncertainties" on the hits in x and y.
@@ -33,7 +33,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
         since this split is based on the value of the `n_hits_above` attribute.
 
     One instance of this class should created for each :class:`~tomopt.muon.muon_batch.MuonBatch`.
-    As part of the intialisation, muons will be filtered using :meth:`~tomopt.inference.AbsScatterBatch._filter_scatters`
+    As part of the initialisation, muons will be filtered using :meth:`~tomopt.inference.AbsScatterBatch._filter_scatters`
     in order to avoid NaN/Inf gradients or values. This results in direct, in-place changes to the :class:`~tomopt.muon.muon_batch.MuonBatch`.
 
     Since many variables of the scattering can be inferred, but not all are required for further inference downstream,
@@ -43,7 +43,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
     The dtheta, dphi, and total scattering variables are computed under the assumption of small angular scatterings.
     An assumption is necessary here, since there is a loss of information in the when the muons undergo scattering in theta and phi:
     since theta is [0,pi] a negative scattering in theta will always results in a positive theta, but phi can become phi+pi.
-    When inferring the angular scattering, one cannot precisely tell whether instead a large scattering in phi occured.
+    When inferring the angular scattering, one cannot precisely tell whether instead a large scattering in phi occurred.
     The total scattering (`total_scatter`) is the quadrature sum of dtheta and dphi, and all three are computed under both hypotheses.
     The final values of these are chosen using the hypothesis which minimises the total amount of scattering.
     This assumption has been tested and found to be good.
@@ -99,9 +99,9 @@ class AbsScatterBatch(metaclass=ABCMeta):
     def __init__(self, mu: MuonBatch, volume: Volume):
         r"""
         Initialise scatter batch from a muon batch.
-        During initialiastion:
+        During initialisation:
             The muons will be filtered in-place via :meth:`~tomopt.inference.AbsScatterBatch._filter_scatters`
-            The trajectories for the incoming and outgoung muons will be fitted.
+            The trajectories for the incoming and outgoing muons will be fitted.
         """
 
         self.mu, self.volume = mu, volume
@@ -126,7 +126,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
         r"""
         Fits a linear trajectory to a group of hits, whilst considering their uncertainties on their xy positions.
         No uncertainty is considered for z positions of hits.
-        The fit is performed via an analytical liklihood-maximisation.
+        The fit is performed via an analytical likelihood-maximisation.
 
 
         .. important::
@@ -146,7 +146,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
         uncs = torch.nan_to_num(uncs)  # Set Infs to large number
 
         stars, angles = [], []
-        for i in range(2):  # seperate x and y resolutions
+        for i in range(2):  # separate x and y resolutions
             inv_unc2 = uncs[:, :, i : i + 1] ** -2
             sum_inv_unc2 = inv_unc2.sum(dim=1)
             mean_xz = torch.sum(hits[:, :, [i, 2]] * inv_unc2, dim=1) / sum_inv_unc2
@@ -353,7 +353,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
         Computes dtheta, dphi, and total scattering variables under the assumption of small angular scatterings.
         An assumption is necessary here, since there is a loss of information in the when the muons undergo scattering in theta and phi:
         since theta is [0,pi] a negative scattering in theta will always results in a positive theta, but phi can become phi+pi.
-        When inferring the angular scattering, one cannot precisely tell whether instead a large scattering in phi occured.
+        When inferring the angular scattering, one cannot precisely tell whether instead a large scattering in phi occurred.
         The total scattering (`total_scatter`) is the quadrature sum of dtheta and dphi, and all three are computed under both hypotheses.
         The final values of these are chosen using the hypothesis which minimises the total amount of scattering.
         This assumption has been tested and found to be good.
@@ -523,8 +523,8 @@ class AbsScatterBatch(metaclass=ABCMeta):
 
     def _compute_out_var_unc(self, var: Tensor) -> Tensor:
         r"""
-        Computes the uncertainty on variable computed from the recorded hits due to the uncertainties on the hits, via graditient-based error propagation.
-        This computation uses the triangle of the error matrix and does not assume zero-valued off-diagnonal elements.
+        Computes the uncertainty on variable computed from the recorded hits due to the uncertainties on the hits, via gradient-based error propagation.
+        This computation uses the triangle of the error matrix and does not assume zero-valued off-diagonal elements.
 
         .. warning::
             Behaviour tested only
@@ -551,7 +551,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
         Simultaneously sets dtheta, dphi, and total scattering variables under the assumption of small angular scatterings.
         An assumption is necessary here, since there is a loss of information in the when the muons undergo scattering in theta and phi:
         since theta is [0,pi] a negative scattering in theta will always results in a positive theta, but phi can become phi+pi.
-        When inferring the angular scattering, one cannot precisely tell whether instead a large scattering in phi occured.
+        When inferring the angular scattering, one cannot precisely tell whether instead a large scattering in phi occurred.
         The total scattering (`total_scatter`) is the quadrature sum of dtheta and dphi, and all three are computed under both hypotheses.
         The final values of these are chosen using the hypothesis which minimises the total amount of scattering.
         This assumption has been tested and found to be good.
@@ -1072,7 +1072,7 @@ class PanelScatterBatch(AbsScatterBatch):
     Class for computing scattering information from the hits via incoming/outgoing trajectory fitting
     for hits recorded with :class:`~tomopt.volume.layer.PanelDetectorLayer`s.
 
-    Linear fits are performed seperately to all hits associated with layer groups, as indicated by the `pos` attribute of the layers which recorded hits.
+    Linear fits are performed separately to all hits associated with layer groups, as indicated by the `pos` attribute of the layers which recorded hits.
     Currently, the inference methods expect detectors above the passive layer to have `pos=='above'`,
     and those below the passive volume to have `pos=='below'`.
     Trajectory fitting is performed using an analytic likelihood minimisation, which considers "uncertainties" on the hits in x and y.
@@ -1084,7 +1084,7 @@ class PanelScatterBatch(AbsScatterBatch):
         since this split is based on the value of the `n_hits_above` attribute.
 
     One instance of this class should created for each :class:`~tomopt.muon.muon_batch.MuonBatch`.
-    As part of the intialisation, muons will be filtered using :meth:`~tomopt.inference.AbsScatterBatch._filter_scatters`
+    As part of the initialisation, muons will be filtered using :meth:`~tomopt.inference.AbsScatterBatch._filter_scatters`
     in order to avoid NaN/Inf gradients or values. This results in direct, in-place changes to the :class:`~tomopt.muon.muon_batch.MuonBatch`.
 
     Since many variables of the scattering can be inferred, but not all are required for further inference downstream,
@@ -1094,7 +1094,7 @@ class PanelScatterBatch(AbsScatterBatch):
     The dtheta, dphi, and total scattering variables are computed under the assumption of small angular scatterings.
     An assumption is necessary here, since there is a loss of information in the when the muons undergo scattering in theta and phi:
     since theta is [0,pi] a negative scattering in theta will always results in a positive theta, but phi can become phi+pi.
-    When inferring the angular scattering, one cannot precisely tell whether instead a large scattering in phi occured.
+    When inferring the angular scattering, one cannot precisely tell whether instead a large scattering in phi occurred.
     The total scattering (`total_scatter`) is the quadrature sum of dtheta and dphi, and all three are computed under both hypotheses.
     The final values of these are chosen using the hypothesis which minimises the total amount of scattering.
     This assumption has been tested and found to be good.
@@ -1107,14 +1107,14 @@ class PanelScatterBatch(AbsScatterBatch):
         No uncertainty is assumed for z.
 
         .. important::
-            These are NOT the physical uncertainies on the hits, since they include the efficiency.
+            These are NOT the physical uncertainties on the hits, since they include the efficiency.
 
         Arguments:
             zordered_panels: list of panels in order of decreasing z position
             hits: (muons,panels,xyz) tensor of hit locations
 
         Returns:
-            (muons,panels,(unc_x,unc_y,0)) uncertainies on hits
+            (muons,panels,(unc_x,unc_y,0)) uncertainties on hits
         """
 
         uncs: List[Tensor] = []
@@ -1150,7 +1150,7 @@ class GenScatterBatch(AbsScatterBatch):
         This class is intended for diagnostic purposes only.
         The tracks and scatter variables carry no gradient w.r.t. detector parameters (except z position).
 
-    Linear fits are performed seperately to all hits associated with layer groups, as indicated by the `pos` attribute of the layers which recorded hits.
+    Linear fits are performed separately to all hits associated with layer groups, as indicated by the `pos` attribute of the layers which recorded hits.
     Currently, the inference methods expect detectors above the passive layer to have `pos=='above'`,
     and those below the passive volume to have `pos=='below'`.
     Trajectory fitting is performed using an analytic likelihood minimisation, but no uncertainties on the hits are considered.
@@ -1160,7 +1160,7 @@ class GenScatterBatch(AbsScatterBatch):
         since this split is based on the value of the `n_hits_above` attribute.
 
     One instance of this class should created for each :class:`~tomopt.muon.muon_batch.MuonBatch`.
-    As part of the intialisation, muons will be filtered using :meth:`~tomopt.inference.AbsScatterBatch._filter_scatters`
+    As part of the initialisation, muons will be filtered using :meth:`~tomopt.inference.AbsScatterBatch._filter_scatters`
     in order to avoid NaN/Inf values. This results in direct, in-place changes to the :class:`~tomopt.muon.muon_batch.MuonBatch`.
 
     Since many variables of the scattering can be inferred, but not all are required for further inference downstream,
@@ -1170,7 +1170,7 @@ class GenScatterBatch(AbsScatterBatch):
     The dtheta, dphi, and total scattering variables are computed under the assumption of small angular scatterings.
     An assumption is necessary here, since there is a loss of information in the when the muons undergo scattering in theta and phi:
     since theta is [0,pi] a negative scattering in theta will always results in a positive theta, but phi can become phi+pi.
-    When inferring the angular scattering, one cannot precisely tell whether instead a large scattering in phi occured.
+    When inferring the angular scattering, one cannot precisely tell whether instead a large scattering in phi occurred.
     The total scattering (`total_scatter`) is the quadrature sum of dtheta and dphi, and all three are computed under both hypotheses.
     The final values of these are chosen using the hypothesis which minimises the total amount of scattering.
     This assumption has been tested and found to be good.

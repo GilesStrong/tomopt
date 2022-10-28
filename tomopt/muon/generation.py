@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from ..volume import Volume
 
 r"""
-Provides generator classes for sampling inital muon kinematics according to literature models.
+Provides generator classes for sampling initial muon kinematics according to literature models.
 """
 
 __all__ = ["MuonGenerator2015", "MuonGenerator2016"]
@@ -33,10 +33,10 @@ class AbsMuonGenerator:
         y_range: Tuple[float, float],
         fixed_mom: Optional[float] = 5.0,
         energy_range: Tuple[float, float] = (0.5, 500),
-        theta_range: Tuple[float, float] = (0, 70 * np.pi / 180),  # Models on accurate upto ~70 degrees
+        theta_range: Tuple[float, float] = (0, 70 * np.pi / 180),  # Models on accurate up to ~70 degrees
     ) -> None:
         r"""
-        Once intialised, class can be called, or it's `generate_set` method called, to generate a set of initial muon kinematics.
+        Once initialised, class can be called, or it's `generate_set` method called, to generate a set of initial muon kinematics.
         Each muon will have a starting x and y position sampled uniformly within a defined region.
         Theta and momentum will be defined by sampling the defined flux model.
 
@@ -75,7 +75,7 @@ class AbsMuonGenerator:
     @abstractmethod
     def flux(self, energy: Union[float, np.ndarray], theta: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
         r"""
-        Inheriting classes should overide this to implement their flux model for the supplied pairs of energies and thetas
+        Inheriting classes should override this to implement their flux model for the supplied pairs of energies and thetas
         Arguments:
             energy: energy values at which to compute the flux, in GeV
             theta: theta values at which to compute the flux, in radians
@@ -107,7 +107,7 @@ class AbsMuonGenerator:
                 passive volume, if it's phi angle were to point directly towards the passive volume.
             fixed_mom: if not None, will only generate muons with the specified momentum in GeV
             energy_range: if fixed_mom is None, muons will have initial momentum sampled according to the flux model in the specified range in GeV
-            theta_range: muons will have initial theta sampled according to the flux model in the specified range in raidans
+            theta_range: muons will have initial theta sampled according to the flux model in the specified range in radians
         """
 
         x, y = volume.lw.detach().cpu().numpy().tolist()
@@ -150,7 +150,7 @@ class AbsMuonGenerator:
 
 class MuonGenerator2015(AbsMuonGenerator):
     r"""
-    Provides muon generator for sampling inital muon kinematics according to  Guan et al. 2015 (arXiv:1509.06176).
+    Provides muon generator for sampling initial muon kinematics according to  Guan et al. 2015 (arXiv:1509.06176).
     """
 
     P1 = 0.102573
@@ -186,7 +186,7 @@ class MuonGenerator2015(AbsMuonGenerator):
 
 class MuonGenerator2016(AbsMuonGenerator):
     r"""
-    Provides muon generator for sampling inital muon kinematics according to Shukla and Sanskrith 2018 arXiv:1606.06907
+    Provides muon generator for sampling initial muon kinematics according to Shukla and Sanskrith 2018 arXiv:1606.06907
     """
 
     I_0 = 88.0

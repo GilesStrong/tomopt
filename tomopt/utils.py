@@ -22,8 +22,8 @@ if (ver := LooseVersion(torch.__version__)) < LooseVersion("1.10.0"):
 
 def jacobian(y: Tensor, x: Tensor, create_graph: bool = False, allow_unused: bool = True) -> Tensor:
     r"""
-    Computes the Jacobian (dy/dx) of y with respect to variables x. x and y can have multple elements.
-    If y has multuple elements then compuation is vectorised via vmap.
+    Computes the Jacobian (dy/dx) of y with respect to variables x. x and y can have multiple elements.
+    If y has multiple elements then computation is vectorised via vmap.
 
     Arguments:
         y: tensor to be differentiated
@@ -73,7 +73,7 @@ def x0targs_to_classtargs(array: np.ndarray, x02id: Dict[float, int]) -> np.ndar
     .. warning::
         To account for floating point precision, X0 values are mapped to the integer class IDs which are closest to X0 keys defined in the map.
         This means that the method cannot detect missing X0 values from x02id;
-        X0s will always be mapped to a class ID, even if the material isn't defiend in the map
+        X0s will always be mapped to a class ID, even if the material isn't defined in the map
 
     .. warning::
         The input array is modified in-place
@@ -106,7 +106,7 @@ def x0_from_mixture(
         x0s: X0 values of the materials in the mixture in metres
         densities: densities of the materials in the mixture kg/m^3
         weight_fracs: the relative amounts of each material by weight
-        volumer_fracs: the relative amounts of each material by volume
+        volume_fracs: the relative amounts of each material by volume
 
     Returns:
         {"X0":The X0 of the defined mixture in metres, "density": The density in kg/m^3 of the defined mixture}

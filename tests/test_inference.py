@@ -14,7 +14,7 @@ from tomopt.volume import PassiveLayer, Volume, PanelDetectorLayer, DetectorPane
 from tomopt.muon import MuonBatch, MuonGenerator2016
 from tomopt.core import X0
 from tomopt.inference import (
-    PanelX0Inferer,
+    PanelX0Inferrer,
     PanelScatterBatch,
     GenScatterBatch,
     DenseBlockClassifierFromX0s,
@@ -326,7 +326,7 @@ def test_gen_scatter_batch_compute(mocker, panel_scatter_batch):  # noqa F811
 
 def test_abs_volume_inferrer_properties(panel_scatter_batch):
     mu, volume, sb = panel_scatter_batch
-    inferrer = PanelX0Inferer(volume=volume)
+    inferrer = PanelX0Inferrer(volume=volume)
 
     assert inferrer.volume == volume
     assert torch.all(inferrer.lw == LW)
@@ -341,7 +341,7 @@ def test_panel_x0_inferrer_methods(mocker):  # noqa F811
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
     sb = PanelScatterBatch(mu=mu, volume=volume)
-    inferrer = PanelX0Inferer(volume=volume)
+    inferrer = PanelX0Inferrer(volume=volume)
 
     pt = inferrer.x0_from_scatters(deltaz=SZ, total_scatter=sb.total_scatter, theta_in=sb.theta_in, theta_out=sb.theta_out, mom=sb.mu.reco_mom[:, None])
     assert len(pt) == len(sb.poca_xyz)
@@ -449,12 +449,12 @@ def test_panel_inferrer_multi_batch():
     volume(mu)
 
     # one batch
-    inf = PanelX0Inferer(volume=volume)
+    inf = PanelX0Inferrer(volume=volume)
     inf.add_scatters(PanelScatterBatch(mu=mu, volume=volume))
     pred1, weight1 = inf.get_prediction()
 
     # multi-batch
-    inf = PanelX0Inferer(volume=volume)
+    inf = PanelX0Inferrer(volume=volume)
     for i in range(4):
         mask = torch.zeros(len(mu))
         mask[250 * i : 250 * (i + 1)] = 1
@@ -474,7 +474,7 @@ def test_panel_inferrer_multi_batch():
 
 def test_panel_x0_inferrer_efficiency(mocker, panel_scatter_batch):  # noqa F811
     mu, volume, sb = panel_scatter_batch
-    inferrer = PanelX0Inferer(volume=volume)
+    inferrer = PanelX0Inferrer(volume=volume)
     a_effs = Tensor([0.6, 0.2, 0.3, 0.4])
     b_effs = Tensor([0.5, 0.6, 0.7, 0.8])
     true_eff = 0.4263  # from MC sim
@@ -494,7 +494,7 @@ def test_panel_x0_inferrer_efficiency(mocker, panel_scatter_batch):  # noqa F811
 def test_x0_inferrer_scatter_inversion(mocker, panel_scatter_batch):  # noqa F811
     layer = AbsLayer(LW, Z, SZ)
     mu, volume, sb = panel_scatter_batch
-    inferrer = PanelX0Inferer(volume=volume)
+    inferrer = PanelX0Inferrer(volume=volume)
     inferrer.size = SZ
     x0 = X0["lead"]
     mocker.patch("tomopt.volume.layer.torch.randn", lambda n, device: torch.ones(n, device=device))  # remove randomness
@@ -544,7 +544,7 @@ def test_x0_inferrer_scatter_inversion_via_scatter_batch():
 
     volume = MockVolume()
     sb = GenScatterBatch(muons, volume=volume)
-    inferrer = PanelX0Inferer(volume=volume)
+    inferrer = PanelX0Inferrer(volume=volume)
 
     pred = inferrer.x0_from_scatters(
         deltaz=0.01,
@@ -558,8 +558,8 @@ def test_x0_inferrer_scatter_inversion_via_scatter_batch():
 
 
 # @pytest.mark.flaky(max_runs=2, min_passes=1)
-# @pytest.mark.parametrize("dvi_class, weighted", [[DeepVolumeInferer, False], [WeightedDeepVolumeInferer, True]])
-# def test_deep_volume_inferrer(dvi_class: Type[DeepVolumeInferer], weighted: bool):
+# @pytest.mark.parametrize("dvi_class, weighted", [[DeepVolumeInferrer, False], [WeightedDeepVolumeInferrer, True]])
+# def test_deep_volume_inferrer(dvi_class: Type[DeepVolumeInferrer], weighted: bool):
 #     volume = Volume(get_panel_layers(init_res=1e4))
 #     gen = MuonGenerator2016.from_volume(volume)
 #     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
@@ -580,7 +580,7 @@ def test_x0_inferrer_scatter_inversion_via_scatter_batch():
 #         def forward(self, x: Tensor) -> Tensor:
 #             return self.act(self.layer(x.mean(2).flatten()[None]))
 
-#     inferrer = dvi_class(model=MockModel(), base_inferrer=PanelX0Inferer(volume=volume), volume=volume, grp_feats=grp_feats, include_unc=True)
+#     inferrer = dvi_class(model=MockModel(), base_inferrer=PanelX0Inferrer(volume=volume), volume=volume, grp_feats=grp_feats, include_unc=True)
 
 #     pt, pt_unc = inferrer.get_base_predictions(scatters=sb)
 #     assert len(pt) == len(sb.poca_xyz)
@@ -630,7 +630,7 @@ def test_dense_block_classifier_from_x0s():
     volume.load_rad_length(u_rad_length)
     volume(mu)
     sb = PanelScatterBatch(mu=mu, volume=volume)
-    inferrer = DenseBlockClassifierFromX0s(12, PanelX0Inferer, volume=volume)
+    inferrer = DenseBlockClassifierFromX0s(12, PanelX0Inferrer, volume=volume)
     inferrer.add_scatters(sb)
 
     p, w = inferrer.get_prediction()
@@ -656,7 +656,7 @@ def test_abs_int_classifier_from_x0():
             return F.softmax(vox_preds.mean([1, 2]), dim=-1)
 
     # Raw probs
-    inferrer = Inf(partial_x0_inferrer=PanelX0Inferer, volume=volume, output_probs=True)
+    inferrer = Inf(partial_x0_inferrer=PanelX0Inferrer, volume=volume, output_probs=True)
     inferrer.add_scatters(sb)
 
     p, w = inferrer.get_prediction()
@@ -672,7 +672,7 @@ def test_abs_int_classifier_from_x0():
             assert torch.autograd.grad(w.abs().sum(), panel.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
 
     # Single prediction
-    inferrer = Inf(partial_x0_inferrer=PanelX0Inferer, volume=volume, output_probs=False)
+    inferrer = Inf(partial_x0_inferrer=PanelX0Inferrer, volume=volume, output_probs=False)
     inferrer.add_scatters(sb)
     p, w = inferrer.get_prediction()
     assert p.type() == "torch.LongTensor"
@@ -680,7 +680,7 @@ def test_abs_int_classifier_from_x0():
     assert w.shape == torch.Size([])
 
     # Single float prediction
-    inferrer = Inf(partial_x0_inferrer=PanelX0Inferer, volume=volume, output_probs=False, class2float=lambda x, v: 3.5 * x)
+    inferrer = Inf(partial_x0_inferrer=PanelX0Inferrer, volume=volume, output_probs=False, class2float=lambda x, v: 3.5 * x)
     inferrer.add_scatters(sb)
     p, w = inferrer.get_prediction()
     assert p.type() == "torch.FloatTensor"

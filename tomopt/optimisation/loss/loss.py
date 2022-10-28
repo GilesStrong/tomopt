@@ -101,7 +101,7 @@ class AbsDetectorLoss(nn.Module, metaclass=ABCMeta):
 
     def _get_budget_coef(self, cost: Tensor) -> Tensor:
         r"""
-        Compuutes the budget loss term from the current cost of the detectors.
+        Computes the budget loss term from the current cost of the detectors.
         Switch-on near target budget, plus linear/smooth increase above budget
 
         Arguments:
@@ -160,7 +160,7 @@ class AbsDetectorLoss(nn.Module, metaclass=ABCMeta):
 class VoxelX0Loss(AbsDetectorLoss):
     r"""
     Loss function designed for tasks where the voxelwise X0 value must be predicted as floats.
-    Infernce-error component of the loss is the squared-error on X0 predictions, averaged over all voxels (MSE)
+    Inference-error component of the loss is the squared-error on X0 predictions, averaged over all voxels (MSE)
 
     The total loss consists of:
         The MSE
@@ -175,7 +175,7 @@ class VoxelX0Loss(AbsDetectorLoss):
 
     def _get_inference_loss(self, pred: Tensor, inv_pred_weight: Tensor, volume: Volume) -> Tensor:
         r"""
-        Computes the MSE of the predicitons against the true voxelwise X0s.
+        Computes the MSE of the predictions against the true voxelwise X0s.
 
         Arguments:
             pred: (z,x,y) voxelwise X0 predictions from the inference
@@ -242,9 +242,9 @@ class AbsMaterialClassLoss(AbsDetectorLoss):
 class VoxelClassLoss(AbsMaterialClassLoss):
     r"""
     Loss function designed for tasks where the voxelwise material class ID must be classified.
-    Infernce-error component of the loss is the negative log-liklihood on log class-probabilities, averaged over all voxels (NLL)
+    Inference-error component of the loss is the negative log-likelihood on log class-probabilities, averaged over all voxels (NLL)
 
-    Predicitons should be provided as log-softmaxed class probabilities per voxel, with shape (1,classes,voxels).
+    Predictions should be provided as log-softmaxed class probabilities per voxel, with shape (1,classes,voxels).
     The ordering of the "flattened" voxels should match that of `volume.get_rad_cube().flatten()`
 
     The total loss consists of:
@@ -283,9 +283,9 @@ class VolumeClassLoss(AbsMaterialClassLoss):
     Loss function designed for tasks where some overall target of the passive volume must be classified, and the target of the volume is encoded as a float X0.
     E.g. what is the material of a large block in the volume.
 
-    The Infernce-error component of the loss depends on shape of predictions provided:
-        If the predictions are of shape (1,classes,voxels), they will be interpretted as multi-class log-probabilities and the negative log-liklihood computed
-        If the predicions are of shape (1,1,voxels), they will be interpretted as binary class probabilities and the binary cross-entropy computed
+    The Inference-error component of the loss depends on shape of predictions provided:
+        If the predictions are of shape (1,classes,voxels), they will be interpreted as multi-class log-probabilities and the negative log-likelihood computed
+        If the predictions are of shape (1,1,voxels), they will be interpreted as binary class probabilities and the binary cross-entropy computed
 
     The ordering of the "flattened" voxels should match that of `volume.get_rad_cube().flatten()`
 
@@ -326,7 +326,7 @@ class VolumeIntClassLoss(AbsDetectorLoss):
     and the values of this target are quantifiably comparable (i.e. the integers are treatable as numbers not just categorical codes).
     E.g. Predicting how many layers of the passive volume are filled with a given material.
 
-    The Infernce-error component of the loss computed as the :meth:`~tomopt.optimisation.loss.sub_losses.integer_class_loss`.
+    The Inference-error component of the loss computed as the :meth:`~tomopt.optimisation.loss.sub_losses.integer_class_loss`.
     Predictions should be provided as probabilities for every possible integer target
     The target from the volume can be converted to an integer (e.g. height to layer ID) using a `targ2int` function
 
@@ -355,7 +355,7 @@ class VolumeIntClassLoss(AbsDetectorLoss):
     ):
         r"""
         Arguments:
-            targ2int: function to convert volume targets to integers to classifiy
+            targ2int: function to convert volume targets to integers to classify
             pred_int_start: the integer that the zeroth probability in predictions corresponds to
             use_mse: passed to :meth:`~tomopt.optimisation.loss.sub_losses.integer_class_loss`
             target_budget: If not None, will include a cost component in the loss configured for the specified budget.

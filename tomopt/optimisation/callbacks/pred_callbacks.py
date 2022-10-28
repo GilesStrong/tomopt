@@ -72,7 +72,7 @@ class VolumeTargetPredHandler(PredHandler):
 
 class Save2HDF5PredHandler(VolumeTargetPredHandler):
     r"""
-    Saves predicitons and targets to an HDF5 file, rather than caching and returning them.
+    Saves predictions and targets to an HDF5 file, rather than caching and returning them.
     Samples are written incrementally. Can optionally save volume targets rather than voxel-wise X0 targets
     If an x02id lookup is provided, it transforms the target from an X0 value to a material class ID.
     """
@@ -86,7 +86,7 @@ class Save2HDF5PredHandler(VolumeTargetPredHandler):
             use_volume_target: if True, saves the volume target value instead of the volume X0s
             overwrite: if True will overwrite existing files with the same path, otherwise will append to them
             x02id: optional map from X0 values to class IDs
-            compression: optional string representation of any compression to use when saveing data
+            compression: optional string representation of any compression to use when saving data
         """
 
         if isinstance(path, str):

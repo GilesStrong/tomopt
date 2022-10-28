@@ -38,7 +38,7 @@ class SmallWallsPassiveGenerator(AbsPassiveGenerator):
         super().__init__(volume=volume, materials=["soil", "wall"])
         self.x0_soil, self.x0_wall, self.stop_k, self.turn_k, self.min_length, self.min_height = x0_soil, x0_wall, stop_k, turn_k, min_length, min_height
         self.zxy_shp = [int(np.round((self.z_range[1] - self.z_range[0]) / self.size))] + (self.lw / self.size).astype(int).tolist()
-        self.wall_z_range = (self.z_range[0], self.z_range[1] - self.size)  # Atleast top layer is soil
+        self.wall_z_range = (self.z_range[0], self.z_range[1] - self.size)  # At least top layer is soil
 
     def _generate(self) -> Tuple[RadLengthFunc, Tensor]:
         n_walls = np.random.randint(1, 5)

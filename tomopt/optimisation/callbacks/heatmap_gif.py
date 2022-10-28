@@ -22,7 +22,7 @@ class HeatMapGif(Callback):
         Initialises the callback.
 
         Arguments:
-            gif_filename: savename for the gif (will be appneded to the callback savepath)
+            gif_filename: savename for the gif (will be appended to the callback savepath)
         """
 
         self.gif_filename = gif_filename

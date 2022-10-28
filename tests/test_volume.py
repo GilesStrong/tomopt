@@ -313,7 +313,7 @@ def test_volume_methods(mocker):  # noqa F811
     assert (centres[0] == Tensor([0, 0, 2 * SZ]) + (SZ / 2)).all()
     assert (centres[-1] == Tensor([LW[0] - SZ, LW[1] - SZ, 7 * SZ]) + (SZ / 2)).all()
 
-    # Budget assigment
+    # Budget assignment
     mocker.patch.object(layers[0], "assign_budget")
     mocker.patch.object(layers[-1], "assign_budget")
     volume = Volume(layers=layers, budget=8)

@@ -11,7 +11,7 @@ r"""
 Provides container classes for different scattering models.
 
 To save on memory and loading time, each scatter model is only loaded once, and all :class:`~tomopt.volume.layer.AbsLayer` will use the same object.
-To avoid loading whenever this file is accessed, the models begin uninitalised, and will only load data when their `load_data` method is called.
+To avoid loading whenever this file is accessed, the models begin uninitialised, and will only load data when their `load_data` method is called.
 """
 
 PKG_DIR = Path(os.path.dirname(os.path.abspath(__file__)))  # How robust is this? Could create hidden dir in home and download resources
@@ -27,14 +27,14 @@ class PGeantScatterModel:
 
     Data in the file is loaded into tensors and act as a lookup table to provide scattering in terms of angles (`dtheta_params`) and positions (`dxy_params`).
     These tensors have shapes (8, 35, 10000), corresponding to (material type, momentum bin, scattering),
-    where 'scattering' is designed to be indexed by uniformly distributed random indicies.
+    where 'scattering' is designed to be indexed by uniformly distributed random indices.
     The materials and momentum bin edges are included in meta data in the HDF5 file.
 
     .. warning::
         Currently no interpolation of X0s, or other handling for scattering in materials that were not considered in the fitting of the model, is performed.
         Instead, 'missing' materials are mapped to the nearest X0 that was used when fitting the model.
 
-    To avoid unecessary loading of data, the model begins uninitalised, and will only load data when `load_data` method is called.
+    To avoid unnecessary loading of data, the model begins uninitialised, and will only load data when `load_data` method is called.
     Prior to this, certain class attributes relating to the scattering model will not defined.
     """
 
@@ -49,7 +49,7 @@ class PGeantScatterModel:
 
     def __init__(self) -> None:
         r"""
-        To avoid unecessary loading of data, the model begins @uninitalised@, and will only load data when `load_data` method is called.
+        To avoid unnecessary loading of data, the model begins "uninitialised", and will only load data when `load_data` method is called.
         Prior to this, certain class attributes relating to the scattering model will not defined.
         """
 
@@ -106,17 +106,17 @@ class PGeantScatterModel:
 
     def compute_scattering(self, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor) -> Dict[str, Tensor]:
         r"""
-        Computes the scattering of the muons using the parametersised GEANT 4 model.
+        Computes the scattering of the muons using the parameterised GEANT 4 model.
 
         Arguments:
             x0: (N) tensor of the X0 of the voxel each muon is traversing
-            deltaz: The amound of distance the muons will travel in the z direction in metres
+            deltaz: The amount of distance the muons will travel in the z direction in metres
             theta: (N) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons
             theta_x: (N) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons' frame to the volume's
             theta_y: (N) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons' frame to the volume's
             mom: (N) tensor of the absolute value of the momentum of each muon
 
-        Retruns:
+        Returns:
             A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, & dy_vol
         """
 
@@ -165,7 +165,7 @@ class PGeantScatterModel:
     def device(self, device: torch.device) -> None:
         self._device = device
         self.dtheta_params = self.dtheta_params.to(self._device)  # Is this dtheta_xy in the muon's ref frame = dtheta dphi in the volume ref frame?
-        self.dxy_params = self.dxy_params.to(self._device)  # Is this alredy in the volume frame or still in the muon's ref frame?
+        self.dxy_params = self.dxy_params.to(self._device)  # Is this already in the volume frame or still in the muon's ref frame?
         self.mom_lookup = self.mom_lookup.to(self._device)
 
 

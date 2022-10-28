@@ -21,7 +21,7 @@ class ScatterRecord(Callback):
     :meth:`~tomopt.plotting.diagnostics.plot_scatter_density` may be used to plot the scatter record.
 
     .. warning::
-        Currently this callback makes no distinciton between different volume layouts, and is designed to used over a single volume layout.
+        Currently this callback makes no distinction between different volume layouts, and is designed to used over a single volume layout.
 
     # TODO extend these to create one record per volume
     """
@@ -71,7 +71,7 @@ class ScatterRecord(Callback):
 
     def get_record(self, as_df: bool = False) -> Union[Tensor, pd.DataFrame]:
         r"""
-        Accessthe recorded PoCAs.
+        Access the recorded PoCAs.
 
         Arguments:
             as_df: if True, will return a Pandas DataFrame, otherwise will return a Tensor
@@ -100,7 +100,7 @@ class HitRecord(ScatterRecord):
     :meth:`~tomopt.plotting.diagnostics.plot_hit_density` may be used to plot the hit record.
 
     .. warning::
-        Currently this callback makes no distinciton between different volume layouts, and is designed to used over a single volume layout.
+        Currently this callback makes no distinction between different volume layouts, and is designed to used over a single volume layout.
 
     # TODO extend these to create one record per volume
     """
@@ -125,5 +125,5 @@ class HitRecord(ScatterRecord):
         """
 
         df = pd.DataFrame(record.reshape(-1, 3).numpy(), columns=["x", "y", "z"])
-        df["layer"] = (self.wrapper.volume.h.detach().cpu().item() - df.z).astype("category").cat.codes  # df ordered by reshapeing hits
+        df["layer"] = (self.wrapper.volume.h.detach().cpu().item() - df.z).astype("category").cat.codes  # df ordered by reshaping hits
         return df

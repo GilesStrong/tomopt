@@ -22,7 +22,7 @@ from ...core import PartialOpt, DEVICE
 from ...muon import MuonGenerator2016, MuonBatch
 from ...muon.generation import AbsMuonGenerator
 from ...inference.scattering import AbsScatterBatch, PanelScatterBatch
-from ...inference.volume import AbsVolumeInferer, PanelX0Inferer
+from ...inference.volume import AbsVolumeInferrer, PanelX0Inferrer
 
 __all__ = ["PanelVolumeWrapper", "HeatMapVolumeWrapper"]
 
@@ -45,7 +45,7 @@ and Model in LUMIN (https://github.com/GilesStrong/lumin/blob/master/lumin/nn/mo
     See the License for the specific language governing permissions and
     limitations under the License.
 
-Usage is compatible with the AGPL licence underwhich TomOpt is distributed.
+Usage is compatible with the AGPL licence under-which TomOpt is distributed.
 Stated changes: adaption of FitParams to pass type-checking, heavy adaptation of Model to be suitable for task specific training
 """
 
@@ -56,7 +56,7 @@ class FitParams:
     :class:`~tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper`
     """
 
-    volume_inferrer: Optional[AbsVolumeInferer] = None
+    volume_inferrer: Optional[AbsVolumeInferrer] = None
     state: Optional[str] = None
     pred: Optional[Tensor] = None
     inv_weight: Optional[Tensor] = None
@@ -223,7 +223,7 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
         partial_opts: Dict[str, PartialOpt],
         loss_func: Optional[AbsDetectorLoss] = None,
         partial_scatter_inferrer: Type[AbsScatterBatch],
-        partial_volume_inferrer: Type[AbsVolumeInferer],
+        partial_volume_inferrer: Type[AbsVolumeInferrer],
         mu_generator: Optional[AbsMuonGenerator] = None,
     ):
         r"""
@@ -747,7 +747,7 @@ class PanelVolumeWrapper(AbsVolumeWrapper):
         budget_opt: Optional[PartialOpt] = None,
         loss_func: Optional[AbsDetectorLoss] = None,
         partial_scatter_inferrer: Type[AbsScatterBatch] = PanelScatterBatch,
-        partial_volume_inferrer: Type[AbsVolumeInferer] = PanelX0Inferer,
+        partial_volume_inferrer: Type[AbsVolumeInferrer] = PanelX0Inferrer,
         mu_generator: Optional[AbsMuonGenerator] = None,
     ):
         r"""
@@ -789,7 +789,7 @@ class PanelVolumeWrapper(AbsVolumeWrapper):
         budget_opt: Optional[PartialOpt] = None,
         loss_func: Optional[AbsDetectorLoss],
         partial_scatter_inferrer: Type[AbsScatterBatch] = PanelScatterBatch,
-        partial_volume_inferrer: Type[AbsVolumeInferer] = PanelX0Inferer,
+        partial_volume_inferrer: Type[AbsVolumeInferrer] = PanelX0Inferrer,
         mu_generator: Optional[AbsMuonGenerator] = None,
     ) -> AbsVolumeWrapper:
         r"""
@@ -971,7 +971,7 @@ class HeatMapVolumeWrapper(AbsVolumeWrapper):
         z_pos_opt: PartialOpt,
         loss_func: Optional[AbsDetectorLoss],
         partial_scatter_inferrer: Type[AbsScatterBatch] = PanelScatterBatch,
-        partial_volume_inferrer: Type[AbsVolumeInferer] = PanelX0Inferer,
+        partial_volume_inferrer: Type[AbsVolumeInferrer] = PanelX0Inferrer,
         mu_generator: Optional[AbsMuonGenerator] = None,
     ):
         r"""
@@ -1008,7 +1008,7 @@ class HeatMapVolumeWrapper(AbsVolumeWrapper):
         z_pos_opt: PartialOpt,
         loss_func: Optional[AbsDetectorLoss],
         partial_scatter_inferrer: Type[AbsScatterBatch] = PanelScatterBatch,
-        partial_volume_inferrer: Type[AbsVolumeInferer] = PanelX0Inferer,
+        partial_volume_inferrer: Type[AbsVolumeInferrer] = PanelX0Inferrer,
         mu_generator: Optional[AbsMuonGenerator] = None,
     ) -> AbsVolumeWrapper:
         r"""

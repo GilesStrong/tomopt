@@ -4,7 +4,7 @@ from torch import Tensor, nn
 import torch.nn.functional as F
 
 from ...volume import Volume
-from ...inference.volume import AbsIntClassifierFromX0, AbsX0Inferer
+from ...inference.volume import AbsIntClassifierFromX0, AbsX0Inferrer
 
 __all__ = ["LadleFurnaceFillLevelInferrer"]
 
@@ -16,7 +16,7 @@ class LadleFurnaceFillLevelInferrer(AbsIntClassifierFromX0):
 
     def __init__(
         self,
-        partial_x0_inferrer: Type[AbsX0Inferer],
+        partial_x0_inferrer: Type[AbsX0Inferrer],
         volume: Volume,
         pipeline: List[str] = ["remove_ladle", "avg_3d", "avg_layers", "avg_1d", "ridge_1d_0", "negative", "max_div_min"],
         add_batch_dim: bool = True,

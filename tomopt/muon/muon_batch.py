@@ -23,7 +23,7 @@ class MuonBatch:
     Each muon has its own:
         x and y position in metres, which are absolute coordinates in the volume frame.
         theta, the angle in radians [0,pi) between the muon trajectory and the negative z-axis in the volume frame
-            muons with a theta > pi/2 (i.e. travel upwwards) may be removed automatically
+            muons with a theta > pi/2 (i.e. travel upwards) may be removed automatically
         phi, the anticlockwise angle in radians [0,2pi) between the muon trajectory and the positive x-axis, in the x-y plane of the volume frame.
         momentum (mom), the absolute value of the muon momentum in GeV
     All the muons in the batch share the same z-position in metres, which is an absolute coordinate in the volume frame.
@@ -31,9 +31,9 @@ class MuonBatch:
     Muon properties should not be updated manually.  Instead, call:
         `.propagate(dz)` to update the x,y,z positions of the muons for a given propagation dz in the z-axis.
         `.scatter_dxy(dx_vol, dy_vol, mask)` to shift the x,y positions of the muons,
-            for which the values of the optional Boolean mask is true, by the specifed amount.
+            for which the values of the optional Boolean mask is true, by the specified amount.
         `.scatter_dtheta_dphi(dtheta_vol, dphi_vol, mask)` to alter the theta,phi angles of the muons,
-            for which the values of the optional Boolean mask is true, by the speocifed amount.
+            for which the values of the optional Boolean mask is true, by the specified amount.
 
     .. important::
         Muon momenta is currently constant
@@ -47,7 +47,7 @@ class MuonBatch:
 
     In addition to storing the properties of the muons, the `MuonBatch` class is also used to store the detector hits associated with each muon.
     Hits may be added via the `.append_hits` method, and stored in the `_hits` attribute.
-    Hits can then be retreaved by the `.get_hits` method.
+    Hits can then be retrieved by the `.get_hits` method.
 
     """
 
@@ -60,13 +60,13 @@ class MuonBatch:
 
     def __init__(self, xy_p_theta_phi: Tensor, init_z: Union[Tensor, float], device: torch.device = DEVICE):
         r"""
-        Initalise class from `xy_p_theta_phi`, a (N_muon, 5) tensor, and an initial z position for the batch.
+        Initialise class from `xy_p_theta_phi`, a (N_muon, 5) tensor, and an initial z position for the batch.
         Muon trajectories (theta & phi) and positions (x,y,z) are in the reference frame of the volume.
 
         Arguments:
             xy_p_theta_phi: (N_muon, 5) tensor,
                 with xy [m], p [GeV], theta [r] (0, pi/2) defined w.r.t z axis, phi [r] (0, 2pi) defined anticlockwise from x axis
-            init_z: inital z position of all muons in the batch
+            init_z: initial z position of all muons in the batch
             device: device on which to place the muon tensors
         """
 
@@ -121,7 +121,7 @@ class MuonBatch:
             theta_y: angle from the negative z-axis in the yz plane
 
         Returns:
-            theta, the anti-clockwise angle from the negativte z axis, in the xyz plane
+            theta, the anti-clockwise angle from the negative z axis, in the xyz plane
         """
 
         theta = (theta_x.tan().square() + theta_y.tan().square()).sqrt().arctan()
@@ -136,7 +136,7 @@ class MuonBatch:
             This function does NOT work if theta is > pi/2
 
         Arguments:
-            theta: the anti-clockwise angle from the negativte z axis, in the xyz plane
+            theta: the anti-clockwise angle from the negative z axis, in the xyz plane
             phi: the anti-clockwise angle from the positive x axis, in the xy plane
 
         Returns:
@@ -155,7 +155,7 @@ class MuonBatch:
             This function does NOT work if theta is > pi/2
 
         Arguments:
-            theta: the anti-clockwise angle from the negativte z axis, in the xyz plane
+            theta: the anti-clockwise angle from the negative z axis, in the xyz plane
             phi: the anti-clockwise angle from the positive x axis, in the xy plane
 
         Returns:
@@ -222,7 +222,7 @@ class MuonBatch:
 
     def filter_muons(self, keep_mask: Tensor) -> None:
         r"""
-        Removes all muons, and their associated hits, except for muons specifed as True in `keep_mask`.
+        Removes all muons, and their associated hits, except for muons specified as True in `keep_mask`.
 
         Arguments:
             keep_mask: (N) Boolean tensor. Muons with False elements will be removed, along with their hits.
@@ -265,7 +265,7 @@ class MuonBatch:
             xy_high: (2,N) optional upper limit on xy positions
 
         Returns:
-            (N) Boolean mask with True values corresponding to muons which are with xy positons >= xy_low and < xy_high
+            (N) Boolean mask with True values corresponding to muons which are with xy positions >= xy_low and < xy_high
         """
 
         if xy_low is None:
@@ -276,7 +276,7 @@ class MuonBatch:
 
     def snapshot_xyz(self) -> None:
         r"""
-        Store the current xy positons of the muons in `.xy_hist`, indexed by the current z position.
+        Store the current xy positions of the muons in `.xy_hist`, indexed by the current z position.
         """
 
         self.xy_hist[self.z.detach().cpu().clone().numpy()[0]] = self.xy.detach().cpu().clone().numpy()
@@ -297,16 +297,16 @@ class MuonBatch:
         self, xy_low: Optional[Union[Tuple[float, float], Tensor]] = None, xy_high: Optional[Union[Tuple[float, float], Tensor]] = None
     ) -> Dict[str, Dict[str, Tensor]]:
         r"""
-        Retrieve the recorded hits for the muons, optionally only for muons between the specifed xy ranges.
+        Retrieve the recorded hits for the muons, optionally only for muons between the specified xy ranges.
         For ease of use, the list of hits are stacked into single tensors, resulting in
-        a dictionary mapping detector-array positon to a dictionary mapping hit variables to (N_muons, N_hits, *) tensors.
+        a dictionary mapping detector-array position to a dictionary mapping hit variables to (N_muons, N_hits, *) tensors.
 
         Arguments:
             xy_low: (2,N) optional lower limit on xy positions
             xy_high: (2,N) optional upper limit on xy positions
 
         Returns:
-            Hits, a dictionary mapping detector-array positon to a dictionary mapping hit variables to (N_muons, N_hits, *) tensors.
+            Hits, a dictionary mapping detector-array position to a dictionary mapping hit variables to (N_muons, N_hits, *) tensors.
         """
 
         if len(self._hits) == 0:
@@ -325,7 +325,7 @@ class MuonBatch:
             theta_ref_x: (N) tensor to compare with the muon theta_x values
 
         Returns:
-            Absolute difference between muons' theta_x and the supplied refernce theta_x
+            Absolute difference between muons' theta_x and the supplied reference theta_x
         """
 
         return torch.abs(self.theta_x - theta_ref_x)
@@ -338,7 +338,7 @@ class MuonBatch:
             theta_ref_y: (N) tensor to compare with the muon theta_y values
 
         Returns:
-            Absolute difference between muons' theta_y and the supplied refernce theta_y
+            Absolute difference between muons' theta_y and the supplied reference theta_y
         """
 
         return torch.abs(self.theta_y - theta_ref_y)
@@ -351,7 +351,7 @@ class MuonBatch:
             theta_ref: (N) tensor to compare with the muon theta values
 
         Returns:
-            Absolute difference between muons' theta and the supplied refernce theta
+            Absolute difference between muons' theta and the supplied reference theta
         """
 
         return torch.abs(self.theta - theta_ref)

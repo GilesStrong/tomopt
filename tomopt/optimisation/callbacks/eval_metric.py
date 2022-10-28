@@ -11,7 +11,7 @@ __all__: List[str] = []
 
 class EvalMetric(Callback):
     r"""
-    Base class from which metric should inherit and implement the compuation of their metric values.
+    Base class from which metric should inherit and implement the computation of their metric values.
     Inheriting classes will automatically be detected by :class:`~tomopt.optimisation.callbacks.monitors.MetricLogger`
     and included in live feedback if it is the "main metric"
     """

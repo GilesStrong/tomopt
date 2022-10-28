@@ -20,7 +20,7 @@ __all__ = ["Volume"]
 class Volume(nn.Module):
     r"""
     The `Volume` class is used to contain both passive layers and detector layers.
-    It is designed to act as an interface to them for the convenicence of e.g. :class:`~tomopt.optimisation.wrapper.volume_wrapper.VolumeWrapper`,
+    It is designed to act as an interface to them for the convenience of e.g. :class:`~tomopt.optimisation.wrapper.volume_wrapper.VolumeWrapper`,
     and to allow new passive-volume layouts to be loaded.
 
     When optimisation is acting in `fixed-budget` mode, the volume is also responsible for learning the optimal assignments of the budget to detector parts.
@@ -38,15 +38,15 @@ class Volume(nn.Module):
 
     def __init__(self, layers: nn.ModuleList, budget: Optional[float] = None):
         r"""
-        Initialises the volule with the set of layers (both detector and passive),
+        Initialises the volume with the set of layers (both detector and passive),
         which should be supplied as a `torch.nn.ModuleList` ordered in decreasing z position.
-        Supplying a value for the optional budget, here, will preparet he volume to learn budget assignments to the detectors,
+        Supplying a value for the optional budget, here, will prepare the volume to learn budget assignments to the detectors,
         and configure the detectors for the budget.
 
         Arguments:
-            layers: `torch.nn.ModuleList` of instatiated :class:`~tomopt.volume.layer.AbsLayer`s, ordered in decreasing z position.
+            layers: `torch.nn.ModuleList` of instantiated :class:`~tomopt.volume.layer.AbsLayer`s, ordered in decreasing z position.
             budget: optional budget of the detector in currency units.
-                Supplying a value for the optional budget, here, will preparet he volume to learn budget assignments to the detectors,
+                Supplying a value for the optional budget, here, will prepare the volume to learn budget assignments to the detectors,
                 and configure the detectors for the budget.
         """
 
@@ -96,7 +96,7 @@ class Volume(nn.Module):
     def get_detectors(self) -> List[AbsDetectorLayer]:
         r"""
         Returns:
-            A list of all :class:`~tomopt.volume.layer.AbsDetectorLayer`s in the volume, in the order of `layers` (normally decresing z position)
+            A list of all :class:`~tomopt.volume.layer.AbsDetectorLayer`s in the volume, in the order of `layers` (normally decreasing z position)
         """
 
         return [l for l in self.layers if isinstance(l, AbsDetectorLayer)]
@@ -104,7 +104,7 @@ class Volume(nn.Module):
     def get_passives(self) -> List[PassiveLayer]:
         r"""
         Returns:
-            A list of all :class:`~tomopt.volume.layer.PassiveLayer`s in the volume, in the order of `layers` (normally decresing z position)
+            A list of all :class:`~tomopt.volume.layer.PassiveLayer`s in the volume, in the order of `layers` (normally decreasing z position)
         """
 
         return [l for l in self.layers if isinstance(l, PassiveLayer)]
@@ -126,7 +126,7 @@ class Volume(nn.Module):
 
     def lookup_passive_xyz_coords(self, xyz: Tensor) -> Tensor:
         r"""
-        Looks up the voxel indicies of the supplied list of absolute positions in the volume frame
+        Looks up the voxel indices of the supplied list of absolute positions in the volume frame
 
         .. warning::
             Assumes the same size for all passive layers, and that they form a single contiguous block
@@ -135,7 +135,7 @@ class Volume(nn.Module):
             xyz: an (N,xyz) tensor of absolute positions in the volume frame
 
         Returns:
-            an (N,xyz) tensor of zero-ordered voxel indicies, which correspond to the supplied positions
+            an (N,xyz) tensor of zero-ordered voxel indices, which correspond to the supplied positions
         """
 
         if len(xyz.shape) == 1:
@@ -219,13 +219,13 @@ class Volume(nn.Module):
 
     def _configure_budget(self) -> None:
         r"""
-        Creates a list of learnable parameters, which acts as the fractional assignement of the total budget to various parts of the detectors.
-        The `budget_weights` contains all these assignments with no explicit heirachy.
+        Creates a list of learnable parameters, which acts as the fractional assignment of the total budget to various parts of the detectors.
+        The `budget_weights` contains all these assignments with no explicit hierarchy.
 
         Ordering of the elements is thus:
             Each layer, as ordered in `layers` is checked for a `get_cost` attribute.
                 If the layer has this attribute, then the number of costs that that layer has `layer._n_costs` is appended to a list, `_n_layer_costs`
-            A tensor, `budget_weights`, is then instatiated with a number of zero-valued elements equal to the total number of individual detector costs
+            A tensor, `budget_weights`, is then instantiated with a number of zero-valued elements equal to the total number of individual detector costs
 
         When assigning budgets to layers, the budget weights are softmax-normalised to one, and multiplied by the total budget.
         Slices of these budgets are then passed to the layers, with the length of the slices being taken from `_n_layer_costs`.

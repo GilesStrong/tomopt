@@ -8,7 +8,7 @@ from ...muon import MuonBatch
 from ...muon.generation import AbsMuonGenerator
 
 r"""
-Provides callbacks designed to affect the data used during fitting/predicions.
+Provides callbacks designed to affect the data used during fitting/predictions.
 """
 
 __all__ = ["MuonResampler"]
@@ -16,13 +16,13 @@ __all__ = ["MuonResampler"]
 
 class MuonResampler(Callback):
     r"""
-    Resmaples muons to only inlcude those which will impact the passive volume at somepoint, even if they only hit the bottom layer.
+    Resamples muons to only include those which will impact the passive volume at some point, even if they only hit the bottom layer.
     """
 
     @staticmethod
     def check_mu_batch(mu: MuonBatch, volume: Volume) -> Tensor:
         r"""
-        Checks the provided muon batch to determine which muons will impact the passive volume at anypoint
+        Checks the provided muon batch to determine which muons will impact the passive volume at any point
 
         Arguments:
             mu: incoming batch of muons

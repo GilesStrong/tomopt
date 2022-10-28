@@ -11,7 +11,7 @@ __all__ = ["CostCoefWarmup"]
 
 class CostCoefWarmup(Callback):
     r"""
-    Sets a more stable cost coeficient in the :class:`~tomopt.optimisation.loss.loss.AbsDetectorLoss`
+    Sets a more stable cost coefficient in the :class:`~tomopt.optimisation.loss.loss.AbsDetectorLoss`
     by averaging the inference-error component for several epochs.
     During this warm-up monitoring phase, the detectors will be kept fixed.
     """
@@ -26,8 +26,8 @@ class CostCoefWarmup(Callback):
 
     def on_train_begin(self) -> None:
         r"""
-        Prepares for warm-up by setting the leaarning rate of all optimisers to zero.
-        After warm-up, the learning rates will be set back to their orignal values.
+        Prepares for warm-up by setting the learning rate of all optimisers to zero.
+        After warm-up, the learning rates will be set back to their original values.
         """
 
         super().on_train_begin()

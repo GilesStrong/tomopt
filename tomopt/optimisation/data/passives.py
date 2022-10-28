@@ -37,7 +37,7 @@ class AbsPassiveGenerator(metaclass=ABCMeta):
         Initialises the generator for a given volume, in case any volume parameters are required by the inheriting generators
 
         Arguments:
-            volume: Volume that the passive laypout will be loaded into
+            volume: Volume that the passive layout will be loaded into
             materials: list of material names that can be used in the volume, None -> all materials known to TomOpt
         """
 
@@ -102,10 +102,10 @@ class AbsBlockPassiveGenerator(AbsPassiveGenerator):
     ) -> None:
         r"""
         Initialises the generator for a given volume, in case any volume parameters are required by the inheriting generators.
-        The block will be centered radmonly in the volume, and can either be of fixed or random size.
+        The block will be centred randomly in the volume, and can either be of fixed or random size.
 
         Arguments:
-            volume: Volume that the passive laypout will be loaded into
+            volume: Volume that the passive layout will be loaded into
             block_size: if set, will generate blocks of the specified size and random orientation, otherwise will randomly set the size of the blocks
             block_size_max_half: if True and block_size is None, the maximum size of blocks will be set to half the size of the passive volume
             materials: list of material names that can be used in the volume, None -> all materials known to TomOpt
@@ -164,10 +164,10 @@ class RandomBlockPassiveGenerator(AbsBlockPassiveGenerator):
     ) -> None:
         r"""
         Initialises the generator for a given volume, in case any volume parameters are required by the inheriting generators.
-        The block will be centered radmonly in the volume, and can either be of fixed or random size.
+        The block will be centred randomly in the volume, and can either be of fixed or random size.
 
         Arguments:
-            volume: Volume that the passive laypout will be loaded into
+            volume: Volume that the passive layout will be loaded into
             block_size: if set, will generate blocks of the specified size and random orientation, otherwise will randomly set the size of the blocks
             sort_x0: if True, the block will always have a lower X0 than the background, unless they are of the same material
             enforce_diff_mat: if True, the block will always be of a different material to the background
@@ -278,7 +278,7 @@ class VoxelPassiveGenerator(AbsPassiveGenerator):
 class PassiveYielder:
     r"""
     Dataset class that can either:
-        Yield from a set of prespecified passive-volume layouts, and optional targets
+        Yield from a set of pre-specified passive-volume layouts, and optional targets
         Generate and yield random layouts and optional targets from a provided generator
     """
 
@@ -292,7 +292,7 @@ class PassiveYielder:
         Arguments:
             passives: Either a list of passive-volume functions (and optional targets together in a tuple), or a passive-volume generator
             n_passives: if a generator is used, this determines the number of volumes to generator per epoch in training, or in total when predicting
-            shuffle: If a list of prespecified layouts is provided, their order will be shuffled if this is True
+            shuffle: If a list of pre-specified layouts is provided, their order will be shuffled if this is True
         """
 
         self.passives, self.n_passives, self.shuffle = passives, n_passives, shuffle
