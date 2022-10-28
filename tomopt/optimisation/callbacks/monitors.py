@@ -75,7 +75,6 @@ class MetricLogger(Callback):
         """
 
         self.gif_filename, self.show_plots = gif_filename, show_plots
-        self._reset()
 
     def _reset(self) -> None:
         r"""
@@ -111,8 +110,6 @@ class MetricLogger(Callback):
 
         super().on_train_begin()
         self._reset()
-
-        self.fig.savefig(self._buffer_files[-1], bbox_inches="tight")
 
     def on_epoch_begin(self) -> None:
         r"""
@@ -293,6 +290,7 @@ class MetricLogger(Callback):
         """
 
         self._buffer_files.append(self.wrapper.fit_params.cb_savepath / f"temp_monitor_{len(self._buffer_files)}.png")
+        self.fig.savefig(self._buffer_files[-1], bbox_inches="tight")
 
     def _build_grid_spec(self) -> GridSpec:
         r"""

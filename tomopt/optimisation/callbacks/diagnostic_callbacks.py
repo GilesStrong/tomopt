@@ -26,6 +26,9 @@ class ScatterRecord(Callback):
     # TODO extend these to create one record per volume
     """
 
+    def __init__(self) -> None:
+        self._reset()
+
     def on_train_begin(self) -> None:
         r"""
         Prepares to record scatters

@@ -24,7 +24,7 @@ class AbsLayer(nn.Module, metaclass=ABCMeta):
     Abstract base class for volume layers.
     The length and width (`lw`) is the spans of the layer in metres in x and y, and the layer begins at x=0, y=0.
     z indicates the position of the top of the layer, in meters, and size is the distance from the top of the layer to the bottom.
-    size is also used to set the lenght, width, and height of the voxels that make up the layer.
+    size is also used to set the length, width, and height of the voxels that make up the layer.
 
     ..important::
         Users must ensure that both the length and width of the layer are divisible by size
@@ -73,12 +73,12 @@ class AbsLayer(nn.Module, metaclass=ABCMeta):
         then the muons will also undergo scattering (changes in their trajectories and positions) according to the scatter model of the layer.
 
         .. warning::
-            When computing scatterings, the X0 used for eaach muon is that of the starting voxel:
+            When computing scatterings, the X0 used for each muon is that of the starting voxel:
             If a muon moves into a neighbouring voxel of differing X0, then this will only be accounted for in the next deltaz step.
 
         Arguments:
             mu: muons to propagate
-            deltaz: amount of distance in metres in the negative z direction that the muons shoudl travel (positive number lowers the muon position)
+            deltaz: amount of distance in metres in the negative z direction that the muons should travel (positive number lowers the muon position)
         """
 
         if self.rad_length is not None:
@@ -127,7 +127,7 @@ class AbsLayer(nn.Module, metaclass=ABCMeta):
             Please ensure that positions are inside the layer.
 
         Arguments:
-            xy: (N,xy) tensor of absolute xy postions in metres in the volume frame
+            xy: (N,xy) tensor of absolute xy positions in metres in the volume frame
 
         Returns:
             (N,xy) tensor of voxel indices in x,y
@@ -137,17 +137,17 @@ class AbsLayer(nn.Module, metaclass=ABCMeta):
 
     def _pgeant_scatter(self, *, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor) -> Dict[str, Tensor]:
         r"""
-        Computes the scattering of the muons using the parametersised GEANT 4 model.
+        Computes the scattering of the muons using the parameterised GEANT 4 model.
 
         Arguments:
             x0: (N) tensor of the X0 of the voxel each muon is traversing
-            deltaz: The amound of distance the muons will travel in the z direction in metres
+            deltaz: The amount of distance the muons will travel in the z direction in metres
             theta: (N) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons
             theta_x: (N) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons' frame to the volume's
             theta_y: (N) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons' frame to the volume's
             mom: (N) tensor of the absolute value of the momentum of each muon
 
-        Retruns:
+        Returns:
             A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, & dy_vol
         """
 
@@ -161,13 +161,13 @@ class AbsLayer(nn.Module, metaclass=ABCMeta):
 
         Arguments:
             x0: (N) tensor of the X0 of the voxel each muon is traversing
-            deltaz: The amound of distance the muons will travel in the z direction in metres
-            theta: (N) tensor of the theta angles of the muons. This is used to compute teh total flight path of the muons
+            deltaz: The amount of distance the muons will travel in the z direction in metres
+            theta: (N) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons
             theta_x: (N) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons' frames to the volume's
             theta_y: (N) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons' frames to the volume's
             mom: (N) tensor of the absolute value of the momentum of each muon
 
-        Retruns:
+        Returns:
             A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, & dy_vol
         """
 
@@ -191,10 +191,10 @@ class AbsLayer(nn.Module, metaclass=ABCMeta):
         dtheta_vol = dtheta_xy_mu[0]  # dtheta_x in muon ref
         dphi_vol = dtheta_xy_mu[1]  # dtheta_y in muon ref
 
-        # Note that if a track incides on a layer
+        # Note that if a track indices on a layer
         # with angle theta_mu, the dx and dy displacements are relative to zero angle
         # (generation of MSC formulas are oblivious of angle of incidence) so we need
-        # to rescale them by cos of thetax and thetay
+        # to rescale them by cos of theta_x and theta_y
         dx_vol = dxy_mu[0] * torch.cos(theta_x)
         dy_vol = dxy_mu[1] * torch.cos(theta_y)
         return {"dtheta_vol": dtheta_vol, "dphi_vol": dphi_vol, "dx_vol": dx_vol, "dy_vol": dy_vol}
@@ -207,13 +207,13 @@ class AbsLayer(nn.Module, metaclass=ABCMeta):
 
         Arguments:
             x0: (N) tensor of the X0 of the voxel each muon is traversing
-            deltaz: The amound of distance the muons will travel in the z direction in metres
-            theta: (N) tensor of the theta angles of the muons. This is used to compute teh total flight path of the muons
+            deltaz: The amount of distance the muons will travel in the z direction in metres
+            theta: (N) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons
             theta_x: (N) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons' frames to the volume's
             theta_y: (N) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons' frames to the volume's
             mom: (N) tensor of the absolute value of the momentum of each muon
 
-        Retruns:
+        Returns:
             A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, & dy_vol
         """
         if self.scatter_model == "pdg":
@@ -229,7 +229,7 @@ class PassiveLayer(AbsLayer):
     Default layer of containing passive material that scatters the muons.
     The length and width (`lw`) is the spans of the layer in metres in x and y, and the layer begins at x=0, y=0.
     z indicates the position of the top of the layer, in meters, and size is the distance from the top of the layer to the bottom.
-    size is also used to set the lenght, width, and height of the voxels that make up the layer.
+    size is also used to set the length, width, and height of the voxels that make up the layer.
 
     ..important::
         Users must ensure that both the length and width of the layer are divisible by size
@@ -271,7 +271,7 @@ class PassiveLayer(AbsLayer):
             rad_length_func: lookup function that returns an (n_x,n_y) tensor of voxel X0 values for the layer.
                 After initialisation, the `load_rad_length` method may be used to load X0 layouts.
             dz_step: The step size in metres over which to compute muon propagation and scattering.
-                Should be such that the `size` of the layer is divisble by `dz_step`.
+                Should be such that the `size` of the layer is divisible by `dz_step`.
             scatter_model: String selection for the scattering model to use. Currently either 'pdg' or 'pgeant'.
             device: device on which to place tensors
         """
@@ -299,7 +299,7 @@ class PassiveLayer(AbsLayer):
     def forward(self, mu: MuonBatch) -> None:
         r"""
         Propagates the muons through the layer to the bottom in a series of scattering steps.
-        If the 'pdg' model is used, then the step size is the `dz_step` of the layer, as supplied during intiialisation.
+        If the 'pdg' model is used, then the step size is the `dz_step` of the layer, as supplied during initialisation.
         If the 'pgeant' model is used, the the step size specified as part of the fitting of the scattering model.
 
         Arguments:
@@ -308,7 +308,7 @@ class PassiveLayer(AbsLayer):
 
         if self.scatter_model == "pgeant":
             if not PGEANT_SCATTER_MODEL.initialised:
-                PGEANT_SCATTER_MODEL.load_data()  # Delay loading until requrired
+                PGEANT_SCATTER_MODEL.load_data()  # Delay loading until required
             n = int(self.size / PGEANT_SCATTER_MODEL.deltaz)
             dz = PGEANT_SCATTER_MODEL.deltaz
         elif self.scatter_model == "pdg":
@@ -324,10 +324,10 @@ class PassiveLayer(AbsLayer):
 class AbsDetectorLayer(AbsLayer, metaclass=ABCMeta):
     r"""
     Abstract base class for layers designed to record muon positions (hits) using detectors.
-    Inheriting classes should override a number methods to do with costs/budgets, and hit rrecording.
+    Inheriting classes should override a number methods to do with costs/budgets, and hit recording.
 
     When optimisation of operating in 'fixed budget' mode, the :class:`~tomopt.volume.volume.Volume` will check the `_n_costs` class attribute of the layer
-    and will add this to the total number of leanrable budget assignements, and pass that number of budgets as an (_n_costs) tensor.
+    and will add this to the total number of learnable budget assignments, and pass that number of budgets as an (_n_costs) tensor.
     By default this is zero, and inheriting classes should set the correct number during initialisation, or via a new default value.
 
     Some parts of TomOpt act differently on detector layers, according to how the detectors are modelled.
@@ -336,7 +336,7 @@ class AbsDetectorLayer(AbsLayer, metaclass=ABCMeta):
     Multiple detection layers can be grouped together, via their `pos` attribute (position); a string-encoded value.
     By default, the inference methods expect detectors above the passive layer to have `pos=='above'`,
     and those below the passive volume to have `pos=='below'`.
-    When retriving hits from the muon batch, hits will be stacked together with other hits from the same `pos`.
+    When retrieving hits from the muon batch, hits will be stacked together with other hits from the same `pos`.
 
     The length and width (`lw`) is the spans of the layer in metres in x and y, and the layer begins at x=0, y=0.
     z indicates the position of the top of the layer, in meters, and size is the distance from the top of the layer to the bottom.
@@ -373,7 +373,7 @@ class AbsDetectorLayer(AbsLayer, metaclass=ABCMeta):
     def forward(self, mu: MuonBatch) -> None:
         r"""
         Inheriting classes should override this method to implement the passage of the muons through the layer,
-        and record muon positions (hits) according to tthe detector model.
+        and record muon positions (hits) according to the detector model.
 
         Arguments:
             mu: the incoming batch of muons
@@ -393,7 +393,7 @@ class AbsDetectorLayer(AbsLayer, metaclass=ABCMeta):
 
     def conform_detector(self) -> None:
         r"""
-        Optional method deisgned to ensure that the detector parameters lie within any require boundaries, etc.
+        Optional method designed to ensure that the detector parameters lie within any require boundaries, etc.
         It will be called via the :class:`~tomopt.optimisation.wrapper.AbsVolumeWrapper` after any update to the detector layers, but by default does nothing.
         """
 
@@ -403,7 +403,7 @@ class AbsDetectorLayer(AbsLayer, metaclass=ABCMeta):
         r"""
         Inheriting classes should override this method to correctly assign elements of an (_n_costs) tensor to the parts of the detector to which they relate.
         All ordering of the tensor is defined using the function,
-        but proper optimisation of the budgets may rerquire that the same ordering is used, or that it is deterministic.
+        but proper optimisation of the budgets may require that the same ordering is used, or that it is deterministic.
 
         Arguments:
             budget: (_n_costs) tensor of budget assignments in unit currency
@@ -419,13 +419,13 @@ class PanelDetectorLayer(AbsDetectorLayer):
     Each detector layer, however, should contain the same type of panel, as this is used to set the `type_label` of the layer.
 
     When optimisation of operating in 'fixed budget' mode, the :class:`~tomopt.volume.volume.Volume` will check the `_n_costs` class attribute of the layer
-    and will add this to the total number of leanrable budget assignements, and pass that number of budgets as an (_n_costs) tensor.
+    and will add this to the total number of learnable budget assignments, and pass that number of budgets as an (_n_costs) tensor.
     During initialisation, this is set to the number of panels in the layer, at time of initialisation.
 
     Multiple detection layers can be grouped together, via their `pos` attribute (position); a string-encoded value.
     By default, the inference methods expect detectors above the passive layer to have `pos=='above'`,
     and those below the passive volume to have `pos=='below'`.
-    When retriving hits from the muon batch, hits will be stacked together with other hits from the same `pos`.
+    When retrieving hits from the muon batch, hits will be stacked together with other hits from the same `pos`.
 
     The length and width (`lw`) is the spans of the layer in metres in x and y, and the layer begins at x=0, y=0.
     z indicates the position of the top of the layer, in meters, and size is the distance from the top of the layer to the bottom.
@@ -490,7 +490,7 @@ class PanelDetectorLayer(AbsDetectorLayer):
         Yields the index of the panel, and the panel, in order of decreasing z-position.
 
         Returns:
-            Iterator yielding panel indicies and panels in order of decreasing z-position.
+            Iterator yielding panel indices and panels in order of decreasing z-position.
         """
 
         for i in self.get_panel_zorder():
@@ -538,7 +538,7 @@ class PanelDetectorLayer(AbsDetectorLayer):
 
     def get_cost(self) -> Tensor:
         r"""
-        Returns the total, current cost of the detector(s) in the layer, as compuyted by looping over the panels and summing the returned values of calls to
+        Returns the total, current cost of the detector(s) in the layer, as computed by looping over the panels and summing the returned values of calls to
         their `get_cost` methods.
 
         Returns:

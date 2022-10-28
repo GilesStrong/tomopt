@@ -20,7 +20,6 @@ from tomopt.inference import (
     DenseBlockClassifierFromX0s,
 )
 from tomopt.inference.volume import AbsIntClassifierFromX0
-from tomopt.volume.layer import AbsLayer
 from tomopt.optimisation import MuonResampler
 from tomopt.utils import jacobian
 
@@ -492,7 +491,7 @@ def test_panel_x0_inferrer_efficiency(mocker, panel_scatter_batch):  # noqa F811
 
 @pytest.mark.flaky(max_runs=3, min_passes=1)
 def test_x0_inferrer_scatter_inversion(mocker, panel_scatter_batch):  # noqa F811
-    layer = AbsLayer(LW, Z, SZ)
+    layer = PassiveLayer(LW, Z, SZ)
     mu, volume, sb = panel_scatter_batch
     inferrer = PanelX0Inferrer(volume=volume)
     inferrer.size = SZ
