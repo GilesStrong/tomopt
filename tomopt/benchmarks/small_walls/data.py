@@ -92,6 +92,6 @@ class SmallWallsPassiveGenerator(AbsPassiveGenerator):
         x0_map[x0_map == 0] = self.x0_soil
 
         def generator(*, z: Tensor, lw: Tensor, size: float) -> Tensor:
-            return x0_map[np.round((z - self.z_range[0]) / self.size).long() - 1].squeeze()
+            return x0_map[np.round((float(z) - self.z_range[0]) / self.size).long() - 1].squeeze()
 
         return generator, zxy_map
