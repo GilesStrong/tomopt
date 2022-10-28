@@ -1,0 +1,21 @@
+tomopt.benchmarks package
+=========================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   tomopt.benchmarks.ladle_furnace
+   tomopt.benchmarks.phi_detector
+   tomopt.benchmarks.small_walls
+   tomopt.benchmarks.u_lorry
+
+Module contents
+---------------
+
+.. automodule:: tomopt.benchmarks
+   :members:
+   :undoc-members:
+   :show-inheritance:
