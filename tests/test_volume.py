@@ -6,7 +6,6 @@ import torch
 from torch import Tensor, nn
 import torch.nn.functional as F
 
-from tomopt.volume.layer import Layer
 from tomopt.volume import PassiveLayer, Volume, PanelDetectorLayer, DetectorPanel
 from tomopt.optimisation import MuonResampler
 from tomopt.muon import MuonBatch, MuonGenerator2016
@@ -65,7 +64,7 @@ def arb_rad_length(*, z: float, lw: Tensor, size: float) -> float:
 
 
 def test_layer(batch):
-    l = Layer(lw=LW, z=1, size=SZ)
+    l = PassiveLayer(lw=LW, z=1, size=SZ)
     batch._x = 0.5
     batch._y = 0.7
     assert torch.all(l.mu_abs2idx(batch)[0] == Tensor([5, 7]))
@@ -104,11 +103,11 @@ def test_passive_layer_forwards(batch):
 
 
 @pytest.mark.parametrize("sz", [(0.01), (0.1), (0.2), (0.205)])
-def test_passive_layer_geant_scattering(mocker, batch, sz):  # noqa: F811
+def test_passive_layer_pgeant_scattering(mocker, batch, sz):  # noqa: F811
     for m in ["propagate", "get_xy_mask", "scatter_dxy", "scatter_dtheta_dphi"]:
         mocker.patch.object(MuonBatch, m)
 
-    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, size=sz, z=Z, scatter_model="geant4")
+    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, size=sz, z=Z, scatter_model="pgeant")
     pl(batch)
     dz = 0.01
     n = int(sz / dz)
@@ -313,7 +312,7 @@ def test_volume_methods(mocker):  # noqa F811
     assert (centres[0] == Tensor([0, 0, 2 * SZ]) + (SZ / 2)).all()
     assert (centres[-1] == Tensor([LW[0] - SZ, LW[1] - SZ, 7 * SZ]) + (SZ / 2)).all()
 
-    # Budget assigment
+    # Budget assignment
     mocker.patch.object(layers[0], "assign_budget")
     mocker.patch.object(layers[-1], "assign_budget")
     volume = Volume(layers=layers, budget=8)

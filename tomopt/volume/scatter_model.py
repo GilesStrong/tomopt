@@ -7,12 +7,37 @@ import json
 import torch
 from torch import Tensor
 
+r"""
+Provides container classes for different scattering models.
+
+To save on memory and loading time, each scatter model is only loaded once, and all :class:`~tomopt.volume.layer.AbsLayer` will use the same object.
+To avoid loading whenever this file is accessed, the models begin uninitialised, and will only load data when their `load_data` method is called.
+"""
+
 PKG_DIR = Path(os.path.dirname(os.path.abspath(__file__)))  # How robust is this? Could create hidden dir in home and download resources
 
-__all__ = ["SCATTER_MODEL"]
+__all__ = ["PGEANT_SCATTER_MODEL"]
 
 
-class ScatterModel:
+class PGeantScatterModel:
+    r"""
+    Class implementing access to the parameterised GEANT 4 model,
+    as stored in an HDF5 file created by code in https://github.com/GilesStrong/mode_muon_tomography_scattering.
+    The data file should be included in the TomOpt repository, and the package as installed by PIP.
+
+    Data in the file is loaded into tensors and act as a lookup table to provide scattering in terms of angles (`dtheta_params`) and positions (`dxy_params`).
+    These tensors have shapes (8, 35, 10000), corresponding to (material type, momentum bin, scattering),
+    where 'scattering' is designed to be indexed by uniformly distributed random indices.
+    The materials and momentum bin edges are included in meta data in the HDF5 file.
+
+    .. warning::
+        Currently no interpolation of X0s, or other handling for scattering in materials that were not considered in the fitting of the model, is performed.
+        Instead, 'missing' materials are mapped to the nearest X0 that was used when fitting the model.
+
+    To avoid unnecessary loading of data, the model begins uninitialised, and will only load data when `load_data` method is called.
+    Prior to this, certain class attributes relating to the scattering model will not defined.
+    """
+
     dtheta_params: Tensor  # (8, 35, 10000), (x0, mom, rnd)
     dxy_params: Tensor  # (8, 35, 10000), (x0, mom, rnd)
     deltaz: float
@@ -23,9 +48,22 @@ class ScatterModel:
     _device: Optional[torch.device] = None
 
     def __init__(self) -> None:
+        r"""
+        To avoid unnecessary loading of data, the model begins "uninitialised", and will only load data when `load_data` method is called.
+        Prior to this, certain class attributes relating to the scattering model will not defined.
+        """
+
         self.initialised = False
 
     def load_data(self, filename: str = "scatter_models/dt_dx_10mm.hdf5") -> None:
+        r"""
+        Loads scatter-model data into memory, and defines the values of the class attributes.
+        This must be called prior to calling the `compute_scattering` method.
+
+        Arguments:
+            filename: the name and location of the scattering data relative to the location of this file
+        """
+
         self.file = h5py.File(PKG_DIR / filename, "r")
         self.dtheta_params = Tensor(self.file["model/dtheta"][()])
         self.dxy_params = Tensor(self.file["model/dxy"][()])
@@ -37,23 +75,51 @@ class ScatterModel:
         self.initialised = True
 
     def extrapolate_dtheta(self, dtheta_xy_mu: Tensor, inv_costheta: Tensor) -> Tensor:
+        r"""
+        The model is fitted with an expected distance of travel, but due to the theta of the incoming muon, this may not always be the correct flight distance.
+        This function extrapolates the angular scattering to account for these differences.
+
+        Arguments:
+            dtheta_xy_mu: (2,N) tensor of the angular scatterings in the muon frames, as sampled from the model
+            inv_costheta: (N) tensor of 1/cosine(theta) for the muons in the volume frame
+
+        Returns:
+            (2,N) tensor of the modified angular scatterings in the muon frames
+        """
+
         return dtheta_xy_mu * torch.sqrt(inv_costheta)
 
     def extrapolate_dxy(self, dxy_mu: Tensor, inv_costheta: Tensor) -> Tensor:
+        r"""
+        The model is fitted with an expected distance of travel, but due to the theta of the incoming muon, this may not always be the correct flight distance.
+        This function extrapolates the spatial scattering to account for these differences.
+
+        Arguments:
+            dxy_mu: (2,N) tensor of the spatial scatterings in the muon frames, as sampled from the model
+            inv_costheta: (N) tensor of 1/cosine(theta) for the muons in the volume frame
+
+        Returns:
+            (2,N) tensor of the modified spatial scatterings in the muon frames
+        """
+
         return dxy_mu * (inv_costheta**self.exp_disp_model)
 
-    @property
-    def device(self) -> Optional[torch.device]:
-        return self._device
-
-    @device.setter
-    def device(self, device: torch.device) -> None:
-        self._device = device
-        self.dtheta_params = self.dtheta_params.to(self._device)  # Is this dtheta_xy in the muon's ref frame = dtheta dphi in the volume ref frame?
-        self.dxy_params = self.dxy_params.to(self._device)  # Is this alredy in the volume frame or still in the muon's ref frame?
-        self.mom_lookup = self.mom_lookup.to(self._device)
-
     def compute_scattering(self, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor) -> Dict[str, Tensor]:
+        r"""
+        Computes the scattering of the muons using the parameterised GEANT 4 model.
+
+        Arguments:
+            x0: (N) tensor of the X0 of the voxel each muon is traversing
+            deltaz: The amount of distance the muons will travel in the z direction in metres
+            theta: (N) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons
+            theta_x: (N) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons' frame to the volume's
+            theta_y: (N) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons' frame to the volume's
+            mom: (N) tensor of the absolute value of the momentum of each muon
+
+        Returns:
+            A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, & dy_vol
+        """
+
         if deltaz != self.deltaz:
             raise ValueError(f"Model only works for a fixed delta z step of {self.deltaz}.")
         if self._device is None:
@@ -91,5 +157,16 @@ class ScatterModel:
 
         return {"dtheta_vol": dtheta_vol, "dphi_vol": dphi_vol, "dx_vol": dx_vol, "dy_vol": dy_vol}
 
+    @property
+    def device(self) -> Optional[torch.device]:
+        return self._device
 
-SCATTER_MODEL = ScatterModel()
+    @device.setter
+    def device(self, device: torch.device) -> None:
+        self._device = device
+        self.dtheta_params = self.dtheta_params.to(self._device)  # Is this dtheta_xy in the muon's ref frame = dtheta dphi in the volume ref frame?
+        self.dxy_params = self.dxy_params.to(self._device)  # Is this already in the volume frame or still in the muon's ref frame?
+        self.mom_lookup = self.mom_lookup.to(self._device)
+
+
+PGEANT_SCATTER_MODEL = PGeantScatterModel()

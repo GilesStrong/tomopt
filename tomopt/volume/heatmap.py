@@ -115,7 +115,7 @@ class DetectorHeatMap(nn.Module):
             raise ValueError(f"{self.xy_span_fix} is not a Tensor for some reason.")  # To appease MyPy
 
         mask = mu.get_xy_mask(self.xy_fix - self.range_mult * self.delta_xy, self.xy_fix + self.range_mult * self.delta_xy)  # Muons in panel
-        xy0 = self.xy_fix - (self.delta_xy / 2)  # aprox. Low-left of panel
+        xy0 = self.xy_fix - (self.delta_xy / 2)  # approx. Low-left of panel
         rel_xy = mu.xy - xy0
         res = self.get_resolution(mu.xy, mask)
         rel_xy = rel_xy + (torch.randn((len(mu), 2), device=self.device) / res)

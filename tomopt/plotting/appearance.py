@@ -1,3 +1,7 @@
+r"""
+Defines global constants for producing consistently styled plots
+"""
+
 TK_SZ = 16
 TK_COL = "black"
 LBL_SZ = 24

@@ -1,9 +1,15 @@
 from typing import Callable, Iterator
+from mypy_extensions import NamedArg
 
 import torch
-from torch import nn
+from torch import nn, Tensor
+
+r"""
+Common global constants, custom variable types, etc.
+"""
 
 __all__ = ["DEVICE", "SCATTER_COEF_A", "SCATTER_COEF_B", "X0", "DENSITIES", "PartialOpt"]
+
 
 DEVICE = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
@@ -52,3 +58,4 @@ DENSITIES = {  # https://pdg.lbl.gov/2022/AtomicNuclearProperties/index.html
 }
 
 PartialOpt = Callable[[Iterator[nn.Parameter]], torch.optim.Optimizer]
+RadLengthFunc = Callable[[NamedArg(Tensor, "z"), NamedArg(Tensor, "lw"), NamedArg(float, "size")], Tensor]  # noqa F821

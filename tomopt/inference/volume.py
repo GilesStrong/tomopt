@@ -12,33 +12,101 @@ from ..volume import PanelDetectorLayer, Volume
 from ..core import SCATTER_COEF_A
 from ..utils import jacobian
 
-__all__ = ["PanelX0Inferer", "DenseBlockClassifierFromX0s"]  # "DeepVolumeInferer", "WeightedDeepVolumeInferer"]
+r"""
+Provides implementations of classes designed to infer targets of passive volumes
+using the variables computed by e.g. :class:`~tomopt.inference.scattering.AbsScatterBatch`.
+"""
+
+__all__ = ["PanelX0Inferrer", "DenseBlockClassifierFromX0s"]  # "DeepVolumeInferrer", "WeightedDeepVolumeInferrer"]
 
 
-class AbsVolumeInferer(metaclass=ABCMeta):
+class AbsVolumeInferrer(metaclass=ABCMeta):
+    r"""
+    Abstract base class for volume inference.
+
+    Inheriting classes are expected to be fed multiple :class:`~tomopt.inference.scattering.AbsScatterBatch`s,
+    via :meth:`~tomopt.inference.volume.AbsVolumeInferrer.add_scatters`, for a single :class:`~tomopt.volume.volume.Volume`
+    and return a volume prediction based on all of the muon batches when :meth:`~tomopt.inference.volume.AbsVolumeInferrer.get_prediction` is called.
+    """
+
     def __init__(self, volume: Volume):
+        r"""
+        Initialises the inference class for the provided volume.
+
+        Arguments:
+            volume: volume through which the muons will be passed
+        """
+
         self.scatter_batches: List[AbsScatterBatch] = []
         self.volume = volume
         self.size, self.lw, self.device = self.volume.passive_size, self.volume.lw, self.volume.device
 
-    def add_scatters(self, scatters: AbsScatterBatch) -> None:
-        self._reset_vars()
-        self.scatter_batches.append(scatters)
-
     @abstractmethod
     def _reset_vars(self) -> None:
+        r"""
+        Inheriting classes must override this method to reset any variable/predictions made from the added scatter batches.
+        """
+
         pass
 
     @abstractmethod
     def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
+        r"""
+        Inheriting classes must override this method to provide a computation of the per-muon efficiency, given the individual muon hit efficiencies.
+        """
+
         pass
 
     @abstractmethod
     def get_prediction(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
+        r"""
+        Inheriting classes must override this method to provide a prediction computed using the added scatter batches.
+        Predictions can be accompanied by an optional "inverse weight" designed to divide the loss of the predictions: loss(pred,targs)/inv_weight
+        E.g. the sum of muon efficiencies.
+        """
+
         pass
 
+    def add_scatters(self, scatters: AbsScatterBatch) -> None:
+        r"""
+        Appends a new set of muon scatter variables.
+        When :meth:`~tomopt.inference.volume.AbsVolumeInferrer.get_prediction` is called, the prediction will be based on all
+        :class:`~tomopt.inference.scattering.AbsScatterBatch`s added up to that point
+        """
 
-class AbsX0Inferer(AbsVolumeInferer):
+        self._reset_vars()  # Ensure that any previously computed predictions are wiped
+        self.scatter_batches.append(scatters)
+
+
+class AbsX0Inferrer(AbsVolumeInferrer):
+    r"""
+    Abstract base class for inferring the X0 of every voxel in the passive volume.
+
+    The inference is based on the PoCA approach of assigning the entirety of the muon scattering to a single point,
+    and the X0 computation is based on inversion of the PDG scattering model described in
+    https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf.
+
+    Once all scatter batches have been added, the inference proceeds thusly:
+        For each muon i, a probability p_ij, is computed according to the probability that the PoCA was located in voxel j.
+            These probabilities are computed by integrating over the voxel the PDF of 3 uncorrelated Gaussians centred on the PoCA,
+            with scales equal the uncertainty on the PoCA position in x,y,z.
+
+        p_ij is multiplied by muon efficiency e_i to compute a muon/voxel weight w_ij.
+
+        Inversion of the PDG model gives:
+        :math:`X_0 = \left(\frac{0.0136}{p^{\mathrm{rms}}}\right)^2\frac{\delta z}{\cos\left(\bar{\theta}^{\mathrm{rms}}\right)}\frac{2}{\theta^{\mathrm{rms}}_{\mathrm{tot.}}}`
+        In order to account for the muon weights and compute different X0s for the voxels whilst using the whole muon population,
+        weighted RMSs are computed for each of the scattering terms in the right-hand side of the equation.
+        In addition to the muon weight w_ij, the variances of the squared values of the scattering variables is used to divide w_ij.
+        The result is a set of X0 predictions X0_j.
+
+    .. important::
+        Inversion of the PDG model does NOT account for the natural log term.
+
+    .. important::
+        To simplify the computation code, this class relies heavily on lazy computation and memoisation; be careful if calling private methods manually.
+    """
+
     _n_mu: Optional[int] = None
     _muon_scatter_vars: Optional[Tensor] = None  # (mu, vars)
     _muon_scatter_var_uncs: Optional[Tensor] = None  # (mu, vars)
@@ -49,6 +117,13 @@ class AbsX0Inferer(AbsVolumeInferer):
     _var_order_szs = [("poca", 3), ("tot_scatter", 1), ("theta_in", 1), ("theta_out", 1), ("mom", 1)]
 
     def __init__(self, volume: Volume):
+        r"""
+        Initialises the inference class for the provided volume.
+
+        Arguments:
+            volume: volume through which the muons will be passed
+        """
+
         super().__init__(volume=volume)
         self._set_var_dimensions()
         # set shapes
@@ -59,7 +134,77 @@ class AbsX0Inferer(AbsVolumeInferer):
         ]
         self.shp_zxy = [self.shp_xyz[2], self.shp_xyz[0], self.shp_xyz[1]]
 
+    @staticmethod
+    def x0_from_scatters(deltaz: float, total_scatter: Tensor, theta_in: Tensor, theta_out: Tensor, mom: Tensor) -> Tensor:
+        r"""
+        Computes the X0 of a voxel, by inverting the PDG scattering model in terms of the scattering variables
+
+        .. important::
+            Inversion of the PDG model does NOT account for the natural log term.
+
+        Arguments:
+            deltaz: height of the voxels
+            total_scatter: (voxels,1) tensor of the (RMS of the) total angular scattering of the muon(s)
+            theta_in: (voxels,1) tensor of the (RMS of the) theta of the muon(s), as inferred using the incoming trajectory/ies
+            theta_out: (voxels,1) tensor of the (RMS of the) theta of the muon(s), as inferred using the outgoing trajectory/ies
+            mom: (voxels,1) tensor of the (RMS of the) momentum/a of the muon(s)
+
+        Returns:
+            (voxels,1) estimated X0 in metres
+        """
+
+        cos_theta = (theta_in.cos() + theta_out.cos()) / 2
+        return ((SCATTER_COEF_A / mom) ** 2) * deltaz / (total_scatter.pow(2) * cos_theta)
+
+    def get_prediction(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
+        r"""
+        Computes the predicted X0 per voxel as a (z,x,y) tensor via PDG scatter-model inversion for the provided scatter batches.
+
+        Returns:
+            pred: (z,x,y) voxelwise X0 predictions
+            inv_weight: sum of muon efficiencies
+        """
+
+        if len(self.scatter_batches) == 0:
+            print("Warning: unable to scan volume with prescribed number of muons.")
+            return None, None
+        return self.vox_zxy_x0_preds, self.inv_weights
+
+    @staticmethod
+    def _weighted_rms(x: Tensor, wgt: Tensor) -> Tensor:
+        r"""
+        Computes the weighted root mean squared value of the provided list of variable values
+
+        Arguments:
+            x: (N,*) tensor of variable values
+            wgt: (N,*) weight to assign per row in the x tensor
+
+        Returns:
+            Weighted RMS of the variable
+        """
+
+        return ((x.square() * wgt).sum(0) / wgt.sum(0)).sqrt()
+
+    @staticmethod
+    def _weighted_mean(x: Tensor, wgt: Tensor) -> Tensor:
+        r"""
+        Computes the weighted mean value of the provided list of variable values
+
+        Arguments:
+            x: (N,*) tensor of variable values
+            wgt: (N,*) weight to assign per row in the x tensor
+
+        Returns:
+            Weighted mean of the variable
+        """
+
+        return (x * wgt).sum(0) / wgt.sum(0)
+
     def _reset_vars(self) -> None:
+        r"""
+        Resets any variable/predictions made from the added scatter batches.
+        """
+
         self._n_mu = None
         self._muon_scatter_vars = None  # (mu, vars)
         self._muon_scatter_var_uncs = None  # (mu, vars)
@@ -69,6 +214,10 @@ class AbsX0Inferer(AbsVolumeInferer):
         self._vox_zxy_x0_pred_uncs = None  # (z,x,y)
 
     def _set_var_dimensions(self) -> None:
+        r"""
+        Configures the indexing of the dependent variable and uncertainty tensors
+        """
+
         # Configure dimension indexing
         dims = {}
         i = 0
@@ -82,6 +231,14 @@ class AbsX0Inferer(AbsVolumeInferer):
         self._mom_dim = dims["mom"]
 
     def _combine_scatters(self) -> None:
+        r"""
+        Combines scatter data from all the batches added so far.
+        Any muons with NaN or Inf entries will be filtered out of the resulting tensors.
+
+        To aid in uncertainty computation, a pair of tensors are created with the all scatter variables and their uncertainties.
+        These are then indexed to retrieve the scatter variables.
+        """
+
         vals: Dict[str, Tensor] = {}
         uncs: Dict[str, Tensor] = {}
 
@@ -111,12 +268,18 @@ class AbsX0Inferer(AbsVolumeInferer):
         self._muon_efficiency = torch.cat([self.compute_efficiency(scatters=sb) for sb in self.scatter_batches], dim=0)[mask]  # (mu, eff)
         self._n_mu = len(self._muon_scatter_vars)
 
-    @staticmethod
-    def x0_from_scatters(deltaz: float, total_scatter: Tensor, theta_in: Tensor, theta_out: Tensor, mom: Tensor) -> Tensor:
-        cos_theta = (theta_in.cos() + theta_out.cos()) / 2
-        return ((SCATTER_COEF_A / mom) ** 2) * deltaz / (total_scatter.pow(2) * cos_theta)
+    def _get_voxel_zxy_x0_pred_uncs(self) -> Tensor:
+        r"""
+        Computes the uncertainty on the predicted voxelwise X0s, via gradient-based error propagation.
+        This computation uses the triangle of the error matrix and does not assume zero-valued off-diagonal elements.
 
-    def get_voxel_zxy_x0_pred_uncs(self) -> Tensor:
+        .. warning::
+            This method is incredibly slow and not recommended for use
+
+        Returns:
+            (z,x,y) tensor of uncertainties on voxelwise X0s
+        """
+
         jac = torch.nan_to_num(jacobian(self.vox_zxy_x0_preds, self._muon_scatter_vars))  # Compute dx0/dvar  (z,x,y,mu,var)
         unc = self._muon_scatter_var_uncs
         unc = torch.where(torch.isinf(unc), torch.tensor([0]).type(unc.type()), unc)[None, None, None]  # (1,1,1,mu,var)
@@ -129,19 +292,14 @@ class AbsX0Inferer(AbsVolumeInferer):
         pred_unc = unc_2.sum(-1).sqrt()  # (z,x,y)
         return pred_unc
 
-    @staticmethod
-    def _weighted_rms(x: Tensor, wgt: Tensor) -> Tensor:
-        return ((x.square() * wgt).sum(0) / wgt.sum(0)).sqrt()
-
-    @staticmethod
-    def _weighted_mean(x: Tensor, wgt: Tensor) -> Tensor:
-        return (x * wgt).sum(0) / wgt.sum(0)
-
-    def get_voxel_zxy_x0_preds(self) -> Tensor:
+    def _get_voxel_zxy_x0_preds(self) -> Tensor:
         r"""
-        Assign x0 inference to neighbourhood of voxels according to scatter-poca_xyz uncertainty
-        TODO: Implement differing x0 accoring to poca_xyz via Gaussian spread
-        TODO: Don't assume that poca_xyz uncertainties are uncorrelated
+        Computes the X0 predictions per voxel using the scatter batched added.
+
+        TODO: Implement differing x0 according to poca_xyz via Gaussian spread
+
+        Returns:
+            (z,x,y) tensor of voxelwise X0 predictions
         """
 
         # Compute variable weights per voxel per muon, variable weights applied to squared variables, therefore use error propagation
@@ -171,33 +329,52 @@ class AbsX0Inferer(AbsVolumeInferer):
 
         return vox_x0_preds
 
-    def get_prediction(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
-        if len(self.scatter_batches) == 0:
-            print("Warning: unable to scan volume with prescribed number of muons.")
-            return None, None
-        return self.vox_zxy_x0_preds, self.inv_weights
-
     @property
     def vox_zxy_x0_preds(self) -> Tensor:
+        r"""
+        Returns:
+            (z,x,y) tensor of voxelwise X0 predictions
+        """
+
         if self._vox_zxy_x0_preds is None:
-            self._vox_zxy_x0_preds = self.get_voxel_zxy_x0_preds()
+            self._vox_zxy_x0_preds = self._get_voxel_zxy_x0_preds()
             self._vox_zxy_x0_pred_uncs = None
         return self._vox_zxy_x0_preds
 
     @property
     def vox_zxy_x0_pred_uncs(self) -> Tensor:
-        r"""Not recommended for use: long calculation; not unit-tested"""
+        r"""
+        .. warning::
+            Not recommended for use: long calculation; not unit-tested
+
+        Returns:
+            (z,x,y) tensor of uncertainties on voxelwise X0s
+        """
+
         if self._vox_zxy_x0_pred_uncs is None:
-            self._vox_zxy_x0_pred_uncs = self.get_voxel_zxy_x0_pred_uncs()
+            self._vox_zxy_x0_pred_uncs = self._get_voxel_zxy_x0_pred_uncs()
         return self._vox_zxy_x0_pred_uncs
 
     @property
     def inv_weights(self) -> Tensor:
+        r"""
+        Returns:
+            Sum of muon efficiencies
+        """
+
         return self.muon_efficiency.sum()
 
     @property
     def muon_probs_per_voxel_zxy(self) -> Tensor:  # (mu,z,x,y)
-        r"""Integration tested only"""
+        r"""
+        .. warning::
+            Integration tested only
+
+        TODO: Don't assume that poca_xyz uncertainties are uncorrelated
+
+        Returns:
+            (muons,z,x,y) tensor of probabilities that the muons' PoCAs were located in the given voxels.
+        """
         if self._muon_probs_per_voxel_zxy is None:
             # Gaussian spread
             dists = {}
@@ -218,79 +395,178 @@ class AbsX0Inferer(AbsVolumeInferer):
 
     @property
     def n_mu(self) -> int:
+        r"""
+        Returns:
+            Total number muons included in the inference
+        """
+
         if self._muon_scatter_vars is None or self._muon_scatter_var_uncs is None:
             self._combine_scatters()
         return self._n_mu
 
     @property
     def muon_poca_xyz(self) -> Tensor:
+        r"""
+        Returns:
+            (muons,xyz) tensor of PoCA locations
+        """
+
         if self._muon_scatter_vars is None or self._muon_scatter_var_uncs is None:
             self._combine_scatters()
         return self._muon_scatter_vars[:, self._poca_dim]
 
     @property
     def muon_poca_xyz_unc(self) -> Tensor:
+        r"""
+        Returns:
+            (muons,xyz) tensor of PoCA location uncertainties
+        """
+
         if self._muon_scatter_vars is None or self._muon_scatter_var_uncs is None:
             self._combine_scatters()
         return self._muon_scatter_var_uncs[:, self._poca_dim]
 
     @property
     def muon_total_scatter(self) -> Tensor:
+        r"""
+        Returns:
+            (muons,1) tensor of total angular scatterings
+        """
+
         if self._muon_scatter_vars is None or self._muon_scatter_var_uncs is None:
             self._combine_scatters()
         return self._muon_scatter_vars[:, self._tot_scatter_dim]
 
     @property
     def muon_total_scatter_unc(self) -> Tensor:
+        r"""
+        Returns:
+            (muons,1) tensor of uncertainties on the total angular scatterings
+        """
+
         if self._muon_scatter_vars is None or self._muon_scatter_var_uncs is None:
             self._combine_scatters()
         return self._muon_scatter_var_uncs[:, self._tot_scatter_dim]
 
     @property
     def muon_theta_in(self) -> Tensor:
+        r"""
+        Returns:
+            (muons,1) tensor of the thetas of the incoming muons
+        """
+
         if self._muon_scatter_vars is None or self._muon_scatter_var_uncs is None:
             self._combine_scatters()
         return self._muon_scatter_vars[:, self._theta_in_dim]
 
     @property
     def muon_theta_in_unc(self) -> Tensor:
+        r"""
+        Returns:
+            (muons,1) tensor of the uncertainty on the theta of the incoming muons
+        """
+
         if self._muon_scatter_vars is None or self._muon_scatter_var_uncs is None:
             self._combine_scatters()
         return self._muon_scatter_var_uncs[:, self._theta_in_dim]
 
     @property
     def muon_theta_out(self) -> Tensor:
+        r"""
+        Returns:
+            (muons,1) tensor of the thetas of the outgoing muons
+        """
+
         if self._muon_scatter_vars is None or self._muon_scatter_var_uncs is None:
             self._combine_scatters()
         return self._muon_scatter_vars[:, self._theta_out_dim]
 
     @property
     def muon_theta_out_unc(self) -> Tensor:
+        r"""
+        Returns:
+            (muons,1) tensor of the uncertainty on the theta of the outgoing muons
+        """
+
         if self._muon_scatter_vars is None or self._muon_scatter_var_uncs is None:
             self._combine_scatters()
         return self._muon_scatter_var_uncs[:, self._theta_out_dim]
 
     @property
     def muon_mom(self) -> Tensor:
+        r"""
+        Returns:
+            (muons,1) tensor of the momenta of the muons
+        """
+
         if self._muon_scatter_vars is None or self._muon_scatter_var_uncs is None:
             self._combine_scatters()
         return self._muon_scatter_vars[:, self._mom_dim]
 
     @property
     def muon_mom_unc(self) -> Tensor:
+        r"""
+        Returns:
+            (muons,1) tensor of the uncertainty on the momenta of the muons
+        """
+
         if self._muon_scatter_vars is None or self._muon_scatter_var_uncs is None:
             self._combine_scatters()
         return self._muon_scatter_var_uncs[:, self._mom_dim]
 
     @property
     def muon_efficiency(self) -> Tensor:
+        r"""
+        Returns:
+            (muons,1) tensor of the efficiencies of the muons
+        """
+
         if self._muon_scatter_vars is None or self._muon_scatter_var_uncs is None:
             self._combine_scatters()
         return self._muon_efficiency
 
 
-class PanelX0Inferer(AbsX0Inferer):
+class PanelX0Inferrer(AbsX0Inferrer):
+    r"""
+    Class for inferring the X0 of every voxel in the passive volume using hits recorded by :class:`~tomopt.volume.layer.PanelDetectorLayer`s.
+
+    The inference is based on the PoCA approach of assigning the entirety of the muon scattering to a single point,
+    and the X0 computation is based on inversion of the PDG scattering model described in
+    https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf.
+
+    Once all scatter batches have been added, the inference proceeds thusly:
+        For each muon i, a probability p_ij, is computed according to the probability that the PoCA was located in voxel j.
+            These probabilities are computed by integrating over the voxel the PDF of 3 uncorrelated Gaussians centred on the PoCA,
+            with scales equal the uncertainty on the PoCA position in x,y,z.
+
+        p_ij is multiplied by muon efficiency e_i to compute a muon/voxel weight w_ij.
+
+        Inversion of the PDG model gives:
+        :math:`X_0 = \left(\frac{0.0136}{p^{\mathrm{rms}}}\right)^2\frac{\delta z}{\cos\left(\bar{\theta}^{\mathrm{rms}}\right)}\frac{2}{\theta^{\mathrm{rms}}_{\mathrm{tot.}}}`
+        In order to account for the muon weights and compute different X0s for the voxels whilst using the whole muon population,
+        weighted RMSs are computed for each of the scattering terms in the right-hand side of the equation.
+        In addition to the muon weight w_ij, the variances of the squared values of the scattering variables is used to divide w_ij.
+        The result is a set of X0 predictions X0_j.
+
+    .. important::
+        Inversion of the PDG model does NOT account for the natural log term.
+
+    .. important::
+        To simplify the computation code, this class relies heavily on lazy computation and memoisation; be careful if calling private methods manually.
+    """
+
     def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
+        r"""
+        Computes the per-muon efficiency, given the individual muon hit efficiencies,
+        as the probability of at least two hits above and below the passive volume.
+
+        Arguments:
+            scatters: scatter batch containing muons whose efficiency should be computed
+
+        Returns:
+            (muons) tensor of muon efficiencies
+        """
+
         eff = None
         for pos, hits in enumerate([scatters.above_gen_hits, scatters.below_gen_hits]):
             leff = None
@@ -313,17 +589,17 @@ class PanelX0Inferer(AbsX0Inferer):
         return eff
 
 
-# class DeepVolumeInferer(AbsVolumeInferer):
+# class DeepVolumeInferrer(AbsVolumeInferrer):
 #     def __init__(
 #         self,
 #         model: Union[torch.jit._script.RecursiveScriptModule, nn.Module],
-#         base_inferer: AbsX0Inferer,
+#         base_inferrer: AbsX0Inferrer,
 #         volume: Volume,
 #         grp_feats: List[str],
 #         include_unc: bool = False,
 #     ):
 #         super().__init__(volume=volume)
-#         self.model, self.base_inferer, self.include_unc = model, base_inferer, include_unc
+#         self.model, self.base_inferrer, self.include_unc = model, base_inferrer, include_unc
 #         self.voxel_centres = self.volume.centres
 #         self.tomopt_device = self.volume.device
 #         self.model_device = next(self.model.parameters()).device
@@ -355,10 +631,10 @@ class PanelX0Inferer(AbsX0Inferer):
 #             self.in_feats += ["vox_x", "vox_y", "vox_z"]
 
 #     def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
-#         return self.base_inferer.compute_efficiency(scatters=scatters)
+#         return self.base_inferrer.compute_efficiency(scatters=scatters)
 
 #     def get_base_predictions(self, scatters: AbsScatterBatch) -> Tuple[Tensor, Tensor]:
-#         x, u = self.base_inferer.muon_x0_from_scatters(scatters=scatters)
+#         x, u = self.base_inferrer.muon_x0_from_scatters(scatters=scatters)
 #         return x[:, None], u[:, None]
 
 #     def _build_vars(self, scatters: AbsScatterBatch, pred_x0: Tensor, pred_x0_unc: Tensor) -> None:
@@ -430,16 +706,16 @@ class PanelX0Inferer(AbsX0Inferer):
 #         return pred, weight
 
 
-# class WeightedDeepVolumeInferer(DeepVolumeInferer):
+# class WeightedDeepVolumeInferrer(DeepVolumeInferrer):
 #     def __init__(
 #         self,
 #         model: Union[torch.jit._script.RecursiveScriptModule, nn.Module],
-#         base_inferer: AbsX0Inferer,
+#         base_inferrer: AbsX0Inferrer,
 #         volume: Volume,
 #         grp_feats: List[str],
 #         include_unc: bool = False,
 #     ):
-#         super().__init__(model=model, base_inferer=base_inferer, volume=volume, grp_feats=grp_feats, include_unc=include_unc)
+#         super().__init__(model=model, base_inferrer=base_inferrer, volume=volume, grp_feats=grp_feats, include_unc=include_unc)
 #         self.in_var_weights: List[Tensor] = []
 
 #     def add_scatters(self, scatters: AbsScatterBatch) -> None:
@@ -463,37 +739,92 @@ class PanelX0Inferer(AbsX0Inferer):
 #         return pred, weight
 
 
-class DenseBlockClassifierFromX0s(AbsVolumeInferer):
+class DenseBlockClassifierFromX0s(AbsVolumeInferrer):
     r"""
-    Transforms voxel-wise X0 preds into binary classification statistic under the hypothesis of a small, dense block against a light-weight background
+    Class for inferreing the presence of a small amount of denser material in the passive volume.
+
+    Transforms voxel-wise X0 preds into binary classification statistic under the hypothesis of a small, dense block against a light-weight background.
+    This test statistic, s is computed as:
+    .. math::
+        r = 2 \frac{\bar{X0}_{0,\mathrm{bkg}} - \bar{X0}_{0,\mathrm{blk}}}{\bar{X0}_{0,\mathrm{bkg}} + \bar{X0}_{0,\mathrm{blk}}}
+        s = \sigma\!(a(r+b))
+
+    where :math:`\bar{X0}_{0,\mathrm{blk}}` is the mean X0 of the N lowest X0 voxels,
+    and :math:`\bar{X0}_{0,\mathrm{bkg}}` is the mean X0 of the remaining voxels.
+    a and b are rescaling coefficients and offsets.
+
+    This results in a differentiable value constrained beween 0 and 1, with values near 0 indicating that no relatively dense material is present,
+    and values nearer 1 indicating that it is present.
+    In case it is expected that the dense material forms a contiguous block, the voxelwise X0s can be blurred via a stride-1 kernel-size-3 average pooling.
+
+    In actuality, the "cut" on X0s into background and block is implemented as a sigmoid weight, centred at the necessary kth value of the X0.
+    This means that the test statisitc is also differentiable w.r.t. the cut.
     """
 
     def __init__(
         self,
         n_block_voxels: int,
-        partial_x0_inferer: Type[AbsX0Inferer],
+        partial_x0_inferrer: Type[AbsX0Inferrer],
         volume: Volume,
         use_avgpool: bool = True,
         cut_coef: float = 1e4,
         ratio_offset: float = -1.0,
         ratio_coef: float = 1.0,
     ):
+        r"""
+        Initialises the inference class for the provided volume.
+        Requires a basic inferrer for providing the voxelwise X0 predictions.
+
+        Arguments:
+            n_block_voxels: number of voxels expected to be occupied by the dense material, if present
+            partial_x0_inferrer: (partial) class to instatiate to provide the voxelwise X0 predictions
+            volume: volume through which the muons will be passed
+            use_avgpool: wether to blur voxelwise X0 predicitons with a stride-1 kernel-size-3 average pooling
+                useful when the dense material is expected to form a contiguous block
+            cut_coef: the "sharpness" of the sigmoid weight that splits voxels into block and background.
+                Higher values results in a sharper cut.
+            ratio_offset: additive constant for the X0 ratio
+            ratio_coef: multiplicative coefficient for the offset X0 ratio
+        """
+
         super().__init__(volume=volume)
         self.use_avgpool, self.cut_coef, self.ratio_offset, self.ratio_coef = use_avgpool, cut_coef, ratio_offset, ratio_coef
-        self.x0_inferer = partial_x0_inferer(volume=self.volume)
+        self.x0_inferrer = partial_x0_inferrer(volume=self.volume)
         self.frac = n_block_voxels / self.volume.centres.numel()
 
     def add_scatters(self, scatters: AbsScatterBatch) -> None:
-        self.x0_inferer.add_scatters(scatters)
+        r"""
+        Appends a new set of muon scatter vairables.
+        When :meth:`~tomopt.inference.volume.DenseBlockClassifierFromX0s.get_prediction` is called, the prediction will be based on all
+        :class:`~tomopt.inference.scattering.AbsScatterBatch`s added up to that point
+        """
 
-    def _reset_vars(self) -> None:
-        self.x0_inferer._reset_vars()
+        self.x0_inferrer.add_scatters(scatters)
 
     def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
-        return self.x0_inferer.compute_efficiency(scatters=scatters)
+        r"""
+        Compuates the per-muon efficiency according to the method implemented by the X0 inferrer.
+
+        Arguments:
+            scatters: scatter batch containing muons whose efficiency should be computed
+
+        Returns:
+            (muons) tensor of muon efficiencies
+        """
+
+        return self.x0_inferrer.compute_efficiency(scatters=scatters)
 
     def get_prediction(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
-        vox_preds, inv_weights = self.x0_inferer.get_prediction()
+        r"""
+        Computes the test statistic for the volume, with values near 0 indicating that no relatively dense material is present,
+        and values nearer 1 indicating that it is present.
+
+        Returns:
+            pred: (1,1,1) volume prediction
+            inv_weight: sum of muon efficiencies
+        """
+
+        vox_preds, inv_weights = self.x0_inferrer.get_prediction()
         if self.use_avgpool:
             vox_preds = F.avg_pool3d(vox_preds[None], kernel_size=3, stride=1, padding=1, count_include_pad=False)[0]
 
@@ -511,37 +842,92 @@ class DenseBlockClassifierFromX0s(AbsVolumeInferer):
         pred = torch.sigmoid(r)
         return pred[None, None], inv_weights
 
+    def _reset_vars(self) -> None:
+        r"""
+        Resets any variable/predictions made from the added scatter batches.
+        """
 
-class AbsIntClassifierFromX0(AbsVolumeInferer):
-    """Abstract class for inferring integers through multiclass classification from voxelwise X0 predictions"""
+        self.x0_inferrer._reset_vars()
+
+
+class AbsIntClassifierFromX0(AbsVolumeInferrer):
+    r"""
+    Abstract base class for inferring integer targets through multiclass classification from voxelwise X0 predictions.
+    Inheriting classes must provide a way to convert voxelwise X0s into class probabilities of the required dimension.
+    """
 
     def __init__(
         self,
-        partial_x0_inferer: Type[AbsX0Inferer],
+        partial_x0_inferrer: Type[AbsX0Inferrer],
         volume: Volume,
         output_probs: bool = True,
         class2float: Optional[Callable[[Tensor, Volume], Tensor]] = None,
     ):
+        r"""
+        Initialises the inference class for the provided volume.
+        Requires a basic inferrer for providing the voxelwise X0 predictions.
+        Optionally, the predictions can be returns as the raw class predictions, or the most probable class.
+        In case of the latter, this class can be optionally be converted to a float value via a user-provided processing function.
+
+        Arguments:
+            partial_x0_inferrer: (partial) class to instatiate to provide the voxelwise X0 predictions
+            volume: volume through which the muons will be passed
+            output_probs: if True, will return the per-class probabilites, otherwise will return the argmax of the probabilities, over the last dimension
+            class2float: optional function to convert class indices to a floating value
+        """
+
         super().__init__(volume=volume)
         self.output_probs, self.class2float = output_probs, class2float
-        self.x0_inferer = partial_x0_inferer(volume=self.volume)
-
-    def add_scatters(self, scatters: AbsScatterBatch) -> None:
-        self.x0_inferer.add_scatters(scatters)
-
-    def _reset_vars(self) -> None:
-        self.x0_inferer._reset_vars()
-
-    def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
-        return self.x0_inferer.compute_efficiency(scatters=scatters)
+        self.x0_inferrer = partial_x0_inferrer(volume=self.volume)
 
     @abstractmethod
     def x02probs(self, vox_preds: Tensor) -> Tensor:
-        """Convert voxelwise X0 predictions to int probabilities"""
+        r"""
+        Inheriting classes must override this method to convert voxelwise X0 predictions to class probabilities
+
+        Arguments:
+            vox_preds: (z,x,y) tensor of voxelwise X0 predictions
+
+        Returns:
+            (*) tensor of class probabilities
+        """
+
         pass
 
+    def add_scatters(self, scatters: AbsScatterBatch) -> None:
+        r"""
+        Appends a new set of muon scatter vairables.
+        When :meth:`~tomopt.inference.volume.DenseBlockClassifierFromX0s.get_prediction` is called, the prediction will be based on all
+        :class:`~tomopt.inference.scattering.AbsScatterBatch`s added up to that point
+        """
+
+        self.x0_inferrer.add_scatters(scatters)
+
+    def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
+        r"""
+        Compuates the per-muon efficiency according to the method implemented by the X0 inferrer.
+
+        Arguments:
+            scatters: scatter batch containing muons whose efficiency should be computed
+
+        Returns:
+            (muons) tensor of muon efficiencies
+        """
+
+        return self.x0_inferrer.compute_efficiency(scatters=scatters)
+
     def get_prediction(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
-        vox_preds, inv_weights = self.x0_inferer.get_prediction()
+        r"""
+        Computes the predicions for the volume.
+        If class probabilities were requested during initialisation, then these will be returned.
+        Otherwise the most probable class will be returned, and this will be converted to a float value if `class2float` is not None.
+
+        Returns:
+            pred: (*) volume prediction
+            inv_weight: sum of muon efficiencies
+        """
+
+        vox_preds, inv_weights = self.x0_inferrer.get_prediction()
 
         probs = self.x02probs(vox_preds)
         if self.output_probs:
@@ -552,3 +938,10 @@ class AbsIntClassifierFromX0(AbsVolumeInferer):
                 return pred, inv_weights
             else:
                 return self.class2float(pred, self.volume), inv_weights
+
+    def _reset_vars(self) -> None:
+        r"""
+        Resets any variable/predictions made from the added scatter batches.
+        """
+
+        self.x0_inferrer._reset_vars()
