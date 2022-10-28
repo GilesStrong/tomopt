@@ -414,7 +414,7 @@ def test_cost_coef_warmup():
     loss = VoxelX0Loss(target_budget=0.8)
     vol = MockVolume()
     vol.parameters = []
-    vw = VW(volume=vol, partial_opts={}, loss_func=loss, partial_scatter_inferer=None, partial_volume_inferer=None)
+    vw = VW(volume=vol, partial_opts={}, loss_func=loss, partial_scatter_inferrer=None, partial_volume_inferrer=None)
     vw.fit_params = FitParams(pred=10)
     opt = MockOpt()
     opt.param_groups = [{"lr": 1e2}]

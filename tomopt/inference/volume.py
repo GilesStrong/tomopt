@@ -593,13 +593,13 @@ class PanelX0Inferer(AbsX0Inferer):
 #     def __init__(
 #         self,
 #         model: Union[torch.jit._script.RecursiveScriptModule, nn.Module],
-#         base_inferer: AbsX0Inferer,
+#         base_inferrer: AbsX0Inferer,
 #         volume: Volume,
 #         grp_feats: List[str],
 #         include_unc: bool = False,
 #     ):
 #         super().__init__(volume=volume)
-#         self.model, self.base_inferer, self.include_unc = model, base_inferer, include_unc
+#         self.model, self.base_inferrer, self.include_unc = model, base_inferrer, include_unc
 #         self.voxel_centres = self.volume.centres
 #         self.tomopt_device = self.volume.device
 #         self.model_device = next(self.model.parameters()).device
@@ -631,10 +631,10 @@ class PanelX0Inferer(AbsX0Inferer):
 #             self.in_feats += ["vox_x", "vox_y", "vox_z"]
 
 #     def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
-#         return self.base_inferer.compute_efficiency(scatters=scatters)
+#         return self.base_inferrer.compute_efficiency(scatters=scatters)
 
 #     def get_base_predictions(self, scatters: AbsScatterBatch) -> Tuple[Tensor, Tensor]:
-#         x, u = self.base_inferer.muon_x0_from_scatters(scatters=scatters)
+#         x, u = self.base_inferrer.muon_x0_from_scatters(scatters=scatters)
 #         return x[:, None], u[:, None]
 
 #     def _build_vars(self, scatters: AbsScatterBatch, pred_x0: Tensor, pred_x0_unc: Tensor) -> None:
@@ -710,12 +710,12 @@ class PanelX0Inferer(AbsX0Inferer):
 #     def __init__(
 #         self,
 #         model: Union[torch.jit._script.RecursiveScriptModule, nn.Module],
-#         base_inferer: AbsX0Inferer,
+#         base_inferrer: AbsX0Inferer,
 #         volume: Volume,
 #         grp_feats: List[str],
 #         include_unc: bool = False,
 #     ):
-#         super().__init__(model=model, base_inferer=base_inferer, volume=volume, grp_feats=grp_feats, include_unc=include_unc)
+#         super().__init__(model=model, base_inferrer=base_inferrer, volume=volume, grp_feats=grp_feats, include_unc=include_unc)
 #         self.in_var_weights: List[Tensor] = []
 
 #     def add_scatters(self, scatters: AbsScatterBatch) -> None:
@@ -764,7 +764,7 @@ class DenseBlockClassifierFromX0s(AbsVolumeInferer):
     def __init__(
         self,
         n_block_voxels: int,
-        partial_x0_inferer: Type[AbsX0Inferer],
+        partial_x0_inferrer: Type[AbsX0Inferer],
         volume: Volume,
         use_avgpool: bool = True,
         cut_coef: float = 1e4,
@@ -773,11 +773,11 @@ class DenseBlockClassifierFromX0s(AbsVolumeInferer):
     ):
         r"""
         Initialises the inference class for the provided volume.
-        Requires a basic inferer for providing the voxelwise X0 predictions.
+        Requires a basic inferrer for providing the voxelwise X0 predictions.
 
         Arguments:
             n_block_voxels: number of voxels expected to be occupied by the dense material, if present
-            partial_x0_inferer: (partial) class to instatiate to provide the voxelwise X0 predictions
+            partial_x0_inferrer: (partial) class to instatiate to provide the voxelwise X0 predictions
             volume: volume through which the muons will be passed
             use_avgpool: wether to blur voxelwise X0 predicitons with a stride-1 kernel-size-3 average pooling
                 useful when the dense material is expected to form a contiguous block
@@ -789,7 +789,7 @@ class DenseBlockClassifierFromX0s(AbsVolumeInferer):
 
         super().__init__(volume=volume)
         self.use_avgpool, self.cut_coef, self.ratio_offset, self.ratio_coef = use_avgpool, cut_coef, ratio_offset, ratio_coef
-        self.x0_inferer = partial_x0_inferer(volume=self.volume)
+        self.x0_inferrer = partial_x0_inferrer(volume=self.volume)
         self.frac = n_block_voxels / self.volume.centres.numel()
 
     def add_scatters(self, scatters: AbsScatterBatch) -> None:
@@ -799,11 +799,11 @@ class DenseBlockClassifierFromX0s(AbsVolumeInferer):
         :class:`~tomopt.inference.scattering.AbsScatterBatch`s added up to that point
         """
 
-        self.x0_inferer.add_scatters(scatters)
+        self.x0_inferrer.add_scatters(scatters)
 
     def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
         r"""
-        Compuates the per-muon efficiency according to the method implemented by the X0 inferer.
+        Compuates the per-muon efficiency according to the method implemented by the X0 inferrer.
 
         Arguments:
             scatters: scatter batch containing muons whose efficiency should be computed
@@ -812,7 +812,7 @@ class DenseBlockClassifierFromX0s(AbsVolumeInferer):
             (muons) tensor of muon efficiencies
         """
 
-        return self.x0_inferer.compute_efficiency(scatters=scatters)
+        return self.x0_inferrer.compute_efficiency(scatters=scatters)
 
     def get_prediction(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
         r"""
@@ -824,7 +824,7 @@ class DenseBlockClassifierFromX0s(AbsVolumeInferer):
             inv_weight: sum of muon efficiencies
         """
 
-        vox_preds, inv_weights = self.x0_inferer.get_prediction()
+        vox_preds, inv_weights = self.x0_inferrer.get_prediction()
         if self.use_avgpool:
             vox_preds = F.avg_pool3d(vox_preds[None], kernel_size=3, stride=1, padding=1, count_include_pad=False)[0]
 
@@ -847,7 +847,7 @@ class DenseBlockClassifierFromX0s(AbsVolumeInferer):
         Resets any variable/predictions made from the added scatter batches.
         """
 
-        self.x0_inferer._reset_vars()
+        self.x0_inferrer._reset_vars()
 
 
 class AbsIntClassifierFromX0(AbsVolumeInferer):
@@ -858,19 +858,19 @@ class AbsIntClassifierFromX0(AbsVolumeInferer):
 
     def __init__(
         self,
-        partial_x0_inferer: Type[AbsX0Inferer],
+        partial_x0_inferrer: Type[AbsX0Inferer],
         volume: Volume,
         output_probs: bool = True,
         class2float: Optional[Callable[[Tensor, Volume], Tensor]] = None,
     ):
         r"""
         Initialises the inference class for the provided volume.
-        Requires a basic inferer for providing the voxelwise X0 predictions.
+        Requires a basic inferrer for providing the voxelwise X0 predictions.
         Optionally, the predictions can be returns as the raw class predictions, or the most probable class.
         In case of the latter, this class can be optionally be converted to a float value via a user-provided processing function.
 
         Arguments:
-            partial_x0_inferer: (partial) class to instatiate to provide the voxelwise X0 predictions
+            partial_x0_inferrer: (partial) class to instatiate to provide the voxelwise X0 predictions
             volume: volume through which the muons will be passed
             output_probs: if True, will return the per-class probabilites, otherwise will return the argmax of the probabilities, over the last dimension
             class2float: optional function to convert class indices to a floating value
@@ -878,7 +878,7 @@ class AbsIntClassifierFromX0(AbsVolumeInferer):
 
         super().__init__(volume=volume)
         self.output_probs, self.class2float = output_probs, class2float
-        self.x0_inferer = partial_x0_inferer(volume=self.volume)
+        self.x0_inferrer = partial_x0_inferrer(volume=self.volume)
 
     @abstractmethod
     def x02probs(self, vox_preds: Tensor) -> Tensor:
@@ -901,11 +901,11 @@ class AbsIntClassifierFromX0(AbsVolumeInferer):
         :class:`~tomopt.inference.scattering.AbsScatterBatch`s added up to that point
         """
 
-        self.x0_inferer.add_scatters(scatters)
+        self.x0_inferrer.add_scatters(scatters)
 
     def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
         r"""
-        Compuates the per-muon efficiency according to the method implemented by the X0 inferer.
+        Compuates the per-muon efficiency according to the method implemented by the X0 inferrer.
 
         Arguments:
             scatters: scatter batch containing muons whose efficiency should be computed
@@ -914,7 +914,7 @@ class AbsIntClassifierFromX0(AbsVolumeInferer):
             (muons) tensor of muon efficiencies
         """
 
-        return self.x0_inferer.compute_efficiency(scatters=scatters)
+        return self.x0_inferrer.compute_efficiency(scatters=scatters)
 
     def get_prediction(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
         r"""
@@ -927,7 +927,7 @@ class AbsIntClassifierFromX0(AbsVolumeInferer):
             inv_weight: sum of muon efficiencies
         """
 
-        vox_preds, inv_weights = self.x0_inferer.get_prediction()
+        vox_preds, inv_weights = self.x0_inferrer.get_prediction()
 
         probs = self.x02probs(vox_preds)
         if self.output_probs:
@@ -944,4 +944,4 @@ class AbsIntClassifierFromX0(AbsVolumeInferer):
         Resets any variable/predictions made from the added scatter batches.
         """
 
-        self.x0_inferer._reset_vars()
+        self.x0_inferrer._reset_vars()

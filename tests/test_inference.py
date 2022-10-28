@@ -324,26 +324,26 @@ def test_gen_scatter_batch_compute(mocker, panel_scatter_batch):  # noqa F811
     assert (sb.xyz_out[:, 2] - Tensor([0.2])).sum().abs() < 1e-3
 
 
-def test_abs_volume_inferer_properties(panel_scatter_batch):
+def test_abs_volume_inferrer_properties(panel_scatter_batch):
     mu, volume, sb = panel_scatter_batch
-    inferer = PanelX0Inferer(volume=volume)
+    inferrer = PanelX0Inferer(volume=volume)
 
-    assert inferer.volume == volume
-    assert torch.all(inferer.lw == LW)
-    assert inferer.size == SZ
+    assert inferrer.volume == volume
+    assert torch.all(inferrer.lw == LW)
+    assert inferrer.size == SZ
 
 
 @pytest.mark.flaky(max_runs=2, min_passes=1)
-def test_panel_x0_inferer_methods(mocker):  # noqa F811
+def test_panel_x0_inferrer_methods(mocker):  # noqa F811
     volume = Volume(get_panel_layers(init_res=1e5))
     gen = MuonGenerator2016.from_volume(volume)
     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
     sb = PanelScatterBatch(mu=mu, volume=volume)
-    inferer = PanelX0Inferer(volume=volume)
+    inferrer = PanelX0Inferer(volume=volume)
 
-    pt = inferer.x0_from_scatters(deltaz=SZ, total_scatter=sb.total_scatter, theta_in=sb.theta_in, theta_out=sb.theta_out, mom=sb.mu.reco_mom[:, None])
+    pt = inferrer.x0_from_scatters(deltaz=SZ, total_scatter=sb.total_scatter, theta_in=sb.theta_in, theta_out=sb.theta_out, mom=sb.mu.reco_mom[:, None])
     assert len(pt) == len(sb.poca_xyz)
     assert pt.shape == torch.Size([len(sb.mu), 1])
 
@@ -352,57 +352,57 @@ def test_panel_x0_inferer_methods(mocker):  # noqa F811
         for p in l.panels:
             assert torch.autograd.grad(pt[mask].abs().sum(), p.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
 
-    eff = inferer.compute_efficiency(scatters=sb)
+    eff = inferrer.compute_efficiency(scatters=sb)
     assert eff[:, None].shape == pt.shape
     assert (eff > 0).all()
 
     # Single batch
-    inferer.add_scatters(sb)
-    assert len(inferer.scatter_batches) == 1
+    inferrer.add_scatters(sb)
+    assert len(inferrer.scatter_batches) == 1
     for p in [
-        inferer._n_mu,
-        inferer._muon_scatter_vars,
-        inferer._muon_scatter_var_uncs,
-        inferer._muon_probs_per_voxel_zxy,
-        inferer._muon_efficiency,
-        inferer._vox_zxy_x0_preds,
-        inferer._vox_zxy_x0_pred_uncs,
+        inferrer._n_mu,
+        inferrer._muon_scatter_vars,
+        inferrer._muon_scatter_var_uncs,
+        inferrer._muon_probs_per_voxel_zxy,
+        inferrer._muon_efficiency,
+        inferrer._vox_zxy_x0_preds,
+        inferrer._vox_zxy_x0_pred_uncs,
     ]:
         assert p is None
 
-    inferer._combine_scatters()
-    assert inferer.n_mu == len(sb)
-    for p in [inferer._muon_scatter_vars, inferer._muon_scatter_var_uncs, inferer._muon_efficiency]:
+    inferrer._combine_scatters()
+    assert inferrer.n_mu == len(sb)
+    for p in [inferrer._muon_scatter_vars, inferrer._muon_scatter_var_uncs, inferrer._muon_efficiency]:
         assert isinstance(p, Tensor) and len(p) == len(sb)
-    for p in [inferer._muon_probs_per_voxel_zxy, inferer._vox_zxy_x0_preds, inferer._vox_zxy_x0_pred_uncs]:
+    for p in [inferrer._muon_probs_per_voxel_zxy, inferrer._vox_zxy_x0_preds, inferrer._vox_zxy_x0_pred_uncs]:
         assert p is None
-    inferer._reset_vars()
+    inferrer._reset_vars()
     for p in [
-        inferer._n_mu,
-        inferer._muon_scatter_vars,
-        inferer._muon_scatter_var_uncs,
-        inferer._muon_probs_per_voxel_zxy,
-        inferer._muon_efficiency,
-        inferer._vox_zxy_x0_preds,
-        inferer._vox_zxy_x0_pred_uncs,
+        inferrer._n_mu,
+        inferrer._muon_scatter_vars,
+        inferrer._muon_scatter_var_uncs,
+        inferrer._muon_probs_per_voxel_zxy,
+        inferrer._muon_efficiency,
+        inferrer._vox_zxy_x0_preds,
+        inferrer._vox_zxy_x0_pred_uncs,
     ]:
         assert p is None
 
-    mocker.spy(inferer, "_combine_scatters")
-    mocker.spy(inferer, "_get_voxel_zxy_x0_preds")
-    inferer.vox_zxy_x0_preds
-    assert inferer._combine_scatters.call_count == 1
-    assert inferer._get_voxel_zxy_x0_preds.call_count == 1
+    mocker.spy(inferrer, "_combine_scatters")
+    mocker.spy(inferrer, "_get_voxel_zxy_x0_preds")
+    inferrer.vox_zxy_x0_preds
+    assert inferrer._combine_scatters.call_count == 1
+    assert inferrer._get_voxel_zxy_x0_preds.call_count == 1
 
-    p1, w1 = inferer.get_prediction()
-    assert inferer._combine_scatters.call_count == 1
-    assert inferer._get_voxel_zxy_x0_preds.call_count == 1
-    assert isinstance(inferer._muon_probs_per_voxel_zxy, Tensor)
+    p1, w1 = inferrer.get_prediction()
+    assert inferrer._combine_scatters.call_count == 1
+    assert inferrer._get_voxel_zxy_x0_preds.call_count == 1
+    assert isinstance(inferrer._muon_probs_per_voxel_zxy, Tensor)
 
     true = volume.get_rad_cube()
     assert p1.shape == true.shape
     assert w1.shape == torch.Size([])
-    assert inferer._muon_probs_per_voxel_zxy.shape == torch.Size([len(sb)]) + true.shape
+    assert inferrer._muon_probs_per_voxel_zxy.shape == torch.Size([len(sb)]) + true.shape
     assert (p1 != p1).sum() == 0  # No NaNs
     assert (((p1 - true)).abs() / true).mean() < 100
 
@@ -419,29 +419,29 @@ def test_panel_x0_inferer_methods(mocker):  # noqa F811
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
     sb2 = PanelScatterBatch(mu=mu, volume=volume)
-    inferer.add_scatters(sb2)
+    inferrer.add_scatters(sb2)
     for p in [
-        inferer._n_mu,
-        inferer._muon_scatter_vars,
-        inferer._muon_scatter_var_uncs,
-        inferer._muon_probs_per_voxel_zxy,
-        inferer._muon_efficiency,
-        inferer._vox_zxy_x0_preds,
-        inferer._vox_zxy_x0_pred_uncs,
+        inferrer._n_mu,
+        inferrer._muon_scatter_vars,
+        inferrer._muon_scatter_var_uncs,
+        inferrer._muon_probs_per_voxel_zxy,
+        inferrer._muon_efficiency,
+        inferrer._vox_zxy_x0_preds,
+        inferrer._vox_zxy_x0_pred_uncs,
     ]:
         assert p is None
 
-    assert len(inferer.scatter_batches) == 2
-    assert inferer.n_mu == len(sb) + len(sb2)
-    assert inferer._combine_scatters.call_count == 2
+    assert len(inferrer.scatter_batches) == 2
+    assert inferrer.n_mu == len(sb) + len(sb2)
+    assert inferrer._combine_scatters.call_count == 2
 
-    p2, w2 = inferer.get_prediction()  # Averaged prediction slightly changes with new batch
+    p2, w2 = inferrer.get_prediction()  # Averaged prediction slightly changes with new batch
     assert (p2 - p1).abs().sum() > 1e-2
     assert (w2 - w1).abs().sum() > 1e-2
-    assert inferer._get_voxel_zxy_x0_preds.call_count == 2
+    assert inferrer._get_voxel_zxy_x0_preds.call_count == 2
 
 
-def test_panel_inferer_multi_batch():
+def test_panel_inferrer_multi_batch():
     volume = Volume(get_panel_layers(init_res=1e5))
     gen = MuonGenerator2016.from_volume(volume)
     mus = MuonResampler.resample(gen(1000), volume=volume, gen=gen)
@@ -472,9 +472,9 @@ def test_panel_inferer_multi_batch():
     assert (((weight1 - weight4) / weight1).abs() < 1e-4).all()
 
 
-def test_panel_x0_inferer_efficiency(mocker, panel_scatter_batch):  # noqa F811
+def test_panel_x0_inferrer_efficiency(mocker, panel_scatter_batch):  # noqa F811
     mu, volume, sb = panel_scatter_batch
-    inferer = PanelX0Inferer(volume=volume)
+    inferrer = PanelX0Inferer(volume=volume)
     a_effs = Tensor([0.6, 0.2, 0.3, 0.4])
     b_effs = Tensor([0.5, 0.6, 0.7, 0.8])
     true_eff = 0.4263  # from MC sim
@@ -487,15 +487,15 @@ def test_panel_x0_inferer_efficiency(mocker, panel_scatter_batch):  # noqa F811
             p.eff = a_effs[j] if i == 0 else b_effs[j]
             p.get_efficiency = types.MethodType(get_efficiency, p)
 
-    assert (inferer.compute_efficiency(scatters=sb)[0] - true_eff).abs() < 1e-3
+    assert (inferrer.compute_efficiency(scatters=sb)[0] - true_eff).abs() < 1e-3
 
 
 @pytest.mark.flaky(max_runs=3, min_passes=1)
-def test_x0_inferer_scatter_inversion(mocker, panel_scatter_batch):  # noqa F811
+def test_x0_inferrer_scatter_inversion(mocker, panel_scatter_batch):  # noqa F811
     layer = AbsLayer(LW, Z, SZ)
     mu, volume, sb = panel_scatter_batch
-    inferer = PanelX0Inferer(volume=volume)
-    inferer.size = SZ
+    inferrer = PanelX0Inferer(volume=volume)
+    inferrer.size = SZ
     x0 = X0["lead"]
     mocker.patch("tomopt.volume.layer.torch.randn", lambda n, device: torch.ones(n, device=device))  # remove randomness
     scatters = layer._pdg_scatter(x0=x0, deltaz=SZ, theta=mu.theta, theta_x=mu.theta_x, theta_y=mu.theta_y, mom=mu.mom, log_term=False)
@@ -503,7 +503,7 @@ def test_x0_inferer_scatter_inversion(mocker, panel_scatter_batch):  # noqa F811
 
     mu_start = mu.copy()
     mu.scatter_dtheta_dphi(dtheta_vol=dtheta, dphi_vol=dphi)
-    pred = inferer.x0_from_scatters(
+    pred = inferrer.x0_from_scatters(
         deltaz=SZ,
         total_scatter=torch.sqrt((dtheta**2) + (dphi**2)) / math.sqrt(2),
         theta_in=mu_start.theta,
@@ -515,7 +515,7 @@ def test_x0_inferer_scatter_inversion(mocker, panel_scatter_batch):  # noqa F811
 
 
 @pytest.mark.flaky(max_runs=5, min_passes=1)
-def test_x0_inferer_scatter_inversion_via_scatter_batch():
+def test_x0_inferrer_scatter_inversion_via_scatter_batch():
     gen = MuonGenerator2016((0, 1), (0, 1), fixed_mom=5)
     muons = MuonBatch(gen(10000), init_z=1)
     x0 = torch.ones(len(muons)) * X0["lead"]
@@ -544,9 +544,9 @@ def test_x0_inferer_scatter_inversion_via_scatter_batch():
 
     volume = MockVolume()
     sb = GenScatterBatch(muons, volume=volume)
-    inferer = PanelX0Inferer(volume=volume)
+    inferrer = PanelX0Inferer(volume=volume)
 
-    pred = inferer.x0_from_scatters(
+    pred = inferrer.x0_from_scatters(
         deltaz=0.01,
         total_scatter=(sb.total_scatter).square().mean().sqrt() / math.sqrt(2),
         theta_in=sb.theta_in.square().mean().sqrt(),
@@ -559,7 +559,7 @@ def test_x0_inferer_scatter_inversion_via_scatter_batch():
 
 # @pytest.mark.flaky(max_runs=2, min_passes=1)
 # @pytest.mark.parametrize("dvi_class, weighted", [[DeepVolumeInferer, False], [WeightedDeepVolumeInferer, True]])
-# def test_deep_volume_inferer(dvi_class: Type[DeepVolumeInferer], weighted: bool):
+# def test_deep_volume_inferrer(dvi_class: Type[DeepVolumeInferer], weighted: bool):
 #     volume = Volume(get_panel_layers(init_res=1e4))
 #     gen = MuonGenerator2016.from_volume(volume)
 #     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
@@ -580,27 +580,27 @@ def test_x0_inferer_scatter_inversion_via_scatter_batch():
 #         def forward(self, x: Tensor) -> Tensor:
 #             return self.act(self.layer(x.mean(2).flatten()[None]))
 
-#     inferer = dvi_class(model=MockModel(), base_inferer=PanelX0Inferer(volume=volume), volume=volume, grp_feats=grp_feats, include_unc=True)
+#     inferrer = dvi_class(model=MockModel(), base_inferrer=PanelX0Inferer(volume=volume), volume=volume, grp_feats=grp_feats, include_unc=True)
 
-#     pt, pt_unc = inferer.get_base_predictions(scatters=sb)
+#     pt, pt_unc = inferrer.get_base_predictions(scatters=sb)
 #     assert len(pt) == len(sb.poca_xyz)
 #     assert pt.shape == pt_unc.shape
 
-#     assert len(inferer.in_vars) == 0
-#     assert len(inferer.in_var_uncs) == 0
-#     assert len(inferer.efficiencies) == 0
-#     inferer.add_scatters(sb)
-#     assert len(inferer.in_vars) == 1
-#     assert len(inferer.in_var_uncs) == 1
-#     assert len(inferer.efficiencies) == 1
-#     assert inferer.in_vars[-1].shape == torch.Size((nvalid, n_infeats))
-#     assert inferer.in_var_uncs[-1].shape == torch.Size((nvalid, n_infeats))
-#     assert len(inferer.efficiencies[-1]) == nvalid
+#     assert len(inferrer.in_vars) == 0
+#     assert len(inferrer.in_var_uncs) == 0
+#     assert len(inferrer.efficiencies) == 0
+#     inferrer.add_scatters(sb)
+#     assert len(inferrer.in_vars) == 1
+#     assert len(inferrer.in_var_uncs) == 1
+#     assert len(inferrer.efficiencies) == 1
+#     assert inferrer.in_vars[-1].shape == torch.Size((nvalid, n_infeats))
+#     assert inferrer.in_var_uncs[-1].shape == torch.Size((nvalid, n_infeats))
+#     assert len(inferrer.efficiencies[-1]) == nvalid
 
-#     inputs = inferer._build_inputs(inferer.in_vars[0])
+#     inputs = inferrer._build_inputs(inferrer.in_vars[0])
 #     assert inputs.shape == torch.Size((600, nvalid, n_infeats + 4))  # +4 since voxels and dpoca_r
 
-#     pred, weight = inferer.get_prediction()
+#     pred, weight = inferrer.get_prediction()
 #     assert pred.shape == torch.Size((1, 1))
 #     assert weight.shape == torch.Size(())
 
@@ -630,10 +630,10 @@ def test_dense_block_classifier_from_x0s():
     volume.load_rad_length(u_rad_length)
     volume(mu)
     sb = PanelScatterBatch(mu=mu, volume=volume)
-    inferer = DenseBlockClassifierFromX0s(12, PanelX0Inferer, volume=volume)
-    inferer.add_scatters(sb)
+    inferrer = DenseBlockClassifierFromX0s(12, PanelX0Inferer, volume=volume)
+    inferrer.add_scatters(sb)
 
-    p, w = inferer.get_prediction()
+    p, w = inferrer.get_prediction()
     for l in volume.get_detectors():
         for panel in l.panels:
             assert torch.autograd.grad(p.abs().sum(), panel.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
@@ -656,10 +656,10 @@ def test_abs_int_classifier_from_x0():
             return F.softmax(vox_preds.mean([1, 2]), dim=-1)
 
     # Raw probs
-    inferer = Inf(partial_x0_inferer=PanelX0Inferer, volume=volume, output_probs=True)
-    inferer.add_scatters(sb)
+    inferrer = Inf(partial_x0_inferrer=PanelX0Inferer, volume=volume, output_probs=True)
+    inferrer.add_scatters(sb)
 
-    p, w = inferer.get_prediction()
+    p, w = inferrer.get_prediction()
     assert p.shape == torch.Size([6])
     assert w.shape == torch.Size([])
 
@@ -672,17 +672,17 @@ def test_abs_int_classifier_from_x0():
             assert torch.autograd.grad(w.abs().sum(), panel.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
 
     # Single prediction
-    inferer = Inf(partial_x0_inferer=PanelX0Inferer, volume=volume, output_probs=False)
-    inferer.add_scatters(sb)
-    p, w = inferer.get_prediction()
+    inferrer = Inf(partial_x0_inferrer=PanelX0Inferer, volume=volume, output_probs=False)
+    inferrer.add_scatters(sb)
+    p, w = inferrer.get_prediction()
     assert p.type() == "torch.LongTensor"
     assert p.shape == torch.Size([])
     assert w.shape == torch.Size([])
 
     # Single float prediction
-    inferer = Inf(partial_x0_inferer=PanelX0Inferer, volume=volume, output_probs=False, class2float=lambda x, v: 3.5 * x)
-    inferer.add_scatters(sb)
-    p, w = inferer.get_prediction()
+    inferrer = Inf(partial_x0_inferrer=PanelX0Inferer, volume=volume, output_probs=False, class2float=lambda x, v: 3.5 * x)
+    inferrer.add_scatters(sb)
+    p, w = inferrer.get_prediction()
     assert p.type() == "torch.FloatTensor"
     assert p.shape == torch.Size([])
     assert w.shape == torch.Size([])
