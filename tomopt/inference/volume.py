@@ -27,14 +27,14 @@ class AbsVolumeInferrer(metaclass=ABCMeta):
     Inheriting classes are expected to be fed multiple :class:`~tomopt.inference.scattering.AbsScatterBatch`s,
     via :meth:`~tomopt.inference.volume.AbsVolumeInferrer.add_scatters`, for a single :class:`~tomopt.volume.volume.Volume`
     and return a volume prediction based on all of the muon batches when :meth:`~tomopt.inference.volume.AbsVolumeInferrer.get_prediction` is called.
+
+    Arguments:
+        volume: volume through which the muons will be passed
     """
 
     def __init__(self, volume: Volume):
         r"""
         Initialises the inference class for the provided volume.
-
-        Arguments:
-            volume: volume through which the muons will be passed
         """
 
         self.scatter_batches: List[AbsScatterBatch] = []
@@ -105,6 +105,9 @@ class AbsX0Inferrer(AbsVolumeInferrer):
 
     .. important::
         To simplify the computation code, this class relies heavily on lazy computation and memoisation; be careful if calling private methods manually.
+
+    Arguments:
+        volume: volume through which the muons will be passed
     """
 
     _n_mu: Optional[int] = None
@@ -119,9 +122,6 @@ class AbsX0Inferrer(AbsVolumeInferrer):
     def __init__(self, volume: Volume):
         r"""
         Initialises the inference class for the provided volume.
-
-        Arguments:
-            volume: volume through which the muons will be passed
         """
 
         super().__init__(volume=volume)
@@ -553,6 +553,9 @@ class PanelX0Inferrer(AbsX0Inferrer):
 
     .. important::
         To simplify the computation code, this class relies heavily on lazy computation and memoisation; be careful if calling private methods manually.
+
+    Arguments:
+        volume: volume through which the muons will be passed
     """
 
     def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
@@ -759,6 +762,17 @@ class DenseBlockClassifierFromX0s(AbsVolumeInferrer):
 
     In actuality, the "cut" on X0s into background and block is implemented as a sigmoid weight, centred at the necessary kth value of the X0.
     This means that the test statisitc is also differentiable w.r.t. the cut.
+
+    Arguments:
+        n_block_voxels: number of voxels expected to be occupied by the dense material, if present
+        partial_x0_inferrer: (partial) class to instatiate to provide the voxelwise X0 predictions
+        volume: volume through which the muons will be passed
+        use_avgpool: wether to blur voxelwise X0 predicitons with a stride-1 kernel-size-3 average pooling
+            useful when the dense material is expected to form a contiguous block
+        cut_coef: the "sharpness" of the sigmoid weight that splits voxels into block and background.
+            Higher values results in a sharper cut.
+        ratio_offset: additive constant for the X0 ratio
+        ratio_coef: multiplicative coefficient for the offset X0 ratio
     """
 
     def __init__(
@@ -773,18 +787,6 @@ class DenseBlockClassifierFromX0s(AbsVolumeInferrer):
     ):
         r"""
         Initialises the inference class for the provided volume.
-        Requires a basic inferrer for providing the voxelwise X0 predictions.
-
-        Arguments:
-            n_block_voxels: number of voxels expected to be occupied by the dense material, if present
-            partial_x0_inferrer: (partial) class to instatiate to provide the voxelwise X0 predictions
-            volume: volume through which the muons will be passed
-            use_avgpool: wether to blur voxelwise X0 predicitons with a stride-1 kernel-size-3 average pooling
-                useful when the dense material is expected to form a contiguous block
-            cut_coef: the "sharpness" of the sigmoid weight that splits voxels into block and background.
-                Higher values results in a sharper cut.
-            ratio_offset: additive constant for the X0 ratio
-            ratio_coef: multiplicative coefficient for the offset X0 ratio
         """
 
         super().__init__(volume=volume)
@@ -854,6 +856,15 @@ class AbsIntClassifierFromX0(AbsVolumeInferrer):
     r"""
     Abstract base class for inferring integer targets through multiclass classification from voxelwise X0 predictions.
     Inheriting classes must provide a way to convert voxelwise X0s into class probabilities of the required dimension.
+    Requires a basic inferrer for providing the voxelwise X0 predictions.
+    Optionally, the predictions can be returns as the raw class predictions, or the most probable class.
+    In case of the latter, this class can be optionally be converted to a float value via a user-provided processing function.
+
+    Arguments:
+        partial_x0_inferrer: (partial) class to instatiate to provide the voxelwise X0 predictions
+        volume: volume through which the muons will be passed
+        output_probs: if True, will return the per-class probabilites, otherwise will return the argmax of the probabilities, over the last dimension
+        class2float: optional function to convert class indices to a floating value
     """
 
     def __init__(
@@ -865,15 +876,6 @@ class AbsIntClassifierFromX0(AbsVolumeInferrer):
     ):
         r"""
         Initialises the inference class for the provided volume.
-        Requires a basic inferrer for providing the voxelwise X0 predictions.
-        Optionally, the predictions can be returns as the raw class predictions, or the most probable class.
-        In case of the latter, this class can be optionally be converted to a float value via a user-provided processing function.
-
-        Arguments:
-            partial_x0_inferrer: (partial) class to instatiate to provide the voxelwise X0 predictions
-            volume: volume through which the muons will be passed
-            output_probs: if True, will return the per-class probabilites, otherwise will return the argmax of the probabilities, over the last dimension
-            class2float: optional function to convert class indices to a floating value
         """
 
         super().__init__(volume=volume)

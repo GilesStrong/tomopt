@@ -17,6 +17,13 @@ class PanelOptConfig(Callback):
     Allows the user to specify the desired update steps for :class:`~tomopt.volume.layer.PanelDetectorLayer`s in physical units.
     Over the course of several warm-up epochs the gradients on the parameters are monitored, after which suitable learning rates for the optimisation are set.
     During the warm-up, the detectors will not be updated as optimiser learning rates will be set to zero.
+
+    Arguments:
+        n_warmup: number of training epochs to wait before setting learning rates
+        xy_pos_rate: desired distance in metres the panels should move in xy every update
+        z_pos_rate: desired distance in metres the panels should move in z every update
+        xy_span_rate: desired distance in metres the panels should expand in xy every update
+        budget_rate: desired rate at which the fractional budget assignments should change every update
     """
 
     def __init__(
@@ -27,15 +34,6 @@ class PanelOptConfig(Callback):
         xy_span_rate: Optional[float] = None,
         budget_rate: Optional[float] = None,
     ):
-        r"""
-        Arguments:
-            n_warmup: number of training epochs to wait before setting learning rates
-            xy_pos_rate: desired distance in metres the panels should move in xy every update
-            z_pos_rate: desired distance in metres the panels should move in z every update
-            xy_span_rate: desired distance in metres the panels should expand in xy every update
-            budget_rate: desired rate at which the fractional budget assignments should change every update
-        """
-
         self.n_warmup = n_warmup
         self.rates: Dict[str, float] = {}
         if xy_pos_rate is not None and xy_pos_rate != 0:

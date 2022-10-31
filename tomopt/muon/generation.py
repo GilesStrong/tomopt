@@ -21,6 +21,17 @@ class AbsMuonGenerator:
     r"""
     Abstract generator base class implementing core functionality.
     Inheriting classes should override the `flux` method.
+
+    Once initialised, the object can be called, or it's `generate_set` method called, to generate a set of initial muon kinematics.
+    Each muon will have a starting x and y position sampled uniformly within a defined region.
+    Theta and momentum will be defined by sampling the defined flux model.
+
+    Arguments:
+        x_range: range in metres of the absolute initial x-position in the volume reference frame over which muons can be generated
+        y_range: range in metres of the absolute initial y-position in the volume reference frame over which muons can be generated
+        fixed_mom: if not None, will only generate muons with the specified momentum in GeV
+        energy_range: if fixed_mom is None, muons will have initial momentum sampled according to the flux model in the specified range in GeV
+        theta_range: muons will have initial theta sampled according to the flux model in the specified range in radians
     """
 
     _muon_mass2 = (Particle.from_pdgid(13).mass * 1e-3) ** 2  # GeV^2
@@ -36,16 +47,7 @@ class AbsMuonGenerator:
         theta_range: Tuple[float, float] = (0, 70 * np.pi / 180),  # Models on accurate up to ~70 degrees
     ) -> None:
         r"""
-        Once initialised, class can be called, or it's `generate_set` method called, to generate a set of initial muon kinematics.
-        Each muon will have a starting x and y position sampled uniformly within a defined region.
-        Theta and momentum will be defined by sampling the defined flux model.
-
-        Arguments:
-            x_range: range in metres of the absolute initial x-position in the volume reference frame over which muons can be generated
-            y_range: range in metres of the absolute initial y-position in the volume reference frame over which muons can be generated
-            fixed_mom: if not None, will only generate muons with the specified momentum in GeV
-            energy_range: if fixed_mom is None, muons will have initial momentum sampled according to the flux model in the specified range in GeV
-            theta_range: muons will have initial theta sampled according to the flux model in the specified range in radians
+        Initialises the flux model
         """
 
         self.x_range, self.y_range = x_range, y_range
@@ -151,6 +153,17 @@ class AbsMuonGenerator:
 class MuonGenerator2015(AbsMuonGenerator):
     r"""
     Provides muon generator for sampling initial muon kinematics according to  Guan et al. 2015 (arXiv:1509.06176).
+
+    Once initialised, the object can be called, or it's `generate_set` method called, to generate a set of initial muon kinematics.
+    Each muon will have a starting x and y position sampled uniformly within a defined region.
+    Theta and momentum will be defined by sampling the defined flux model.
+
+    Arguments:
+        x_range: range in metres of the absolute initial x-position in the volume reference frame over which muons can be generated
+        y_range: range in metres of the absolute initial y-position in the volume reference frame over which muons can be generated
+        fixed_mom: if not None, will only generate muons with the specified momentum in GeV
+        energy_range: if fixed_mom is None, muons will have initial momentum sampled according to the flux model in the specified range in GeV
+        theta_range: muons will have initial theta sampled according to the flux model in the specified range in radians
     """
 
     P1 = 0.102573
@@ -187,6 +200,17 @@ class MuonGenerator2015(AbsMuonGenerator):
 class MuonGenerator2016(AbsMuonGenerator):
     r"""
     Provides muon generator for sampling initial muon kinematics according to Shukla and Sanskrith 2018 arXiv:1606.06907
+
+    Once initialised, the object can be called, or it's `generate_set` method called, to generate a set of initial muon kinematics.
+    Each muon will have a starting x and y position sampled uniformly within a defined region.
+    Theta and momentum will be defined by sampling the defined flux model.
+
+    Arguments:
+        x_range: range in metres of the absolute initial x-position in the volume reference frame over which muons can be generated
+        y_range: range in metres of the absolute initial y-position in the volume reference frame over which muons can be generated
+        fixed_mom: if not None, will only generate muons with the specified momentum in GeV
+        energy_range: if fixed_mom is None, muons will have initial momentum sampled according to the flux model in the specified range in GeV
+        theta_range: muons will have initial theta sampled according to the flux model in the specified range in radians
     """
 
     I_0 = 88.0

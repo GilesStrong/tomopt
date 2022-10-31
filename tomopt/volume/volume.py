@@ -34,6 +34,12 @@ class Volume(nn.Module):
     .. important::
         Currently this class expects that all :class:`~tomopt.volume.layer.PassiveLayer`s form a single contiguous block,
         i.e. it does not currently support sparse, or multiple, passive volumes.
+
+    Arguments:
+        layers: `torch.nn.ModuleList` of instantiated :class:`~tomopt.volume.layer.AbsLayer`s, ordered in decreasing z position.
+        budget: optional budget of the detector in currency units.
+            Supplying a value for the optional budget, here, will prepare the volume to learn budget assignments to the detectors,
+            and configure the detectors for the budget.
     """
 
     def __init__(self, layers: nn.ModuleList, budget: Optional[float] = None):
@@ -42,12 +48,6 @@ class Volume(nn.Module):
         which should be supplied as a `torch.nn.ModuleList` ordered in decreasing z position.
         Supplying a value for the optional budget, here, will prepare the volume to learn budget assignments to the detectors,
         and configure the detectors for the budget.
-
-        Arguments:
-            layers: `torch.nn.ModuleList` of instantiated :class:`~tomopt.volume.layer.AbsLayer`s, ordered in decreasing z position.
-            budget: optional budget of the detector in currency units.
-                Supplying a value for the optional budget, here, will prepare the volume to learn budget assignments to the detectors,
-                and configure the detectors for the budget.
         """
 
         super().__init__()

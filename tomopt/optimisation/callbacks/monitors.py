@@ -54,6 +54,11 @@ class MetricLogger(Callback):
     If `show_plots` is false, will instead print training and validation losses at the end of each epoch.
     The full history is available as a dictionary by calling :meth:`~tomopt.optimisation.callbacks.monitors.MetricLogger.get_loss_history`.
     Additionally, a gif of the optimisation can be saved.
+
+    Arguments:
+        gif_filename: optional savename for recording a gif of the optimisation process (None -> no gif)
+            The savename will be appended to the callback savepath
+        show_plots: whether to provide live plots during optimisation in notebooks
     """
 
     tk_sz = 16
@@ -67,13 +72,6 @@ class MetricLogger(Callback):
     w_mid = h_mid * 16 / 9
 
     def __init__(self, gif_filename: Optional[str] = "optimisation_history.gif", show_plots: bool = IN_NOTEBOOK):
-        r"""
-        Arguments:
-            gif_filename: optional savename for recording a gif of the optimisation process (None -> no gif)
-                The savename will be appended to the callback savepath
-            show_plots: whether to provide live plots during optimisation in notebooks
-        """
-
         self.gif_filename, self.show_plots = gif_filename, show_plots
 
     def _reset(self) -> None:
@@ -342,6 +340,11 @@ class MetricLogger(Callback):
 class PanelMetricLogger(MetricLogger):
     r"""
     Logger for use with :class:`~tomopt.volume.layer.PanelDetectorLayer`s
+
+    Arguments:
+        gif_filename: optional savename for recording a gif of the optimisation process (None -> no gif)
+            The savename will be appended to the callback savepath
+        show_plots: whether to provide live plots during optimisation in notebooks
     """
 
     def update_plot(self) -> None:

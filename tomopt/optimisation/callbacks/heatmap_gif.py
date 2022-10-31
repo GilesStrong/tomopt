@@ -15,14 +15,14 @@ __all__ = ["HeatMapGif"]
 class HeatMapGif(Callback):
     r"""
     Records a gif of the first heatmap in the first detector layer during training.
+
+    Arguments:
+        gif_filename: savename for the gif (will be appended to the callback savepath)
     """
 
     def __init__(self, gif_filename: str = "heatmap.gif") -> None:
         r"""
         Initialises the callback.
-
-        Arguments:
-            gif_filename: savename for the gif (will be appended to the callback savepath)
         """
 
         self.gif_filename = gif_filename

@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.abspath("../.."))
 
 project = "TomOpt"
 author = "TomOpt Authors"
-copyright = f"{datetime.datetime.now().year}, {author}"
+copyright = f"2021-{datetime.datetime.now().year}, {author}"
 
 
 # -- General configuration ---------------------------------------------------
@@ -56,8 +56,8 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 
 # -- Options for HTML output -------------------------------------------------
-html_theme = "sphinx_rtd_theme"
-# html_favicon = './_static/img/favicon.png'
+html_theme = "tomopt_sphinx_theme"
+html_favicon = "./_static/imgs/tomopt_logo_black.png"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

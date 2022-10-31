@@ -49,6 +49,11 @@ class MuonBatch:
     Hits may be added via the `.append_hits` method, and stored in the `_hits` attribute.
     Hits can then be retrieved by the `.get_hits` method.
 
+    Arguments:
+        xy_p_theta_phi: (N_muon, 5) tensor,
+            with xy [m], p [GeV], theta [r] (0, pi/2) defined w.r.t z axis, phi [r] (0, 2pi) defined anticlockwise from x axis
+        init_z: initial z position of all muons in the batch
+        device: device on which to place the muon tensors
     """
 
     x_dim = 0
@@ -60,14 +65,8 @@ class MuonBatch:
 
     def __init__(self, xy_p_theta_phi: Tensor, init_z: Union[Tensor, float], device: torch.device = DEVICE):
         r"""
-        Initialise class from `xy_p_theta_phi`, a (N_muon, 5) tensor, and an initial z position for the batch.
+        Initialises the class from `xy_p_theta_phi`, a (N_muon, 5) tensor, and an initial z position for the batch.
         Muon trajectories (theta & phi) and positions (x,y,z) are in the reference frame of the volume.
-
-        Arguments:
-            xy_p_theta_phi: (N_muon, 5) tensor,
-                with xy [m], p [GeV], theta [r] (0, pi/2) defined w.r.t z axis, phi [r] (0, 2pi) defined anticlockwise from x axis
-            init_z: initial z position of all muons in the batch
-            device: device on which to place the muon tensors
         """
 
         self.device = device

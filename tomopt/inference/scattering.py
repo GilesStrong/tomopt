@@ -47,6 +47,10 @@ class AbsScatterBatch(metaclass=ABCMeta):
     The total scattering (`total_scatter`) is the quadrature sum of dtheta and dphi, and all three are computed under both hypotheses.
     The final values of these are chosen using the hypothesis which minimises the total amount of scattering.
     This assumption has been tested and found to be good.
+
+    Arguments:
+        mu: muons with hits to infer on
+        volume: volume through which the muons travelled
     """
 
     # Hits
@@ -1098,6 +1102,10 @@ class PanelScatterBatch(AbsScatterBatch):
     The total scattering (`total_scatter`) is the quadrature sum of dtheta and dphi, and all three are computed under both hypotheses.
     The final values of these are chosen using the hypothesis which minimises the total amount of scattering.
     This assumption has been tested and found to be good.
+
+    Arguments:
+        mu: muons with hits to infer on
+        volume: volume through which the muons travelled
     """
 
     @staticmethod
@@ -1174,6 +1182,10 @@ class GenScatterBatch(AbsScatterBatch):
     The total scattering (`total_scatter`) is the quadrature sum of dtheta and dphi, and all three are computed under both hypotheses.
     The final values of these are chosen using the hypothesis which minimises the total amount of scattering.
     This assumption has been tested and found to be good.
+
+    Arguments:
+        mu: muons with hits to infer on
+        volume: volume through which the muons travelled
     """
 
     def _compute_tracks(self) -> None:

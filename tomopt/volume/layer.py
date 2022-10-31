@@ -33,18 +33,16 @@ class AbsLayer(nn.Module, metaclass=ABCMeta):
         'pdg': The default and currently recommended model based on the Gaussian scattering model described in
             https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf
         'pgeant': An under-development model based on a parameterised fit to data sampled from GEANT 4
+
+    Arguments:
+        lw: the length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0).
+        z: the z position of the top of layer in metres. The bottom of the layer will be located at z-size
+        size: the voxel size in metres. Must be such that lw is divisible by the specified size.
+        scatter_model: String selection for the scattering model to use. Currently either 'pdg' or 'pgeant'.
+        device: device on which to place tensors
     """
 
     def __init__(self, lw: Tensor, z: float, size: float, scatter_model: str = "pdg", device: torch.device = DEVICE):
-        r"""
-        Arguments:
-            lw: the length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0).
-            z: the z position of the top of layer in metres. The bottom of the layer will be located at z-size
-            size: the voxel size in metres. Must be such that lw is divisible by the specified size.
-            scatter_model: String selection for the scattering model to use. Currently either 'pdg' or 'pgeant'.
-            device: device on which to place tensors
-        """
-
         super().__init__()
         self.lw, self.z, self.size, self.scatter_model, self.device = (
             lw.to(device),
@@ -251,6 +249,17 @@ class PassiveLayer(AbsLayer):
     ```
 
     This function can either be supplied during initialisation, or later via the `load_rad_length` method.
+
+    Arguments:
+        lw: the length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0).
+        z: the z position of the top of layer in metres. The bottom of the layer will be located at z-size
+        size: the voxel size in metres. Must be such that lw is divisible by the specified size.
+        rad_length_func: lookup function that returns an (n_x,n_y) tensor of voxel X0 values for the layer.
+            After initialisation, the `load_rad_length` method may be used to load X0 layouts.
+        dz_step: The step size in metres over which to compute muon propagation and scattering.
+            Should be such that the `size` of the layer is divisible by `dz_step`.
+        scatter_model: String selection for the scattering model to use. Currently either 'pdg' or 'pgeant'.
+        device: device on which to place tensors
     """
 
     def __init__(
@@ -263,19 +272,6 @@ class PassiveLayer(AbsLayer):
         scatter_model: str = "pdg",
         device: torch.device = DEVICE,
     ):
-        r"""
-        Arguments:
-            lw: the length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0).
-            z: the z position of the top of layer in metres. The bottom of the layer will be located at z-size
-            size: the voxel size in metres. Must be such that lw is divisible by the specified size.
-            rad_length_func: lookup function that returns an (n_x,n_y) tensor of voxel X0 values for the layer.
-                After initialisation, the `load_rad_length` method may be used to load X0 layouts.
-            dz_step: The step size in metres over which to compute muon propagation and scattering.
-                Should be such that the `size` of the layer is divisible by `dz_step`.
-            scatter_model: String selection for the scattering model to use. Currently either 'pdg' or 'pgeant'.
-            device: device on which to place tensors
-        """
-
         super().__init__(lw=lw, z=z, size=size, device=device)
         self.dz_step = dz_step
         self.n_steps = int(np.round(self.size / self.dz_step))
@@ -343,6 +339,13 @@ class AbsDetectorLayer(AbsLayer, metaclass=ABCMeta):
 
     .. important::
         By default, the detectors will not scatter muons.
+
+    Arguments:
+        pos: string-encoding of the detector-layer group
+        lw: the length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0).
+        z: the z position of the top of layer in metres. The bottom of the layer will be located at z-size
+        size: the voxel size in metres. Must be such that lw is divisible by the specified size.
+        device: device on which to place tensors
     """
 
     _n_costs = 0  # number of budgets that the detector layer requests
@@ -356,15 +359,6 @@ class AbsDetectorLayer(AbsLayer, metaclass=ABCMeta):
         size: float,
         device: torch.device = DEVICE,
     ):
-        r"""
-        Arguments:
-            pos: string-encoding of the detector-layer group
-            lw: the length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0).
-            z: the z position of the top of layer in metres. The bottom of the layer will be located at z-size
-            size: the voxel size in metres. Must be such that lw is divisible by the specified size.
-            device: device on which to place tensors
-        """
-
         super().__init__(lw=lw, z=z, size=size, device=device)
         self.pos = pos
         self.type_label = ""
@@ -432,18 +426,16 @@ class PanelDetectorLayer(AbsDetectorLayer):
 
     .. important::
         The detector panels do not scatter muons.
+
+    Arguments:
+        pos: string-encoding of the detector-layer group
+        lw: the length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0).
+        z: the z position of the top of layer in metres. The bottom of the layer will be located at z-size
+        size: the voxel size in metres. Must be such that lw is divisible by the specified size.
+        panels: The set of initialised panels to contain in the detector layer
     """
 
     def __init__(self, pos: str, *, lw: Tensor, z: float, size: float, panels: Union[List[DetectorPanel], List[DetectorHeatMap], nn.ModuleList]):
-        r"""
-        Arguments:
-            pos: string-encoding of the detector-layer group
-            lw: the length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0).
-            z: the z position of the top of layer in metres. The bottom of the layer will be located at z-size
-            size: the voxel size in metres. Must be such that lw is divisible by the specified size.
-            panels: The set of initialised panels to contain in the detector layer
-        """
-
         if isinstance(panels, list):
             panels = nn.ModuleList(panels)
         super().__init__(pos=pos, lw=lw, z=z, size=size, device=self.get_device(panels))
