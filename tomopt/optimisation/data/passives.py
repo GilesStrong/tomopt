@@ -13,7 +13,14 @@ r"""
 Provides classes that generate and yield passive volume layouts
 """
 
-__all__ = ["VoxelPassiveGenerator", "RandomBlockPassiveGenerator", "BlockPresentPassiveGenerator", "PassiveYielder"]
+__all__ = [
+    "AbsPassiveGenerator",
+    "AbsBlockPassiveGenerator",
+    "VoxelPassiveGenerator",
+    "RandomBlockPassiveGenerator",
+    "BlockPresentPassiveGenerator",
+    "PassiveYielder",
+]
 
 
 class AbsPassiveGenerator(metaclass=ABCMeta):

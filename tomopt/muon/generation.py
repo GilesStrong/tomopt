@@ -14,7 +14,7 @@ r"""
 Provides generator classes for sampling initial muon kinematics according to literature models.
 """
 
-__all__ = ["MuonGenerator2015", "MuonGenerator2016"]
+__all__ = ["AbsMuonGenerator", "MuonGenerator2015", "MuonGenerator2016"]
 
 
 class AbsMuonGenerator:

@@ -12,7 +12,7 @@ r"""
 Provides loss functions for evaluating the performance of detector and inference configurations
 """
 
-__all__ = ["VoxelX0Loss", "VoxelClassLoss", "VolumeClassLoss", "VolumeIntClassLoss"]
+__all__ = ["AbsDetectorLoss", "AbsMaterialClassLoss", "VoxelX0Loss", "VoxelClassLoss", "VolumeClassLoss", "VolumeIntClassLoss"]
 
 
 class AbsDetectorLoss(nn.Module, metaclass=ABCMeta):

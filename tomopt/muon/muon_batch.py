@@ -21,19 +21,16 @@ class MuonBatch:
     Container class for a batch of many muons, defined by their position and kinematics.
 
     Each muon has its own:
-        x and y position in metres, which are absolute coordinates in the volume frame.
-        theta, the angle in radians [0,pi) between the muon trajectory and the negative z-axis in the volume frame
-            muons with a theta > pi/2 (i.e. travel upwards) may be removed automatically
-        phi, the anticlockwise angle in radians [0,2pi) between the muon trajectory and the positive x-axis, in the x-y plane of the volume frame.
-        momentum (mom), the absolute value of the muon momentum in GeV
+        - x and y position in metres, which are absolute coordinates in the volume frame.
+        - theta, the angle in radians [0,pi) between the muon trajectory and the negative z-axis in the volume frame muons with a theta > pi/2 (i.e. travel upwards) may be removed automatically
+        - phi, the anticlockwise angle in radians [0,2pi) between the muon trajectory and the positive x-axis, in the x-y plane of the volume frame.
+        - momentum (mom), the absolute value of the muon momentum in GeV
     All the muons in the batch share the same z-position in metres, which is an absolute coordinate in the volume frame.
 
     Muon properties should not be updated manually.  Instead, call:
-        `.propagate(dz)` to update the x,y,z positions of the muons for a given propagation dz in the z-axis.
-        `.scatter_dxy(dx_vol, dy_vol, mask)` to shift the x,y positions of the muons,
-            for which the values of the optional Boolean mask is true, by the specified amount.
-        `.scatter_dtheta_dphi(dtheta_vol, dphi_vol, mask)` to alter the theta,phi angles of the muons,
-            for which the values of the optional Boolean mask is true, by the specified amount.
+        - `.propagate(dz)` to update the x,y,z positions of the muons for a given propagation dz in the z-axis.
+        - `.scatter_dxy(dx_vol, dy_vol, mask)` to shift the x,y positions of the muons, for which the values of the optional Boolean mask is true, by the specified amount.
+        - `.scatter_dtheta_dphi(dtheta_vol, dphi_vol, mask)` to alter the theta,phi angles of the muons, for which the values of the optional Boolean mask is true, by the specified amount.
 
     .. important::
         Muon momenta is currently constant

@@ -24,7 +24,7 @@ from ...muon.generation import AbsMuonGenerator
 from ...inference.scattering import AbsScatterBatch, PanelScatterBatch
 from ...inference.volume import AbsVolumeInferrer, PanelX0Inferrer
 
-__all__ = ["PanelVolumeWrapper", "HeatMapVolumeWrapper"]
+__all__ = ["FitParams", "AbsVolumeWrapper", "PanelVolumeWrapper", "HeatMapVolumeWrapper"]
 
 r"""
 Provides wrapper classes for optimising detectors and other quality-of-life methods

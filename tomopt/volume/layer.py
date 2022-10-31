@@ -16,7 +16,7 @@ r"""
 Provides implementations of the layers in z, which are used to construct volumes, both the passive scattering layers, and the active detection layers.
 """
 
-__all__ = ["PassiveLayer", "PanelDetectorLayer"]
+__all__ = ["AbsLayer", "PassiveLayer", "AbsDetectorLayer", "PanelDetectorLayer"]
 
 
 class AbsLayer(nn.Module, metaclass=ABCMeta):
@@ -547,6 +547,7 @@ class PanelDetectorLayer(AbsDetectorLayer):
         Passes elements of an (_n_costs) tensor to each of the panels' `assign_budget` method.
         Panels are ordered by decreasing z-position, i.e. the zeroth budget element will relate always to the highest panel,
         rather than necessarily to the same panel through the optimisation process
+
         # TODO investigate whether it would be better to instead assign budgets based on a fixed ordering, rather than the z-order of the panels.
 
         Arguments:

@@ -6,7 +6,7 @@ r"""
 Provides "callbacks" designed to compute metrics about the performance of the detector/inference, e.g. accuracy
 """
 
-__all__: List[str] = []
+__all__: List[str] = ["EvalMetric"]
 
 
 class EvalMetric(Callback):
