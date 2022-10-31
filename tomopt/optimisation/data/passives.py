@@ -28,8 +28,8 @@ class AbsPassiveGenerator(metaclass=ABCMeta):
     Abstract base class for classes that generate new passive layouts.
 
     The :meth:`~tomopt.optimisation.data.passives.AbsPassiveGenerator._generate` method should be overridden to return:
-        A function that provides an xy tensor for a given layer when called with its z position, length and width, and size.
-        An optional "target" value for the layout
+        - A function that provides an xy tensor for a given layer when called with its z position, length and width, and size.
+        - An optional "target" value for the layout
 
     The :meth:`~tomopt.optimisation.data.passives.AbsPassiveGenerator.generate` method will return only the layout function and no target
     The :meth:`~tomopt.optimisation.data.passives.AbsPassiveGenerator.get_data` method will return both the layout function and the target
@@ -93,8 +93,8 @@ class AbsBlockPassiveGenerator(AbsPassiveGenerator):
     Abstract base class for classes that generate new passive layouts which contain a single cuboid of material (block).
 
     The :meth:`~tomopt.optimisation.data.passives.AbsPassiveGenerator._generate` method should be overridden to return:
-        A function that provides an xy tensor for a given layer when called with its z position, length and width, and size.
-        An optional "target" value for the layout
+        - A function that provides an xy tensor for a given layer when called with its z position, length and width, and size.
+        - An optional "target" value for the layout
 
     The :meth:`~tomopt.optimisation.data.passives.AbsPassiveGenerator.generate` method will return only the layout function and no target
     The :meth:`~tomopt.optimisation.data.passives.AbsPassiveGenerator.get_data` method will return both the layout function and the target

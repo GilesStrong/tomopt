@@ -78,6 +78,7 @@ class AbsMuonGenerator:
     def flux(self, energy: Union[float, np.ndarray], theta: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
         r"""
         Inheriting classes should override this to implement their flux model for the supplied pairs of energies and thetas
+
         Arguments:
             energy: energy values at which to compute the flux, in GeV
             theta: theta values at which to compute the flux, in radians

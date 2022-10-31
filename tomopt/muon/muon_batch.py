@@ -85,6 +85,7 @@ class MuonBatch:
     def phi_from_theta_xy(theta_x: Tensor, theta_y: Tensor) -> Tensor:
         r"""
         Computes the phi angle from theta_x and theta_y.
+
         .. important::
             This function does NOT work if theta is > pi/2
 
@@ -109,6 +110,7 @@ class MuonBatch:
     def theta_from_theta_xy(theta_x: Tensor, theta_y: Tensor) -> Tensor:
         r"""
         Computes the theta angle from theta_x and theta_y.
+
         .. important::
             This function does NOT work if theta is > pi/2
 
@@ -128,6 +130,7 @@ class MuonBatch:
     def theta_x_from_theta_phi(theta: Tensor, phi: Tensor) -> Tensor:
         r"""
         Computes the angle from the negative z-axis in the xz plane from theta and phi
+
         .. important::
             This function does NOT work if theta is > pi/2
 
@@ -147,6 +150,7 @@ class MuonBatch:
     def theta_y_from_theta_phi(theta: Tensor, phi: Tensor) -> Tensor:
         r"""
         Computes the angle from the negative z-axis in the yz plane from theta and phi
+
         .. important::
             This function does NOT work if theta is > pi/2
 
@@ -168,9 +172,9 @@ class MuonBatch:
         If a mask is supplied, then only muons with True mask elements are displaced.
 
         Arguments:
-            dx_vol: (N) tensor of displacements in x
-            dy_vol: (N) tensor of displacements in y
-            mask: (N) Boolean tensor. If not None, only muons with True mask elements are displaced.
+            dx_vol: (N,) tensor of displacements in x
+            dy_vol: (N,) tensor of displacements in y
+            mask: (N,) Boolean tensor. If not None, only muons with True mask elements are displaced.
         """
 
         if mask is None:
@@ -186,9 +190,9 @@ class MuonBatch:
         If a mask is supplied, then only muons with True mask elements are altered.
 
         Arguments:
-            dtheta_vol: (N) tensor of angular changes in theta
-            dphi_vol: (N) tensor of angular changes in phi
-            mask: (N) Boolean tensor. If not None, only muons with True mask elements are altered.
+            dtheta_vol: (N,) tensor of angular changes in theta
+            dphi_vol: (N,) tensor of angular changes in phi
+            mask: (N,) Boolean tensor. If not None, only muons with True mask elements are altered.
         """
 
         if mask is None:
@@ -210,7 +214,7 @@ class MuonBatch:
     def remove_upwards_muons(self) -> None:
         r"""
         Removes muons, and their hits, if their theta >= pi/2, i.e. they are travelling upwards after a large scattering.
-        Should be run after any changes to theta, but make sure that references (e.g. masks) to the complete set of muons are no longer required.2
+        Should be run after any changes to theta, but make sure that references (e.g. masks) to the complete set of muons are no longer required.
         """
 
         self._keep_mask = self._theta < torch.pi / 2  # To keep
@@ -221,7 +225,7 @@ class MuonBatch:
         Removes all muons, and their associated hits, except for muons specified as True in `keep_mask`.
 
         Arguments:
-            keep_mask: (N) Boolean tensor. Muons with False elements will be removed, along with their hits.
+            keep_mask: (N,) Boolean tensor. Muons with False elements will be removed, along with their hits.
         """
 
         if keep_mask.sum() < len(self):
@@ -254,14 +258,14 @@ class MuonBatch:
 
     def get_xy_mask(self, xy_low: Optional[Union[Tuple[float, float], Tensor]], xy_high: Optional[Union[Tuple[float, float], Tensor]]) -> Tensor:
         r"""
-        Computes a (N) Boolean tensor, with True values corresponding to muons which are within the supplied ranges in xy.
+        Computes a (N,) Boolean tensor, with True values corresponding to muons which are within the supplied ranges in xy.
 
         Arguments:
             xy_low: (2,N) optional lower limit on xy positions
             xy_high: (2,N) optional upper limit on xy positions
 
         Returns:
-            (N) Boolean mask with True values corresponding to muons which are with xy positions >= xy_low and < xy_high
+            (N,) Boolean mask with True values corresponding to muons which are with xy positions >= xy_low and < xy_high
         """
 
         if xy_low is None:
@@ -318,7 +322,7 @@ class MuonBatch:
         Computes absolute difference in the theta_x between the muons and the supplied theta_x angles
 
         Arguments:
-            theta_ref_x: (N) tensor to compare with the muon theta_x values
+            theta_ref_x: (N,) tensor to compare with the muon theta_x values
 
         Returns:
             Absolute difference between muons' theta_x and the supplied reference theta_x
@@ -331,7 +335,7 @@ class MuonBatch:
         Computes absolute difference in the theta_y between the muons and the supplied theta_y angles
 
         Arguments:
-            theta_ref_y: (N) tensor to compare with the muon theta_y values
+            theta_ref_y: (N,) tensor to compare with the muon theta_y values
 
         Returns:
             Absolute difference between muons' theta_y and the supplied reference theta_y
@@ -344,7 +348,7 @@ class MuonBatch:
         Computes absolute difference in the theta between the muons and the supplied theta angles
 
         Arguments:
-            theta_ref: (N) tensor to compare with the muon theta values
+            theta_ref: (N,) tensor to compare with the muon theta values\
 
         Returns:
             Absolute difference between muons' theta and the supplied reference theta

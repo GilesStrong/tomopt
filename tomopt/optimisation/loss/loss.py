@@ -20,8 +20,8 @@ class AbsDetectorLoss(nn.Module, metaclass=ABCMeta):
     Abstract base class from which all loss functions should inherit.
 
     The loss consists of:
-        A component that quantifies the performance of the predictions made via the detectors
-        An optional component that relates to the cost of the detector
+        - A component that quantifies the performance of the predictions made via the detectors
+        - An optional component that relates to the cost of the detector
     The total loss is the sum of these, with the cost-component being rescaled by a coefficient characterising its relative importance.
 
     The performance component (error) should ideally be as close to the final task that the detector will be performing,
@@ -161,8 +161,8 @@ class VoxelX0Loss(AbsDetectorLoss):
     Inference-error component of the loss is the squared-error on X0 predictions, averaged over all voxels (MSE)
 
     The total loss consists of:
-        The MSE
-        An optional component that relates to the cost of the detector
+        - The MSE
+        - An optional component that relates to the cost of the detector
     The total loss is the sum of these, with the cost-component being rescaled by a coefficient characterising its relative importance.
 
     The optional cost component is included as a budget weighting, which gradually increases with the current cost up to a predefined budget,
@@ -204,8 +204,8 @@ class AbsMaterialClassLoss(AbsDetectorLoss):
     The targets returned by the volume are expected to be float X0s, and are converted to class IDs using an X0 to ID map.
 
     The loss consists of:
-        A component that quantifies the performance of the predictions made via the detectors
-        An optional component that relates to the cost of the detector
+        - A component that quantifies the performance of the predictions made via the detectors
+        - An optional component that relates to the cost of the detector
     The total loss is the sum of these, with the cost-component being rescaled by a coefficient characterising its relative importance.
 
     The performance component (error) should ideally be as close to the final task that the detector will be performing,
@@ -253,8 +253,8 @@ class VoxelClassLoss(AbsMaterialClassLoss):
     The ordering of the "flattened" voxels should match that of `volume.get_rad_cube().flatten()`
 
     The total loss consists of:
-        The NLL
-        An optional component that relates to the cost of the detector
+        - The NLL
+        - An optional component that relates to the cost of the detector
     The total loss is the sum of these, with the cost-component being rescaled by a coefficient characterising its relative importance.
 
     The optional cost component is included as a budget weighting, which gradually increases with the current cost up to a predefined budget,
@@ -306,8 +306,8 @@ class VolumeClassLoss(AbsMaterialClassLoss):
     The ordering of the "flattened" voxels should match that of `volume.get_rad_cube().flatten()`
 
     The total loss consists of:
-        The NLL or BCE
-        An optional component that relates to the cost of the detector
+        - The NLL or BCE
+        - An optional component that relates to the cost of the detector
     The total loss is the sum of these, with the cost-component being rescaled by a coefficient characterising its relative importance.
 
     The optional cost component is included as a budget weighting, which gradually increases with the current cost up to a predefined budget,
@@ -358,8 +358,8 @@ class VolumeIntClassLoss(AbsDetectorLoss):
     The target from the volume can be converted to an integer (e.g. height to layer ID) using a `targ2int` function
 
     The total loss consists of:
-        The integer class loss (ICL)
-        An optional component that relates to the cost of the detector
+        - The integer class loss (ICL)
+        - An optional component that relates to the cost of the detector
     The total loss is the sum of these, with the cost-component being rescaled by a coefficient characterising its relative importance.
 
     The optional cost component is included as a budget weighting, which gradually increases with the current cost up to a predefined budget,

@@ -24,7 +24,7 @@ def integer_class_loss(
 
     Like multiclass-classification, predictions are a probabilities for each possible integer,
     but the ICL aims to penalise close predictions less than far-off ones:
-    For a target of 3 and a close prediction of softmax([1,3,10,5,5,3,1]) and a far-off prediction of softmax([10,3,1,5,5,3,1]),
+    For a target of 3 and a close prediction of `softmax([1,3,10,5,5,3,1])` and a far-off prediction of `softmax([10,3,1,5,5,3,1])`,
     the categorical cross-entropy produces the same loss for both predictions (5.0154) despite the close prediction having a higher probability near the target.
 
     ICL instead computes the absolute error, or squared error, between each of the possible integers and the true target.

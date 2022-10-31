@@ -17,7 +17,13 @@ Provides implementations of classes designed to infer targets of passive volumes
 using the variables computed by e.g. :class:`~tomopt.inference.scattering.AbsScatterBatch`.
 """
 
-__all__ = ["PanelX0Inferrer", "DenseBlockClassifierFromX0s"]  # "DeepVolumeInferrer", "WeightedDeepVolumeInferrer"]
+__all__ = [
+    "AbsVolumeInferrer",
+    "AbsX0Inferrer",
+    "AbsIntClassifierFromX0",
+    "PanelX0Inferrer",
+    "DenseBlockClassifierFromX0s",
+]  # "DeepVolumeInferrer", "WeightedDeepVolumeInferrer"]
 
 
 class AbsVolumeInferrer(metaclass=ABCMeta):
@@ -87,18 +93,14 @@ class AbsX0Inferrer(AbsVolumeInferrer):
     https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf.
 
     Once all scatter batches have been added, the inference proceeds thusly:
-        For each muon i, a probability p_ij, is computed according to the probability that the PoCA was located in voxel j.
-            These probabilities are computed by integrating over the voxel the PDF of 3 uncorrelated Gaussians centred on the PoCA,
-            with scales equal the uncertainty on the PoCA position in x,y,z.
-
-        p_ij is multiplied by muon efficiency e_i to compute a muon/voxel weight w_ij.
-
-        Inversion of the PDG model gives:
-        :math:`X_0 = \left(\frac{0.0136}{p^{\mathrm{rms}}}\right)^2\frac{\delta z}{\cos\left(\bar{\theta}^{\mathrm{rms}}\right)}\frac{2}{\theta^{\mathrm{rms}}_{\mathrm{tot.}}}`
-        In order to account for the muon weights and compute different X0s for the voxels whilst using the whole muon population,
-        weighted RMSs are computed for each of the scattering terms in the right-hand side of the equation.
-        In addition to the muon weight w_ij, the variances of the squared values of the scattering variables is used to divide w_ij.
-        The result is a set of X0 predictions X0_j.
+        - For each muon i, a probability p_ij, is computed according to the probability that the PoCA was located in voxel j.
+        - These probabilities are computed by integrating over the voxel the PDF of 3 uncorrelated Gaussians centred on the PoCA, with scales equal the uncertainty on the PoCA position in x,y,z.
+        - p_ij is multiplied by muon efficiency e_i to compute a muon/voxel weight w_ij.
+        - Inversion of the PDG model gives: :math:`X_0 = \left(\frac{0.0136}{p^{\mathrm{rms}}}\right)^2\frac{\delta z}{\cos\left(\bar{\theta}^{\mathrm{rms}}\right)}\frac{2}{\theta^{\mathrm{rms}}_{\mathrm{tot.}}}`
+        - In order to account for the muon weights and compute different X0s for the voxels whilst using the whole muon population:
+            - Weighted RMSs are computed for each of the scattering terms in the right-hand side of the equation.
+            - In addition to the muon weight w_ij, the variances of the squared values of the scattering variables is used to divide w_ij.
+        - The result is a set of X0 predictions X0_j.
 
     .. important::
         Inversion of the PDG model does NOT account for the natural log term.
@@ -535,18 +537,14 @@ class PanelX0Inferrer(AbsX0Inferrer):
     https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf.
 
     Once all scatter batches have been added, the inference proceeds thusly:
-        For each muon i, a probability p_ij, is computed according to the probability that the PoCA was located in voxel j.
-            These probabilities are computed by integrating over the voxel the PDF of 3 uncorrelated Gaussians centred on the PoCA,
-            with scales equal the uncertainty on the PoCA position in x,y,z.
-
-        p_ij is multiplied by muon efficiency e_i to compute a muon/voxel weight w_ij.
-
-        Inversion of the PDG model gives:
-        :math:`X_0 = \left(\frac{0.0136}{p^{\mathrm{rms}}}\right)^2\frac{\delta z}{\cos\left(\bar{\theta}^{\mathrm{rms}}\right)}\frac{2}{\theta^{\mathrm{rms}}_{\mathrm{tot.}}}`
-        In order to account for the muon weights and compute different X0s for the voxels whilst using the whole muon population,
-        weighted RMSs are computed for each of the scattering terms in the right-hand side of the equation.
-        In addition to the muon weight w_ij, the variances of the squared values of the scattering variables is used to divide w_ij.
-        The result is a set of X0 predictions X0_j.
+        - For each muon i, a probability p_ij, is computed according to the probability that the PoCA was located in voxel j.
+        - These probabilities are computed by integrating over the voxel the PDF of 3 uncorrelated Gaussians centred on the PoCA, with scales equal the uncertainty on the PoCA position in x,y,z.
+        - p_ij is multiplied by muon efficiency e_i to compute a muon/voxel weight w_ij.
+        - Inversion of the PDG model gives: :math:`X_0 = \left(\frac{0.0136}{p^{\mathrm{rms}}}\right)^2\frac{\delta z}{\cos\left(\bar{\theta}^{\mathrm{rms}}\right)}\frac{2}{\theta^{\mathrm{rms}}_{\mathrm{tot.}}}`
+        - In order to account for the muon weights and compute different X0s for the voxels whilst using the whole muon population:
+            - Weighted RMSs are computed for each of the scattering terms in the right-hand side of the equation.
+            - In addition to the muon weight w_ij, the variances of the squared values of the scattering variables is used to divide w_ij.
+        - The result is a set of X0 predictions X0_j.
 
     .. important::
         Inversion of the PDG model does NOT account for the natural log term.
@@ -748,7 +746,9 @@ class DenseBlockClassifierFromX0s(AbsVolumeInferrer):
 
     Transforms voxel-wise X0 preds into binary classification statistic under the hypothesis of a small, dense block against a light-weight background.
     This test statistic, s is computed as:
+
     .. math::
+
         r = 2 \frac{\bar{X0}_{0,\mathrm{bkg}} - \bar{X0}_{0,\mathrm{blk}}}{\bar{X0}_{0,\mathrm{bkg}} + \bar{X0}_{0,\mathrm{blk}}}
         s = \sigma\!(a(r+b))
 
@@ -798,7 +798,7 @@ class DenseBlockClassifierFromX0s(AbsVolumeInferrer):
         r"""
         Appends a new set of muon scatter vairables.
         When :meth:`~tomopt.inference.volume.DenseBlockClassifierFromX0s.get_prediction` is called, the prediction will be based on all
-        :class:`~tomopt.inference.scattering.AbsScatterBatch`s added up to that point
+        :class:`~tomopt.inference.scattering.AbsScatterBatch` s added up to that point
         """
 
         self.x0_inferrer.add_scatters(scatters)
@@ -900,7 +900,7 @@ class AbsIntClassifierFromX0(AbsVolumeInferrer):
         r"""
         Appends a new set of muon scatter vairables.
         When :meth:`~tomopt.inference.volume.DenseBlockClassifierFromX0s.get_prediction` is called, the prediction will be based on all
-        :class:`~tomopt.inference.scattering.AbsScatterBatch`s added up to that point
+        :class:`~tomopt.inference.scattering.AbsScatterBatch` s added up to that point
         """
 
         self.x0_inferrer.add_scatters(scatters)

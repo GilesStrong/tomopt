@@ -15,7 +15,7 @@ r"""
 Provides implementations of inference algorithms designed to extract variables related to muon scattering from the hits recorded by the detectors
 """
 
-__all__ = ["PanelScatterBatch", "GenScatterBatch"]
+__all__ = ["AbsScatterBatch", "PanelScatterBatch", "GenScatterBatch"]
 
 
 class AbsScatterBatch(metaclass=ABCMeta):

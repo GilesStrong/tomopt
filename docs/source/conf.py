@@ -57,7 +57,7 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # -- Options for HTML output -------------------------------------------------
 html_theme = "tomopt_sphinx_theme"
-html_favicon = "./_static/imgs/tomopt_logo_black.png"
+html_favicon = "./_static/imgs/tomopt_logo.png"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

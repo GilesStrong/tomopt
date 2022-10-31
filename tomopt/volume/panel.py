@@ -114,7 +114,7 @@ class DetectorPanel(nn.Module):
             xy: xy2) tensor of points
 
         Returns:
-            (N) Boolean mask, where True indicates the point lies inside the panel
+            (N,) Boolean mask, where True indicates the point lies inside the panel
         """
 
         span = self.get_scaled_xy_span()
@@ -142,7 +142,7 @@ class DetectorPanel(nn.Module):
 
         Arguments:
             xy: (N,xy) tensor of positions
-            mask: optional pre-computed (N) Boolean mask, where True indicates that the xy point is inside the panel.
+            mask: optional pre-computed (N,) Boolean mask, where True indicates that the xy point is inside the panel.
                 Only used in evaluation mode and if `realistic_validation` is True.
                 If required, but not supplied, than will be computed automatically.
 
@@ -172,14 +172,14 @@ class DetectorPanel(nn.Module):
         By default, a single efficiency will be computed, but xy components can be requested (efficiency is the product of these)
 
         Arguments:
-            xy: (N) or (N,xy) tensor of positions
-            mask: optional pre-computed (N) Boolean mask, where True indicates that the xy point is inside the panel.
+            xy: (N,) or (N,xy) tensor of positions
+            mask: optional pre-computed (N,) Boolean mask, where True indicates that the xy point is inside the panel.
                 Only used in evaluation mode and if `realistic_validation` is True.
                 If required, but not supplied, than will be computed automatically.
             as_2d: if True, will return the x,y components of the efficiency model, otherwise will return their product
 
         Returns:
-            eff, a (N) or (N,xy) tensor of the efficiency (components) at the xy points
+            eff, a (N,) or (N,xy) tensor of the efficiency (components) at the xy points
         """
 
         if not isinstance(self.efficiency, Tensor):

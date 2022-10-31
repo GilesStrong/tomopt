@@ -137,12 +137,9 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
         E. `val_loss` = `val_loss`/`p`
 
     In implementation, the loop is broken up into several functions:
-        :meth:`~tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._fit_epoch` runs one full epoch of volumes
-            and updates for both training and validation
-        :meth:`~tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volumes` runs over all training/validation volumes,
-            updating parameters when necessary
-        :meth:`~tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volume` irradiates a single volume with muons multiple batches,
-            and computes the loss for that volume
+        - :meth:`~tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._fit_epoch` runs one full epoch of volumes and updates for both training and validation
+        - :meth:`~tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volumes` runs over all training/validation volumes, updating parameters when necessary
+        - :meth:`~tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volume` irradiates a single volume with muons multiple batches, and computes the loss for that volume
 
     The optimisation and prediction loops are supported by a stateful callback mechanism.
     The base callback is :class:`~tomopt.optimisation.callbacks.callback.Callback`, which can interject at various points in the loops.
@@ -259,7 +256,7 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
     def get_detectors(self) -> List[AbsDetectorLayer]:
         r"""
         Returns:
-            A list of all :class:`~tomopt.volume.layer.AbsDetectorLayer`s in the volume, in the order of `layers` (normally decreasing z position)
+            A list of all :class:`~tomopt.volume.layer.AbsDetectorLayer` s in the volume, in the order of `layers` (normally decreasing z position)
         """
 
         return self.volume.get_detectors()
@@ -790,6 +787,7 @@ class PanelVolumeWrapper(AbsVolumeWrapper):
     ) -> AbsVolumeWrapper:
         r"""
         Instantiates a new `PanelVolumeWrapper` and loads saved detector and optimiser parameters
+
         Arguments:
             name: file name with saved detector and optimiser parameters
             volume: the volume containing the detectors to be optimised
@@ -1007,6 +1005,7 @@ class HeatMapVolumeWrapper(AbsVolumeWrapper):
     ) -> AbsVolumeWrapper:
         r"""
         Instantiates a new `HeatMapVolumeWrapper` and loads saved detector and optimiser parameters
+
         Arguments:
             name: file name with saved detector and optimiser parameters
             volume: the volume containing the detectors to be optimised
