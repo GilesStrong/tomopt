@@ -73,8 +73,6 @@ pytest tests/test_muon.py
 
 ## External repos
 
-### GNN-driven inference
-
 - [tomo_deepinfer](https://github.com/GilesStrong/mode_muon_tomo_inference) (contact @GilesStrong for access) separately handles training and model definition of GNNs used for passive volume inference. Models are exported as JIT-traced scripts, and loaded here using the `DeepVolumeInferer` class. We still need to find a good way to host the trained models for easy download.
 - [mode_muon_tomography_scattering](https://github.com/GilesStrong/mode_muon_tomography_scattering)  (contact @GilesStrong for access) separately handles conversion of PGeant model from root to HDF5, and Geant validation data from csv to HDF5.
 - [tomopt_sphinx_theme](https://github.com/GilesStrong/tomopt_sphinx_theme) public. Controls the appearance of the docs.
