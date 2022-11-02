@@ -81,7 +81,7 @@ class PGeantScatterModel:
 
         Arguments:
             dtheta_xy_mu: (2,N) tensor of the angular scatterings in the muon frames, as sampled from the model
-            inv_costheta: (N) tensor of 1/cosine(theta) for the muons in the volume frame
+            inv_costheta: (N,) tensor of 1/cosine(theta) for the muons in the volume frame
 
         Returns:
             (2,N) tensor of the modified angular scatterings in the muon frames
@@ -96,7 +96,7 @@ class PGeantScatterModel:
 
         Arguments:
             dxy_mu: (2,N) tensor of the spatial scatterings in the muon frames, as sampled from the model
-            inv_costheta: (N) tensor of 1/cosine(theta) for the muons in the volume frame
+            inv_costheta: (N,) tensor of 1/cosine(theta) for the muons in the volume frame
 
         Returns:
             (2,N) tensor of the modified spatial scatterings in the muon frames
@@ -109,12 +109,12 @@ class PGeantScatterModel:
         Computes the scattering of the muons using the parameterised GEANT 4 model.
 
         Arguments:
-            x0: (N) tensor of the X0 of the voxel each muon is traversing
+            x0: (N,) tensor of the X0 of the voxel each muon is traversing
             deltaz: The amount of distance the muons will travel in the z direction in metres
-            theta: (N) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons
-            theta_x: (N) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons' frame to the volume's
-            theta_y: (N) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons' frame to the volume's
-            mom: (N) tensor of the absolute value of the momentum of each muon
+            theta: (N,) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons
+            theta_x: (N,) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons' frame to the volume's
+            theta_y: (N,) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons' frame to the volume's
+            mom: (N,) tensor of the absolute value of the momentum of each muon
 
         Returns:
             A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, & dy_vol

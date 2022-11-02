@@ -42,6 +42,20 @@ class DetectorPanel(nn.Module):
     Panels can also be run in "fixed-budget" mode, in which a cost of the panel is specified via the `.assign_budget` method.
     Based on the cost per m^2, the panel will change in effective width, based on its learn xy_span (now an aspect ratio), such that its area results in a cost
     equal to the specified cost of the panel.
+
+    The resolution and efficiency remain fixed at the specified values.
+    If intending to run in "fixed-budget" mode, then a budget can be specified here,
+    however the :class"`~tomopt.volume.volume.Volume` class will pass through all panels and initialise their budgets.
+
+    Arguments:
+        res: resolution of the panel in m^-1, i.e. a higher value improves the precision on the hit recording
+        eff: efficiency of the hit recording of the panel, indicated as a probability [0,1]
+        init_xyz: initial xyz position of the panel in metres in the volume frame
+        init_xy_span: initial xy-span (total width) of the panel in metres
+        m2_cost: the cost in unit currency of the 1 square metre of detector
+        budget: optional required cost of the panel. Based on the span and cost per m^2, the panel will resize to meet the required cost
+        realistic_validation: if True, will use the physical interpretation of the panel during evaluation
+        device: device on which to place tensors
     """
 
     def __init__(
@@ -61,16 +75,6 @@ class DetectorPanel(nn.Module):
         The resolution and efficiency remain fixed at the specified values.
         If intending to run in "fixed-budget" mode, then a budget can be specified here,
         however the :class"`~tomopt.volume.volume.Volume` class will pass through all panels and initialise their budgets.
-
-        Arguments:
-            res: resolution of the panel in m^-1, i.e. a higher value improves the precision on the hit recording
-            eff: efficiency of the hit recording of the panel, indicated as a probability [0,1]
-            init_xyz: initial xyz position of the panel in metres in the volume frame
-            init_xy_span: initial xy-span (total width) of the panel in metres
-            m2_cost: the cost in unit currency of the 1 square metre of detector
-            budget: optional required cost of the panel. Based on the span and cost per m^2, the panel will resize to meet the required cost
-            realistic_validation: if True, will use the physical interpretation of the panel during evaluation
-            device: device on which to place tensors
         """
 
         if res <= 0:
@@ -110,7 +114,7 @@ class DetectorPanel(nn.Module):
             xy: xy2) tensor of points
 
         Returns:
-            (N) Boolean mask, where True indicates the point lies inside the panel
+            (N,) Boolean mask, where True indicates the point lies inside the panel
         """
 
         span = self.get_scaled_xy_span()
@@ -138,7 +142,7 @@ class DetectorPanel(nn.Module):
 
         Arguments:
             xy: (N,xy) tensor of positions
-            mask: optional pre-computed (N) Boolean mask, where True indicates that the xy point is inside the panel.
+            mask: optional pre-computed (N,) Boolean mask, where True indicates that the xy point is inside the panel.
                 Only used in evaluation mode and if `realistic_validation` is True.
                 If required, but not supplied, than will be computed automatically.
 
@@ -168,14 +172,14 @@ class DetectorPanel(nn.Module):
         By default, a single efficiency will be computed, but xy components can be requested (efficiency is the product of these)
 
         Arguments:
-            xy: (N) or (N,xy) tensor of positions
-            mask: optional pre-computed (N) Boolean mask, where True indicates that the xy point is inside the panel.
+            xy: (N,) or (N,xy) tensor of positions
+            mask: optional pre-computed (N,) Boolean mask, where True indicates that the xy point is inside the panel.
                 Only used in evaluation mode and if `realistic_validation` is True.
                 If required, but not supplied, than will be computed automatically.
             as_2d: if True, will return the x,y components of the efficiency model, otherwise will return their product
 
         Returns:
-            eff, a (N) or (N,xy) tensor of the efficiency (components) at the xy points
+            eff, a (N,) or (N,xy) tensor of the efficiency (components) at the xy points
         """
 
         if not isinstance(self.efficiency, Tensor):

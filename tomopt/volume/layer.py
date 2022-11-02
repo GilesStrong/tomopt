@@ -16,7 +16,7 @@ r"""
 Provides implementations of the layers in z, which are used to construct volumes, both the passive scattering layers, and the active detection layers.
 """
 
-__all__ = ["PassiveLayer", "PanelDetectorLayer"]
+__all__ = ["AbsLayer", "PassiveLayer", "AbsDetectorLayer", "PanelDetectorLayer"]
 
 
 class AbsLayer(nn.Module, metaclass=ABCMeta):
@@ -26,25 +26,22 @@ class AbsLayer(nn.Module, metaclass=ABCMeta):
     z indicates the position of the top of the layer, in meters, and size is the distance from the top of the layer to the bottom.
     size is also used to set the length, width, and height of the voxels that make up the layer.
 
-    ..important::
+    .. important::
         Users must ensure that both the length and width of the layer are divisible by size
 
     If the layer is set to scatter muons (`rad_length` is not None), then two scattering models are available:
-        'pdg': The default and currently recommended model based on the Gaussian scattering model described in
-            https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf
-        'pgeant': An under-development model based on a parameterised fit to data sampled from GEANT 4
+        - 'pdg': The default and currently recommended model based on the Gaussian scattering model described in https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf
+        - 'pgeant': An under-development model based on a parameterised fit to data sampled from GEANT 4
+
+    Arguments:
+        lw: the length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0).
+        z: the z position of the top of layer in metres. The bottom of the layer will be located at z-size
+        size: the voxel size in metres. Must be such that lw is divisible by the specified size.
+        scatter_model: String selection for the scattering model to use. Currently either 'pdg' or 'pgeant'.
+        device: device on which to place tensors
     """
 
     def __init__(self, lw: Tensor, z: float, size: float, scatter_model: str = "pdg", device: torch.device = DEVICE):
-        r"""
-        Arguments:
-            lw: the length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0).
-            z: the z position of the top of layer in metres. The bottom of the layer will be located at z-size
-            size: the voxel size in metres. Must be such that lw is divisible by the specified size.
-            scatter_model: String selection for the scattering model to use. Currently either 'pdg' or 'pgeant'.
-            device: device on which to place tensors
-        """
-
         super().__init__()
         self.lw, self.z, self.size, self.scatter_model, self.device = (
             lw.to(device),
@@ -140,12 +137,12 @@ class AbsLayer(nn.Module, metaclass=ABCMeta):
         Computes the scattering of the muons using the parameterised GEANT 4 model.
 
         Arguments:
-            x0: (N) tensor of the X0 of the voxel each muon is traversing
+            x0: (N,) tensor of the X0 of the voxel each muon is traversing
             deltaz: The amount of distance the muons will travel in the z direction in metres
-            theta: (N) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons
-            theta_x: (N) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons' frame to the volume's
-            theta_y: (N) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons' frame to the volume's
-            mom: (N) tensor of the absolute value of the momentum of each muon
+            theta: (N,) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons
+            theta_x: (N,) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons' frame to the volume's
+            theta_y: (N,) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons' frame to the volume's
+            mom: (N,) tensor of the absolute value of the momentum of each muon
 
         Returns:
             A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, & dy_vol
@@ -160,12 +157,12 @@ class AbsLayer(nn.Module, metaclass=ABCMeta):
         Computes the scattering of the muons using the PDG model https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf
 
         Arguments:
-            x0: (N) tensor of the X0 of the voxel each muon is traversing
+            x0: (N,) tensor of the X0 of the voxel each muon is traversing
             deltaz: The amount of distance the muons will travel in the z direction in metres
-            theta: (N) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons
-            theta_x: (N) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons' frames to the volume's
-            theta_y: (N) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons' frames to the volume's
-            mom: (N) tensor of the absolute value of the momentum of each muon
+            theta: (N,) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons
+            theta_x: (N,) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons' frames to the volume's
+            theta_y: (N,) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons' frames to the volume's
+            mom: (N,) tensor of the absolute value of the momentum of each muon
 
         Returns:
             A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, & dy_vol
@@ -206,12 +203,12 @@ class AbsLayer(nn.Module, metaclass=ABCMeta):
         Computes the scattering of the muons using the chosen model
 
         Arguments:
-            x0: (N) tensor of the X0 of the voxel each muon is traversing
+            x0: (N,) tensor of the X0 of the voxel each muon is traversing
             deltaz: The amount of distance the muons will travel in the z direction in metres
-            theta: (N) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons
-            theta_x: (N) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons' frames to the volume's
-            theta_y: (N) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons' frames to the volume's
-            mom: (N) tensor of the absolute value of the momentum of each muon
+            theta: (N,) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons
+            theta_x: (N,) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons' frames to the volume's
+            theta_y: (N,) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons' frames to the volume's
+            mom: (N,) tensor of the absolute value of the momentum of each muon
 
         Returns:
             A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, & dy_vol
@@ -231,26 +228,36 @@ class PassiveLayer(AbsLayer):
     z indicates the position of the top of the layer, in meters, and size is the distance from the top of the layer to the bottom.
     size is also used to set the length, width, and height of the voxels that make up the layer.
 
-    ..important::
+    .. important::
         Users must ensure that both the length and width of the layer are divisible by size
 
     If the layer is set to scatter muons (`rad_length` is not None), then two scattering models are available:
-        'pdg': The default and currently recommended model based on the Gaussian scattering model described in
-            https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf
-        'pgeant': An under-development model based on a parameterised fit to data sampled from GEANT 4
+        - 'pdg': The default and currently recommended model based on the Gaussian scattering model described in https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf
+        - 'pgeant': An under-development model based on a parameterised fit to data sampled from GEANT 4
 
     The X0 values of each voxel is defined via a "radiation-length function", which should return an (n_x,n_y) tensor of voxel X0 values,
     when called with the `z`, `lw`, and `size` of the layer. For example:
 
-    ```python
-    def arb_rad_length(*, z: float, lw: Tensor, size: float) -> float:
-        rad_length = torch.ones(list((lw / size).long())) * X0["lead"]
-        if z < 0.5:
-            rad_length[...] = X0["beryllium"]
-        return rad_length
-    ```
+    .. code-block:: python
+
+        def arb_rad_length(*, z: float, lw: Tensor, size: float) -> float:
+            rad_length = torch.ones(list((lw / size).long())) * X0["lead"]
+            if z < 0.5:
+                rad_length[...] = X0["beryllium"]
+            return rad_length
 
     This function can either be supplied during initialisation, or later via the `load_rad_length` method.
+
+    Arguments:
+        lw: the length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0).
+        z: the z position of the top of layer in metres. The bottom of the layer will be located at z-size
+        size: the voxel size in metres. Must be such that lw is divisible by the specified size.
+        rad_length_func: lookup function that returns an (n_x,n_y) tensor of voxel X0 values for the layer.
+            After initialisation, the `load_rad_length` method may be used to load X0 layouts.
+        dz_step: The step size in metres over which to compute muon propagation and scattering.
+            Should be such that the `size` of the layer is divisible by `dz_step`.
+        scatter_model: String selection for the scattering model to use. Currently either 'pdg' or 'pgeant'.
+        device: device on which to place tensors
     """
 
     def __init__(
@@ -263,19 +270,6 @@ class PassiveLayer(AbsLayer):
         scatter_model: str = "pdg",
         device: torch.device = DEVICE,
     ):
-        r"""
-        Arguments:
-            lw: the length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0).
-            z: the z position of the top of layer in metres. The bottom of the layer will be located at z-size
-            size: the voxel size in metres. Must be such that lw is divisible by the specified size.
-            rad_length_func: lookup function that returns an (n_x,n_y) tensor of voxel X0 values for the layer.
-                After initialisation, the `load_rad_length` method may be used to load X0 layouts.
-            dz_step: The step size in metres over which to compute muon propagation and scattering.
-                Should be such that the `size` of the layer is divisible by `dz_step`.
-            scatter_model: String selection for the scattering model to use. Currently either 'pdg' or 'pgeant'.
-            device: device on which to place tensors
-        """
-
         super().__init__(lw=lw, z=z, size=size, device=device)
         self.dz_step = dz_step
         self.n_steps = int(np.round(self.size / self.dz_step))
@@ -343,6 +337,13 @@ class AbsDetectorLayer(AbsLayer, metaclass=ABCMeta):
 
     .. important::
         By default, the detectors will not scatter muons.
+
+    Arguments:
+        pos: string-encoding of the detector-layer group
+        lw: the length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0).
+        z: the z position of the top of layer in metres. The bottom of the layer will be located at z-size
+        size: the voxel size in metres. Must be such that lw is divisible by the specified size.
+        device: device on which to place tensors
     """
 
     _n_costs = 0  # number of budgets that the detector layer requests
@@ -356,15 +357,6 @@ class AbsDetectorLayer(AbsLayer, metaclass=ABCMeta):
         size: float,
         device: torch.device = DEVICE,
     ):
-        r"""
-        Arguments:
-            pos: string-encoding of the detector-layer group
-            lw: the length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0).
-            z: the z position of the top of layer in metres. The bottom of the layer will be located at z-size
-            size: the voxel size in metres. Must be such that lw is divisible by the specified size.
-            device: device on which to place tensors
-        """
-
         super().__init__(lw=lw, z=z, size=size, device=device)
         self.pos = pos
         self.type_label = ""
@@ -432,18 +424,16 @@ class PanelDetectorLayer(AbsDetectorLayer):
 
     .. important::
         The detector panels do not scatter muons.
+
+    Arguments:
+        pos: string-encoding of the detector-layer group
+        lw: the length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0).
+        z: the z position of the top of layer in metres. The bottom of the layer will be located at z-size
+        size: the voxel size in metres. Must be such that lw is divisible by the specified size.
+        panels: The set of initialised panels to contain in the detector layer
     """
 
     def __init__(self, pos: str, *, lw: Tensor, z: float, size: float, panels: Union[List[DetectorPanel], List[DetectorHeatMap], nn.ModuleList]):
-        r"""
-        Arguments:
-            pos: string-encoding of the detector-layer group
-            lw: the length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0).
-            z: the z position of the top of layer in metres. The bottom of the layer will be located at z-size
-            size: the voxel size in metres. Must be such that lw is divisible by the specified size.
-            panels: The set of initialised panels to contain in the detector layer
-        """
-
         if isinstance(panels, list):
             panels = nn.ModuleList(panels)
         super().__init__(pos=pos, lw=lw, z=z, size=size, device=self.get_device(panels))
@@ -555,6 +545,7 @@ class PanelDetectorLayer(AbsDetectorLayer):
         Passes elements of an (_n_costs) tensor to each of the panels' `assign_budget` method.
         Panels are ordered by decreasing z-position, i.e. the zeroth budget element will relate always to the highest panel,
         rather than necessarily to the same panel through the optimisation process
+
         # TODO investigate whether it would be better to instead assign budgets based on a fixed ordering, rather than the z-order of the panels.
 
         Arguments:

@@ -24,7 +24,7 @@ from ...muon.generation import AbsMuonGenerator
 from ...inference.scattering import AbsScatterBatch, PanelScatterBatch
 from ...inference.volume import AbsVolumeInferrer, PanelX0Inferrer
 
-__all__ = ["PanelVolumeWrapper", "HeatMapVolumeWrapper"]
+__all__ = ["FitParams", "AbsVolumeWrapper", "PanelVolumeWrapper", "HeatMapVolumeWrapper"]
 
 r"""
 Provides wrapper classes for optimising detectors and other quality-of-life methods
@@ -54,6 +54,9 @@ class FitParams:
     r"""
     Data class used for storing all aspects of optimisation and prediction when working with
     :class:`~tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper`
+
+    Arguments:
+        kwargs: objects to be stored
     """
 
     volume_inferrer: Optional[AbsVolumeInferrer] = None
@@ -86,9 +89,6 @@ class FitParams:
     def __init__(self, **kwargs: Any) -> None:
         r"""
         Stores any keyword arguments as an attribute
-
-        Arguments:
-            kwargs: objects to be stored
         """
 
         self.__dict__.update(kwargs)
@@ -137,12 +137,9 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
         E. `val_loss` = `val_loss`/`p`
 
     In implementation, the loop is broken up into several functions:
-        :meth:`~tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._fit_epoch` runs one full epoch of volumes
-            and updates for both training and validation
-        :meth:`~tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volumes` runs over all training/validation volumes,
-            updating parameters when necessary
-        :meth:`~tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volume` irradiates a single volume with muons multiple batches,
-            and computes the loss for that volume
+        - :meth:`~tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._fit_epoch` runs one full epoch of volumes and updates for both training and validation
+        - :meth:`~tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volumes` runs over all training/validation volumes, updating parameters when necessary
+        - :meth:`~tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volume` irradiates a single volume with muons multiple batches, and computes the loss for that volume
 
     The optimisation and prediction loops are supported by a stateful callback mechanism.
     The base callback is :class:`~tomopt.optimisation.callbacks.callback.Callback`, which can interject at various points in the loops.
@@ -212,6 +209,14 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
                 i. Break
         H. `on_epoch_end`
     4. `on_train_end`
+
+    Arguments:
+        volume: the volume containing the detectors to be optimised
+        partial_opts: dictionary of uninitialised optimisers to be associated with the detector parameters, via `_build_opt`
+        loss_func: Optional loss function (required if planning to optimise the detectors)
+        partial_scatter_inferrer: uninitialised class to be used for inferring muon scatter variables and trajectories
+        partial_volume_inferrer:  uninitialised class to be used for inferring volume targets
+        mu_generator: Optional generator class for muons. If None, will use :meth:`~tomopt.muon.generation. MuonGenerator2016.from_volume`.
     """
 
     opts: Dict[str, Optimizer]
@@ -226,16 +231,6 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
         partial_volume_inferrer: Type[AbsVolumeInferrer],
         mu_generator: Optional[AbsMuonGenerator] = None,
     ):
-        r"""
-        Arguments:
-            volume: the volume containing the detectors to be optimised
-            partial_opts: dictionary of uninitialised optimisers to be associated with the detector parameters, via `_build_opt`
-            loss_func: Optional loss function (required if planning to optimise the detectors)
-            partial_scatter_inferrer: uninitialised class to be used for inferring muon scatter variables and trajectories
-            partial_volume_inferrer:  uninitialised class to be used for inferring volume targets
-            mu_generator: Optional generator class for muons. If None, will use :meth:`~tomopt.muon.generation. MuonGenerator2016.from_volume`.
-        """
-
         self.volume, self.loss_func = volume, loss_func
         if mu_generator is None:
             mu_generator = MuonGenerator2016.from_volume(volume)
@@ -261,7 +256,7 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
     def get_detectors(self) -> List[AbsDetectorLayer]:
         r"""
         Returns:
-            A list of all :class:`~tomopt.volume.layer.AbsDetectorLayer`s in the volume, in the order of `layers` (normally decreasing z position)
+            A list of all :class:`~tomopt.volume.layer.AbsDetectorLayer` s in the volume, in the order of `layers` (normally decreasing z position)
         """
 
         return self.volume.get_detectors()
@@ -735,6 +730,17 @@ class PanelVolumeWrapper(AbsVolumeWrapper):
                 i. Break
         H. `on_epoch_end`
     4. `on_train_end`
+
+    Arguments:
+        volume: the volume containing the detectors to be optimised
+        xy_pos_opt: uninitialised optimiser to be used for adjusting the xy position of panels
+        z_pos_opt: uninitialised optimiser to be used for adjusting the z position of panels
+        xy_span_opt: uninitialised optimiser to be used for adjusting the xy size of panels
+        budget_opt: optional uninitialised optimiser to be used for adjusting the fractional assignment of budget to the panels
+        loss_func: optional loss function (required if planning to optimise the detectors)
+        partial_scatter_inferrer: uninitialised class to be used for inferring muon scatter variables and trajectories
+        partial_volume_inferrer:  uninitialised class to be used for inferring volume targets
+        mu_generator: Optional generator class for muons. If None, will use :meth:`~tomopt.muon.generation. MuonGenerator2016.from_volume`.
     """
 
     def __init__(
@@ -750,19 +756,6 @@ class PanelVolumeWrapper(AbsVolumeWrapper):
         partial_volume_inferrer: Type[AbsVolumeInferrer] = PanelX0Inferrer,
         mu_generator: Optional[AbsMuonGenerator] = None,
     ):
-        r"""
-        Arguments:
-            volume: the volume containing the detectors to be optimised
-            xy_pos_opt: uninitialised optimiser to be used for adjusting the xy position of panels
-            z_pos_opt: uninitialised optimiser to be used for adjusting the z position of panels
-            xy_span_opt: uninitialised optimiser to be used for adjusting the xy size of panels
-            budget_opt: optional uninitialised optimiser to be used for adjusting the fractional assignment of budget to the panels
-            loss_func: optional loss function (required if planning to optimise the detectors)
-            partial_scatter_inferrer: uninitialised class to be used for inferring muon scatter variables and trajectories
-            partial_volume_inferrer:  uninitialised class to be used for inferring volume targets
-            mu_generator: Optional generator class for muons. If None, will use :meth:`~tomopt.muon.generation. MuonGenerator2016.from_volume`.
-        """
-
         super().__init__(
             volume=volume,
             partial_opts={
@@ -794,6 +787,7 @@ class PanelVolumeWrapper(AbsVolumeWrapper):
     ) -> AbsVolumeWrapper:
         r"""
         Instantiates a new `PanelVolumeWrapper` and loads saved detector and optimiser parameters
+
         Arguments:
             name: file name with saved detector and optimiser parameters
             volume: the volume containing the detectors to be optimised
@@ -959,6 +953,17 @@ class HeatMapVolumeWrapper(AbsVolumeWrapper):
                 i. Break
         H. `on_epoch_end`
     4. `on_train_end`
+
+    Arguments:
+        volume: the volume containing the detectors to be optimised
+        mu_opt: uninitialised optimiser to be used for adjusting the xy position of Gaussians
+        norm_opt: uninitialised optimiser to be used for adjusting the normalisation of Gaussians
+        sig_opt: uninitialised optimiser to be used for adjusting the scale of Gaussians
+        z_pos_opt: uninitialised optimiser to be used for adjusting the z position of panels
+        loss_func: optional loss function (required if planning to optimise the detectors)
+        partial_scatter_inferrer: uninitialised class to be used for inferring muon scatter variables and trajectories
+        partial_volume_inferrer:  uninitialised class to be used for inferring volume targets
+        mu_generator: Optional generator class for muons. If None, will use :meth:`~tomopt.muon.generation. MuonGenerator2016.from_volume`.
     """
 
     def __init__(
@@ -974,19 +979,6 @@ class HeatMapVolumeWrapper(AbsVolumeWrapper):
         partial_volume_inferrer: Type[AbsVolumeInferrer] = PanelX0Inferrer,
         mu_generator: Optional[AbsMuonGenerator] = None,
     ):
-        r"""
-        Arguments:
-            volume: the volume containing the detectors to be optimised
-            mu_opt: uninitialised optimiser to be used for adjusting the xy position of Gaussians
-            norm_opt: uninitialised optimiser to be used for adjusting the normalisation of Gaussians
-            sig_opt: uninitialised optimiser to be used for adjusting the scale of Gaussians
-            z_pos_opt: uninitialised optimiser to be used for adjusting the z position of panels
-            loss_func: optional loss function (required if planning to optimise the detectors)
-            partial_scatter_inferrer: uninitialised class to be used for inferring muon scatter variables and trajectories
-            partial_volume_inferrer:  uninitialised class to be used for inferring volume targets
-            mu_generator: Optional generator class for muons. If None, will use :meth:`~tomopt.muon.generation. MuonGenerator2016.from_volume`.
-        """
-
         super().__init__(
             volume=volume,
             partial_opts={"mu_opt": mu_opt, "norm_opt": norm_opt, "sig_opt": sig_opt, "z_pos_opt": z_pos_opt},
@@ -1013,6 +1005,7 @@ class HeatMapVolumeWrapper(AbsVolumeWrapper):
     ) -> AbsVolumeWrapper:
         r"""
         Instantiates a new `HeatMapVolumeWrapper` and loads saved detector and optimiser parameters
+
         Arguments:
             name: file name with saved detector and optimiser parameters
             volume: the volume containing the detectors to be optimised

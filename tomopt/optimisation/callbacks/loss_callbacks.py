@@ -14,14 +14,12 @@ class CostCoefWarmup(Callback):
     Sets a more stable cost coefficient in the :class:`~tomopt.optimisation.loss.loss.AbsDetectorLoss`
     by averaging the inference-error component for several epochs.
     During this warm-up monitoring phase, the detectors will be kept fixed.
+
+    Arguments:
+            n_warmup: number of training epochs to wait before setting the cost coefficient
     """
 
     def __init__(self, n_warmup: int):
-        r"""
-        Arguments:
-            n_warmup: number of training epochs to wait before setting the cost coefficient
-        """
-
         self.n_warmup = n_warmup
 
     def on_train_begin(self) -> None:

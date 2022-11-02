@@ -6,7 +6,7 @@ r"""
 Provides "callbacks" designed to compute metrics about the performance of the detector/inference, e.g. accuracy
 """
 
-__all__: List[str] = []
+__all__: List[str] = ["EvalMetric"]
 
 
 class EvalMetric(Callback):
@@ -14,15 +14,16 @@ class EvalMetric(Callback):
     Base class from which metric should inherit and implement the computation of their metric values.
     Inheriting classes will automatically be detected by :class:`~tomopt.optimisation.callbacks.monitors.MetricLogger`
     and included in live feedback if it is the "main metric"
+
+    Arguments:
+        lower_metric_better: if True, a lower value of the metric should be considered better than a higher value
+        name: name to associate with the metric
+        main_metric: whether this metric should be considered the "main metric"
     """
 
     def __init__(self, lower_metric_better: bool, name: Optional[str] = None, main_metric: bool = True):
         r"""
         Initialises the metric.
-        Arguments:
-            lower_metric_better: if True, a lower value of the metric should be considered better than a higher value
-            name: name to associate with the metric
-            main_metric: whether this metric should be considered the "main metric"
         """
 
         self.lower_metric_better, self.main_metric = lower_metric_better, main_metric

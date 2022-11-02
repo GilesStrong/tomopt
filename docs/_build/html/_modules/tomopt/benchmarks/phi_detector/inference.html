@@ -1,0 +1,318 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>tomopt.benchmarks.phi_detector.inference &mdash; TomOpt  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+    
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../index.html" class="icon icon-home"> TomOpt
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tomopt.html">tomopt package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tomopt.muon.html">tomopt.muon package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tomopt.volume.html">tomopt.volume package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tomopt.inference.html">tomopt.inference package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tomopt.optimisation.html">tomopt.optimisation package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tomopt.plotting.html">tomopt.plotting package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tomopt.benchmarks.html">tomopt.benchmarks package</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">TomOpt</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>tomopt.benchmarks.phi_detector.inference</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for tomopt.benchmarks.phi_detector.inference</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
+
+<span class="kn">from</span> <span class="nn">...inference.scattering</span> <span class="kn">import</span> <span class="n">AbsScatterBatch</span>
+
+<span class="kn">from</span> <span class="nn">.detector</span> <span class="kn">import</span> <span class="n">PhiDetectorPanel</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;PhiDetScatterBatch&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="PhiDetScatterBatch"><a class="viewcode-back" href="../../../../tomopt.benchmarks.phi_detector.html#tomopt.benchmarks.PhiDetScatterBatch">[docs]</a><span class="k">class</span> <span class="nc">PhiDetScatterBatch</span><span class="p">(</span><span class="n">AbsScatterBatch</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Untested: no unit tests</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_extract_hits</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># reco x, reco y, gen z, must be a list to allow computation of uncertainty</span>
+        <span class="n">above_hits</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">hits</span><span class="p">[</span><span class="s2">&quot;above&quot;</span><span class="p">][</span><span class="s2">&quot;reco_h&quot;</span><span class="p">][:,</span> <span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">hits</span><span class="p">[</span><span class="s2">&quot;above&quot;</span><span class="p">][</span><span class="s2">&quot;phi&quot;</span><span class="p">][:,</span> <span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">hits</span><span class="p">[</span><span class="s2">&quot;above&quot;</span><span class="p">][</span><span class="s2">&quot;z&quot;</span><span class="p">][:,</span> <span class="n">i</span><span class="p">]],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hits</span><span class="p">[</span><span class="s2">&quot;above&quot;</span><span class="p">][</span><span class="s2">&quot;reco_h&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="p">],</span>
+            <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>  <span class="c1"># muons, panels, xyz</span>
+        <span class="n">below_hits</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">hits</span><span class="p">[</span><span class="s2">&quot;below&quot;</span><span class="p">][</span><span class="s2">&quot;reco_h&quot;</span><span class="p">][:,</span> <span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">hits</span><span class="p">[</span><span class="s2">&quot;below&quot;</span><span class="p">][</span><span class="s2">&quot;phi&quot;</span><span class="p">][:,</span> <span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">hits</span><span class="p">[</span><span class="s2">&quot;below&quot;</span><span class="p">][</span><span class="s2">&quot;z&quot;</span><span class="p">][:,</span> <span class="n">i</span><span class="p">]],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hits</span><span class="p">[</span><span class="s2">&quot;below&quot;</span><span class="p">][</span><span class="s2">&quot;reco_h&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="p">],</span>
+            <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">_above_gen_hits</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">hits</span><span class="p">[</span><span class="s2">&quot;above&quot;</span><span class="p">][</span><span class="s2">&quot;gen_xy&quot;</span><span class="p">][:,</span> <span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">hits</span><span class="p">[</span><span class="s2">&quot;above&quot;</span><span class="p">][</span><span class="s2">&quot;z&quot;</span><span class="p">][:,</span> <span class="n">i</span><span class="p">]],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hits</span><span class="p">[</span><span class="s2">&quot;above&quot;</span><span class="p">][</span><span class="s2">&quot;gen_xy&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])],</span>
+            <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>  <span class="c1"># muons, panels, xyz</span>
+        <span class="n">_below_gen_hits</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">hits</span><span class="p">[</span><span class="s2">&quot;below&quot;</span><span class="p">][</span><span class="s2">&quot;gen_xy&quot;</span><span class="p">][:,</span> <span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">hits</span><span class="p">[</span><span class="s2">&quot;below&quot;</span><span class="p">][</span><span class="s2">&quot;z&quot;</span><span class="p">][:,</span> <span class="n">i</span><span class="p">]],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hits</span><span class="p">[</span><span class="s2">&quot;below&quot;</span><span class="p">][</span><span class="s2">&quot;gen_xy&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])],</span>
+            <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_n_hits_above</span> <span class="o">=</span> <span class="n">above_hits</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_n_hits_below</span> <span class="o">=</span> <span class="n">below_hits</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># Combine all input vars into single tensor, NB ideally would stack to new dim but can&#39;t assume same number of panels above &amp; below</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reco_hits</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">above_hits</span><span class="p">,</span> <span class="n">below_hits</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># muons, all panels, reco h,phi,z</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gen_hits</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">_above_gen_hits</span><span class="p">,</span> <span class="n">_below_gen_hits</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># muons, all panels, true xyz</span>
+
+<div class="viewcode-block" id="PhiDetScatterBatch.plot_scatter"><a class="viewcode-back" href="../../../../tomopt.benchmarks.phi_detector.html#tomopt.benchmarks.PhiDetScatterBatch.plot_scatter">[docs]</a>    <span class="k">def</span> <span class="nf">plot_scatter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Ah, I see you&#39;ve just volunteered to implement this!&quot;</span><span class="p">)</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_get_hit_uncs</span><span class="p">(</span><span class="n">zordered_panels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">PhiDetectorPanel</span><span class="p">],</span> <span class="n">hits</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="n">uncs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">l</span><span class="p">,</span> <span class="n">h</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">zordered_panels</span><span class="p">,</span> <span class="n">hits</span><span class="o">.</span><span class="n">unbind</span><span class="p">(</span><span class="mi">1</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">l</span><span class="o">.</span><span class="n">resolution</span><span class="si">}</span><span class="s2"> is not a Tensor for some reason.&quot;</span><span class="p">)</span>  <span class="c1"># To appease MyPy</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">l</span><span class="o">.</span><span class="n">resolution</span>
+            <span class="n">uncs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">r</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">),</span> <span class="mi">2</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="n">r</span><span class="o">.</span><span class="n">device</span><span class="p">)],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">uncs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># muons, panels, unc h,phi,z, zero unc for phi and z</span>
+
+    <span class="k">def</span> <span class="nf">_compute_tracks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">def</span> <span class="nf">_get_panels</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">PhiDetectorPanel</span><span class="p">]:</span>
+            <span class="n">panels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">PhiDetectorPanel</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">det</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">get_detectors</span><span class="p">():</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">det</span><span class="p">,</span> <span class="n">PhiDetectorPanel</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detector </span><span class="si">{</span><span class="n">det</span><span class="si">}</span><span class="s2"> is not a PhiDetectorPanel&quot;</span><span class="p">)</span>
+                <span class="n">panels</span> <span class="o">+=</span> <span class="p">[</span><span class="n">det</span><span class="o">.</span><span class="n">panels</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">det</span><span class="o">.</span><span class="n">get_panel_zorder</span><span class="p">()]</span>
+            <span class="k">return</span> <span class="n">panels</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hit_uncs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_hit_uncs</span><span class="p">(</span><span class="n">_get_panels</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">gen_hits</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_track_in</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_track_start_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_muon_trajectory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">above_hits</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">above_hit_uncs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">lw</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_track_out</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_track_start_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_muon_trajectory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">below_hits</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">below_hit_uncs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">lw</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PhiDetScatterBatch.get_muon_trajectory"><a class="viewcode-back" href="../../../../tomopt.benchmarks.phi_detector.html#tomopt.benchmarks.PhiDetScatterBatch.get_muon_trajectory">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_muon_trajectory</span><span class="p">(</span><span class="n">hits</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">uncs</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">lw</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        hits = (muons,panels,(h,phi,z))</span>
+<span class="sd">        uncs = (muons,panels,(unc,0,0))</span>
+
+<span class="sd">        Assumes no uncertainty for z and phi</span>
+
+<span class="sd">        Uses an analytic likelihood-maximisation: L = \prod_i G[h_i - h_{i,opt}(x0,y0,theta,phi)]</span>
+<span class="sd">        where:</span>
+<span class="sd">        h_{i,opt} = x_{i,opt} cos(phi_i) + y_{i,opt} sin(phi_i)</span>
+<span class="sd">        x_{i,opt} = x0 + z_i tan(theta) cos(phi)</span>
+<span class="sd">        y_{i,opt} = y0 + z_i tan(theta) sin(phi)</span>
+
+<span class="sd">        x0, y0, z0 = track coordinates at z=0</span>
+<span class="sd">        theta, phi = track angles</span>
+
+<span class="sd">        x0 = sum_i[ ((cos(phi_i)/(unc_i^2))*(h_i-(z_i*tan(theta)*cos(phi)*cos(phi_i))-(sin(phi_i)*(y0+(z_i*tan(theta)*sin(phi))))) ] / sum_i[ ((cos(phi_i)^2)/(unc_i^2)) ]</span>
+<span class="sd">        y0 = sum_i[ ((sin(phi_i)/(unc_i^2))*(h_i-(z_i*tan(theta)*sin(phi)*cos(phi_i))-(cos(phi_i)*(x0+(z_i*tan(theta)*sin(phi))))) ] / sun_i[ ((sin(phi_i)^2)/(unc_i^2)) ]</span>
+<span class="sd">        theta = tan^-1[ sum_i[ (z_i/(unc_i^2))*((h_i*((cos(phi)*cos(phi_i))+(sin(phi)*sin(phi_i))))-(x0*((cos(phi_i)*sin(phi_i)*sin(phi))+(cos(phi)*cos(phi_i)*cos(phi_i))))-(y0((cos(phi)*cos(phi_i)*sin(phi_i))+(sin(phi)*sin(phi_i)*sin(phi_i))))) ] / sum_i[ ((z_i^2)/(unc_i^2))*((cos(phi)*cos(phi_i))+(sin(phi)*sin(sin(phi_i)))) ] ]</span>
+<span class="sd">        phi = sin^-1[ ((z_i*sin(phi_i))/(unc_i^2))*(h_i-(y0*sin(phi_i))-(x0*cos(phi_i))-(z_i*tan(theta)*cos(phi)*cos(phi_i))) ] / sum_i[ (((z_i*sin(phi_i))^2)/(unc_i^2))*tan(theta) ]</span>
+
+<span class="sd">        In eval mode:</span>
+<span class="sd">            Muons with &lt;2 hits within panels have NaN trajectory.</span>
+<span class="sd">            Muons with &gt;=2 hits in panels have valid trajectories</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;We still need to work out how to fit tracks efficiently!&quot;</span><span class="p">)</span>
+
+        <span class="n">hits</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">hits</span><span class="p">),</span> <span class="n">lw</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">hits</span><span class="o">.</span><span class="n">type</span><span class="p">())</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">hits</span><span class="p">)</span>
+        <span class="n">uncs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">uncs</span><span class="p">)</span>  <span class="c1"># Set Infs to large number</span>
+
+        <span class="n">x0</span><span class="p">:</span> <span class="n">Tensor</span>
+        <span class="n">y0</span><span class="p">:</span> <span class="n">Tensor</span>  <span class="c1"># Track positions at Z0=0</span>
+        <span class="n">phi</span><span class="p">:</span> <span class="n">Tensor</span>
+        <span class="n">theta</span><span class="p">:</span> <span class="n">Tensor</span>  <span class="c1"># Track angles</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2022, TomOpt Authors.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

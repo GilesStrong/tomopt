@@ -9,7 +9,7 @@ r"""
 Implements the base class from which all callback should inherit.
 """
 
-__all__: List[str] = []
+__all__: List[str] = ["Callback"]
 
 
 class Callback:

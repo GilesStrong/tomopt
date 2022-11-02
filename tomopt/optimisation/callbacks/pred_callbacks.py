@@ -48,14 +48,12 @@ class VolumeTargetPredHandler(PredHandler):
     r"""
     Returns the volume target as the target value, rather than the voxel-wise X0s.
     If an x02id lookup is provided, it transforms the target from an X0 value to a material class ID.
+
+    Arguments:
+        x02id: optional map from X0 values to class IDs
     """
 
     def __init__(self, x02id: Optional[Dict[float, int]] = None):
-        r"""
-        Arguments:
-            x02id: optional map from X0 values to class IDs
-        """
-
         self.x02id = x02id
 
     def on_x0_pred_end(self) -> None:
@@ -75,20 +73,18 @@ class Save2HDF5PredHandler(VolumeTargetPredHandler):
     Saves predictions and targets to an HDF5 file, rather than caching and returning them.
     Samples are written incrementally. Can optionally save volume targets rather than voxel-wise X0 targets
     If an x02id lookup is provided, it transforms the target from an X0 value to a material class ID.
+
+    Arguments:
+        path: savename of file to save predictions and targets
+        use_volume_target: if True, saves the volume target value instead of the volume X0s
+        overwrite: if True will overwrite existing files with the same path, otherwise will append to them
+        x02id: optional map from X0 values to class IDs
+        compression: optional string representation of any compression to use when saving data
     """
 
     def __init__(
         self, path: Path, use_volume_target: bool, overwrite: bool = False, x02id: Optional[Dict[float, int]] = None, compression: Optional[str] = "lzf"
     ):
-        r"""
-        Arguments:
-            path: savename of file to save predictions and targets
-            use_volume_target: if True, saves the volume target value instead of the volume X0s
-            overwrite: if True will overwrite existing files with the same path, otherwise will append to them
-            x02id: optional map from X0 values to class IDs
-            compression: optional string representation of any compression to use when saving data
-        """
-
         if isinstance(path, str):
             path = Path(path)
         self.path, self.use_volume_target, self.x02id, self.compression = path, use_volume_target, x02id, compression

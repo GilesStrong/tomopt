@@ -12,7 +12,7 @@ r"""
 Provides loss functions for evaluating the performance of detector and inference configurations
 """
 
-__all__ = ["VoxelX0Loss", "VoxelClassLoss", "VolumeClassLoss", "VolumeIntClassLoss"]
+__all__ = ["AbsDetectorLoss", "AbsMaterialClassLoss", "VoxelX0Loss", "VoxelClassLoss", "VolumeClassLoss", "VolumeIntClassLoss"]
 
 
 class AbsDetectorLoss(nn.Module, metaclass=ABCMeta):
@@ -20,8 +20,8 @@ class AbsDetectorLoss(nn.Module, metaclass=ABCMeta):
     Abstract base class from which all loss functions should inherit.
 
     The loss consists of:
-        A component that quantifies the performance of the predictions made via the detectors
-        An optional component that relates to the cost of the detector
+        - A component that quantifies the performance of the predictions made via the detectors
+        - An optional component that relates to the cost of the detector
     The total loss is the sum of these, with the cost-component being rescaled by a coefficient characterising its relative importance.
 
     The performance component (error) should ideally be as close to the final task that the detector will be performing,
@@ -33,6 +33,16 @@ class AbsDetectorLoss(nn.Module, metaclass=ABCMeta):
     A less steep version is selectable, which flattens out slightly for high costs.
 
     Inheriting classes will need to at least override the `_get_inference_loss` method.
+
+    Arguments:
+        target_budget: If not None, will include a cost component in the loss configured for the specified budget.
+            Should be specified in the same currency units as the detector cost.
+        budget_smoothing: controls how quickly the budget term rises with cost; lower values => slower rise
+        cost_coef: Balancing coefficient used to multiply the budget term prior to its addition to the error component of the loss.
+            If set to None, it will be set equal to the inference-error computed the first time the loss is computed
+        steep_budget: If True, will use a linearly increasing budget term when the budget is exceeded,
+            otherwise the budget term will flatten off for very high costs
+        debug: If True, will print out information about the loss whenever it is evaluated
     """
 
     def __init__(
@@ -44,18 +54,6 @@ class AbsDetectorLoss(nn.Module, metaclass=ABCMeta):
         steep_budget: bool = True,
         debug: bool = False,
     ):
-        r"""
-        Arguments:
-            target_budget: If not None, will include a cost component in the loss configured for the specified budget.
-                Should be specified in the same currency units as the detector cost.
-            budget_smoothing: controls how quickly the budget term rises with cost; lower values => slower rise
-            cost_coef: Balancing coefficient used to multiply the budget term prior to its addition to the error component of the loss.
-                If set to None, it will be set equal to the inference-error computed the first time the loss is computed
-            steep_budget: If True, will use a linearly increasing budget term when the budget is exceeded,
-                otherwise the budget term will flatten off for very high costs
-            debug: If True, will print out information about the loss whenever it is evaluated
-        """
-
         super().__init__()
         self.target_budget = target_budget
         self.budget_smoothing = budget_smoothing
@@ -163,14 +161,24 @@ class VoxelX0Loss(AbsDetectorLoss):
     Inference-error component of the loss is the squared-error on X0 predictions, averaged over all voxels (MSE)
 
     The total loss consists of:
-        The MSE
-        An optional component that relates to the cost of the detector
+        - The MSE
+        - An optional component that relates to the cost of the detector
     The total loss is the sum of these, with the cost-component being rescaled by a coefficient characterising its relative importance.
 
     The optional cost component is included as a budget weighting, which gradually increases with the current cost up to a predefined budget,
     after which it increases rapidly, but smoothly.
     Be default, the budget is based on a sigmoid centred at the budget, which linearly increases after the budget is exceeded.
     A less steep version is selectable, which flattens out slightly for high costs.
+
+    Arguments:
+        target_budget: If not None, will include a cost component in the loss configured for the specified budget.
+            Should be specified in the same currency units as the detector cost.
+        budget_smoothing: controls how quickly the budget term rises with cost; lower values => slower rise
+        cost_coef: Balancing coefficient used to multiply the budget term prior to its addition to the error component of the loss.
+            If set to None, it will be set equal to the inference-error computed the first time the loss is computed
+        steep_budget: If True, will use a linearly increasing budget term when the budget is exceeded,
+            otherwise the budget term will flatten off for very high costs
+        debug: If True, will print out information about the loss whenever it is evaluated
     """
 
     def _get_inference_loss(self, pred: Tensor, inv_pred_weight: Tensor, volume: Volume) -> Tensor:
@@ -196,8 +204,8 @@ class AbsMaterialClassLoss(AbsDetectorLoss):
     The targets returned by the volume are expected to be float X0s, and are converted to class IDs using an X0 to ID map.
 
     The loss consists of:
-        A component that quantifies the performance of the predictions made via the detectors
-        An optional component that relates to the cost of the detector
+        - A component that quantifies the performance of the predictions made via the detectors
+        - An optional component that relates to the cost of the detector
     The total loss is the sum of these, with the cost-component being rescaled by a coefficient characterising its relative importance.
 
     The performance component (error) should ideally be as close to the final task that the detector will be performing,
@@ -209,9 +217,18 @@ class AbsMaterialClassLoss(AbsDetectorLoss):
     A less steep version is selectable, which flattens out slightly for high costs.
 
     Inheriting classes will need to at least override the `_get_inference_loss` method.
-    """
 
-    """Predictions are class IDs, targets might be float X0"""
+    Arguments:
+        x02id: Dictionary mapping float X0 targets to integer class IDs
+        target_budget: If not None, will include a cost component in the loss configured for the specified budget.
+            Should be specified in the same currency units as the detector cost.
+        budget_smoothing: controls how quickly the budget term rises with cost; lower values => slower rise
+        cost_coef: Balancing coefficient used to multiply the budget term prior to its addition to the error component of the loss.
+            If set to None, it will be set equal to the inference-error computed the first time the loss is computed
+        steep_budget: If True, will use a linearly increasing budget term when the budget is exceeded,
+            otherwise the budget term will flatten off for very high costs
+        debug: If True, will print out information about the loss whenever it is evaluated
+    """
 
     def __init__(
         self,
@@ -223,18 +240,6 @@ class AbsMaterialClassLoss(AbsDetectorLoss):
         steep_budget: bool = True,
         debug: bool = False,
     ):
-        r"""
-        Arguments:
-            x02id: Dictionary mapping float X0 targets to integer class IDs
-            target_budget: If not None, will include a cost component in the loss configured for the specified budget.
-                Should be specified in the same currency units as the detector cost.
-            budget_smoothing: controls how quickly the budget term rises with cost; lower values => slower rise
-            cost_coef: Balancing coefficient used to multiply the budget term prior to its addition to the error component of the loss.
-                If set to None, it will be set equal to the inference-error computed the first time the loss is computed
-            steep_budget: If True, will use a linearly increasing budget term when the budget is exceeded,
-                otherwise the budget term will flatten off for very high costs
-            debug: If True, will print out information about the loss whenever it is evaluated
-        """
         super().__init__(target_budget=target_budget, budget_smoothing=budget_smoothing, cost_coef=cost_coef, steep_budget=steep_budget, debug=debug)
         self.x02id = x02id
 
@@ -248,14 +253,25 @@ class VoxelClassLoss(AbsMaterialClassLoss):
     The ordering of the "flattened" voxels should match that of `volume.get_rad_cube().flatten()`
 
     The total loss consists of:
-        The NLL
-        An optional component that relates to the cost of the detector
+        - The NLL
+        - An optional component that relates to the cost of the detector
     The total loss is the sum of these, with the cost-component being rescaled by a coefficient characterising its relative importance.
 
     The optional cost component is included as a budget weighting, which gradually increases with the current cost up to a predefined budget,
     after which it increases rapidly, but smoothly.
     Be default, the budget is based on a sigmoid centred at the budget, which linearly increases after the budget is exceeded.
     A less steep version is selectable, which flattens out slightly for high costs.
+
+    Arguments:
+        x02id: Dictionary mapping float X0 targets to integer class IDs
+        target_budget: If not None, will include a cost component in the loss configured for the specified budget.
+            Should be specified in the same currency units as the detector cost.
+        budget_smoothing: controls how quickly the budget term rises with cost; lower values => slower rise
+        cost_coef: Balancing coefficient used to multiply the budget term prior to its addition to the error component of the loss.
+            If set to None, it will be set equal to the inference-error computed the first time the loss is computed
+        steep_budget: If True, will use a linearly increasing budget term when the budget is exceeded,
+            otherwise the budget term will flatten off for very high costs
+        debug: If True, will print out information about the loss whenever it is evaluated
     """
 
     def _get_inference_loss(self, pred: Tensor, inv_pred_weight: Tensor, volume: Volume) -> Tensor:
@@ -290,14 +306,25 @@ class VolumeClassLoss(AbsMaterialClassLoss):
     The ordering of the "flattened" voxels should match that of `volume.get_rad_cube().flatten()`
 
     The total loss consists of:
-        The NLL or BCE
-        An optional component that relates to the cost of the detector
+        - The NLL or BCE
+        - An optional component that relates to the cost of the detector
     The total loss is the sum of these, with the cost-component being rescaled by a coefficient characterising its relative importance.
 
     The optional cost component is included as a budget weighting, which gradually increases with the current cost up to a predefined budget,
     after which it increases rapidly, but smoothly.
     Be default, the budget is based on a sigmoid centred at the budget, which linearly increases after the budget is exceeded.
     A less steep version is selectable, which flattens out slightly for high costs.
+
+    Arguments:
+        x02id: Dictionary mapping float X0 targets to integer class IDs
+        target_budget: If not None, will include a cost component in the loss configured for the specified budget.
+            Should be specified in the same currency units as the detector cost.
+        budget_smoothing: controls how quickly the budget term rises with cost; lower values => slower rise
+        cost_coef: Balancing coefficient used to multiply the budget term prior to its addition to the error component of the loss.
+            If set to None, it will be set equal to the inference-error computed the first time the loss is computed
+        steep_budget: If True, will use a linearly increasing budget term when the budget is exceeded,
+            otherwise the budget term will flatten off for very high costs
+        debug: If True, will print out information about the loss whenever it is evaluated
     """
 
     def _get_inference_loss(self, pred: Tensor, inv_pred_weight: Tensor, volume: Volume) -> Tensor:
@@ -331,14 +358,24 @@ class VolumeIntClassLoss(AbsDetectorLoss):
     The target from the volume can be converted to an integer (e.g. height to layer ID) using a `targ2int` function
 
     The total loss consists of:
-        The integer class loss (ICL)
-        An optional component that relates to the cost of the detector
+        - The integer class loss (ICL)
+        - An optional component that relates to the cost of the detector
     The total loss is the sum of these, with the cost-component being rescaled by a coefficient characterising its relative importance.
 
     The optional cost component is included as a budget weighting, which gradually increases with the current cost up to a predefined budget,
     after which it increases rapidly, but smoothly.
     Be default, the budget is based on a sigmoid centred at the budget, which linearly increases after the budget is exceeded.
     A less steep version is selectable, which flattens out slightly for high costs.
+
+    Arguments:
+        target_budget: If not None, will include a cost component in the loss configured for the specified budget.
+            Should be specified in the same currency units as the detector cost.
+        budget_smoothing: controls how quickly the budget term rises with cost; lower values => slower rise
+        cost_coef: Balancing coefficient used to multiply the budget term prior to its addition to the error component of the loss.
+            If set to None, it will be set equal to the inference-error computed the first time the loss is computed
+        steep_budget: If True, will use a linearly increasing budget term when the budget is exceeded,
+            otherwise the budget term will flatten off for very high costs
+        debug: If True, will print out information about the loss whenever it is evaluated
     """
 
     def __init__(

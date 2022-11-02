@@ -1,0 +1,1397 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>tomopt.optimisation.loss package &mdash; TomOpt  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/tomopt_logo.png"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="tomopt.optimisation.wrapper package" href="tomopt.optimisation.wrapper.html" />
+    <link rel="prev" title="tomopt.optimisation.data package" href="tomopt.optimisation.data.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://tomopt.readthedocs.io/en/stable" aria-label="TomOpt"></a>
+
+      <div class="main-menu">
+        <ul>
+          <!-- <li>
+            <a href="">Get Started</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="">Features</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="">Ecosystem</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="">Blog</a>
+          </li> -->
+
+          <li>
+            <a href="https://github.com/GilesStrong/mode_muon_tomography#examples">Tutorials</a>
+          </li>
+
+          <li>
+            <a href="https://tomopt.readthedocs.io/en/stable">Docs</a>
+          </li>
+
+          <!-- <li>
+            <a href="">Resources</a>
+          </li> -->
+
+          <li>
+            <a href="https://github.com/GilesStrong/mode_muon_tomography">Github</a>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+
+  </div>
+</div>
+
+
+<body class="pytorch-body">
+
+   
+
+    
+
+    <div class="table-of-contents-link-wrapper">
+      <span>Table of Contents</span>
+      <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+    </div>
+
+    <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+      <div class="pytorch-side-scroll">
+        <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          <div class="pytorch-left-menu-search">
+            
+
+            
+              
+              
+            
+
+            
+
+
+  
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+            
+          </div>
+
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#testing">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#external-repos">External repos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#authors">Authors</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#testing">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#external-repos">External repos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#authors">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tomopt.html">tomopt package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tomopt.muon.html">tomopt.muon package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tomopt.volume.html">tomopt.volume package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tomopt.inference.html">tomopt.inference package</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="tomopt.optimisation.html">tomopt.optimisation package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tomopt.plotting.html">tomopt.plotting package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tomopt.benchmarks.html">tomopt.benchmarks package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <div class="pytorch-container">
+      <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+        <div class="pytorch-breadcrumbs-wrapper">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="index.html">
+          
+            Docs
+          
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="tomopt.html">tomopt package</a> &gt;</li>
+        
+          <li><a href="tomopt.optimisation.html">tomopt.optimisation package</a> &gt;</li>
+        
+      <li>tomopt.optimisation.loss package</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="_sources/tomopt.optimisation.loss.rst.txt" rel="nofollow"><img src="_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+        </div>
+
+        <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+      </div>
+
+      <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+        <div class="pytorch-content-left">
+
+        
+          
+          <div class="rst-content">
+          
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+             <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+              
+  <section id="tomopt-optimisation-loss-package">
+<h1>tomopt.optimisation.loss package<a class="headerlink" href="#tomopt-optimisation-loss-package" title="Permalink to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="module-tomopt.optimisation.loss.loss">
+<span id="tomopt-optimisation-loss-loss-module"></span><h2>tomopt.optimisation.loss.loss module<a class="headerlink" href="#module-tomopt.optimisation.loss.loss" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.AbsDetectorLoss">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.loss.loss.</span></span><span class="sig-name descname"><span class="pre">AbsDetectorLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_budget</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">budget_smoothing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cost_coef</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steep_budget</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/loss/loss.html#AbsDetectorLoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.loss.loss.AbsDetectorLoss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Abstract base class from which all loss functions should inherit.</p>
+<dl class="simple">
+<dt>The loss consists of:</dt><dd><ul class="simple">
+<li><p>A component that quantifies the performance of the predictions made via the detectors</p></li>
+<li><p>An optional component that relates to the cost of the detector</p></li>
+</ul>
+</dd>
+</dl>
+<p>The total loss is the sum of these, with the cost-component being rescaled by a coefficient characterising its relative importance.</p>
+<p>The performance component (error) should ideally be as close to the final task that the detector will be performing,
+and will depend on the output of the inference algorithm used</p>
+<p>The optional cost component is included as a budget weighting, which gradually increases with the current cost up to a predefined budget,
+after which it increases rapidly, but smoothly.
+Be default, the budget is based on a sigmoid centred at the budget, which linearly increases after the budget is exceeded.
+A less steep version is selectable, which flattens out slightly for high costs.</p>
+<p>Inheriting classes will need to at least override the <cite>_get_inference_loss</cite> method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target_budget</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – If not None, will include a cost component in the loss configured for the specified budget.
+Should be specified in the same currency units as the detector cost.</p></li>
+<li><p><strong>budget_smoothing</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – controls how quickly the budget term rises with cost; lower values =&gt; slower rise</p></li>
+<li><p><strong>cost_coef</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]) – Balancing coefficient used to multiply the budget term prior to its addition to the error component of the loss.
+If set to None, it will be set equal to the inference-error computed the first time the loss is computed</p></li>
+<li><p><strong>steep_budget</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – If True, will use a linearly increasing budget term when the budget is exceeded,
+otherwise the budget term will flatten off for very high costs</p></li>
+<li><p><strong>debug</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – If True, will print out information about the loss whenever it is evaluated</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.AbsDetectorLoss._abc_impl">
+<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.AbsDetectorLoss._abc_impl" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.AbsDetectorLoss._compute_cost_coef">
+<span class="sig-name descname"><span class="pre">_compute_cost_coef</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inference</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/loss/loss.html#AbsDetectorLoss._compute_cost_coef"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.loss.loss.AbsDetectorLoss._compute_cost_coef" title="Permalink to this definition">¶</a></dt>
+<dd><p>If the cost coefficient is None, will set it equal the current value of the inference-error loss</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>inference</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – the inference error component of the loss</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.AbsDetectorLoss._get_budget_coef">
+<span class="sig-name descname"><span class="pre">_get_budget_coef</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cost</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/loss/loss.html#AbsDetectorLoss._get_budget_coef"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.loss.loss.AbsDetectorLoss._get_budget_coef" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the budget loss term from the current cost of the detectors.
+Switch-on near target budget, plus linear/smooth increase above budget</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cost</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – the current cost of the detector in currency units</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The budget loss component</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.AbsDetectorLoss._get_cost_loss">
+<span class="sig-name descname"><span class="pre">_get_cost_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/loss/loss.html#AbsDetectorLoss._get_cost_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.loss.loss.AbsDetectorLoss._get_cost_loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the budget term of the loss, dependent on the current cost of the detectors</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>volume</strong> (<a class="reference internal" href="tomopt.volume.html#tomopt.volume.volume.Volume" title="tomopt.volume.volume.Volume"><code class="xref py py-class docutils literal notranslate"><span class="pre">Volume</span></code></a>) – Volume containing the detectors being optimised</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The reduced loss term for the cost of the detectors</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.AbsDetectorLoss._get_inference_loss">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_get_inference_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inv_pred_weight</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/loss/loss.html#AbsDetectorLoss._get_inference_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.loss.loss.AbsDetectorLoss._get_inference_loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inheriting classes must override this to compute the inference-error component of the loss.
+The target for the predictions should be extracted from the volume; whether this be the voxelwise X0s or the value of the <cite>target</cite> attribute.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pred</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – the predictions from the inference</p></li>
+<li><p><strong>inv_pred_weight</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – weight(s) that should divide the (unreduced) loss between the predictions and targets</p></li>
+<li><p><strong>volume</strong> (<a class="reference internal" href="tomopt.volume.html#tomopt.volume.volume.Volume" title="tomopt.volume.volume.Volume"><code class="xref py py-class docutils literal notranslate"><span class="pre">Volume</span></code></a>) – Volume containing the passive volume that was being predicted</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The reduced loss for the performance of the predictions</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.AbsDetectorLoss._is_full_backward_hook">
+<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.AbsDetectorLoss._is_full_backward_hook" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.AbsDetectorLoss.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inv_pred_weight</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/loss/loss.html#AbsDetectorLoss.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.loss.loss.AbsDetectorLoss.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the loss for the predictions of a single volume using the current state of the detector</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pred</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – the predictions from the inference</p></li>
+<li><p><strong>inv_pred_weight</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – weight(s) that should divide the (unreduced) loss between the predictions and targets</p></li>
+<li><p><strong>volume</strong> (<a class="reference internal" href="tomopt.volume.html#tomopt.volume.volume.Volume" title="tomopt.volume.volume.Volume"><code class="xref py py-class docutils literal notranslate"><span class="pre">Volume</span></code></a>) – Volume containing the passive volume that was being predicted and the detector being optimised</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The loss for the predictions and detector</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.AbsDetectorLoss.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.AbsDetectorLoss.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.AbsMaterialClassLoss">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.loss.loss.</span></span><span class="sig-name descname"><span class="pre">AbsMaterialClassLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x02id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_budget</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">budget_smoothing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cost_coef</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steep_budget</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/loss/loss.html#AbsMaterialClassLoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsDetectorLoss" title="tomopt.optimisation.loss.loss.AbsDetectorLoss"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsDetectorLoss</span></code></a></p>
+<p>Abstract base class for cases in which the task is to classify materials in the passive volumes, or some other aspect of the volumes.
+The targets returned by the volume are expected to be float X0s, and are converted to class IDs using an X0 to ID map.</p>
+<dl class="simple">
+<dt>The loss consists of:</dt><dd><ul class="simple">
+<li><p>A component that quantifies the performance of the predictions made via the detectors</p></li>
+<li><p>An optional component that relates to the cost of the detector</p></li>
+</ul>
+</dd>
+</dl>
+<p>The total loss is the sum of these, with the cost-component being rescaled by a coefficient characterising its relative importance.</p>
+<p>The performance component (error) should ideally be as close to the final task that the detector will be performing,
+and will depend on the output of the inference algorithm used</p>
+<p>The optional cost component is included as a budget weighting, which gradually increases with the current cost up to a predefined budget,
+after which it increases rapidly, but smoothly.
+Be default, the budget is based on a sigmoid centred at the budget, which linearly increases after the budget is exceeded.
+A less steep version is selectable, which flattens out slightly for high costs.</p>
+<p>Inheriting classes will need to at least override the <cite>_get_inference_loss</cite> method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x02id</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]) – Dictionary mapping float X0 targets to integer class IDs</p></li>
+<li><p><strong>target_budget</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – If not None, will include a cost component in the loss configured for the specified budget.
+Should be specified in the same currency units as the detector cost.</p></li>
+<li><p><strong>budget_smoothing</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – controls how quickly the budget term rises with cost; lower values =&gt; slower rise</p></li>
+<li><p><strong>cost_coef</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]) – Balancing coefficient used to multiply the budget term prior to its addition to the error component of the loss.
+If set to None, it will be set equal to the inference-error computed the first time the loss is computed</p></li>
+<li><p><strong>steep_budget</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – If True, will use a linearly increasing budget term when the budget is exceeded,
+otherwise the budget term will flatten off for very high costs</p></li>
+<li><p><strong>debug</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – If True, will print out information about the loss whenever it is evaluated</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.AbsMaterialClassLoss._abc_impl">
+<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss._abc_impl" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.AbsMaterialClassLoss._backward_hooks">
+<span class="sig-name descname"><span class="pre">_backward_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss._backward_hooks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.AbsMaterialClassLoss._buffers">
+<span class="sig-name descname"><span class="pre">_buffers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss._buffers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.AbsMaterialClassLoss._forward_hooks">
+<span class="sig-name descname"><span class="pre">_forward_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss._forward_hooks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.AbsMaterialClassLoss._forward_pre_hooks">
+<span class="sig-name descname"><span class="pre">_forward_pre_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss._forward_pre_hooks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.AbsMaterialClassLoss._is_full_backward_hook">
+<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss._is_full_backward_hook" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.AbsMaterialClassLoss._load_state_dict_pre_hooks">
+<span class="sig-name descname"><span class="pre">_load_state_dict_pre_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss._load_state_dict_pre_hooks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.AbsMaterialClassLoss._modules">
+<span class="sig-name descname"><span class="pre">_modules</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'Module'</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss._modules" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.AbsMaterialClassLoss._non_persistent_buffers_set">
+<span class="sig-name descname"><span class="pre">_non_persistent_buffers_set</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss._non_persistent_buffers_set" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.AbsMaterialClassLoss._parameters">
+<span class="sig-name descname"><span class="pre">_parameters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Parameter</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss._parameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.AbsMaterialClassLoss._state_dict_hooks">
+<span class="sig-name descname"><span class="pre">_state_dict_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss._state_dict_hooks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.AbsMaterialClassLoss.sub_losses">
+<span class="sig-name descname"><span class="pre">sub_losses</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss.sub_losses" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.AbsMaterialClassLoss.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeClassLoss">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.loss.loss.</span></span><span class="sig-name descname"><span class="pre">VolumeClassLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x02id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_budget</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">budget_smoothing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cost_coef</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steep_budget</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/loss/loss.html#VolumeClassLoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeClassLoss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss" title="tomopt.optimisation.loss.loss.AbsMaterialClassLoss"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsMaterialClassLoss</span></code></a></p>
+<p>Loss function designed for tasks where some overall target of the passive volume must be classified, and the target of the volume is encoded as a float X0.
+E.g. what is the material of a large block in the volume.</p>
+<dl class="simple">
+<dt>The Inference-error component of the loss depends on shape of predictions provided:</dt><dd><p>If the predictions are of shape (1,classes,voxels), they will be interpreted as multi-class log-probabilities and the negative log-likelihood computed
+If the predictions are of shape (1,1,voxels), they will be interpreted as binary class probabilities and the binary cross-entropy computed</p>
+</dd>
+</dl>
+<p>The ordering of the “flattened” voxels should match that of <cite>volume.get_rad_cube().flatten()</cite></p>
+<dl class="simple">
+<dt>The total loss consists of:</dt><dd><ul class="simple">
+<li><p>The NLL or BCE</p></li>
+<li><p>An optional component that relates to the cost of the detector</p></li>
+</ul>
+</dd>
+</dl>
+<p>The total loss is the sum of these, with the cost-component being rescaled by a coefficient characterising its relative importance.</p>
+<p>The optional cost component is included as a budget weighting, which gradually increases with the current cost up to a predefined budget,
+after which it increases rapidly, but smoothly.
+Be default, the budget is based on a sigmoid centred at the budget, which linearly increases after the budget is exceeded.
+A less steep version is selectable, which flattens out slightly for high costs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x02id</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]) – Dictionary mapping float X0 targets to integer class IDs</p></li>
+<li><p><strong>target_budget</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – If not None, will include a cost component in the loss configured for the specified budget.
+Should be specified in the same currency units as the detector cost.</p></li>
+<li><p><strong>budget_smoothing</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – controls how quickly the budget term rises with cost; lower values =&gt; slower rise</p></li>
+<li><p><strong>cost_coef</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]) – Balancing coefficient used to multiply the budget term prior to its addition to the error component of the loss.
+If set to None, it will be set equal to the inference-error computed the first time the loss is computed</p></li>
+<li><p><strong>steep_budget</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – If True, will use a linearly increasing budget term when the budget is exceeded,
+otherwise the budget term will flatten off for very high costs</p></li>
+<li><p><strong>debug</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – If True, will print out information about the loss whenever it is evaluated</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeClassLoss._abc_impl">
+<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeClassLoss._abc_impl" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeClassLoss._backward_hooks">
+<span class="sig-name descname"><span class="pre">_backward_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeClassLoss._backward_hooks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeClassLoss._buffers">
+<span class="sig-name descname"><span class="pre">_buffers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeClassLoss._buffers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeClassLoss._forward_hooks">
+<span class="sig-name descname"><span class="pre">_forward_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeClassLoss._forward_hooks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeClassLoss._forward_pre_hooks">
+<span class="sig-name descname"><span class="pre">_forward_pre_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeClassLoss._forward_pre_hooks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeClassLoss._get_inference_loss">
+<span class="sig-name descname"><span class="pre">_get_inference_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inv_pred_weight</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/loss/loss.html#VolumeClassLoss._get_inference_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeClassLoss._get_inference_loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the NLL of the log-probabilities against the true voxelwise classes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pred</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (1,classes,voxels) log probabilities for voxel class IDs, or (1,1,voxels) probabilities for voxels being of class 1</p></li>
+<li><p><strong>inv_pred_weight</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – weight that divides the unreduced NLL|BCE loss between the predictions and targets, prior to averaging</p></li>
+<li><p><strong>volume</strong> (<a class="reference internal" href="tomopt.volume.html#tomopt.volume.volume.Volume" title="tomopt.volume.volume.Volume"><code class="xref py py-class docutils literal notranslate"><span class="pre">Volume</span></code></a>) – Volume containing the passive volume that was being predicted</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The mean NLL|BCE for the predictions</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeClassLoss._is_full_backward_hook">
+<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeClassLoss._is_full_backward_hook" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeClassLoss._load_state_dict_pre_hooks">
+<span class="sig-name descname"><span class="pre">_load_state_dict_pre_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeClassLoss._load_state_dict_pre_hooks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeClassLoss._modules">
+<span class="sig-name descname"><span class="pre">_modules</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'Module'</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeClassLoss._modules" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeClassLoss._non_persistent_buffers_set">
+<span class="sig-name descname"><span class="pre">_non_persistent_buffers_set</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeClassLoss._non_persistent_buffers_set" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeClassLoss._parameters">
+<span class="sig-name descname"><span class="pre">_parameters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Parameter</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeClassLoss._parameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeClassLoss._state_dict_hooks">
+<span class="sig-name descname"><span class="pre">_state_dict_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeClassLoss._state_dict_hooks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeClassLoss.sub_losses">
+<span class="sig-name descname"><span class="pre">sub_losses</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeClassLoss.sub_losses" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeClassLoss.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeClassLoss.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeIntClassLoss">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.loss.loss.</span></span><span class="sig-name descname"><span class="pre">VolumeIntClassLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targ2int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pred_int_start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_mse</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_budget</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">budget_smoothing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cost_coef</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steep_budget</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/loss/loss.html#VolumeIntClassLoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsDetectorLoss" title="tomopt.optimisation.loss.loss.AbsDetectorLoss"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsDetectorLoss</span></code></a></p>
+<p>Loss function designed for tasks where some overall integer target of the passive volume must be classified,
+and the values of this target are quantifiably comparable (i.e. the integers are treatable as numbers not just categorical codes).
+E.g. Predicting how many layers of the passive volume are filled with a given material.</p>
+<p>The Inference-error component of the loss computed as the <a class="reference internal" href="#tomopt.optimisation.loss.sub_losses.integer_class_loss" title="tomopt.optimisation.loss.sub_losses.integer_class_loss"><code class="xref py py-meth docutils literal notranslate"><span class="pre">integer_class_loss()</span></code></a>.
+Predictions should be provided as probabilities for every possible integer target
+The target from the volume can be converted to an integer (e.g. height to layer ID) using a <cite>targ2int</cite> function</p>
+<dl class="simple">
+<dt>The total loss consists of:</dt><dd><ul class="simple">
+<li><p>The integer class loss (ICL)</p></li>
+<li><p>An optional component that relates to the cost of the detector</p></li>
+</ul>
+</dd>
+</dl>
+<p>The total loss is the sum of these, with the cost-component being rescaled by a coefficient characterising its relative importance.</p>
+<p>The optional cost component is included as a budget weighting, which gradually increases with the current cost up to a predefined budget,
+after which it increases rapidly, but smoothly.
+Be default, the budget is based on a sigmoid centred at the budget, which linearly increases after the budget is exceeded.
+A less steep version is selectable, which flattens out slightly for high costs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target_budget</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – If not None, will include a cost component in the loss configured for the specified budget.
+Should be specified in the same currency units as the detector cost.</p></li>
+<li><p><strong>budget_smoothing</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – controls how quickly the budget term rises with cost; lower values =&gt; slower rise</p></li>
+<li><p><strong>cost_coef</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]) – Balancing coefficient used to multiply the budget term prior to its addition to the error component of the loss.
+If set to None, it will be set equal to the inference-error computed the first time the loss is computed</p></li>
+<li><p><strong>steep_budget</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – If True, will use a linearly increasing budget term when the budget is exceeded,
+otherwise the budget term will flatten off for very high costs</p></li>
+<li><p><strong>debug</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – If True, will print out information about the loss whenever it is evaluated</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeIntClassLoss._abc_impl">
+<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss._abc_impl" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeIntClassLoss._backward_hooks">
+<span class="sig-name descname"><span class="pre">_backward_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss._backward_hooks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeIntClassLoss._buffers">
+<span class="sig-name descname"><span class="pre">_buffers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss._buffers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeIntClassLoss._forward_hooks">
+<span class="sig-name descname"><span class="pre">_forward_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss._forward_hooks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeIntClassLoss._forward_pre_hooks">
+<span class="sig-name descname"><span class="pre">_forward_pre_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss._forward_pre_hooks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeIntClassLoss._get_inference_loss">
+<span class="sig-name descname"><span class="pre">_get_inference_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inv_pred_weight</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/loss/loss.html#VolumeIntClassLoss._get_inference_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss._get_inference_loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the ICL of the integer probabilities against the true target integer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pred</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (1,*,integers) integer probabilities</p></li>
+<li><p><strong>inv_pred_weight</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – weight that divides the unreduced ICL between the predictions and targets, prior to averaging</p></li>
+<li><p><strong>volume</strong> (<a class="reference internal" href="tomopt.volume.html#tomopt.volume.volume.Volume" title="tomopt.volume.volume.Volume"><code class="xref py py-class docutils literal notranslate"><span class="pre">Volume</span></code></a>) – Volume containing the passive volume that was being predicted</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The mean ICL for the predictions</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeIntClassLoss._is_full_backward_hook">
+<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss._is_full_backward_hook" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeIntClassLoss._load_state_dict_pre_hooks">
+<span class="sig-name descname"><span class="pre">_load_state_dict_pre_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss._load_state_dict_pre_hooks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeIntClassLoss._modules">
+<span class="sig-name descname"><span class="pre">_modules</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'Module'</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss._modules" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeIntClassLoss._non_persistent_buffers_set">
+<span class="sig-name descname"><span class="pre">_non_persistent_buffers_set</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss._non_persistent_buffers_set" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeIntClassLoss._parameters">
+<span class="sig-name descname"><span class="pre">_parameters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Parameter</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss._parameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeIntClassLoss._state_dict_hooks">
+<span class="sig-name descname"><span class="pre">_state_dict_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss._state_dict_hooks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeIntClassLoss.sub_losses">
+<span class="sig-name descname"><span class="pre">sub_losses</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss.sub_losses" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeIntClassLoss.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelClassLoss">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.loss.loss.</span></span><span class="sig-name descname"><span class="pre">VoxelClassLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x02id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_budget</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">budget_smoothing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cost_coef</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steep_budget</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/loss/loss.html#VoxelClassLoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelClassLoss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss" title="tomopt.optimisation.loss.loss.AbsMaterialClassLoss"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsMaterialClassLoss</span></code></a></p>
+<p>Loss function designed for tasks where the voxelwise material class ID must be classified.
+Inference-error component of the loss is the negative log-likelihood on log class-probabilities, averaged over all voxels (NLL)</p>
+<p>Predictions should be provided as log-softmaxed class probabilities per voxel, with shape (1,classes,voxels).
+The ordering of the “flattened” voxels should match that of <cite>volume.get_rad_cube().flatten()</cite></p>
+<dl class="simple">
+<dt>The total loss consists of:</dt><dd><ul class="simple">
+<li><p>The NLL</p></li>
+<li><p>An optional component that relates to the cost of the detector</p></li>
+</ul>
+</dd>
+</dl>
+<p>The total loss is the sum of these, with the cost-component being rescaled by a coefficient characterising its relative importance.</p>
+<p>The optional cost component is included as a budget weighting, which gradually increases with the current cost up to a predefined budget,
+after which it increases rapidly, but smoothly.
+Be default, the budget is based on a sigmoid centred at the budget, which linearly increases after the budget is exceeded.
+A less steep version is selectable, which flattens out slightly for high costs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x02id</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]) – Dictionary mapping float X0 targets to integer class IDs</p></li>
+<li><p><strong>target_budget</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – If not None, will include a cost component in the loss configured for the specified budget.
+Should be specified in the same currency units as the detector cost.</p></li>
+<li><p><strong>budget_smoothing</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – controls how quickly the budget term rises with cost; lower values =&gt; slower rise</p></li>
+<li><p><strong>cost_coef</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]) – Balancing coefficient used to multiply the budget term prior to its addition to the error component of the loss.
+If set to None, it will be set equal to the inference-error computed the first time the loss is computed</p></li>
+<li><p><strong>steep_budget</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – If True, will use a linearly increasing budget term when the budget is exceeded,
+otherwise the budget term will flatten off for very high costs</p></li>
+<li><p><strong>debug</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – If True, will print out information about the loss whenever it is evaluated</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelClassLoss._abc_impl">
+<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelClassLoss._abc_impl" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelClassLoss._backward_hooks">
+<span class="sig-name descname"><span class="pre">_backward_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelClassLoss._backward_hooks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelClassLoss._buffers">
+<span class="sig-name descname"><span class="pre">_buffers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelClassLoss._buffers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelClassLoss._forward_hooks">
+<span class="sig-name descname"><span class="pre">_forward_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelClassLoss._forward_hooks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelClassLoss._forward_pre_hooks">
+<span class="sig-name descname"><span class="pre">_forward_pre_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelClassLoss._forward_pre_hooks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelClassLoss._get_inference_loss">
+<span class="sig-name descname"><span class="pre">_get_inference_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inv_pred_weight</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/loss/loss.html#VoxelClassLoss._get_inference_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelClassLoss._get_inference_loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the NLL of the log-probabilities against the true voxelwise classes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pred</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (1,classes,voxels) log probabilities for voxel class IDs</p></li>
+<li><p><strong>inv_pred_weight</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – weight that divides the unreduced NLL loss between the predictions and targets, prior to averaging</p></li>
+<li><p><strong>volume</strong> (<a class="reference internal" href="tomopt.volume.html#tomopt.volume.volume.Volume" title="tomopt.volume.volume.Volume"><code class="xref py py-class docutils literal notranslate"><span class="pre">Volume</span></code></a>) – Volume containing the passive volume that was being predicted</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The mean NLL for the predictions</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelClassLoss._is_full_backward_hook">
+<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelClassLoss._is_full_backward_hook" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelClassLoss._load_state_dict_pre_hooks">
+<span class="sig-name descname"><span class="pre">_load_state_dict_pre_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelClassLoss._load_state_dict_pre_hooks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelClassLoss._modules">
+<span class="sig-name descname"><span class="pre">_modules</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'Module'</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelClassLoss._modules" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelClassLoss._non_persistent_buffers_set">
+<span class="sig-name descname"><span class="pre">_non_persistent_buffers_set</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelClassLoss._non_persistent_buffers_set" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelClassLoss._parameters">
+<span class="sig-name descname"><span class="pre">_parameters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Parameter</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelClassLoss._parameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelClassLoss._state_dict_hooks">
+<span class="sig-name descname"><span class="pre">_state_dict_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelClassLoss._state_dict_hooks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelClassLoss.sub_losses">
+<span class="sig-name descname"><span class="pre">sub_losses</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelClassLoss.sub_losses" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelClassLoss.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelClassLoss.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelX0Loss">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.loss.loss.</span></span><span class="sig-name descname"><span class="pre">VoxelX0Loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_budget</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">budget_smoothing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cost_coef</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steep_budget</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/loss/loss.html#VoxelX0Loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelX0Loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsDetectorLoss" title="tomopt.optimisation.loss.loss.AbsDetectorLoss"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsDetectorLoss</span></code></a></p>
+<p>Loss function designed for tasks where the voxelwise X0 value must be predicted as floats.
+Inference-error component of the loss is the squared-error on X0 predictions, averaged over all voxels (MSE)</p>
+<dl class="simple">
+<dt>The total loss consists of:</dt><dd><ul class="simple">
+<li><p>The MSE</p></li>
+<li><p>An optional component that relates to the cost of the detector</p></li>
+</ul>
+</dd>
+</dl>
+<p>The total loss is the sum of these, with the cost-component being rescaled by a coefficient characterising its relative importance.</p>
+<p>The optional cost component is included as a budget weighting, which gradually increases with the current cost up to a predefined budget,
+after which it increases rapidly, but smoothly.
+Be default, the budget is based on a sigmoid centred at the budget, which linearly increases after the budget is exceeded.
+A less steep version is selectable, which flattens out slightly for high costs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target_budget</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – If not None, will include a cost component in the loss configured for the specified budget.
+Should be specified in the same currency units as the detector cost.</p></li>
+<li><p><strong>budget_smoothing</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – controls how quickly the budget term rises with cost; lower values =&gt; slower rise</p></li>
+<li><p><strong>cost_coef</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]) – Balancing coefficient used to multiply the budget term prior to its addition to the error component of the loss.
+If set to None, it will be set equal to the inference-error computed the first time the loss is computed</p></li>
+<li><p><strong>steep_budget</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – If True, will use a linearly increasing budget term when the budget is exceeded,
+otherwise the budget term will flatten off for very high costs</p></li>
+<li><p><strong>debug</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – If True, will print out information about the loss whenever it is evaluated</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelX0Loss._abc_impl">
+<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelX0Loss._abc_impl" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelX0Loss._backward_hooks">
+<span class="sig-name descname"><span class="pre">_backward_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelX0Loss._backward_hooks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelX0Loss._buffers">
+<span class="sig-name descname"><span class="pre">_buffers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelX0Loss._buffers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelX0Loss._forward_hooks">
+<span class="sig-name descname"><span class="pre">_forward_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelX0Loss._forward_hooks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelX0Loss._forward_pre_hooks">
+<span class="sig-name descname"><span class="pre">_forward_pre_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelX0Loss._forward_pre_hooks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelX0Loss._get_inference_loss">
+<span class="sig-name descname"><span class="pre">_get_inference_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inv_pred_weight</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/loss/loss.html#VoxelX0Loss._get_inference_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelX0Loss._get_inference_loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the MSE of the predictions against the true voxelwise X0s.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pred</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (z,x,y) voxelwise X0 predictions from the inference</p></li>
+<li><p><strong>inv_pred_weight</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – weight that divides the unreduced squared error loss between the predictions and targets, prior to averaging</p></li>
+<li><p><strong>volume</strong> (<a class="reference internal" href="tomopt.volume.html#tomopt.volume.volume.Volume" title="tomopt.volume.volume.Volume"><code class="xref py py-class docutils literal notranslate"><span class="pre">Volume</span></code></a>) – Volume containing the passive volume that was being predicted</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The MSE for the predictions</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelX0Loss._is_full_backward_hook">
+<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelX0Loss._is_full_backward_hook" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelX0Loss._load_state_dict_pre_hooks">
+<span class="sig-name descname"><span class="pre">_load_state_dict_pre_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelX0Loss._load_state_dict_pre_hooks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelX0Loss._modules">
+<span class="sig-name descname"><span class="pre">_modules</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'Module'</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelX0Loss._modules" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelX0Loss._non_persistent_buffers_set">
+<span class="sig-name descname"><span class="pre">_non_persistent_buffers_set</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelX0Loss._non_persistent_buffers_set" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelX0Loss._parameters">
+<span class="sig-name descname"><span class="pre">_parameters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Parameter</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelX0Loss._parameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelX0Loss._state_dict_hooks">
+<span class="sig-name descname"><span class="pre">_state_dict_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelX0Loss._state_dict_hooks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelX0Loss.sub_losses">
+<span class="sig-name descname"><span class="pre">sub_losses</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelX0Loss.sub_losses" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelX0Loss.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelX0Loss.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-tomopt.optimisation.loss.sub_losses">
+<span id="tomopt-optimisation-loss-sub-losses-module"></span><h2>tomopt.optimisation.loss.sub_losses module<a class="headerlink" href="#module-tomopt.optimisation.loss.sub_losses" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="tomopt.optimisation.loss.sub_losses.integer_class_loss">
+<span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.loss.sub_losses.</span></span><span class="sig-name descname"><span class="pre">integer_class_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">int_probs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pred_start_int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_mse</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/loss/sub_losses.html#integer_class_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.loss.sub_losses.integer_class_loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loss for classifying integers, when regression is not applicable.
+It assumed that the the integers really are quantifiably comparable, and not categorical codes of classes.</p>
+<p>Like multiclass-classification, predictions are a probabilities for each possible integer,
+but the ICL aims to penalise close predictions less than far-off ones:
+For a target of 3 and a close prediction of <cite>softmax([1,3,10,5,5,3,1])</cite> and a far-off prediction of <cite>softmax([10,3,1,5,5,3,1])</cite>,
+the categorical cross-entropy produces the same loss for both predictions (5.0154) despite the close prediction having a higher probability near the target.</p>
+<p>ICL instead computes the absolute error, or squared error, between each of the possible integers and the true target.
+These errors are then normalised, weighted by the predicted probabilities, and summed.
+I.e. integers close to the target have a lower error, and these are given greater weight in the sum if they have a higher probability.</p>
+<p>For the example, the ICL produces a loss of 1.0007 for the close prediction, and 8.8773 for the far-off one.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>int_probs</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (<a href="#id1"><span class="problematic" id="id2">*</span></a>,integers) tensor of predicted probabilities</p></li>
+<li><p><strong>target_int</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (*) tensor of target integers</p></li>
+<li><p><strong>pred_start_int</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – the integer that the zeroth probability in predictions corresponds to</p></li>
+<li><p><strong>use_mse</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – whether to compute errors as absolute or squared</p></li>
+<li><p><strong>weight</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]) – Optional (*) tensor of multiplicative weights for the unreduced ICLs</p></li>
+<li><p><strong>reduction</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – ‘mean’ return the average ICL, ‘sum’ sum the ICLs, ‘none’, return the individual ICLs</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+             </article>
+             
+            </div>
+            <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="tomopt.optimisation.wrapper.html" class="btn btn-neutral float-right" title="tomopt.optimisation.wrapper package" accesskey="n" rel="next">Next <img src="_static/images/chevron-right-orange.svg" class="next-page"></a>
+      
+      
+        <a href="tomopt.optimisation.data.html" class="btn btn-neutral" title="tomopt.optimisation.data package" accesskey="p" rel="prev"><img src="_static/images/chevron-right-orange.svg" class="previous-page"> Previous</a>
+      
+    </div>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2021-2022, TomOpt Authors.
+
+    </p>
+  </div>
+    
+      <div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/GilesStrong/tomopt_sphinx_theme">theme</a> based on a <a href="https://github.com/pytorch/pytorch_sphinx_theme">theme</a> provided by <a href="https://pytorch.org/">PyTorch</a> based on a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+     
+
+</footer>
+
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">tomopt.optimisation.loss package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-tomopt.optimisation.loss.loss">tomopt.optimisation.loss.loss module</a><ul>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsDetectorLoss"><code class="docutils literal notranslate"><span class="pre">AbsDetectorLoss</span></code></a><ul>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsDetectorLoss._abc_impl"><code class="docutils literal notranslate"><span class="pre">AbsDetectorLoss._abc_impl</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsDetectorLoss._compute_cost_coef"><code class="docutils literal notranslate"><span class="pre">AbsDetectorLoss._compute_cost_coef()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsDetectorLoss._get_budget_coef"><code class="docutils literal notranslate"><span class="pre">AbsDetectorLoss._get_budget_coef()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsDetectorLoss._get_cost_loss"><code class="docutils literal notranslate"><span class="pre">AbsDetectorLoss._get_cost_loss()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsDetectorLoss._get_inference_loss"><code class="docutils literal notranslate"><span class="pre">AbsDetectorLoss._get_inference_loss()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsDetectorLoss._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">AbsDetectorLoss._is_full_backward_hook</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsDetectorLoss.forward"><code class="docutils literal notranslate"><span class="pre">AbsDetectorLoss.forward()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsDetectorLoss.training"><code class="docutils literal notranslate"><span class="pre">AbsDetectorLoss.training</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss"><code class="docutils literal notranslate"><span class="pre">AbsMaterialClassLoss</span></code></a><ul>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss._abc_impl"><code class="docutils literal notranslate"><span class="pre">AbsMaterialClassLoss._abc_impl</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss._backward_hooks"><code class="docutils literal notranslate"><span class="pre">AbsMaterialClassLoss._backward_hooks</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss._buffers"><code class="docutils literal notranslate"><span class="pre">AbsMaterialClassLoss._buffers</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss._forward_hooks"><code class="docutils literal notranslate"><span class="pre">AbsMaterialClassLoss._forward_hooks</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss._forward_pre_hooks"><code class="docutils literal notranslate"><span class="pre">AbsMaterialClassLoss._forward_pre_hooks</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">AbsMaterialClassLoss._is_full_backward_hook</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss._load_state_dict_pre_hooks"><code class="docutils literal notranslate"><span class="pre">AbsMaterialClassLoss._load_state_dict_pre_hooks</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss._modules"><code class="docutils literal notranslate"><span class="pre">AbsMaterialClassLoss._modules</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss._non_persistent_buffers_set"><code class="docutils literal notranslate"><span class="pre">AbsMaterialClassLoss._non_persistent_buffers_set</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss._parameters"><code class="docutils literal notranslate"><span class="pre">AbsMaterialClassLoss._parameters</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss._state_dict_hooks"><code class="docutils literal notranslate"><span class="pre">AbsMaterialClassLoss._state_dict_hooks</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss.sub_losses"><code class="docutils literal notranslate"><span class="pre">AbsMaterialClassLoss.sub_losses</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss.training"><code class="docutils literal notranslate"><span class="pre">AbsMaterialClassLoss.training</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeClassLoss"><code class="docutils literal notranslate"><span class="pre">VolumeClassLoss</span></code></a><ul>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeClassLoss._abc_impl"><code class="docutils literal notranslate"><span class="pre">VolumeClassLoss._abc_impl</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeClassLoss._backward_hooks"><code class="docutils literal notranslate"><span class="pre">VolumeClassLoss._backward_hooks</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeClassLoss._buffers"><code class="docutils literal notranslate"><span class="pre">VolumeClassLoss._buffers</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeClassLoss._forward_hooks"><code class="docutils literal notranslate"><span class="pre">VolumeClassLoss._forward_hooks</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeClassLoss._forward_pre_hooks"><code class="docutils literal notranslate"><span class="pre">VolumeClassLoss._forward_pre_hooks</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeClassLoss._get_inference_loss"><code class="docutils literal notranslate"><span class="pre">VolumeClassLoss._get_inference_loss()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeClassLoss._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">VolumeClassLoss._is_full_backward_hook</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeClassLoss._load_state_dict_pre_hooks"><code class="docutils literal notranslate"><span class="pre">VolumeClassLoss._load_state_dict_pre_hooks</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeClassLoss._modules"><code class="docutils literal notranslate"><span class="pre">VolumeClassLoss._modules</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeClassLoss._non_persistent_buffers_set"><code class="docutils literal notranslate"><span class="pre">VolumeClassLoss._non_persistent_buffers_set</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeClassLoss._parameters"><code class="docutils literal notranslate"><span class="pre">VolumeClassLoss._parameters</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeClassLoss._state_dict_hooks"><code class="docutils literal notranslate"><span class="pre">VolumeClassLoss._state_dict_hooks</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeClassLoss.sub_losses"><code class="docutils literal notranslate"><span class="pre">VolumeClassLoss.sub_losses</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeClassLoss.training"><code class="docutils literal notranslate"><span class="pre">VolumeClassLoss.training</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss"><code class="docutils literal notranslate"><span class="pre">VolumeIntClassLoss</span></code></a><ul>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss._abc_impl"><code class="docutils literal notranslate"><span class="pre">VolumeIntClassLoss._abc_impl</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss._backward_hooks"><code class="docutils literal notranslate"><span class="pre">VolumeIntClassLoss._backward_hooks</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss._buffers"><code class="docutils literal notranslate"><span class="pre">VolumeIntClassLoss._buffers</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss._forward_hooks"><code class="docutils literal notranslate"><span class="pre">VolumeIntClassLoss._forward_hooks</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss._forward_pre_hooks"><code class="docutils literal notranslate"><span class="pre">VolumeIntClassLoss._forward_pre_hooks</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss._get_inference_loss"><code class="docutils literal notranslate"><span class="pre">VolumeIntClassLoss._get_inference_loss()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">VolumeIntClassLoss._is_full_backward_hook</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss._load_state_dict_pre_hooks"><code class="docutils literal notranslate"><span class="pre">VolumeIntClassLoss._load_state_dict_pre_hooks</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss._modules"><code class="docutils literal notranslate"><span class="pre">VolumeIntClassLoss._modules</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss._non_persistent_buffers_set"><code class="docutils literal notranslate"><span class="pre">VolumeIntClassLoss._non_persistent_buffers_set</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss._parameters"><code class="docutils literal notranslate"><span class="pre">VolumeIntClassLoss._parameters</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss._state_dict_hooks"><code class="docutils literal notranslate"><span class="pre">VolumeIntClassLoss._state_dict_hooks</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss.sub_losses"><code class="docutils literal notranslate"><span class="pre">VolumeIntClassLoss.sub_losses</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss.training"><code class="docutils literal notranslate"><span class="pre">VolumeIntClassLoss.training</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelClassLoss"><code class="docutils literal notranslate"><span class="pre">VoxelClassLoss</span></code></a><ul>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelClassLoss._abc_impl"><code class="docutils literal notranslate"><span class="pre">VoxelClassLoss._abc_impl</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelClassLoss._backward_hooks"><code class="docutils literal notranslate"><span class="pre">VoxelClassLoss._backward_hooks</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelClassLoss._buffers"><code class="docutils literal notranslate"><span class="pre">VoxelClassLoss._buffers</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelClassLoss._forward_hooks"><code class="docutils literal notranslate"><span class="pre">VoxelClassLoss._forward_hooks</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelClassLoss._forward_pre_hooks"><code class="docutils literal notranslate"><span class="pre">VoxelClassLoss._forward_pre_hooks</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelClassLoss._get_inference_loss"><code class="docutils literal notranslate"><span class="pre">VoxelClassLoss._get_inference_loss()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelClassLoss._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">VoxelClassLoss._is_full_backward_hook</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelClassLoss._load_state_dict_pre_hooks"><code class="docutils literal notranslate"><span class="pre">VoxelClassLoss._load_state_dict_pre_hooks</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelClassLoss._modules"><code class="docutils literal notranslate"><span class="pre">VoxelClassLoss._modules</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelClassLoss._non_persistent_buffers_set"><code class="docutils literal notranslate"><span class="pre">VoxelClassLoss._non_persistent_buffers_set</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelClassLoss._parameters"><code class="docutils literal notranslate"><span class="pre">VoxelClassLoss._parameters</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelClassLoss._state_dict_hooks"><code class="docutils literal notranslate"><span class="pre">VoxelClassLoss._state_dict_hooks</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelClassLoss.sub_losses"><code class="docutils literal notranslate"><span class="pre">VoxelClassLoss.sub_losses</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelClassLoss.training"><code class="docutils literal notranslate"><span class="pre">VoxelClassLoss.training</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelX0Loss"><code class="docutils literal notranslate"><span class="pre">VoxelX0Loss</span></code></a><ul>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelX0Loss._abc_impl"><code class="docutils literal notranslate"><span class="pre">VoxelX0Loss._abc_impl</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelX0Loss._backward_hooks"><code class="docutils literal notranslate"><span class="pre">VoxelX0Loss._backward_hooks</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelX0Loss._buffers"><code class="docutils literal notranslate"><span class="pre">VoxelX0Loss._buffers</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelX0Loss._forward_hooks"><code class="docutils literal notranslate"><span class="pre">VoxelX0Loss._forward_hooks</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelX0Loss._forward_pre_hooks"><code class="docutils literal notranslate"><span class="pre">VoxelX0Loss._forward_pre_hooks</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelX0Loss._get_inference_loss"><code class="docutils literal notranslate"><span class="pre">VoxelX0Loss._get_inference_loss()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelX0Loss._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">VoxelX0Loss._is_full_backward_hook</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelX0Loss._load_state_dict_pre_hooks"><code class="docutils literal notranslate"><span class="pre">VoxelX0Loss._load_state_dict_pre_hooks</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelX0Loss._modules"><code class="docutils literal notranslate"><span class="pre">VoxelX0Loss._modules</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelX0Loss._non_persistent_buffers_set"><code class="docutils literal notranslate"><span class="pre">VoxelX0Loss._non_persistent_buffers_set</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelX0Loss._parameters"><code class="docutils literal notranslate"><span class="pre">VoxelX0Loss._parameters</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelX0Loss._state_dict_hooks"><code class="docutils literal notranslate"><span class="pre">VoxelX0Loss._state_dict_hooks</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelX0Loss.sub_losses"><code class="docutils literal notranslate"><span class="pre">VoxelX0Loss.sub_losses</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelX0Loss.training"><code class="docutils literal notranslate"><span class="pre">VoxelX0Loss.training</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-tomopt.optimisation.loss.sub_losses">tomopt.optimisation.loss.sub_losses module</a><ul>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.sub_losses.integer_class_loss"><code class="docutils literal notranslate"><span class="pre">integer_class_loss()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  
+
+
+  
+
+     
+       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+         <script src="_static/jquery.js"></script>
+         <script src="_static/underscore.js"></script>
+         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+         <script src="_static/doctools.js"></script>
+         <script src="_static/sphinx_highlight.js"></script>
+     
+
+  
+
+  <script type="text/javascript" src="_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="_static/js/vendor/bootstrap.min.js"></script>
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 text-center">
+          <h2>Docs</h2>
+          <p>Access comprehensive developer and user documentation for TomOpt</p>
+          <a class="with-right-arrow" href="https://tomopt.readthedocs.io/en/stable">View Docs</a>
+        </div>
+
+        <div class="col-md-6 text-center">
+          <h2>Tutorials</h2>
+          <p>Get tutorials for beginner and advanced researchers demonstrating many of the features of TomOpt</p>
+          <a class="with-right-arrow" href="https://github.com/GilesStrong/mode_muon_tomography#examples">View Tutorials</a>
+        </div>
+
+        <!-- <div class="col-md-4 text-center">
+          <h2>Resources</h2>
+          <p>Find development resources and get your questions answered</p>
+          <a class="with-right-arrow" href="">View Resources</a>
+        </div> -->
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-logo-wrapper">
+        <a href="https://tomopt.readthedocs.io/en/stable" class="footer-logo"></a>
+      </div>
+
+      <div class="footer-links-wrapper">
+        <div class="footer-links-col">
+          <ul>
+            <!-- <li class="list-title"><a href="https://tomopt.readthedocs.io/en/stable">TomOpt</a></li> -->
+            <!-- <li><a href="">Get Started</a></li> -->
+            <!-- <li><a href="">Features</a></li> -->
+            <!-- <li><a href="">Ecosystem</a></li> -->
+            <!-- <li><a href="">Blog</a></li> -->
+            <!-- <li><a href="">Resources</a></li> -->
+          </ul>
+        </div>
+
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="">Support</a></li>
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography#examples">Tutorials</a></li>
+            <li><a href="https://tomopt.readthedocs.io/en/stable">Docs</a></li>
+            <!-- <li><a href="" target="_blank">Discuss</a></li> -->
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography/blob/main/CHANGES.md" target="_blank">Change Log</a></li>
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography/issues" target="_blank">Github Issues</a></li>
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography/blob/main/CITATION.md" target="_blank">Citation</a></li>
+            <!-- <li><a href="" target="_blank">Slack</a></li> -->
+            <!-- <li><a href="https://github.com/GilesStrong/mode_muon_tomography/blob/main/CONTRIBUTING.md" target="_blank">Contributing</a></li> -->
+          </ul>
+        </div>
+
+        <!-- <div class="footer-links-col follow-us-col">
+          <ul>
+            <li class="list-title">Follow Us</li>
+            <li>
+              <div id="mc_embed_signup">
+                <form
+                  action="https://twitter.us14.list-manage.com/subscribe/post?u=75419c71fe0a935e53dfa4a3f&id=91d0dccd39"
+                  method="post"
+                  id="mc-embedded-subscribe-form"
+                  name="mc-embedded-subscribe-form"
+                  class="email-subscribe-form validate"
+                  target="_blank"
+                  novalidate>
+                  <div id="mc_embed_signup_scroll" class="email-subscribe-form-fields-wrapper">
+                    <div class="mc-field-group">
+                      <label for="mce-EMAIL" style="display:none;">Email Address</label>
+                      <input type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL" placeholder="Email Address">
+                    </div>
+
+                    <div id="mce-responses" class="clear">
+                      <div class="response" id="mce-error-response" style="display:none"></div>
+                      <div class="response" id="mce-success-response" style="display:none"></div>
+                    </div>    real people should not fill this in and expect good things - do not remove this or risk form bot signups
+
+                    <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_75419c71fe0a935e53dfa4a3f_91d0dccd39" tabindex="-1" value=""></div>
+
+                    <div class="clear">
+                      <input type="submit" value="" name="subscribe" id="mc-embedded-subscribe" class="button email-subscribe-button">
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+            </li>
+          </ul>
+
+          <div class="footer-social-icons">
+            <a href="" target="_blank" class="facebook"></a>
+            <a href="" target="_blank" class="twitter"></a>
+          </div>
+        </div> -->
+      </div>
+    </div>
+  </footer>
+
+  <!-- <div class="cookie-banner-wrapper">
+  <div class="container">
+    <p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+    <img class="close-button" src="_static/images/pytorch-x.svg">
+  </div>
+</div> -->
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://tomopt.readthedocs.io/en/stable" aria-label="TomOpt"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <!-- <li>
+            <a href="#">Get Started</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="#">Features</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="#">Ecosystem</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="">Blog</a>
+          </li> -->
+
+          <li>
+            <a href="https://github.com/GilesStrong/mode_muon_tomography#examples">Tutorials</a>
+          </li>
+
+          <li>
+            <a href="https://tomopt.readthedocs.io/en/stable">Docs</a>
+          </li>
+
+          <!-- <li>
+            <a href="">Resources</a>
+          </li> -->
+
+          <li>
+            <a href="https://github.com/GilesStrong/mode_muon_tomography">Github</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+</html>

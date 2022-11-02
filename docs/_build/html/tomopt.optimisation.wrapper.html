@@ -1,0 +1,1778 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>tomopt.optimisation.wrapper package &mdash; TomOpt  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/tomopt_logo.png"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="tomopt.plotting package" href="tomopt.plotting.html" />
+    <link rel="prev" title="tomopt.optimisation.loss package" href="tomopt.optimisation.loss.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://tomopt.readthedocs.io/en/stable" aria-label="TomOpt"></a>
+
+      <div class="main-menu">
+        <ul>
+          <!-- <li>
+            <a href="">Get Started</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="">Features</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="">Ecosystem</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="">Blog</a>
+          </li> -->
+
+          <li>
+            <a href="https://github.com/GilesStrong/mode_muon_tomography#examples">Tutorials</a>
+          </li>
+
+          <li>
+            <a href="https://tomopt.readthedocs.io/en/stable">Docs</a>
+          </li>
+
+          <!-- <li>
+            <a href="">Resources</a>
+          </li> -->
+
+          <li>
+            <a href="https://github.com/GilesStrong/mode_muon_tomography">Github</a>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+
+  </div>
+</div>
+
+
+<body class="pytorch-body">
+
+   
+
+    
+
+    <div class="table-of-contents-link-wrapper">
+      <span>Table of Contents</span>
+      <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+    </div>
+
+    <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+      <div class="pytorch-side-scroll">
+        <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          <div class="pytorch-left-menu-search">
+            
+
+            
+              
+              
+            
+
+            
+
+
+  
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+            
+          </div>
+
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#testing">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#external-repos">External repos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#authors">Authors</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#testing">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#external-repos">External repos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#authors">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tomopt.html">tomopt package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tomopt.muon.html">tomopt.muon package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tomopt.volume.html">tomopt.volume package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tomopt.inference.html">tomopt.inference package</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="tomopt.optimisation.html">tomopt.optimisation package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tomopt.plotting.html">tomopt.plotting package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tomopt.benchmarks.html">tomopt.benchmarks package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <div class="pytorch-container">
+      <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+        <div class="pytorch-breadcrumbs-wrapper">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="index.html">
+          
+            Docs
+          
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="tomopt.html">tomopt package</a> &gt;</li>
+        
+          <li><a href="tomopt.optimisation.html">tomopt.optimisation package</a> &gt;</li>
+        
+      <li>tomopt.optimisation.wrapper package</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="_sources/tomopt.optimisation.wrapper.rst.txt" rel="nofollow"><img src="_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+        </div>
+
+        <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+      </div>
+
+      <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+        <div class="pytorch-content-left">
+
+        
+          
+          <div class="rst-content">
+          
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+             <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+              
+  <section id="tomopt-optimisation-wrapper-package">
+<h1>tomopt.optimisation.wrapper package<a class="headerlink" href="#tomopt-optimisation-wrapper-package" title="Permalink to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="module-tomopt.optimisation.wrapper.volume_wrapper">
+<span id="tomopt-optimisation-wrapper-volume-wrapper-module"></span><h2>tomopt.optimisation.wrapper.volume_wrapper module<a class="headerlink" href="#module-tomopt.optimisation.wrapper.volume_wrapper" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.wrapper.volume_wrapper.</span></span><span class="sig-name descname"><span class="pre">AbsVolumeWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partial_opts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partial_scatter_inferrer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partial_volume_inferrer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu_generator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/wrapper/volume_wrapper.html#AbsVolumeWrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Abstract base class for optimisation volume wrappers.
+Inheriting classes will need to override <a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._build_opt" title="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._build_opt"><code class="xref py py-meth docutils literal notranslate"><span class="pre">_build_opt()</span></code></a>
+according to the detector parameters that need to be optimised.</p>
+<p>Volume wrappers are designed to contain a <a class="reference internal" href="tomopt.volume.html#tomopt.volume.volume.Volume" title="tomopt.volume.volume.Volume"><code class="xref py py-class docutils literal notranslate"><span class="pre">Volume</span></code></a> and provide means of optimising the detectors it contains,
+via their <a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.fit" title="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.fit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a> method.</p>
+<p>Wrappers also provide for various quality-of-life methods, such as saving and loading detector configurations,
+and computing predictions with a fixed detector (<a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.predict" title="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.predict"><code class="xref py py-meth docutils literal notranslate"><span class="pre">predict()</span></code></a>)</p>
+<p>Fitting of a detector proceeds as training and validation epochs, each of which contains multiple batches of passive volumes.
+For each volume in a batch, the loss is evaluated using multiple batches of muons.
+The whole loop is:</p>
+<ol class="arabic simple">
+<li><dl class="simple">
+<dt>for epoch in <cite>n_epochs</cite>:</dt><dd><ol class="upperalpha simple">
+<li><p><cite>loss</cite> = 0</p></li>
+<li><dl class="simple">
+<dt>for <cite>p</cite>, <cite>passive</cite> in enumerate(<cite>trn_passives</cite>):</dt><dd><ol class="loweralpha simple">
+<li><p>load <cite>passive</cite> into passive volume</p></li>
+<li><dl class="simple">
+<dt>for muon_batch in range(<cite>n_mu_per_volume</cite>//<cite>mu_bs</cite>):</dt><dd><ol class="lowerroman simple">
+<li><p>Irradiate volume with <cite>mu_bs</cite> muons</p></li>
+<li><p>Infer passive volume</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p>Compute loss based on precision and cost, and add to <cite>loss</cite></p></li>
+<li><dl class="simple">
+<dt>if <cite>p`+1 % `passive_bs</cite> == 0:</dt><dd><ol class="lowerroman simple">
+<li><p><cite>loss</cite> = <cite>loss</cite>/<cite>passive_bs</cite></p></li>
+<li><p>Backpropagate <cite>loss</cite> and update detector parameters</p></li>
+<li><p><cite>loss</cite> = 0</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>if len(<cite>trn_passives</cite>)-(<cite>p`+1) &lt; `passive_bs</cite>:</dt><dd><ol class="lowerroman simple">
+<li><p>Break</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p><cite>val_loss</cite> = 0</p></li>
+<li><dl class="simple">
+<dt>for <cite>p</cite>, <cite>passive</cite> in enumerate(<cite>val_passives</cite>):</dt><dd><ol class="loweralpha simple">
+<li><p>load <cite>passive</cite> into passive volume</p></li>
+<li><dl class="simple">
+<dt>for muon_batch in range(<cite>n_mu_per_volume</cite>//<cite>mu_bs</cite>):</dt><dd><ol class="lowerroman simple">
+<li><p>Irradiate volume with <cite>mu_bs</cite> muons</p></li>
+<li><p>Infer passive volume</p></li>
+<li><p>Compute loss based on precision and cost, and add to <cite>val_loss</cite></p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>if len(<cite>val_passives</cite>)-(<cite>p`+1) &lt; `passive_bs</cite>:</dt><dd><ol class="lowerroman simple">
+<li><p>Break</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p><cite>val_loss</cite> = <cite>val_loss</cite>/<cite>p</cite></p></li>
+</ol>
+</dd>
+</dl>
+</li>
+</ol>
+<dl class="simple">
+<dt>In implementation, the loop is broken up into several functions:</dt><dd><ul class="simple">
+<li><p><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._fit_epoch" title="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._fit_epoch"><code class="xref py py-meth docutils literal notranslate"><span class="pre">_fit_epoch()</span></code></a> runs one full epoch of volumes and updates for both training and validation</p></li>
+<li><p><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volumes" title="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volumes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">_scan_volumes()</span></code></a> runs over all training/validation volumes, updating parameters when necessary</p></li>
+<li><p><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volume" title="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volume"><code class="xref py py-meth docutils literal notranslate"><span class="pre">_scan_volume()</span></code></a> irradiates a single volume with muons multiple batches, and computes the loss for that volume</p></li>
+</ul>
+</dd>
+</dl>
+<p>The optimisation and prediction loops are supported by a stateful callback mechanism.
+The base callback is <a class="reference internal" href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.callback.Callback" title="tomopt.optimisation.callbacks.callback.Callback"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callback</span></code></a>, which can interject at various points in the loops.
+All aspects of the optimisation and prediction are stored in a <a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams" title="tomopt.optimisation.wrapper.volume_wrapper.FitParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">FitParams</span></code></a> data class,
+since the callbacks are also stored there, and the callbacks have a reference to the wrapper, they are able to read/write to the <cite>FitParams</cite> and be
+aware of other callbacks that are running.</p>
+<p>Accounting for the interjection calls (<cite>on_*_begin</cite> &amp; <cite>on_*_end</cite>), the full optimisation loop is:</p>
+<ol class="arabic">
+<li><p>Associate callbacks with wrapper (<cite>set_wrapper</cite>)</p></li>
+<li><p><cite>on_train_begin</cite></p></li>
+<li><dl>
+<dt>for epoch in <cite>n_epochs</cite>:</dt><dd><ol class="upperalpha">
+<li><p><cite>state</cite> = “train”</p></li>
+<li><p><cite>on_epoch_begin</cite></p></li>
+<li><dl>
+<dt>for <cite>p</cite>, <cite>passive</cite> in enumerate(<cite>trn_passives</cite>):</dt><dd><ol class="loweralpha">
+<li><dl class="simple">
+<dt>if <cite>p</cite> % <cite>passive_bs</cite> == 0:</dt><dd><ol class="lowerroman simple">
+<li><p><cite>on_volume_batch_begin</cite></p></li>
+<li><p><cite>loss</cite> = 0</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p>load <cite>passive</cite> into passive volume</p></li>
+<li><p><cite>on_volume_begin</cite></p></li>
+<li><dl class="simple">
+<dt>for muon_batch in range(<cite>n_mu_per_volume</cite>//<cite>mu_bs</cite>):</dt><dd><ol class="lowerroman simple">
+<li><p><cite>on_mu_batch_begin</cite></p></li>
+<li><p>Irradiate volume with <cite>mu_bs</cite> muons</p></li>
+<li><p>Infer scatter locations</p></li>
+<li><p><cite>on_scatter_end</cite></p></li>
+<li><p>Infer x0 and append to list of x0 predictions</p></li>
+<li><p><cite>on_mu_batch_end</cite></p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p><cite>on_x0_pred_begin</cite></p></li>
+<li><p>Compute overall x0 prediction</p></li>
+<li><p><cite>on_x0_pred_end</cite></p></li>
+<li><p>Compute loss based on precision and cost, and add to <cite>loss</cite></p></li>
+<li><dl>
+<dt>if <cite>p`+1 % `passive_bs</cite> == 0:</dt><dd><ol class="lowerroman simple">
+<li><p><cite>loss</cite> = <cite>loss</cite>/<cite>passive_bs</cite></p></li>
+<li><p><cite>on_volume_batch_end</cite></p></li>
+<li><p>Zero parameter gradients</p></li>
+<li><p><cite>on_backwards_begin</cite></p></li>
+<li><p>Backpropagate <cite>loss</cite> and compute parameter gradients</p></li>
+<li><p><cite>on_backwards_end</cite></p></li>
+<li><p>Update detector parameters</p></li>
+</ol>
+<p>viii. Ensure detector parameters are within physical boundaries (<cite>AbsDetectorLayer.conform_detector</cite>)
+viv. <cite>loss</cite> = 0</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>if len(<cite>trn_passives</cite>)-(<cite>p`+1) &lt; `passive_bs</cite>:</dt><dd><ol class="lowerroman simple">
+<li><p>Break</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p><cite>on_epoch_end</cite></p></li>
+<li><p><cite>state</cite> = “valid”</p></li>
+<li><p><cite>on_epoch_begin</cite></p></li>
+<li><dl class="simple">
+<dt>for <cite>p</cite>, <cite>passive</cite> in enumerate(<cite>val_passives</cite>):</dt><dd><ol class="loweralpha simple">
+<li><dl class="simple">
+<dt>if <cite>p</cite> % <cite>passive_bs</cite> == 0:</dt><dd><ol class="lowerroman simple">
+<li><p><cite>on_volume_batch_begin</cite></p></li>
+<li><p><cite>loss</cite> = 0</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p><cite>on_volume_begin</cite></p></li>
+<li><dl class="simple">
+<dt>for muon_batch in range(<cite>n_mu_per_volume</cite>//<cite>mu_bs</cite>):</dt><dd><ol class="lowerroman simple">
+<li><p><cite>on_mu_batch_begin</cite></p></li>
+<li><p>Irradiate volume with <cite>mu_bs</cite> muons</p></li>
+<li><p>Infer scatter locations</p></li>
+<li><p><cite>on_scatter_end</cite></p></li>
+<li><p>Infer x0 and append to list of x0 predictions</p></li>
+<li><p><cite>on_mu_batch_end</cite></p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p><cite>on_x0_pred_begin</cite></p></li>
+<li><p>Compute overall x0 prediction</p></li>
+<li><p><cite>on_x0_pred_end</cite></p></li>
+<li><p>Compute loss based on precision and cost, and add to <cite>loss</cite></p></li>
+<li><dl class="simple">
+<dt>if <cite>p`+1 % `passive_bs</cite> == 0:</dt><dd><ol class="lowerroman simple">
+<li><p><cite>loss</cite> = <cite>loss</cite>/<cite>passive_bs</cite></p></li>
+<li><p><cite>on_volume_batch_end</cite></p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>if len(<cite>val_passives</cite>)-(<cite>p`+1) &lt; `passive_bs</cite>:</dt><dd><ol class="lowerroman simple">
+<li><p>Break</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p><cite>on_epoch_end</cite></p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p><cite>on_train_end</cite></p></li>
+</ol>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>volume</strong> (<a class="reference internal" href="tomopt.volume.html#tomopt.volume.volume.Volume" title="tomopt.volume.volume.Volume"><code class="xref py py-class docutils literal notranslate"><span class="pre">Volume</span></code></a>) – the volume containing the detectors to be optimised</p></li>
+<li><p><strong>partial_opts</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Parameter</span></code>]], <code class="xref py py-class docutils literal notranslate"><span class="pre">Optimizer</span></code>]]) – dictionary of uninitialised optimisers to be associated with the detector parameters, via <cite>_build_opt</cite></p></li>
+<li><p><strong>loss_func</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<a class="reference internal" href="tomopt.optimisation.loss.html#tomopt.optimisation.loss.loss.AbsDetectorLoss" title="tomopt.optimisation.loss.loss.AbsDetectorLoss"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsDetectorLoss</span></code></a>]) – Optional loss function (required if planning to optimise the detectors)</p></li>
+<li><p><strong>partial_scatter_inferrer</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code>[<a class="reference internal" href="tomopt.inference.html#tomopt.inference.scattering.AbsScatterBatch" title="tomopt.inference.scattering.AbsScatterBatch"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsScatterBatch</span></code></a>]) – uninitialised class to be used for inferring muon scatter variables and trajectories</p></li>
+<li><p><strong>partial_volume_inferrer</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code>[<a class="reference internal" href="tomopt.inference.html#tomopt.inference.volume.AbsVolumeInferrer" title="tomopt.inference.volume.AbsVolumeInferrer"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsVolumeInferrer</span></code></a>]) – uninitialised class to be used for inferring volume targets</p></li>
+<li><p><strong>mu_generator</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<a class="reference internal" href="tomopt.muon.html#tomopt.muon.generation.AbsMuonGenerator" title="tomopt.muon.generation.AbsMuonGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsMuonGenerator</span></code></a>]) – Optional generator class for muons. If None, will use <code class="xref py py-meth docutils literal notranslate"><span class="pre">from_volume()</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._abc_impl">
+<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._abc_impl" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._build_opt">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_build_opt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/wrapper/volume_wrapper.html#AbsVolumeWrapper._build_opt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._build_opt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inheriting classes should override this method to initialise the optimisers by associating them to the detector parameters. e.g.:
+self.opts = {‘res_opt’: res_opt((l.resolution for l in self.volume.get_detectors())),</p>
+<blockquote>
+<div><p>‘eff_opt’: eff_opt((l.efficiency for l in self.volume.get_detectors()))}</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>kwargs</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Parameter</span></code>]], <code class="xref py py-class docutils literal notranslate"><span class="pre">Optimizer</span></code>]) – uninitialised optimisers passed as keyword arguments</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._fit_epoch">
+<span class="sig-name descname"><span class="pre">_fit_epoch</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/wrapper/volume_wrapper.html#AbsVolumeWrapper._fit_epoch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._fit_epoch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs through one training epoch (state = ‘train’), using <a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volumes" title="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volumes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">_scan_volumes()</span></code></a>.
+If validation volumes are present, will then run through one validation epoch (state = ‘valid’),
+again using <a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volumes" title="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volumes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">_scan_volumes()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volume">
+<span class="sig-name descname"><span class="pre">_scan_volume</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/wrapper/volume_wrapper.html#AbsVolumeWrapper._scan_volume"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volume" title="Permalink to this definition">¶</a></dt>
+<dd><p>Passes multiple batches of muons through a single volume, and infers the volume target.
+If in ‘train’ or ‘valid’ state, also computes the loss on the detector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volumes">
+<span class="sig-name descname"><span class="pre">_scan_volumes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">passives</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/wrapper/volume_wrapper.html#AbsVolumeWrapper._scan_volumes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volumes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Scans all volumes by splitting them into volume batches.
+Each volume is scanned via using <a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volume" title="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volume"><code class="xref py py-meth docutils literal notranslate"><span class="pre">_scan_volume()</span></code></a>.
+After each volume batch, if in ‘train’ state,the detector parameters will be updated using the loss of the volume batch and the optimisers.</p>
+<blockquote>
+<div><p>If not enough volumes remain to form a complete batch and in ‘train’ state, the method will end prematurely.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._sort_cbs">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_sort_cbs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cbs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/wrapper/volume_wrapper.html#AbsVolumeWrapper._sort_cbs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._sort_cbs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sorts callbacks into lists according to their type and whether other callbacks might need to be aware of them.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cbs</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.callback.Callback" title="tomopt.optimisation.callbacks.callback.Callback"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callback</span></code></a>]) – all callbacks being used</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of callbacks that act over a range of epochs
+logger callbacks: list of callbacks that record telemetry of the optimisation process
+metric: list of callbacks that compute performance metrics about the detector</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>cyclical callbacks</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_epochs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">passive_bs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_mu_per_volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu_bs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trn_passives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_passives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cbs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cb_savepath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Path('train_weights')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/wrapper/volume_wrapper.html#AbsVolumeWrapper.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs the fitting loop for the detectors over a specified number of epochs, using the provided volumes or volume generators.
+The optimisation loop can be supported by callbacks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_epochs</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – number of epochs to run for (a training and validation epoch only counts as one ‘epoch)</p></li>
+<li><p><strong>passive_bs</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – number of passive volumes to use per volume batch (detector updates occur after every volume batch in training mode)</p></li>
+<li><p><strong>n_mu_per_volume</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – number of muons to use in total when inferring the target of a single volume</p></li>
+<li><p><strong>mu_bs</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – number of muons to use per muon batch; multiple muon batches will be used until <cite>n_mu_per_volume</cite> is reached</p></li>
+<li><p><strong>trn_passives</strong> (<a class="reference internal" href="tomopt.optimisation.data.html#tomopt.optimisation.data.passives.PassiveYielder" title="tomopt.optimisation.data.passives.PassiveYielder"><code class="xref py py-class docutils literal notranslate"><span class="pre">PassiveYielder</span></code></a>) – passive volumes to use for optimising the detector</p></li>
+<li><p><strong>val_passives</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<a class="reference internal" href="tomopt.optimisation.data.html#tomopt.optimisation.data.passives.PassiveYielder" title="tomopt.optimisation.data.passives.PassiveYielder"><code class="xref py py-class docutils literal notranslate"><span class="pre">PassiveYielder</span></code></a>]) – optional passive volumes to use for evaluating the detector</p></li>
+<li><p><strong>cbs</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.callback.Callback" title="tomopt.optimisation.callbacks.callback.Callback"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callback</span></code></a>]]) – optional list of callbacks to use</p></li>
+<li><p><strong>cb_savepath</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code>) – location where callbacks should write/save any information</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.callback.Callback" title="tomopt.optimisation.callbacks.callback.Callback"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callback</span></code></a>]</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The list of callbacks</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.get_detectors">
+<span class="sig-name descname"><span class="pre">get_detectors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/wrapper/volume_wrapper.html#AbsVolumeWrapper.get_detectors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.get_detectors" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="tomopt.volume.html#tomopt.volume.layer.AbsDetectorLayer" title="tomopt.volume.layer.AbsDetectorLayer"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsDetectorLayer</span></code></a>]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of all <a class="reference internal" href="tomopt.volume.html#tomopt.volume.layer.AbsDetectorLayer" title="tomopt.volume.layer.AbsDetectorLayer"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsDetectorLayer</span></code></a> s in the volume, in the order of <cite>layers</cite> (normally decreasing z position)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.get_opt_lr">
+<span class="sig-name descname"><span class="pre">get_opt_lr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">opt</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/wrapper/volume_wrapper.html#AbsVolumeWrapper.get_opt_lr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.get_opt_lr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the learning rate of the specified optimiser.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>opt</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – string name of the optimiser requested</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The learning rate of the specified optimiser</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.get_opt_mom">
+<span class="sig-name descname"><span class="pre">get_opt_mom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">opt</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/wrapper/volume_wrapper.html#AbsVolumeWrapper.get_opt_mom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.get_opt_mom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the momentum coefficient/beta_1 of the specified optimiser.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>opt</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – string name of the optimiser requested</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The momentum coefficient/beta_1 of the specified optimiser</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.get_param_count">
+<span class="sig-name descname"><span class="pre">get_param_count</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trainable</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/wrapper/volume_wrapper.html#AbsVolumeWrapper.get_param_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.get_param_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return number of parameters in detector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>trainable</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – if true (default) only count trainable parameters</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Number of (trainable) parameters in detector</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.load">
+<span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/wrapper/volume_wrapper.html#AbsVolumeWrapper.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads saved volume and optimiser parameters from a file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – file to load</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.opts">
+<span class="sig-name descname"><span class="pre">opts</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optimizer</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.opts" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">passives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_mu_per_volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu_bs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pred_cb=&lt;tomopt.optimisation.callbacks.pred_callbacks.PredHandler</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cbs=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cb_savepath=Path('train_weights')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/wrapper/volume_wrapper.html#AbsVolumeWrapper.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.predict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uses the detectors to predict the provided volumes
+The prediction loop can be supported by callbacks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>passives</strong> (<a class="reference internal" href="tomopt.optimisation.data.html#tomopt.optimisation.data.passives.PassiveYielder" title="tomopt.optimisation.data.passives.PassiveYielder"><code class="xref py py-class docutils literal notranslate"><span class="pre">PassiveYielder</span></code></a>) – passive volumes to predict</p></li>
+<li><p><strong>n_mu_per_volume</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – number of muons to use in total when inferring the target of a single volume</p></li>
+<li><p><strong>mu_bs</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – number of muons to use per muon batch; multiple muon batches will be used until n_mu_per_volume is reached</p></li>
+<li><p><strong>pred_cb</strong> (<a class="reference internal" href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.pred_callbacks.PredHandler" title="tomopt.optimisation.callbacks.pred_callbacks.PredHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">PredHandler</span></code></a>) – the prediction callback to use for recording predictions</p></li>
+<li><p><strong>cbs</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.callback.Callback" title="tomopt.optimisation.callbacks.callback.Callback"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callback</span></code></a>]]) – optional list of callbacks to use</p></li>
+<li><p><strong>cb_savepath</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code>) – location where callbacks should write/save any information</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]]</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The object returned by the <cite>pred_cb</cite>’s <cite>get_preds</cite> method</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/wrapper/volume_wrapper.html#AbsVolumeWrapper.save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves the volume and optimiser parameters to a file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – savename for the file</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.set_opt_lr">
+<span class="sig-name descname"><span class="pre">set_opt_lr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/wrapper/volume_wrapper.html#AbsVolumeWrapper.set_opt_lr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.set_opt_lr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the learning rate of the specified optimiser.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lr</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – new learning rate for the optimiser</p></li>
+<li><p><strong>opt</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – string name of the optimiser requested</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.set_opt_mom">
+<span class="sig-name descname"><span class="pre">set_opt_mom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/wrapper/volume_wrapper.html#AbsVolumeWrapper.set_opt_mom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.set_opt_mom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the learning rate of the specified optimiser.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mom</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – new momentum coefficient/beta_1 for the optimiser</p></li>
+<li><p><strong>opt</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – string name of the optimiser requested</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.FitParams">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.wrapper.volume_wrapper.</span></span><span class="sig-name descname"><span class="pre">FitParams</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/wrapper/volume_wrapper.html#FitParams"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Data class used for storing all aspects of optimisation and prediction when working with
+<a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper" title="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsVolumeWrapper</span></code></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>kwargs</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>) – objects to be stored</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.FitParams.cb_savepath">
+<span class="sig-name descname"><span class="pre">cb_savepath</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.cb_savepath" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.FitParams.cbs">
+<span class="sig-name descname"><span class="pre">cbs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.callback.Callback" title="tomopt.optimisation.callbacks.callback.Callback"><span class="pre">Callback</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.cbs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.FitParams.cyclic_cbs">
+<span class="sig-name descname"><span class="pre">cyclic_cbs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">CyclicCallback</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.cyclic_cbs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.FitParams.device">
+<span class="sig-name descname"><span class="pre">device</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">device</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">device(type='cpu')</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.device" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.FitParams.epoch">
+<span class="sig-name descname"><span class="pre">epoch</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.epoch" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.FitParams.epoch_bar">
+<span class="sig-name descname"><span class="pre">epoch_bar</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">ProgressBar</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.epoch_bar" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.FitParams.inv_weight">
+<span class="sig-name descname"><span class="pre">inv_weight</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.inv_weight" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.FitParams.loss_val">
+<span class="sig-name descname"><span class="pre">loss_val</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.loss_val" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.FitParams.mean_loss">
+<span class="sig-name descname"><span class="pre">mean_loss</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.mean_loss" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.FitParams.metric_cbs">
+<span class="sig-name descname"><span class="pre">metric_cbs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.eval_metric.EvalMetric" title="tomopt.optimisation.callbacks.eval_metric.EvalMetric"><span class="pre">EvalMetric</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.metric_cbs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.FitParams.metric_log">
+<span class="sig-name descname"><span class="pre">metric_log</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.monitors.MetricLogger" title="tomopt.optimisation.callbacks.monitors.MetricLogger"><span class="pre">MetricLogger</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.metric_log" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.FitParams.mu">
+<span class="sig-name descname"><span class="pre">mu</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="tomopt.muon.html#tomopt.muon.muon_batch.MuonBatch" title="tomopt.muon.muon_batch.MuonBatch"><span class="pre">MuonBatch</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.mu" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.FitParams.mu_bs">
+<span class="sig-name descname"><span class="pre">mu_bs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.mu_bs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.FitParams.n_epochs">
+<span class="sig-name descname"><span class="pre">n_epochs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.n_epochs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.FitParams.n_mu_per_volume">
+<span class="sig-name descname"><span class="pre">n_mu_per_volume</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.n_mu_per_volume" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.FitParams.passive_bar">
+<span class="sig-name descname"><span class="pre">passive_bar</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">NBProgressBar</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ConsoleProgressBar</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.passive_bar" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.FitParams.passive_bs">
+<span class="sig-name descname"><span class="pre">passive_bs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.passive_bs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.FitParams.pred">
+<span class="sig-name descname"><span class="pre">pred</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.pred" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.FitParams.sb">
+<span class="sig-name descname"><span class="pre">sb</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="tomopt.inference.html#tomopt.inference.scattering.AbsScatterBatch" title="tomopt.inference.scattering.AbsScatterBatch"><span class="pre">AbsScatterBatch</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.sb" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.FitParams.state">
+<span class="sig-name descname"><span class="pre">state</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.state" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.FitParams.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.stop" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.FitParams.trn_passives">
+<span class="sig-name descname"><span class="pre">trn_passives</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="tomopt.optimisation.data.html#tomopt.optimisation.data.passives.PassiveYielder" title="tomopt.optimisation.data.passives.PassiveYielder"><span class="pre">PassiveYielder</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.trn_passives" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.FitParams.tst_passives">
+<span class="sig-name descname"><span class="pre">tst_passives</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="tomopt.optimisation.data.html#tomopt.optimisation.data.passives.PassiveYielder" title="tomopt.optimisation.data.passives.PassiveYielder"><span class="pre">PassiveYielder</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.tst_passives" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.FitParams.val_passives">
+<span class="sig-name descname"><span class="pre">val_passives</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="tomopt.optimisation.data.html#tomopt.optimisation.data.passives.PassiveYielder" title="tomopt.optimisation.data.passives.PassiveYielder"><span class="pre">PassiveYielder</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.val_passives" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.FitParams.volume_id">
+<span class="sig-name descname"><span class="pre">volume_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.volume_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.FitParams.volume_inferrer">
+<span class="sig-name descname"><span class="pre">volume_inferrer</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="tomopt.inference.html#tomopt.inference.volume.AbsVolumeInferrer" title="tomopt.inference.volume.AbsVolumeInferrer"><span class="pre">AbsVolumeInferrer</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.volume_inferrer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.HeatMapVolumeWrapper">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.wrapper.volume_wrapper.</span></span><span class="sig-name descname"><span class="pre">HeatMapVolumeWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu_opt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_opt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sig_opt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_pos_opt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partial_scatter_inferrer=&lt;class</span> <span class="pre">'tomopt.inference.scattering.PanelScatterBatch'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partial_volume_inferrer=&lt;class</span> <span class="pre">'tomopt.inference.volume.PanelX0Inferrer'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu_generator=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/wrapper/volume_wrapper.html#HeatMapVolumeWrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.HeatMapVolumeWrapper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper" title="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsVolumeWrapper</span></code></a></p>
+<p>Volume wrapper for volumes with <a class="reference internal" href="tomopt.volume.html#tomopt.volume.heatmap.DetectorHeatMap" title="tomopt.volume.heatmap.DetectorHeatMap"><code class="xref py py-class docutils literal notranslate"><span class="pre">DetectorHeatMap</span></code></a>-based detectors.</p>
+<p>Volume wrappers are designed to contain a <a class="reference internal" href="tomopt.volume.html#tomopt.volume.volume.Volume" title="tomopt.volume.volume.Volume"><code class="xref py py-class docutils literal notranslate"><span class="pre">Volume</span></code></a> and provide means of optimising the detectors it contains,
+via their <a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.fit" title="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.fit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a> method.</p>
+<p>Wrappers also provide for various quality-of-life methods, such as saving and loading detector configurations,
+and computing predictions with a fixed detector (<a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.predict" title="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.predict"><code class="xref py py-meth docutils literal notranslate"><span class="pre">predict()</span></code></a>)</p>
+<p>Fitting of a detector proceeds as training and validation epochs, each of which contains multiple batches of passive volumes.
+For each volume in a batch, the loss is evaluated using multiple batches of muons.
+The whole loop is:</p>
+<ol class="arabic simple">
+<li><dl class="simple">
+<dt>for epoch in <cite>n_epochs</cite>:</dt><dd><ol class="upperalpha simple">
+<li><p><cite>loss</cite> = 0</p></li>
+<li><dl class="simple">
+<dt>for <cite>p</cite>, <cite>passive</cite> in enumerate(<cite>trn_passives</cite>):</dt><dd><ol class="loweralpha simple">
+<li><p>load <cite>passive</cite> into passive volume</p></li>
+<li><dl class="simple">
+<dt>for muon_batch in range(<cite>n_mu_per_volume</cite>//<cite>mu_bs</cite>):</dt><dd><ol class="lowerroman simple">
+<li><p>Irradiate volume with <cite>mu_bs</cite> muons</p></li>
+<li><p>Infer passive volume</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p>Compute loss based on precision and cost, and add to <cite>loss</cite></p></li>
+<li><dl class="simple">
+<dt>if <cite>p`+1 % `passive_bs</cite> == 0:</dt><dd><ol class="lowerroman simple">
+<li><p><cite>loss</cite> = <cite>loss</cite>/<cite>passive_bs</cite></p></li>
+<li><p>Backpropagate <cite>loss</cite> and update detector parameters</p></li>
+<li><p><cite>loss</cite> = 0</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>if len(<cite>trn_passives</cite>)-(<cite>p`+1) &lt; `passive_bs</cite>:</dt><dd><ol class="lowerroman simple">
+<li><p>Break</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p><cite>val_loss</cite> = 0</p></li>
+<li><dl class="simple">
+<dt>for <cite>p</cite>, <cite>passive</cite> in enumerate(<cite>val_passives</cite>):</dt><dd><ol class="loweralpha simple">
+<li><p>load <cite>passive</cite> into passive volume</p></li>
+<li><dl class="simple">
+<dt>for muon_batch in range(<cite>n_mu_per_volume</cite>//<cite>mu_bs</cite>):</dt><dd><ol class="lowerroman simple">
+<li><p>Irradiate volume with <cite>mu_bs</cite> muons</p></li>
+<li><p>Infer passive volume</p></li>
+<li><p>Compute loss based on precision and cost, and add to <cite>val_loss</cite></p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>if len(<cite>val_passives</cite>)-(<cite>p`+1) &lt; `passive_bs</cite>:</dt><dd><ol class="lowerroman simple">
+<li><p>Break</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p><cite>val_loss</cite> = <cite>val_loss</cite>/<cite>p</cite></p></li>
+</ol>
+</dd>
+</dl>
+</li>
+</ol>
+<dl class="simple">
+<dt>In implementation, the loop is broken up into several functions:</dt><dd><dl class="simple">
+<dt><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._fit_epoch" title="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._fit_epoch"><code class="xref py py-meth docutils literal notranslate"><span class="pre">_fit_epoch()</span></code></a> runs one full epoch of volumes</dt><dd><p>and updates for both training and validation</p>
+</dd>
+<dt><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volumes" title="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volumes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">_scan_volumes()</span></code></a> runs over all training/validation volumes,</dt><dd><p>updating parameters when necessary</p>
+</dd>
+<dt><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volume" title="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volume"><code class="xref py py-meth docutils literal notranslate"><span class="pre">_scan_volume()</span></code></a> irradiates a single volume with muons multiple batches,</dt><dd><p>and computes the loss for that volume</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>The optimisation and prediction loops are supported by a stateful callback mechanism.
+The base callback is <a class="reference internal" href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.callback.Callback" title="tomopt.optimisation.callbacks.callback.Callback"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callback</span></code></a>, which can interject at various points in the loops.
+All aspects of the optimisation and prediction are stored in a <a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams" title="tomopt.optimisation.wrapper.volume_wrapper.FitParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">FitParams</span></code></a> data class,
+since the callbacks are also stored there, and the callbacks have a reference to the wrapper, they are able to read/write to the <cite>FitParams</cite> and be
+aware of other callbacks that are running.</p>
+<p>Accounting for the interjection calls (<cite>on_*_begin</cite> &amp; <cite>on_*_end</cite>), the full optimisation loop is:</p>
+<ol class="arabic">
+<li><p>Associate callbacks with wrapper (<cite>set_wrapper</cite>)</p></li>
+<li><p><cite>on_train_begin</cite></p></li>
+<li><dl>
+<dt>for epoch in <cite>n_epochs</cite>:</dt><dd><ol class="upperalpha">
+<li><p><cite>state</cite> = “train”</p></li>
+<li><p><cite>on_epoch_begin</cite></p></li>
+<li><dl>
+<dt>for <cite>p</cite>, <cite>passive</cite> in enumerate(<cite>trn_passives</cite>):</dt><dd><ol class="loweralpha">
+<li><dl class="simple">
+<dt>if <cite>p</cite> % <cite>passive_bs</cite> == 0:</dt><dd><ol class="lowerroman simple">
+<li><p><cite>on_volume_batch_begin</cite></p></li>
+<li><p><cite>loss</cite> = 0</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p>load <cite>passive</cite> into passive volume</p></li>
+<li><p><cite>on_volume_begin</cite></p></li>
+<li><dl class="simple">
+<dt>for muon_batch in range(<cite>n_mu_per_volume</cite>//<cite>mu_bs</cite>):</dt><dd><ol class="lowerroman simple">
+<li><p><cite>on_mu_batch_begin</cite></p></li>
+<li><p>Irradiate volume with <cite>mu_bs</cite> muons</p></li>
+<li><p>Infer scatter locations</p></li>
+<li><p><cite>on_scatter_end</cite></p></li>
+<li><p>Infer x0 and append to list of x0 predictions</p></li>
+<li><p><cite>on_mu_batch_end</cite></p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p><cite>on_x0_pred_begin</cite></p></li>
+<li><p>Compute overall x0 prediction</p></li>
+<li><p><cite>on_x0_pred_end</cite></p></li>
+<li><p>Compute loss based on precision and cost, and add to <cite>loss</cite></p></li>
+<li><dl>
+<dt>if <cite>p`+1 % `passive_bs</cite> == 0:</dt><dd><ol class="lowerroman simple">
+<li><p><cite>loss</cite> = <cite>loss</cite>/<cite>passive_bs</cite></p></li>
+<li><p><cite>on_volume_batch_end</cite></p></li>
+<li><p>Zero parameter gradients</p></li>
+<li><p><cite>on_backwards_begin</cite></p></li>
+<li><p>Backpropagate <cite>loss</cite> and compute parameter gradients</p></li>
+<li><p><cite>on_backwards_end</cite></p></li>
+<li><p>Update detector parameters</p></li>
+</ol>
+<p>viii. Ensure detector parameters are within physical boundaries (<cite>AbsDetectorLayer.conform_detector</cite>)
+viv. <cite>loss</cite> = 0</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>if len(<cite>trn_passives</cite>)-(<cite>p`+1) &lt; `passive_bs</cite>:</dt><dd><ol class="lowerroman simple">
+<li><p>Break</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p><cite>on_epoch_end</cite></p></li>
+<li><p><cite>state</cite> = “valid”</p></li>
+<li><p><cite>on_epoch_begin</cite></p></li>
+<li><dl class="simple">
+<dt>for <cite>p</cite>, <cite>passive</cite> in enumerate(<cite>val_passives</cite>):</dt><dd><ol class="loweralpha simple">
+<li><dl class="simple">
+<dt>if <cite>p</cite> % <cite>passive_bs</cite> == 0:</dt><dd><ol class="lowerroman simple">
+<li><p><cite>on_volume_batch_begin</cite></p></li>
+<li><p><cite>loss</cite> = 0</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p><cite>on_volume_begin</cite></p></li>
+<li><dl class="simple">
+<dt>for muon_batch in range(<cite>n_mu_per_volume</cite>//<cite>mu_bs</cite>):</dt><dd><ol class="lowerroman simple">
+<li><p><cite>on_mu_batch_begin</cite></p></li>
+<li><p>Irradiate volume with <cite>mu_bs</cite> muons</p></li>
+<li><p>Infer scatter locations</p></li>
+<li><p><cite>on_scatter_end</cite></p></li>
+<li><p>Infer x0 and append to list of x0 predictions</p></li>
+<li><p><cite>on_mu_batch_end</cite></p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p><cite>on_x0_pred_begin</cite></p></li>
+<li><p>Compute overall x0 prediction</p></li>
+<li><p><cite>on_x0_pred_end</cite></p></li>
+<li><p>Compute loss based on precision and cost, and add to <cite>loss</cite></p></li>
+<li><dl class="simple">
+<dt>if <cite>p`+1 % `passive_bs</cite> == 0:</dt><dd><ol class="lowerroman simple">
+<li><p><cite>loss</cite> = <cite>loss</cite>/<cite>passive_bs</cite></p></li>
+<li><p><cite>on_volume_batch_end</cite></p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>if len(<cite>val_passives</cite>)-(<cite>p`+1) &lt; `passive_bs</cite>:</dt><dd><ol class="lowerroman simple">
+<li><p>Break</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p><cite>on_epoch_end</cite></p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p><cite>on_train_end</cite></p></li>
+</ol>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>volume</strong> (<a class="reference internal" href="tomopt.volume.html#tomopt.volume.volume.Volume" title="tomopt.volume.volume.Volume"><code class="xref py py-class docutils literal notranslate"><span class="pre">Volume</span></code></a>) – the volume containing the detectors to be optimised</p></li>
+<li><p><strong>mu_opt</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Parameter</span></code>]], <code class="xref py py-class docutils literal notranslate"><span class="pre">Optimizer</span></code>]) – uninitialised optimiser to be used for adjusting the xy position of Gaussians</p></li>
+<li><p><strong>norm_opt</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Parameter</span></code>]], <code class="xref py py-class docutils literal notranslate"><span class="pre">Optimizer</span></code>]) – uninitialised optimiser to be used for adjusting the normalisation of Gaussians</p></li>
+<li><p><strong>sig_opt</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Parameter</span></code>]], <code class="xref py py-class docutils literal notranslate"><span class="pre">Optimizer</span></code>]) – uninitialised optimiser to be used for adjusting the scale of Gaussians</p></li>
+<li><p><strong>z_pos_opt</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Parameter</span></code>]], <code class="xref py py-class docutils literal notranslate"><span class="pre">Optimizer</span></code>]) – uninitialised optimiser to be used for adjusting the z position of panels</p></li>
+<li><p><strong>loss_func</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<a class="reference internal" href="tomopt.optimisation.loss.html#tomopt.optimisation.loss.loss.AbsDetectorLoss" title="tomopt.optimisation.loss.loss.AbsDetectorLoss"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsDetectorLoss</span></code></a>]) – optional loss function (required if planning to optimise the detectors)</p></li>
+<li><p><strong>partial_scatter_inferrer</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code>[<a class="reference internal" href="tomopt.inference.html#tomopt.inference.scattering.AbsScatterBatch" title="tomopt.inference.scattering.AbsScatterBatch"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsScatterBatch</span></code></a>]) – uninitialised class to be used for inferring muon scatter variables and trajectories</p></li>
+<li><p><strong>partial_volume_inferrer</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code>[<a class="reference internal" href="tomopt.inference.html#tomopt.inference.volume.AbsVolumeInferrer" title="tomopt.inference.volume.AbsVolumeInferrer"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsVolumeInferrer</span></code></a>]) – uninitialised class to be used for inferring volume targets</p></li>
+<li><p><strong>mu_generator</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<a class="reference internal" href="tomopt.muon.html#tomopt.muon.generation.AbsMuonGenerator" title="tomopt.muon.generation.AbsMuonGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsMuonGenerator</span></code></a>]) – Optional generator class for muons. If None, will use <code class="xref py py-meth docutils literal notranslate"><span class="pre">from_volume()</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.HeatMapVolumeWrapper._abc_impl">
+<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.HeatMapVolumeWrapper._abc_impl" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.HeatMapVolumeWrapper._build_opt">
+<span class="sig-name descname"><span class="pre">_build_opt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/wrapper/volume_wrapper.html#HeatMapVolumeWrapper._build_opt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.HeatMapVolumeWrapper._build_opt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialises the optimisers by associating them to the detector parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>kwargs</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Parameter</span></code>]], <code class="xref py py-class docutils literal notranslate"><span class="pre">Optimizer</span></code>]) – uninitialised optimisers passed as keyword arguments</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.HeatMapVolumeWrapper.from_save">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu_opt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_opt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sig_opt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_pos_opt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partial_scatter_inferrer=&lt;class</span> <span class="pre">'tomopt.inference.scattering.PanelScatterBatch'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partial_volume_inferrer=&lt;class</span> <span class="pre">'tomopt.inference.volume.PanelX0Inferrer'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu_generator=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/wrapper/volume_wrapper.html#HeatMapVolumeWrapper.from_save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.HeatMapVolumeWrapper.from_save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Instantiates a new <cite>HeatMapVolumeWrapper</cite> and loads saved detector and optimiser parameters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – file name with saved detector and optimiser parameters</p></li>
+<li><p><strong>volume</strong> (<a class="reference internal" href="tomopt.volume.html#tomopt.volume.volume.Volume" title="tomopt.volume.volume.Volume"><code class="xref py py-class docutils literal notranslate"><span class="pre">Volume</span></code></a>) – the volume containing the detectors to be optimised</p></li>
+<li><p><strong>mu_opt</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Parameter</span></code>]], <code class="xref py py-class docutils literal notranslate"><span class="pre">Optimizer</span></code>]) – uninitialised optimiser to be used for adjusting the xy position of Gaussians</p></li>
+<li><p><strong>norm_opt</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Parameter</span></code>]], <code class="xref py py-class docutils literal notranslate"><span class="pre">Optimizer</span></code>]) – uninitialised optimiser to be used for adjusting the normalisation of Gaussians</p></li>
+<li><p><strong>sig_opt</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Parameter</span></code>]], <code class="xref py py-class docutils literal notranslate"><span class="pre">Optimizer</span></code>]) – uninitialised optimiser to be used for adjusting the scale of Gaussians</p></li>
+<li><p><strong>z_pos_opt</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Parameter</span></code>]], <code class="xref py py-class docutils literal notranslate"><span class="pre">Optimizer</span></code>]) – uninitialised optimiser to be used for adjusting the z position of panels</p></li>
+<li><p><strong>loss_func</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<a class="reference internal" href="tomopt.optimisation.loss.html#tomopt.optimisation.loss.loss.AbsDetectorLoss" title="tomopt.optimisation.loss.loss.AbsDetectorLoss"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsDetectorLoss</span></code></a>]) – optional loss function (required if planning to optimise the detectors)</p></li>
+<li><p><strong>partial_scatter_inferrer</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code>[<a class="reference internal" href="tomopt.inference.html#tomopt.inference.scattering.AbsScatterBatch" title="tomopt.inference.scattering.AbsScatterBatch"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsScatterBatch</span></code></a>]) – uninitialised class to be used for inferring muon scatter variables and trajectories</p></li>
+<li><p><strong>partial_volume_inferrer</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code>[<a class="reference internal" href="tomopt.inference.html#tomopt.inference.volume.AbsVolumeInferrer" title="tomopt.inference.volume.AbsVolumeInferrer"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsVolumeInferrer</span></code></a>]) – uninitialised class to be used for inferring volume targets</p></li>
+<li><p><strong>mu_generator</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<a class="reference internal" href="tomopt.muon.html#tomopt.muon.generation.AbsMuonGenerator" title="tomopt.muon.generation.AbsMuonGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsMuonGenerator</span></code></a>]) – Optional generator class for muons. If None, will use <code class="xref py py-meth docutils literal notranslate"><span class="pre">from_volume()</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper" title="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsVolumeWrapper</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.HeatMapVolumeWrapper.opts">
+<span class="sig-name descname"><span class="pre">opts</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optimizer</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.HeatMapVolumeWrapper.opts" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.PanelVolumeWrapper">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.wrapper.volume_wrapper.</span></span><span class="sig-name descname"><span class="pre">PanelVolumeWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xy_pos_opt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_pos_opt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xy_span_opt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">budget_opt=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_func=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partial_scatter_inferrer=&lt;class</span> <span class="pre">'tomopt.inference.scattering.PanelScatterBatch'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partial_volume_inferrer=&lt;class</span> <span class="pre">'tomopt.inference.volume.PanelX0Inferrer'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu_generator=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/wrapper/volume_wrapper.html#PanelVolumeWrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.PanelVolumeWrapper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper" title="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsVolumeWrapper</span></code></a></p>
+<p>Volume wrapper for volumes with <a class="reference internal" href="tomopt.volume.html#tomopt.volume.panel.DetectorPanel" title="tomopt.volume.panel.DetectorPanel"><code class="xref py py-class docutils literal notranslate"><span class="pre">DetectorPanel</span></code></a>-based detectors.</p>
+<p>Volume wrappers are designed to contain a <a class="reference internal" href="tomopt.volume.html#tomopt.volume.volume.Volume" title="tomopt.volume.volume.Volume"><code class="xref py py-class docutils literal notranslate"><span class="pre">Volume</span></code></a> and provide means of optimising the detectors it contains,
+via their <a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.fit" title="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.fit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit()</span></code></a> method.</p>
+<p>Wrappers also provide for various quality-of-life methods, such as saving and loading detector configurations,
+and computing predictions with a fixed detector (<a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.predict" title="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.predict"><code class="xref py py-meth docutils literal notranslate"><span class="pre">predict()</span></code></a>)</p>
+<p>Fitting of a detector proceeds as training and validation epochs, each of which contains multiple batches of passive volumes.
+For each volume in a batch, the loss is evaluated using multiple batches of muons.
+The whole loop is:</p>
+<ol class="arabic simple">
+<li><dl class="simple">
+<dt>for epoch in <cite>n_epochs</cite>:</dt><dd><ol class="upperalpha simple">
+<li><p><cite>loss</cite> = 0</p></li>
+<li><dl class="simple">
+<dt>for <cite>p</cite>, <cite>passive</cite> in enumerate(<cite>trn_passives</cite>):</dt><dd><ol class="loweralpha simple">
+<li><p>load <cite>passive</cite> into passive volume</p></li>
+<li><dl class="simple">
+<dt>for muon_batch in range(<cite>n_mu_per_volume</cite>//<cite>mu_bs</cite>):</dt><dd><ol class="lowerroman simple">
+<li><p>Irradiate volume with <cite>mu_bs</cite> muons</p></li>
+<li><p>Infer passive volume</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p>Compute loss based on precision and cost, and add to <cite>loss</cite></p></li>
+<li><dl class="simple">
+<dt>if <cite>p`+1 % `passive_bs</cite> == 0:</dt><dd><ol class="lowerroman simple">
+<li><p><cite>loss</cite> = <cite>loss</cite>/<cite>passive_bs</cite></p></li>
+<li><p>Backpropagate <cite>loss</cite> and update detector parameters</p></li>
+<li><p><cite>loss</cite> = 0</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>if len(<cite>trn_passives</cite>)-(<cite>p`+1) &lt; `passive_bs</cite>:</dt><dd><ol class="lowerroman simple">
+<li><p>Break</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p><cite>val_loss</cite> = 0</p></li>
+<li><dl class="simple">
+<dt>for <cite>p</cite>, <cite>passive</cite> in enumerate(<cite>val_passives</cite>):</dt><dd><ol class="loweralpha simple">
+<li><p>load <cite>passive</cite> into passive volume</p></li>
+<li><dl class="simple">
+<dt>for muon_batch in range(<cite>n_mu_per_volume</cite>//<cite>mu_bs</cite>):</dt><dd><ol class="lowerroman simple">
+<li><p>Irradiate volume with <cite>mu_bs</cite> muons</p></li>
+<li><p>Infer passive volume</p></li>
+<li><p>Compute loss based on precision and cost, and add to <cite>val_loss</cite></p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>if len(<cite>val_passives</cite>)-(<cite>p`+1) &lt; `passive_bs</cite>:</dt><dd><ol class="lowerroman simple">
+<li><p>Break</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p><cite>val_loss</cite> = <cite>val_loss</cite>/<cite>p</cite></p></li>
+</ol>
+</dd>
+</dl>
+</li>
+</ol>
+<dl class="simple">
+<dt>In implementation, the loop is broken up into several functions:</dt><dd><dl class="simple">
+<dt><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._fit_epoch" title="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._fit_epoch"><code class="xref py py-meth docutils literal notranslate"><span class="pre">_fit_epoch()</span></code></a> runs one full epoch of volumes</dt><dd><p>and updates for both training and validation</p>
+</dd>
+<dt><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volumes" title="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volumes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">_scan_volumes()</span></code></a> runs over all training/validation volumes,</dt><dd><p>updating parameters when necessary</p>
+</dd>
+<dt><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volume" title="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volume"><code class="xref py py-meth docutils literal notranslate"><span class="pre">_scan_volume()</span></code></a> irradiates a single volume with muons multiple batches,</dt><dd><p>and computes the loss for that volume</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>The optimisation and prediction loops are supported by a stateful callback mechanism.
+The base callback is <a class="reference internal" href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.callback.Callback" title="tomopt.optimisation.callbacks.callback.Callback"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callback</span></code></a>, which can interject at various points in the loops.
+All aspects of the optimisation and prediction are stored in a <a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams" title="tomopt.optimisation.wrapper.volume_wrapper.FitParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">FitParams</span></code></a> data class,
+since the callbacks are also stored there, and the callbacks have a reference to the wrapper, they are able to read/write to the <cite>FitParams</cite> and be
+aware of other callbacks that are running.</p>
+<p>Accounting for the interjection calls (<cite>on_*_begin</cite> &amp; <cite>on_*_end</cite>), the full optimisation loop is:</p>
+<ol class="arabic">
+<li><p>Associate callbacks with wrapper (<cite>set_wrapper</cite>)</p></li>
+<li><p><cite>on_train_begin</cite></p></li>
+<li><dl>
+<dt>for epoch in <cite>n_epochs</cite>:</dt><dd><ol class="upperalpha">
+<li><p><cite>state</cite> = “train”</p></li>
+<li><p><cite>on_epoch_begin</cite></p></li>
+<li><dl>
+<dt>for <cite>p</cite>, <cite>passive</cite> in enumerate(<cite>trn_passives</cite>):</dt><dd><ol class="loweralpha">
+<li><dl class="simple">
+<dt>if <cite>p</cite> % <cite>passive_bs</cite> == 0:</dt><dd><ol class="lowerroman simple">
+<li><p><cite>on_volume_batch_begin</cite></p></li>
+<li><p><cite>loss</cite> = 0</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p>load <cite>passive</cite> into passive volume</p></li>
+<li><p><cite>on_volume_begin</cite></p></li>
+<li><dl class="simple">
+<dt>for muon_batch in range(<cite>n_mu_per_volume</cite>//<cite>mu_bs</cite>):</dt><dd><ol class="lowerroman simple">
+<li><p><cite>on_mu_batch_begin</cite></p></li>
+<li><p>Irradiate volume with <cite>mu_bs</cite> muons</p></li>
+<li><p>Infer scatter locations</p></li>
+<li><p><cite>on_scatter_end</cite></p></li>
+<li><p>Infer x0 and append to list of x0 predictions</p></li>
+<li><p><cite>on_mu_batch_end</cite></p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p><cite>on_x0_pred_begin</cite></p></li>
+<li><p>Compute overall x0 prediction</p></li>
+<li><p><cite>on_x0_pred_end</cite></p></li>
+<li><p>Compute loss based on precision and cost, and add to <cite>loss</cite></p></li>
+<li><dl>
+<dt>if <cite>p`+1 % `passive_bs</cite> == 0:</dt><dd><ol class="lowerroman simple">
+<li><p><cite>loss</cite> = <cite>loss</cite>/<cite>passive_bs</cite></p></li>
+<li><p><cite>on_volume_batch_end</cite></p></li>
+<li><p>Zero parameter gradients</p></li>
+<li><p><cite>on_backwards_begin</cite></p></li>
+<li><p>Backpropagate <cite>loss</cite> and compute parameter gradients</p></li>
+<li><p><cite>on_backwards_end</cite></p></li>
+<li><p>Update detector parameters</p></li>
+</ol>
+<p>viii. Ensure detector parameters are within physical boundaries (<cite>AbsDetectorLayer.conform_detector</cite>)
+viv. <cite>loss</cite> = 0</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>if len(<cite>trn_passives</cite>)-(<cite>p`+1) &lt; `passive_bs</cite>:</dt><dd><ol class="lowerroman simple">
+<li><p>Break</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p><cite>on_epoch_end</cite></p></li>
+<li><p><cite>state</cite> = “valid”</p></li>
+<li><p><cite>on_epoch_begin</cite></p></li>
+<li><dl class="simple">
+<dt>for <cite>p</cite>, <cite>passive</cite> in enumerate(<cite>val_passives</cite>):</dt><dd><ol class="loweralpha simple">
+<li><dl class="simple">
+<dt>if <cite>p</cite> % <cite>passive_bs</cite> == 0:</dt><dd><ol class="lowerroman simple">
+<li><p><cite>on_volume_batch_begin</cite></p></li>
+<li><p><cite>loss</cite> = 0</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p><cite>on_volume_begin</cite></p></li>
+<li><dl class="simple">
+<dt>for muon_batch in range(<cite>n_mu_per_volume</cite>//<cite>mu_bs</cite>):</dt><dd><ol class="lowerroman simple">
+<li><p><cite>on_mu_batch_begin</cite></p></li>
+<li><p>Irradiate volume with <cite>mu_bs</cite> muons</p></li>
+<li><p>Infer scatter locations</p></li>
+<li><p><cite>on_scatter_end</cite></p></li>
+<li><p>Infer x0 and append to list of x0 predictions</p></li>
+<li><p><cite>on_mu_batch_end</cite></p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p><cite>on_x0_pred_begin</cite></p></li>
+<li><p>Compute overall x0 prediction</p></li>
+<li><p><cite>on_x0_pred_end</cite></p></li>
+<li><p>Compute loss based on precision and cost, and add to <cite>loss</cite></p></li>
+<li><dl class="simple">
+<dt>if <cite>p`+1 % `passive_bs</cite> == 0:</dt><dd><ol class="lowerroman simple">
+<li><p><cite>loss</cite> = <cite>loss</cite>/<cite>passive_bs</cite></p></li>
+<li><p><cite>on_volume_batch_end</cite></p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>if len(<cite>val_passives</cite>)-(<cite>p`+1) &lt; `passive_bs</cite>:</dt><dd><ol class="lowerroman simple">
+<li><p>Break</p></li>
+</ol>
+</dd>
+</dl>
+</li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p><cite>on_epoch_end</cite></p></li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><p><cite>on_train_end</cite></p></li>
+</ol>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>volume</strong> (<a class="reference internal" href="tomopt.volume.html#tomopt.volume.volume.Volume" title="tomopt.volume.volume.Volume"><code class="xref py py-class docutils literal notranslate"><span class="pre">Volume</span></code></a>) – the volume containing the detectors to be optimised</p></li>
+<li><p><strong>xy_pos_opt</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Parameter</span></code>]], <code class="xref py py-class docutils literal notranslate"><span class="pre">Optimizer</span></code>]) – uninitialised optimiser to be used for adjusting the xy position of panels</p></li>
+<li><p><strong>z_pos_opt</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Parameter</span></code>]], <code class="xref py py-class docutils literal notranslate"><span class="pre">Optimizer</span></code>]) – uninitialised optimiser to be used for adjusting the z position of panels</p></li>
+<li><p><strong>xy_span_opt</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Parameter</span></code>]], <code class="xref py py-class docutils literal notranslate"><span class="pre">Optimizer</span></code>]) – uninitialised optimiser to be used for adjusting the xy size of panels</p></li>
+<li><p><strong>budget_opt</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Parameter</span></code>]], <code class="xref py py-class docutils literal notranslate"><span class="pre">Optimizer</span></code>]]) – optional uninitialised optimiser to be used for adjusting the fractional assignment of budget to the panels</p></li>
+<li><p><strong>loss_func</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<a class="reference internal" href="tomopt.optimisation.loss.html#tomopt.optimisation.loss.loss.AbsDetectorLoss" title="tomopt.optimisation.loss.loss.AbsDetectorLoss"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsDetectorLoss</span></code></a>]) – optional loss function (required if planning to optimise the detectors)</p></li>
+<li><p><strong>partial_scatter_inferrer</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code>[<a class="reference internal" href="tomopt.inference.html#tomopt.inference.scattering.AbsScatterBatch" title="tomopt.inference.scattering.AbsScatterBatch"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsScatterBatch</span></code></a>]) – uninitialised class to be used for inferring muon scatter variables and trajectories</p></li>
+<li><p><strong>partial_volume_inferrer</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code>[<a class="reference internal" href="tomopt.inference.html#tomopt.inference.volume.AbsVolumeInferrer" title="tomopt.inference.volume.AbsVolumeInferrer"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsVolumeInferrer</span></code></a>]) – uninitialised class to be used for inferring volume targets</p></li>
+<li><p><strong>mu_generator</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<a class="reference internal" href="tomopt.muon.html#tomopt.muon.generation.AbsMuonGenerator" title="tomopt.muon.generation.AbsMuonGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsMuonGenerator</span></code></a>]) – Optional generator class for muons. If None, will use <code class="xref py py-meth docutils literal notranslate"><span class="pre">from_volume()</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.PanelVolumeWrapper._abc_impl">
+<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.PanelVolumeWrapper._abc_impl" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.PanelVolumeWrapper._build_opt">
+<span class="sig-name descname"><span class="pre">_build_opt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/wrapper/volume_wrapper.html#PanelVolumeWrapper._build_opt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.PanelVolumeWrapper._build_opt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialises the optimisers by associating them to the detector parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>kwargs</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Parameter</span></code>]], <code class="xref py py-class docutils literal notranslate"><span class="pre">Optimizer</span></code>]) – uninitialised optimisers passed as keyword arguments</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.PanelVolumeWrapper.from_save">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xy_pos_opt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_pos_opt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xy_span_opt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">budget_opt=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partial_scatter_inferrer=&lt;class</span> <span class="pre">'tomopt.inference.scattering.PanelScatterBatch'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partial_volume_inferrer=&lt;class</span> <span class="pre">'tomopt.inference.volume.PanelX0Inferrer'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu_generator=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/wrapper/volume_wrapper.html#PanelVolumeWrapper.from_save"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.PanelVolumeWrapper.from_save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Instantiates a new <cite>PanelVolumeWrapper</cite> and loads saved detector and optimiser parameters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – file name with saved detector and optimiser parameters</p></li>
+<li><p><strong>volume</strong> (<a class="reference internal" href="tomopt.volume.html#tomopt.volume.volume.Volume" title="tomopt.volume.volume.Volume"><code class="xref py py-class docutils literal notranslate"><span class="pre">Volume</span></code></a>) – the volume containing the detectors to be optimised</p></li>
+<li><p><strong>xy_pos_opt</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Parameter</span></code>]], <code class="xref py py-class docutils literal notranslate"><span class="pre">Optimizer</span></code>]) – uninitialised optimiser to be used for adjusting the xy position of panels</p></li>
+<li><p><strong>z_pos_opt</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Parameter</span></code>]], <code class="xref py py-class docutils literal notranslate"><span class="pre">Optimizer</span></code>]) – uninitialised optimiser to be used for adjusting the z position of panels,</p></li>
+<li><p><strong>xy_span_opt</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Parameter</span></code>]], <code class="xref py py-class docutils literal notranslate"><span class="pre">Optimizer</span></code>]) – uninitialised optimiser to be used for adjusting the xy size of panels,</p></li>
+<li><p><strong>budget_opt</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Parameter</span></code>]], <code class="xref py py-class docutils literal notranslate"><span class="pre">Optimizer</span></code>]]) – optional uninitialised optimiser to be used for adjusting the fractional assignment of budget to the panels</p></li>
+<li><p><strong>loss_func</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<a class="reference internal" href="tomopt.optimisation.loss.html#tomopt.optimisation.loss.loss.AbsDetectorLoss" title="tomopt.optimisation.loss.loss.AbsDetectorLoss"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsDetectorLoss</span></code></a>]) – optional loss function (required if planning to optimise the detectors)</p></li>
+<li><p><strong>partial_scatter_inferrer</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code>[<a class="reference internal" href="tomopt.inference.html#tomopt.inference.scattering.AbsScatterBatch" title="tomopt.inference.scattering.AbsScatterBatch"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsScatterBatch</span></code></a>]) – uninitialised class to be used for inferring muon scatter variables and trajectories</p></li>
+<li><p><strong>partial_volume_inferrer</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Type</span></code>[<a class="reference internal" href="tomopt.inference.html#tomopt.inference.volume.AbsVolumeInferrer" title="tomopt.inference.volume.AbsVolumeInferrer"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsVolumeInferrer</span></code></a>]) – uninitialised class to be used for inferring volume targets</p></li>
+<li><p><strong>mu_generator</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<a class="reference internal" href="tomopt.muon.html#tomopt.muon.generation.AbsMuonGenerator" title="tomopt.muon.generation.AbsMuonGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsMuonGenerator</span></code></a>]) – Optional generator class for muons. If None, will use <code class="xref py py-meth docutils literal notranslate"><span class="pre">from_volume()</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper" title="tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsVolumeWrapper</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.PanelVolumeWrapper.opts">
+<span class="sig-name descname"><span class="pre">opts</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optimizer</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.PanelVolumeWrapper.opts" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+             </article>
+             
+            </div>
+            <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="tomopt.plotting.html" class="btn btn-neutral float-right" title="tomopt.plotting package" accesskey="n" rel="next">Next <img src="_static/images/chevron-right-orange.svg" class="next-page"></a>
+      
+      
+        <a href="tomopt.optimisation.loss.html" class="btn btn-neutral" title="tomopt.optimisation.loss package" accesskey="p" rel="prev"><img src="_static/images/chevron-right-orange.svg" class="previous-page"> Previous</a>
+      
+    </div>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2021-2022, TomOpt Authors.
+
+    </p>
+  </div>
+    
+      <div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/GilesStrong/tomopt_sphinx_theme">theme</a> based on a <a href="https://github.com/pytorch/pytorch_sphinx_theme">theme</a> provided by <a href="https://pytorch.org/">PyTorch</a> based on a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+     
+
+</footer>
+
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">tomopt.optimisation.wrapper package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-tomopt.optimisation.wrapper.volume_wrapper">tomopt.optimisation.wrapper.volume_wrapper module</a><ul>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper"><code class="docutils literal notranslate"><span class="pre">AbsVolumeWrapper</span></code></a><ul>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._abc_impl"><code class="docutils literal notranslate"><span class="pre">AbsVolumeWrapper._abc_impl</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._build_opt"><code class="docutils literal notranslate"><span class="pre">AbsVolumeWrapper._build_opt()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._fit_epoch"><code class="docutils literal notranslate"><span class="pre">AbsVolumeWrapper._fit_epoch()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volume"><code class="docutils literal notranslate"><span class="pre">AbsVolumeWrapper._scan_volume()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volumes"><code class="docutils literal notranslate"><span class="pre">AbsVolumeWrapper._scan_volumes()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._sort_cbs"><code class="docutils literal notranslate"><span class="pre">AbsVolumeWrapper._sort_cbs()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.fit"><code class="docutils literal notranslate"><span class="pre">AbsVolumeWrapper.fit()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.get_detectors"><code class="docutils literal notranslate"><span class="pre">AbsVolumeWrapper.get_detectors()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.get_opt_lr"><code class="docutils literal notranslate"><span class="pre">AbsVolumeWrapper.get_opt_lr()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.get_opt_mom"><code class="docutils literal notranslate"><span class="pre">AbsVolumeWrapper.get_opt_mom()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.get_param_count"><code class="docutils literal notranslate"><span class="pre">AbsVolumeWrapper.get_param_count()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.load"><code class="docutils literal notranslate"><span class="pre">AbsVolumeWrapper.load()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.opts"><code class="docutils literal notranslate"><span class="pre">AbsVolumeWrapper.opts</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.predict"><code class="docutils literal notranslate"><span class="pre">AbsVolumeWrapper.predict()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.save"><code class="docutils literal notranslate"><span class="pre">AbsVolumeWrapper.save()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.set_opt_lr"><code class="docutils literal notranslate"><span class="pre">AbsVolumeWrapper.set_opt_lr()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.set_opt_mom"><code class="docutils literal notranslate"><span class="pre">AbsVolumeWrapper.set_opt_mom()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams"><code class="docutils literal notranslate"><span class="pre">FitParams</span></code></a><ul>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.cb_savepath"><code class="docutils literal notranslate"><span class="pre">FitParams.cb_savepath</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.cbs"><code class="docutils literal notranslate"><span class="pre">FitParams.cbs</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.cyclic_cbs"><code class="docutils literal notranslate"><span class="pre">FitParams.cyclic_cbs</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.device"><code class="docutils literal notranslate"><span class="pre">FitParams.device</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.epoch"><code class="docutils literal notranslate"><span class="pre">FitParams.epoch</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.epoch_bar"><code class="docutils literal notranslate"><span class="pre">FitParams.epoch_bar</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.inv_weight"><code class="docutils literal notranslate"><span class="pre">FitParams.inv_weight</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.loss_val"><code class="docutils literal notranslate"><span class="pre">FitParams.loss_val</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.mean_loss"><code class="docutils literal notranslate"><span class="pre">FitParams.mean_loss</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.metric_cbs"><code class="docutils literal notranslate"><span class="pre">FitParams.metric_cbs</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.metric_log"><code class="docutils literal notranslate"><span class="pre">FitParams.metric_log</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.mu"><code class="docutils literal notranslate"><span class="pre">FitParams.mu</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.mu_bs"><code class="docutils literal notranslate"><span class="pre">FitParams.mu_bs</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.n_epochs"><code class="docutils literal notranslate"><span class="pre">FitParams.n_epochs</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.n_mu_per_volume"><code class="docutils literal notranslate"><span class="pre">FitParams.n_mu_per_volume</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.passive_bar"><code class="docutils literal notranslate"><span class="pre">FitParams.passive_bar</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.passive_bs"><code class="docutils literal notranslate"><span class="pre">FitParams.passive_bs</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.pred"><code class="docutils literal notranslate"><span class="pre">FitParams.pred</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.sb"><code class="docutils literal notranslate"><span class="pre">FitParams.sb</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.state"><code class="docutils literal notranslate"><span class="pre">FitParams.state</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.stop"><code class="docutils literal notranslate"><span class="pre">FitParams.stop</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.trn_passives"><code class="docutils literal notranslate"><span class="pre">FitParams.trn_passives</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.tst_passives"><code class="docutils literal notranslate"><span class="pre">FitParams.tst_passives</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.val_passives"><code class="docutils literal notranslate"><span class="pre">FitParams.val_passives</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.volume_id"><code class="docutils literal notranslate"><span class="pre">FitParams.volume_id</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.volume_inferrer"><code class="docutils literal notranslate"><span class="pre">FitParams.volume_inferrer</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.HeatMapVolumeWrapper"><code class="docutils literal notranslate"><span class="pre">HeatMapVolumeWrapper</span></code></a><ul>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.HeatMapVolumeWrapper._abc_impl"><code class="docutils literal notranslate"><span class="pre">HeatMapVolumeWrapper._abc_impl</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.HeatMapVolumeWrapper._build_opt"><code class="docutils literal notranslate"><span class="pre">HeatMapVolumeWrapper._build_opt()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.HeatMapVolumeWrapper.from_save"><code class="docutils literal notranslate"><span class="pre">HeatMapVolumeWrapper.from_save()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.HeatMapVolumeWrapper.opts"><code class="docutils literal notranslate"><span class="pre">HeatMapVolumeWrapper.opts</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.PanelVolumeWrapper"><code class="docutils literal notranslate"><span class="pre">PanelVolumeWrapper</span></code></a><ul>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.PanelVolumeWrapper._abc_impl"><code class="docutils literal notranslate"><span class="pre">PanelVolumeWrapper._abc_impl</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.PanelVolumeWrapper._build_opt"><code class="docutils literal notranslate"><span class="pre">PanelVolumeWrapper._build_opt()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.PanelVolumeWrapper.from_save"><code class="docutils literal notranslate"><span class="pre">PanelVolumeWrapper.from_save()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.PanelVolumeWrapper.opts"><code class="docutils literal notranslate"><span class="pre">PanelVolumeWrapper.opts</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  
+
+
+  
+
+     
+       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+         <script src="_static/jquery.js"></script>
+         <script src="_static/underscore.js"></script>
+         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+         <script src="_static/doctools.js"></script>
+         <script src="_static/sphinx_highlight.js"></script>
+     
+
+  
+
+  <script type="text/javascript" src="_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="_static/js/vendor/bootstrap.min.js"></script>
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 text-center">
+          <h2>Docs</h2>
+          <p>Access comprehensive developer and user documentation for TomOpt</p>
+          <a class="with-right-arrow" href="https://tomopt.readthedocs.io/en/stable">View Docs</a>
+        </div>
+
+        <div class="col-md-6 text-center">
+          <h2>Tutorials</h2>
+          <p>Get tutorials for beginner and advanced researchers demonstrating many of the features of TomOpt</p>
+          <a class="with-right-arrow" href="https://github.com/GilesStrong/mode_muon_tomography#examples">View Tutorials</a>
+        </div>
+
+        <!-- <div class="col-md-4 text-center">
+          <h2>Resources</h2>
+          <p>Find development resources and get your questions answered</p>
+          <a class="with-right-arrow" href="">View Resources</a>
+        </div> -->
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-logo-wrapper">
+        <a href="https://tomopt.readthedocs.io/en/stable" class="footer-logo"></a>
+      </div>
+
+      <div class="footer-links-wrapper">
+        <div class="footer-links-col">
+          <ul>
+            <!-- <li class="list-title"><a href="https://tomopt.readthedocs.io/en/stable">TomOpt</a></li> -->
+            <!-- <li><a href="">Get Started</a></li> -->
+            <!-- <li><a href="">Features</a></li> -->
+            <!-- <li><a href="">Ecosystem</a></li> -->
+            <!-- <li><a href="">Blog</a></li> -->
+            <!-- <li><a href="">Resources</a></li> -->
+          </ul>
+        </div>
+
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="">Support</a></li>
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography#examples">Tutorials</a></li>
+            <li><a href="https://tomopt.readthedocs.io/en/stable">Docs</a></li>
+            <!-- <li><a href="" target="_blank">Discuss</a></li> -->
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography/blob/main/CHANGES.md" target="_blank">Change Log</a></li>
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography/issues" target="_blank">Github Issues</a></li>
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography/blob/main/CITATION.md" target="_blank">Citation</a></li>
+            <!-- <li><a href="" target="_blank">Slack</a></li> -->
+            <!-- <li><a href="https://github.com/GilesStrong/mode_muon_tomography/blob/main/CONTRIBUTING.md" target="_blank">Contributing</a></li> -->
+          </ul>
+        </div>
+
+        <!-- <div class="footer-links-col follow-us-col">
+          <ul>
+            <li class="list-title">Follow Us</li>
+            <li>
+              <div id="mc_embed_signup">
+                <form
+                  action="https://twitter.us14.list-manage.com/subscribe/post?u=75419c71fe0a935e53dfa4a3f&id=91d0dccd39"
+                  method="post"
+                  id="mc-embedded-subscribe-form"
+                  name="mc-embedded-subscribe-form"
+                  class="email-subscribe-form validate"
+                  target="_blank"
+                  novalidate>
+                  <div id="mc_embed_signup_scroll" class="email-subscribe-form-fields-wrapper">
+                    <div class="mc-field-group">
+                      <label for="mce-EMAIL" style="display:none;">Email Address</label>
+                      <input type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL" placeholder="Email Address">
+                    </div>
+
+                    <div id="mce-responses" class="clear">
+                      <div class="response" id="mce-error-response" style="display:none"></div>
+                      <div class="response" id="mce-success-response" style="display:none"></div>
+                    </div>    real people should not fill this in and expect good things - do not remove this or risk form bot signups
+
+                    <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_75419c71fe0a935e53dfa4a3f_91d0dccd39" tabindex="-1" value=""></div>
+
+                    <div class="clear">
+                      <input type="submit" value="" name="subscribe" id="mc-embedded-subscribe" class="button email-subscribe-button">
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+            </li>
+          </ul>
+
+          <div class="footer-social-icons">
+            <a href="" target="_blank" class="facebook"></a>
+            <a href="" target="_blank" class="twitter"></a>
+          </div>
+        </div> -->
+      </div>
+    </div>
+  </footer>
+
+  <!-- <div class="cookie-banner-wrapper">
+  <div class="container">
+    <p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+    <img class="close-button" src="_static/images/pytorch-x.svg">
+  </div>
+</div> -->
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://tomopt.readthedocs.io/en/stable" aria-label="TomOpt"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <!-- <li>
+            <a href="#">Get Started</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="#">Features</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="#">Ecosystem</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="">Blog</a>
+          </li> -->
+
+          <li>
+            <a href="https://github.com/GilesStrong/mode_muon_tomography#examples">Tutorials</a>
+          </li>
+
+          <li>
+            <a href="https://tomopt.readthedocs.io/en/stable">Docs</a>
+          </li>
+
+          <!-- <li>
+            <a href="">Resources</a>
+          </li> -->
+
+          <li>
+            <a href="https://github.com/GilesStrong/mode_muon_tomography">Github</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+</html>
