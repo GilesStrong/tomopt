@@ -11,6 +11,7 @@ tomopt.plotting.appearance module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 tomopt.plotting.diagnostics module
 ----------------------------------
@@ -19,6 +20,7 @@ tomopt.plotting.diagnostics module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 tomopt.plotting.predictions module
 ----------------------------------
@@ -27,11 +29,4 @@ tomopt.plotting.predictions module
    :members:
    :undoc-members:
    :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: tomopt.plotting
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   :private-members:

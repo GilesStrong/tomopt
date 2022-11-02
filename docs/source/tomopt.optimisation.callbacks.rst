@@ -11,6 +11,7 @@ tomopt.optimisation.callbacks.callback module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 tomopt.optimisation.callbacks.cyclic\_callbacks module
 ------------------------------------------------------
@@ -19,6 +20,7 @@ tomopt.optimisation.callbacks.cyclic\_callbacks module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 tomopt.optimisation.callbacks.data\_callbacks module
 ----------------------------------------------------
@@ -27,6 +29,7 @@ tomopt.optimisation.callbacks.data\_callbacks module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 tomopt.optimisation.callbacks.diagnostic\_callbacks module
 ----------------------------------------------------------
@@ -35,6 +38,7 @@ tomopt.optimisation.callbacks.diagnostic\_callbacks module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 tomopt.optimisation.callbacks.eval\_metric module
 -------------------------------------------------
@@ -43,6 +47,7 @@ tomopt.optimisation.callbacks.eval\_metric module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 tomopt.optimisation.callbacks.grad\_callbacks module
 ----------------------------------------------------
@@ -51,6 +56,7 @@ tomopt.optimisation.callbacks.grad\_callbacks module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 tomopt.optimisation.callbacks.heatmap\_gif module
 -------------------------------------------------
@@ -59,6 +65,7 @@ tomopt.optimisation.callbacks.heatmap\_gif module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 tomopt.optimisation.callbacks.loss\_callbacks module
 ----------------------------------------------------
@@ -67,6 +74,7 @@ tomopt.optimisation.callbacks.loss\_callbacks module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 tomopt.optimisation.callbacks.monitors module
 ---------------------------------------------
@@ -75,6 +83,7 @@ tomopt.optimisation.callbacks.monitors module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 tomopt.optimisation.callbacks.opt\_callbacks module
 ---------------------------------------------------
@@ -83,6 +92,7 @@ tomopt.optimisation.callbacks.opt\_callbacks module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 tomopt.optimisation.callbacks.pred\_callbacks module
 ----------------------------------------------------
@@ -91,11 +101,4 @@ tomopt.optimisation.callbacks.pred\_callbacks module
    :members:
    :undoc-members:
    :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: tomopt.optimisation.callbacks
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   :private-members:

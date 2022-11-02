@@ -11,11 +11,4 @@ tomopt.benchmarks.u\_lorry.data module
    :members:
    :undoc-members:
    :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: tomopt.benchmarks.u_lorry
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   :private-members:

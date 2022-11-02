@@ -11,6 +11,7 @@ tomopt.volume.heatmap module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 tomopt.volume.layer module
 --------------------------
@@ -19,6 +20,7 @@ tomopt.volume.layer module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 tomopt.volume.panel module
 --------------------------
@@ -27,6 +29,7 @@ tomopt.volume.panel module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 tomopt.volume.scatter\_model module
 -----------------------------------
@@ -35,6 +38,7 @@ tomopt.volume.scatter\_model module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 tomopt.volume.volume module
 ---------------------------
@@ -43,11 +47,4 @@ tomopt.volume.volume module
    :members:
    :undoc-members:
    :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: tomopt.volume
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   :private-members:

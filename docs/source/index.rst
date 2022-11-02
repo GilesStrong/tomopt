@@ -8,6 +8,7 @@ TomOpt: Differential Muon Tomography Optimisation
 .. toctree::
    :maxdepth: 1
 
+   installation
    tomopt
    tomopt.muon
    tomopt.volume

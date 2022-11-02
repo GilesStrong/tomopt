@@ -11,11 +11,3 @@ Subpackages
    tomopt.benchmarks.phi_detector
    tomopt.benchmarks.small_walls
    tomopt.benchmarks.u_lorry
-
-Module contents
----------------
-
-.. automodule:: tomopt.benchmarks
-   :members:
-   :undoc-members:
-   :show-inheritance:

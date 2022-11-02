@@ -11,11 +11,4 @@ tomopt.optimisation.data.passives module
    :members:
    :undoc-members:
    :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: tomopt.optimisation.data
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   :private-members:

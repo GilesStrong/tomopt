@@ -11,6 +11,7 @@ tomopt.benchmarks.phi\_detector.detector module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 tomopt.benchmarks.phi\_detector.inference module
 ------------------------------------------------
@@ -19,11 +20,5 @@ tomopt.benchmarks.phi\_detector.inference module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
-Module contents
----------------
-
-.. automodule:: tomopt.benchmarks.phi_detector
-   :members:
-   :undoc-members:
-   :show-inheritance:

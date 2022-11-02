@@ -24,6 +24,7 @@ tomopt.core module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 tomopt.utils module
 -------------------
@@ -40,11 +41,5 @@ tomopt.version module
    :members:
    :undoc-members:
    :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: tomopt
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   :private-members:
+   :special-members:

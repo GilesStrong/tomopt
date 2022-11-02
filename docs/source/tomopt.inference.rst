@@ -11,6 +11,7 @@ tomopt.inference.scattering module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 tomopt.inference.volume module
 ------------------------------
@@ -19,11 +20,4 @@ tomopt.inference.volume module
    :members:
    :undoc-members:
    :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: tomopt.inference
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   :private-members:

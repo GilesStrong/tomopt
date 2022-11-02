@@ -481,7 +481,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
         r"""
         Computes incoming and outgoing vectors, and the vector normal to them, from hits extracted from filtered muons.
 
-        ..important::
+        .. important::
             Currently only handles detectors above and below passive volume
 
         Scatter locations adapted from:

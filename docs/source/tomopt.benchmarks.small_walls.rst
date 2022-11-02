@@ -11,6 +11,7 @@ tomopt.benchmarks.small\_walls.data module
    :members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 tomopt.benchmarks.small\_walls.volume module
 --------------------------------------------
@@ -19,11 +20,4 @@ tomopt.benchmarks.small\_walls.volume module
    :members:
    :undoc-members:
    :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: tomopt.benchmarks.small_walls
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   :private-members:

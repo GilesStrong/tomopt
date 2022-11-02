@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-
-set -o errexit
-cd "$(dirname "$0")"
-sphinx-apidoc -l -o ./source/ ../tomopt -f -d 1
