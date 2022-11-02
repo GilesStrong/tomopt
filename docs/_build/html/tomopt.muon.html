@@ -1,0 +1,1432 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>tomopt.muon package &mdash; TomOpt  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/tomopt_logo.png"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="tomopt.optimisation package" href="tomopt.optimisation.html" />
+    <link rel="prev" title="tomopt.inference package" href="tomopt.inference.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://tomopt.readthedocs.io/en/stable" aria-label="TomOpt"></a>
+
+      <div class="main-menu">
+        <ul>
+          <!-- <li>
+            <a href="">Get Started</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="">Features</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="">Ecosystem</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="">Blog</a>
+          </li> -->
+
+          <li>
+            <a href="https://github.com/GilesStrong/mode_muon_tomography#examples">Tutorials</a>
+          </li>
+
+          <li>
+            <a href="https://tomopt.readthedocs.io/en/stable">Docs</a>
+          </li>
+
+          <!-- <li>
+            <a href="">Resources</a>
+          </li> -->
+
+          <li>
+            <a href="https://github.com/GilesStrong/mode_muon_tomography">Github</a>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+
+  </div>
+</div>
+
+
+<body class="pytorch-body">
+
+   
+
+    
+
+    <div class="table-of-contents-link-wrapper">
+      <span>Table of Contents</span>
+      <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+    </div>
+
+    <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+      <div class="pytorch-side-scroll">
+        <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          <div class="pytorch-left-menu-search">
+            
+
+            
+              
+              
+            
+
+            
+
+
+  
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+            
+          </div>
+
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Setup instructions</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="tomopt.html">tomopt package</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">tomopt.muon package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tomopt.volume.html">tomopt.volume package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tomopt.inference.html">tomopt.inference package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tomopt.optimisation.html">tomopt.optimisation package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tomopt.plotting.html">tomopt.plotting package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tomopt.benchmarks.html">tomopt.benchmarks package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <div class="pytorch-container">
+      <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+        <div class="pytorch-breadcrumbs-wrapper">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="index.html">
+          
+            Docs
+          
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="tomopt.html">tomopt package</a> &gt;</li>
+        
+      <li>tomopt.muon package</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="_sources/tomopt.muon.rst.txt" rel="nofollow"><img src="_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+        </div>
+
+        <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+      </div>
+
+      <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+        <div class="pytorch-content-left">
+
+        
+          
+          <div class="rst-content">
+          
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+             <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+              
+  <section id="tomopt-muon-package">
+<h1>tomopt.muon package<a class="headerlink" href="#tomopt-muon-package" title="Permalink to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="module-tomopt.muon.generation">
+<span id="tomopt-muon-generation-module"></span><h2>tomopt.muon.generation module<a class="headerlink" href="#module-tomopt.muon.generation" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="tomopt.muon.generation.AbsMuonGenerator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.muon.generation.</span></span><span class="sig-name descname"><span class="pre">AbsMuonGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_mom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.5,</span> <span class="pre">500)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">1.2217304763960306)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/muon/generation.html#AbsMuonGenerator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.muon.generation.AbsMuonGenerator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Abstract generator base class implementing core functionality.
+Inheriting classes should override the <cite>flux</cite> method.</p>
+<p>Once initialised, the object can be called, or it’s <cite>generate_set</cite> method called, to generate a set of initial muon kinematics.
+Each muon will have a starting x and y position sampled uniformly within a defined region.
+Theta and momentum will be defined by sampling the defined flux model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x_range</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – range in metres of the absolute initial x-position in the volume reference frame over which muons can be generated</p></li>
+<li><p><strong>y_range</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – range in metres of the absolute initial y-position in the volume reference frame over which muons can be generated</p></li>
+<li><p><strong>fixed_mom</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – if not None, will only generate muons with the specified momentum in GeV</p></li>
+<li><p><strong>energy_range</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – if fixed_mom is None, muons will have initial momentum sampled according to the flux model in the specified range in GeV</p></li>
+<li><p><strong>theta_range</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – muons will have initial theta sampled according to the flux model in the specified range in radians</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.muon.generation.AbsMuonGenerator._muon_mass2">
+<span class="sig-name descname"><span class="pre">_muon_mass2</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.01116369210198225</span></em><a class="headerlink" href="#tomopt.muon.generation.AbsMuonGenerator._muon_mass2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.muon.generation.AbsMuonGenerator._n_bins_energy">
+<span class="sig-name descname"><span class="pre">_n_bins_energy</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">200</span></em><a class="headerlink" href="#tomopt.muon.generation.AbsMuonGenerator._n_bins_energy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.muon.generation.AbsMuonGenerator._n_bins_theta">
+<span class="sig-name descname"><span class="pre">_n_bins_theta</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">200</span></em><a class="headerlink" href="#tomopt.muon.generation.AbsMuonGenerator._n_bins_theta" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.muon.generation.AbsMuonGenerator.flux">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">flux</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/muon/generation.html#AbsMuonGenerator.flux"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.muon.generation.AbsMuonGenerator.flux" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inheriting classes should override this to implement their flux model for the supplied pairs of energies and thetas</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>energy</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]) – energy values at which to compute the flux, in GeV</p></li>
+<li><p><strong>theta</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]) – theta values at which to compute the flux, in radians</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>muon flux for every energy &amp; theta pair</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.muon.generation.AbsMuonGenerator.from_volume">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_volume</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_angle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2617993877991494</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_mom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.5,</span> <span class="pre">500)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">1.2217304763960306)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/muon/generation.html#AbsMuonGenerator.from_volume"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.muon.generation.AbsMuonGenerator.from_volume" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class method to initialise x and y ranges of muon generation from the passive volume.
+Heuristically computes x,y generation range as (0-d,x+d), (0-d,y+d).
+Where d is such that a muon generated at (0-d,1) will only hit the last layer of the passive volume if it’s initial angle is at least min_angle.
+This balances a trade-off between generation efficiency and generator realism.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>volume</strong> (<a class="reference internal" href="tomopt.volume.html#tomopt.volume.volume.Volume" title="tomopt.volume.volume.Volume"><code class="xref py py-class docutils literal notranslate"><span class="pre">Volume</span></code></a>) – <a class="reference internal" href="tomopt.volume.html#tomopt.volume.volume.Volume" title="tomopt.volume.volume.Volume"><code class="xref py py-class docutils literal notranslate"><span class="pre">Volume</span></code></a> through which the muons will pass</p></li>
+<li><p><strong>min_angle</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – the minimum theta angle that a muon generated at the extreme x or y boundary would require to hit at least the last passive layer of the
+passive volume, if it’s phi angle were to point directly towards the passive volume.</p></li>
+<li><p><strong>fixed_mom</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – if not None, will only generate muons with the specified momentum in GeV</p></li>
+<li><p><strong>energy_range</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – if fixed_mom is None, muons will have initial momentum sampled according to the flux model in the specified range in GeV</p></li>
+<li><p><strong>theta_range</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – muons will have initial theta sampled according to the flux model in the specified range in radians</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#tomopt.muon.generation.AbsMuonGenerator" title="tomopt.muon.generation.AbsMuonGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsMuonGenerator</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.muon.generation.AbsMuonGenerator.generate_set">
+<span class="sig-name descname"><span class="pre">generate_set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_muons</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/muon/generation.html#AbsMuonGenerator.generate_set"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.muon.generation.AbsMuonGenerator.generate_set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a set of muons as a rank-2 tensor of shape (n_muons, 5), with initial kinematic variables [x, y, momentum, theta, phi].
+Theta and, optionally, momentum are sampled from the flux model. x and y are sampled uniformly from the defined ranges.
+Phi is sampled uniformly from [0,2pi].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n_muons</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – number of muons to generate</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Rank-2 tensor of shape (n_muons, 5), with initial kinematic variables [x, y, momentum, theta, phi]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tomopt.muon.generation.MuonGenerator2015">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.muon.generation.</span></span><span class="sig-name descname"><span class="pre">MuonGenerator2015</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_mom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.5,</span> <span class="pre">500)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">1.2217304763960306)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/muon/generation.html#MuonGenerator2015"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.muon.generation.MuonGenerator2015" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tomopt.muon.generation.AbsMuonGenerator" title="tomopt.muon.generation.AbsMuonGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsMuonGenerator</span></code></a></p>
+<p>Provides muon generator for sampling initial muon kinematics according to  Guan et al. 2015 (arXiv:1509.06176).</p>
+<p>Once initialised, the object can be called, or it’s <cite>generate_set</cite> method called, to generate a set of initial muon kinematics.
+Each muon will have a starting x and y position sampled uniformly within a defined region.
+Theta and momentum will be defined by sampling the defined flux model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x_range</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – range in metres of the absolute initial x-position in the volume reference frame over which muons can be generated</p></li>
+<li><p><strong>y_range</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – range in metres of the absolute initial y-position in the volume reference frame over which muons can be generated</p></li>
+<li><p><strong>fixed_mom</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – if not None, will only generate muons with the specified momentum in GeV</p></li>
+<li><p><strong>energy_range</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – if fixed_mom is None, muons will have initial momentum sampled according to the flux model in the specified range in GeV</p></li>
+<li><p><strong>theta_range</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – muons will have initial theta sampled according to the flux model in the specified range in radians</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.muon.generation.MuonGenerator2015.P1">
+<span class="sig-name descname"><span class="pre">P1</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.102573</span></em><a class="headerlink" href="#tomopt.muon.generation.MuonGenerator2015.P1" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.muon.generation.MuonGenerator2015.P2">
+<span class="sig-name descname"><span class="pre">P2</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-0.068287</span></em><a class="headerlink" href="#tomopt.muon.generation.MuonGenerator2015.P2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.muon.generation.MuonGenerator2015.P3">
+<span class="sig-name descname"><span class="pre">P3</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.958633</span></em><a class="headerlink" href="#tomopt.muon.generation.MuonGenerator2015.P3" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.muon.generation.MuonGenerator2015.P4">
+<span class="sig-name descname"><span class="pre">P4</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0407253</span></em><a class="headerlink" href="#tomopt.muon.generation.MuonGenerator2015.P4" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.muon.generation.MuonGenerator2015.P5">
+<span class="sig-name descname"><span class="pre">P5</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.817285</span></em><a class="headerlink" href="#tomopt.muon.generation.MuonGenerator2015.P5" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.muon.generation.MuonGenerator2015.flux">
+<span class="sig-name descname"><span class="pre">flux</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/muon/generation.html#MuonGenerator2015.flux"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.muon.generation.MuonGenerator2015.flux" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function returning modified Gaisser formula for cosmic muon flux given energy (float/np.array) and incidence angle (float/np.array)
+Uses model defined in Guan et al. 2015 (arXiv:1509.06176)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>energy</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]) – energy values at which to compute the flux, in GeV</p></li>
+<li><p><strong>theta</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]) – theta values at which to compute the flux, in radians</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>muon flux for every energy &amp; theta pair</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tomopt.muon.generation.MuonGenerator2016">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.muon.generation.</span></span><span class="sig-name descname"><span class="pre">MuonGenerator2016</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_mom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.5,</span> <span class="pre">500)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">1.2217304763960306)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/muon/generation.html#MuonGenerator2016"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.muon.generation.MuonGenerator2016" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tomopt.muon.generation.AbsMuonGenerator" title="tomopt.muon.generation.AbsMuonGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsMuonGenerator</span></code></a></p>
+<p>Provides muon generator for sampling initial muon kinematics according to Shukla and Sanskrith 2018 arXiv:1606.06907</p>
+<p>Once initialised, the object can be called, or it’s <cite>generate_set</cite> method called, to generate a set of initial muon kinematics.
+Each muon will have a starting x and y position sampled uniformly within a defined region.
+Theta and momentum will be defined by sampling the defined flux model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x_range</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – range in metres of the absolute initial x-position in the volume reference frame over which muons can be generated</p></li>
+<li><p><strong>y_range</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – range in metres of the absolute initial y-position in the volume reference frame over which muons can be generated</p></li>
+<li><p><strong>fixed_mom</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – if not None, will only generate muons with the specified momentum in GeV</p></li>
+<li><p><strong>energy_range</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – if fixed_mom is None, muons will have initial momentum sampled according to the flux model in the specified range in GeV</p></li>
+<li><p><strong>theta_range</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – muons will have initial theta sampled according to the flux model in the specified range in radians</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.muon.generation.MuonGenerator2016.E_0">
+<span class="sig-name descname"><span class="pre">E_0</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3.87</span></em><a class="headerlink" href="#tomopt.muon.generation.MuonGenerator2016.E_0" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.muon.generation.MuonGenerator2016.E_c">
+<span class="sig-name descname"><span class="pre">E_c</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.5</span></em><a class="headerlink" href="#tomopt.muon.generation.MuonGenerator2016.E_c" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.muon.generation.MuonGenerator2016.I_0">
+<span class="sig-name descname"><span class="pre">I_0</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">88.0</span></em><a class="headerlink" href="#tomopt.muon.generation.MuonGenerator2016.I_0" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.muon.generation.MuonGenerator2016.N">
+<span class="sig-name descname"><span class="pre">N</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">38.1938</span></em><a class="headerlink" href="#tomopt.muon.generation.MuonGenerator2016.N" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.muon.generation.MuonGenerator2016.Rod">
+<span class="sig-name descname"><span class="pre">Rod</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">174.0</span></em><a class="headerlink" href="#tomopt.muon.generation.MuonGenerator2016.Rod" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.muon.generation.MuonGenerator2016.epinv">
+<span class="sig-name descname"><span class="pre">epinv</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.00117096018735363</span></em><a class="headerlink" href="#tomopt.muon.generation.MuonGenerator2016.epinv" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.muon.generation.MuonGenerator2016.flux">
+<span class="sig-name descname"><span class="pre">flux</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/muon/generation.html#MuonGenerator2016.flux"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.muon.generation.MuonGenerator2016.flux" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function returning modified Gaisser formula for cosmic muon flux given energy (float/np.array) and incidence angle (float/np.array)
+Uses model defined in Shukla and Sanskrith 2018 arXiv:1606.06907</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>energy</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]) – energy values at which to compute the flux, in GeV</p></li>
+<li><p><strong>theta</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]) – theta values at which to compute the flux, in radians</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>muon flux for every energy &amp; theta pair</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.muon.generation.MuonGenerator2016.n">
+<span class="sig-name descname"><span class="pre">n</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#tomopt.muon.generation.MuonGenerator2016.n" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-tomopt.muon.muon_batch">
+<span id="tomopt-muon-muon-batch-module"></span><h2>tomopt.muon.muon_batch module<a class="headerlink" href="#module-tomopt.muon.muon_batch" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.muon.muon_batch.</span></span><span class="sig-name descname"><span class="pre">MuonBatch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xy_p_theta_phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">device(type='cpu')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/muon/muon_batch.html#MuonBatch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Container class for a batch of many muons, defined by their position and kinematics.</p>
+<dl class="simple">
+<dt>Each muon has its own:</dt><dd><ul class="simple">
+<li><p>x and y position in metres, which are absolute coordinates in the volume frame.</p></li>
+<li><p>theta, the angle in radians [0,pi) between the muon trajectory and the negative z-axis in the volume frame muons with a theta &gt; pi/2 (i.e. travel upwards) may be removed automatically</p></li>
+<li><p>phi, the anticlockwise angle in radians [0,2pi) between the muon trajectory and the positive x-axis, in the x-y plane of the volume frame.</p></li>
+<li><p>momentum (mom), the absolute value of the muon momentum in GeV</p></li>
+</ul>
+</dd>
+</dl>
+<p>All the muons in the batch share the same z-position in metres, which is an absolute coordinate in the volume frame.</p>
+<dl class="simple">
+<dt>Muon properties should not be updated manually.  Instead, call:</dt><dd><ul class="simple">
+<li><p><cite>.propagate(dz)</cite> to update the x,y,z positions of the muons for a given propagation dz in the z-axis.</p></li>
+<li><p><cite>.scatter_dxy(dx_vol, dy_vol, mask)</cite> to shift the x,y positions of the muons, for which the values of the optional Boolean mask is true, by the specified amount.</p></li>
+<li><p><cite>.scatter_dtheta_dphi(dtheta_vol, dphi_vol, mask)</cite> to alter the theta,phi angles of the muons, for which the values of the optional Boolean mask is true, by the specified amount.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Muon momenta is currently constant</p>
+</div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Eventually the muon batch will be extended to store information about the inferred momentum of the muons <cite>reco_mom</cite>.
+However currently the <cite>reco_mom</cite> property will return the TRUE momentum of the muons, with no simulation of measurement precision.</p>
+</div>
+<p>By default, the <cite>MuonBatch</cite> class only contains the current position of the muons,
+however the <cite>.snapshot_xyz</cite> method can be used to store the xy positions of the muons at any time, to a dictionary with float z-position keys, <cite>xy_hist</cite>.</p>
+<p>In addition to storing the properties of the muons, the <cite>MuonBatch</cite> class is also used to store the detector hits associated with each muon.
+Hits may be added via the <cite>.append_hits</cite> method, and stored in the <cite>_hits</cite> attribute.
+Hits can then be retrieved by the <cite>.get_hits</cite> method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xy_p_theta_phi</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N_muon, 5) tensor,
+with xy [m], p [GeV], theta [r] (0, pi/2) defined w.r.t z axis, phi [r] (0, 2pi) defined anticlockwise from x axis</p></li>
+<li><p><strong>init_z</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – initial z position of all muons in the batch</p></li>
+<li><p><strong>device</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">device</span></code>) – device on which to place the muon tensors</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch._keep_mask">
+<span class="sig-name descname"><span class="pre">_keep_mask</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch._keep_mask" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch._mom">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_mom</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch._mom" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch._phi">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_phi</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch._phi" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch._theta">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_theta</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch._theta" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch._x">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_x</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch._x" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch._xy">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_xy</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch._xy" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch._y">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_y</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch._y" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.append_hits">
+<span class="sig-name descname"><span class="pre">append_hits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/muon/muon_batch.html#MuonBatch.append_hits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.append_hits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Record hits to <cite>_hits</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>hits</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]) – dictionary of ‘reco_xy’, ‘gen_xy’, ‘z’ keys to (muons, <a href="#id1"><span class="problematic" id="id2">*</span></a>) tensors.</p></li>
+<li><p><strong>pos</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – Position of detector array in which the hits were recorded, currently either ‘above’ or ‘below’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/muon/muon_batch.html#MuonBatch.copy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a copy of the muon batch at the current position and trajectories.
+Tensors are detached and cloned.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>This does NOT copy of hits</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch" title="tomopt.muon.muon_batch.MuonBatch"><code class="xref py py-class docutils literal notranslate"><span class="pre">MuonBatch</span></code></a></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>New <cite>MuonBatch</cite> with xyz, and theta,phi equal to those of the current <cite>MuonBatch</cite>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.dtheta">
+<span class="sig-name descname"><span class="pre">dtheta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta_ref</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/muon/muon_batch.html#MuonBatch.dtheta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.dtheta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes absolute difference in the theta between the muons and the supplied theta angles</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>theta_ref</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor to compare with the muon theta values</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Absolute difference between muons’ theta and the supplied reference theta</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.dtheta_x">
+<span class="sig-name descname"><span class="pre">dtheta_x</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta_ref_x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/muon/muon_batch.html#MuonBatch.dtheta_x"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.dtheta_x" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes absolute difference in the theta_x between the muons and the supplied theta_x angles</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>theta_ref_x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor to compare with the muon theta_x values</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Absolute difference between muons’ theta_x and the supplied reference theta_x</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.dtheta_y">
+<span class="sig-name descname"><span class="pre">dtheta_y</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta_ref_y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/muon/muon_batch.html#MuonBatch.dtheta_y"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.dtheta_y" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes absolute difference in the theta_y between the muons and the supplied theta_y angles</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>theta_ref_y</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor to compare with the muon theta_y values</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Absolute difference between muons’ theta_y and the supplied reference theta_y</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.filter_muons">
+<span class="sig-name descname"><span class="pre">filter_muons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">keep_mask</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/muon/muon_batch.html#MuonBatch.filter_muons"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.filter_muons" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes all muons, and their associated hits, except for muons specified as True in <cite>keep_mask</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>keep_mask</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) Boolean tensor. Muons with False elements will be removed, along with their hits.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.get_hits">
+<span class="sig-name descname"><span class="pre">get_hits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xy_low</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xy_high</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/muon/muon_batch.html#MuonBatch.get_hits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.get_hits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve the recorded hits for the muons, optionally only for muons between the specified xy ranges.
+For ease of use, the list of hits are stacked into single tensors, resulting in
+a dictionary mapping detector-array position to a dictionary mapping hit variables to (N_muons, N_hits, <a href="#id3"><span class="problematic" id="id4">*</span></a>) tensors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xy_low</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]) – (2,N) optional lower limit on xy positions</p></li>
+<li><p><strong>xy_high</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]) – (2,N) optional upper limit on xy positions</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]]</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Hits, a dictionary mapping detector-array position to a dictionary mapping hit variables to (N_muons, N_hits, <a href="#id5"><span class="problematic" id="id6">*</span></a>) tensors.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.get_xy_mask">
+<span class="sig-name descname"><span class="pre">get_xy_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xy_low</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xy_high</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/muon/muon_batch.html#MuonBatch.get_xy_mask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.get_xy_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes a (N,) Boolean tensor, with True values corresponding to muons which are within the supplied ranges in xy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xy_low</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]) – (2,N) optional lower limit on xy positions</p></li>
+<li><p><strong>xy_high</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]) – (2,N) optional upper limit on xy positions</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(N,) Boolean mask with True values corresponding to muons which are with xy positions &gt;= xy_low and &lt; xy_high</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.mom">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mom</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.mom" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.muons">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">muons</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.muons" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.p_dim">
+<span class="sig-name descname"><span class="pre">p_dim</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.p_dim" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.ph_dim">
+<span class="sig-name descname"><span class="pre">ph_dim</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.ph_dim" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.phi">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">phi</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.phi" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.phi_from_theta_xy">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">phi_from_theta_xy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/muon/muon_batch.html#MuonBatch.phi_from_theta_xy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.phi_from_theta_xy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the phi angle from theta_x and theta_y.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>This function does NOT work if theta is &gt; pi/2</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta_x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – angle from the negative z-axis in the xz plane</p></li>
+<li><p><strong>theta_y</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – angle from the negative z-axis in the yz plane</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>phi, the anti-clockwise angle from the positive x axis, in the xy plane</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.propagate">
+<span class="sig-name descname"><span class="pre">propagate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dz</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/muon/muon_batch.html#MuonBatch.propagate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.propagate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Propagates all muons in their direction of flight such that afterwards they will all have moved a specified distance in the negative z direction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dz</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – distance in metres to move in the negative z direction, i.e. a positive dz results in the muons travelling downwards.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.reco_mom">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reco_mom</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.reco_mom" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.remove_upwards_muons">
+<span class="sig-name descname"><span class="pre">remove_upwards_muons</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/muon/muon_batch.html#MuonBatch.remove_upwards_muons"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.remove_upwards_muons" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes muons, and their hits, if their theta &gt;= pi/2, i.e. they are travelling upwards after a large scattering.
+Should be run after any changes to theta, but make sure that references (e.g. masks) to the complete set of muons are no longer required.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.scatter_dtheta_dphi">
+<span class="sig-name descname"><span class="pre">scatter_dtheta_dphi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dtheta_vol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dphi_vol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/muon/muon_batch.html#MuonBatch.scatter_dtheta_dphi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.scatter_dtheta_dphi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Changes the trajectory of the muons in theta-phi by the specified amounts, with no change in their x,y,z positions.
+If a mask is supplied, then only muons with True mask elements are altered.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dtheta_vol</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]) – (N,) tensor of angular changes in theta</p></li>
+<li><p><strong>dphi_vol</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]) – (N,) tensor of angular changes in phi</p></li>
+<li><p><strong>mask</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]) – (N,) Boolean tensor. If not None, only muons with True mask elements are altered.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.scatter_dxy">
+<span class="sig-name descname"><span class="pre">scatter_dxy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dx_vol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dy_vol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/muon/muon_batch.html#MuonBatch.scatter_dxy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.scatter_dxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Displaces the muons in xy by the specified amounts, with no change in their z position.
+If a mask is supplied, then only muons with True mask elements are displaced.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dx_vol</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]) – (N,) tensor of displacements in x</p></li>
+<li><p><strong>dy_vol</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]) – (N,) tensor of displacements in y</p></li>
+<li><p><strong>mask</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]) – (N,) Boolean tensor. If not None, only muons with True mask elements are displaced.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.snapshot_xyz">
+<span class="sig-name descname"><span class="pre">snapshot_xyz</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/muon/muon_batch.html#MuonBatch.snapshot_xyz"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.snapshot_xyz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store the current xy positions of the muons in <cite>.xy_hist</cite>, indexed by the current z position.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.th_dim">
+<span class="sig-name descname"><span class="pre">th_dim</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.th_dim" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.theta">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">theta</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.theta" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.theta_from_theta_xy">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">theta_from_theta_xy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/muon/muon_batch.html#MuonBatch.theta_from_theta_xy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.theta_from_theta_xy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the theta angle from theta_x and theta_y.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>This function does NOT work if theta is &gt; pi/2</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta_x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – angle from the negative z-axis in the xz plane</p></li>
+<li><p><strong>theta_y</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – angle from the negative z-axis in the yz plane</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>theta, the anti-clockwise angle from the negative z axis, in the xyz plane</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.theta_x">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">theta_x</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.theta_x" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.theta_x_from_theta_phi">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">theta_x_from_theta_phi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/muon/muon_batch.html#MuonBatch.theta_x_from_theta_phi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.theta_x_from_theta_phi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the angle from the negative z-axis in the xz plane from theta and phi</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>This function does NOT work if theta is &gt; pi/2</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – the anti-clockwise angle from the negative z axis, in the xyz plane</p></li>
+<li><p><strong>phi</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – the anti-clockwise angle from the positive x axis, in the xy plane</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>theta_x, the angle from the negative z-axis in the xz plane</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.theta_xy">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">theta_xy</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.theta_xy" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.theta_y">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">theta_y</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.theta_y" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.theta_y_from_theta_phi">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">theta_y_from_theta_phi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/muon/muon_batch.html#MuonBatch.theta_y_from_theta_phi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.theta_y_from_theta_phi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the angle from the negative z-axis in the yz plane from theta and phi</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>This function does NOT work if theta is &gt; pi/2</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>theta</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – the anti-clockwise angle from the negative z axis, in the xyz plane</p></li>
+<li><p><strong>phi</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – the anti-clockwise angle from the positive x axis, in the xy plane</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>theta_y, the angle from the negative z-axis in the yz plane</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.upwards_muons">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">upwards_muons</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.upwards_muons" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.x">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">x</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.x" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.x_dim">
+<span class="sig-name descname"><span class="pre">x_dim</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.x_dim" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.xy">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">xy</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.xy" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.xy_hist">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">xy_hist</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.xy_hist" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.y">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">y</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.y" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.y_dim">
+<span class="sig-name descname"><span class="pre">y_dim</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.y_dim" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.z">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">z</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.z" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+             </article>
+             
+            </div>
+            <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="tomopt.optimisation.html" class="btn btn-neutral float-right" title="tomopt.optimisation package" accesskey="n" rel="next">Next <img src="_static/images/chevron-right-orange.svg" class="next-page"></a>
+      
+      
+        <a href="tomopt.inference.html" class="btn btn-neutral" title="tomopt.inference package" accesskey="p" rel="prev"><img src="_static/images/chevron-right-orange.svg" class="previous-page"> Previous</a>
+      
+    </div>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2021-2022, TomOpt Authors.
+
+    </p>
+  </div>
+    
+      <div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/pytorch/tomopt_sphinx_theme">theme</a> provided by <a href="https://pytorch.org/">PyTorch</a> based on a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+     
+
+</footer>
+
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">tomopt.muon package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-tomopt.muon.generation">tomopt.muon.generation module</a><ul>
+<li><a class="reference internal" href="#tomopt.muon.generation.AbsMuonGenerator"><code class="docutils literal notranslate"><span class="pre">AbsMuonGenerator</span></code></a><ul>
+<li><a class="reference internal" href="#tomopt.muon.generation.AbsMuonGenerator._muon_mass2"><code class="docutils literal notranslate"><span class="pre">AbsMuonGenerator._muon_mass2</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.generation.AbsMuonGenerator._n_bins_energy"><code class="docutils literal notranslate"><span class="pre">AbsMuonGenerator._n_bins_energy</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.generation.AbsMuonGenerator._n_bins_theta"><code class="docutils literal notranslate"><span class="pre">AbsMuonGenerator._n_bins_theta</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.generation.AbsMuonGenerator.flux"><code class="docutils literal notranslate"><span class="pre">AbsMuonGenerator.flux()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.generation.AbsMuonGenerator.from_volume"><code class="docutils literal notranslate"><span class="pre">AbsMuonGenerator.from_volume()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.generation.AbsMuonGenerator.generate_set"><code class="docutils literal notranslate"><span class="pre">AbsMuonGenerator.generate_set()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tomopt.muon.generation.MuonGenerator2015"><code class="docutils literal notranslate"><span class="pre">MuonGenerator2015</span></code></a><ul>
+<li><a class="reference internal" href="#tomopt.muon.generation.MuonGenerator2015.P1"><code class="docutils literal notranslate"><span class="pre">MuonGenerator2015.P1</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.generation.MuonGenerator2015.P2"><code class="docutils literal notranslate"><span class="pre">MuonGenerator2015.P2</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.generation.MuonGenerator2015.P3"><code class="docutils literal notranslate"><span class="pre">MuonGenerator2015.P3</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.generation.MuonGenerator2015.P4"><code class="docutils literal notranslate"><span class="pre">MuonGenerator2015.P4</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.generation.MuonGenerator2015.P5"><code class="docutils literal notranslate"><span class="pre">MuonGenerator2015.P5</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.generation.MuonGenerator2015.flux"><code class="docutils literal notranslate"><span class="pre">MuonGenerator2015.flux()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tomopt.muon.generation.MuonGenerator2016"><code class="docutils literal notranslate"><span class="pre">MuonGenerator2016</span></code></a><ul>
+<li><a class="reference internal" href="#tomopt.muon.generation.MuonGenerator2016.E_0"><code class="docutils literal notranslate"><span class="pre">MuonGenerator2016.E_0</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.generation.MuonGenerator2016.E_c"><code class="docutils literal notranslate"><span class="pre">MuonGenerator2016.E_c</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.generation.MuonGenerator2016.I_0"><code class="docutils literal notranslate"><span class="pre">MuonGenerator2016.I_0</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.generation.MuonGenerator2016.N"><code class="docutils literal notranslate"><span class="pre">MuonGenerator2016.N</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.generation.MuonGenerator2016.Rod"><code class="docutils literal notranslate"><span class="pre">MuonGenerator2016.Rod</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.generation.MuonGenerator2016.epinv"><code class="docutils literal notranslate"><span class="pre">MuonGenerator2016.epinv</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.generation.MuonGenerator2016.flux"><code class="docutils literal notranslate"><span class="pre">MuonGenerator2016.flux()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.generation.MuonGenerator2016.n"><code class="docutils literal notranslate"><span class="pre">MuonGenerator2016.n</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-tomopt.muon.muon_batch">tomopt.muon.muon_batch module</a><ul>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch"><code class="docutils literal notranslate"><span class="pre">MuonBatch</span></code></a><ul>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch._keep_mask"><code class="docutils literal notranslate"><span class="pre">MuonBatch._keep_mask</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch._mom"><code class="docutils literal notranslate"><span class="pre">MuonBatch._mom</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch._phi"><code class="docutils literal notranslate"><span class="pre">MuonBatch._phi</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch._theta"><code class="docutils literal notranslate"><span class="pre">MuonBatch._theta</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch._x"><code class="docutils literal notranslate"><span class="pre">MuonBatch._x</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch._xy"><code class="docutils literal notranslate"><span class="pre">MuonBatch._xy</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch._y"><code class="docutils literal notranslate"><span class="pre">MuonBatch._y</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.append_hits"><code class="docutils literal notranslate"><span class="pre">MuonBatch.append_hits()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.copy"><code class="docutils literal notranslate"><span class="pre">MuonBatch.copy()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.dtheta"><code class="docutils literal notranslate"><span class="pre">MuonBatch.dtheta()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.dtheta_x"><code class="docutils literal notranslate"><span class="pre">MuonBatch.dtheta_x()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.dtheta_y"><code class="docutils literal notranslate"><span class="pre">MuonBatch.dtheta_y()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.filter_muons"><code class="docutils literal notranslate"><span class="pre">MuonBatch.filter_muons()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.get_hits"><code class="docutils literal notranslate"><span class="pre">MuonBatch.get_hits()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.get_xy_mask"><code class="docutils literal notranslate"><span class="pre">MuonBatch.get_xy_mask()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.mom"><code class="docutils literal notranslate"><span class="pre">MuonBatch.mom</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.muons"><code class="docutils literal notranslate"><span class="pre">MuonBatch.muons</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.p_dim"><code class="docutils literal notranslate"><span class="pre">MuonBatch.p_dim</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.ph_dim"><code class="docutils literal notranslate"><span class="pre">MuonBatch.ph_dim</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.phi"><code class="docutils literal notranslate"><span class="pre">MuonBatch.phi</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.phi_from_theta_xy"><code class="docutils literal notranslate"><span class="pre">MuonBatch.phi_from_theta_xy()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.propagate"><code class="docutils literal notranslate"><span class="pre">MuonBatch.propagate()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.reco_mom"><code class="docutils literal notranslate"><span class="pre">MuonBatch.reco_mom</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.remove_upwards_muons"><code class="docutils literal notranslate"><span class="pre">MuonBatch.remove_upwards_muons()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.scatter_dtheta_dphi"><code class="docutils literal notranslate"><span class="pre">MuonBatch.scatter_dtheta_dphi()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.scatter_dxy"><code class="docutils literal notranslate"><span class="pre">MuonBatch.scatter_dxy()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.snapshot_xyz"><code class="docutils literal notranslate"><span class="pre">MuonBatch.snapshot_xyz()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.th_dim"><code class="docutils literal notranslate"><span class="pre">MuonBatch.th_dim</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.theta"><code class="docutils literal notranslate"><span class="pre">MuonBatch.theta</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.theta_from_theta_xy"><code class="docutils literal notranslate"><span class="pre">MuonBatch.theta_from_theta_xy()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.theta_x"><code class="docutils literal notranslate"><span class="pre">MuonBatch.theta_x</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.theta_x_from_theta_phi"><code class="docutils literal notranslate"><span class="pre">MuonBatch.theta_x_from_theta_phi()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.theta_xy"><code class="docutils literal notranslate"><span class="pre">MuonBatch.theta_xy</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.theta_y"><code class="docutils literal notranslate"><span class="pre">MuonBatch.theta_y</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.theta_y_from_theta_phi"><code class="docutils literal notranslate"><span class="pre">MuonBatch.theta_y_from_theta_phi()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.upwards_muons"><code class="docutils literal notranslate"><span class="pre">MuonBatch.upwards_muons</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.x"><code class="docutils literal notranslate"><span class="pre">MuonBatch.x</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.x_dim"><code class="docutils literal notranslate"><span class="pre">MuonBatch.x_dim</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.xy"><code class="docutils literal notranslate"><span class="pre">MuonBatch.xy</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.xy_hist"><code class="docutils literal notranslate"><span class="pre">MuonBatch.xy_hist</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.y"><code class="docutils literal notranslate"><span class="pre">MuonBatch.y</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.y_dim"><code class="docutils literal notranslate"><span class="pre">MuonBatch.y_dim</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.z"><code class="docutils literal notranslate"><span class="pre">MuonBatch.z</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  
+
+
+  
+
+     
+       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+         <script src="_static/jquery.js"></script>
+         <script src="_static/underscore.js"></script>
+         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+         <script src="_static/doctools.js"></script>
+         <script src="_static/sphinx_highlight.js"></script>
+     
+
+  
+
+  <script type="text/javascript" src="_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="_static/js/vendor/bootstrap.min.js"></script>
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 text-center">
+          <h2>Docs</h2>
+          <p>Access comprehensive developer and user documentation for TomOpt</p>
+          <a class="with-right-arrow" href="https://tomopt.readthedocs.io/en/stable">View Docs</a>
+        </div>
+
+        <div class="col-md-6 text-center">
+          <h2>Tutorials</h2>
+          <p>Get tutorials for beginner and advanced researchers demonstrating many of the features of TomOpt</p>
+          <a class="with-right-arrow" href="https://github.com/GilesStrong/mode_muon_tomography#examples">View Tutorials</a>
+        </div>
+
+        <!-- <div class="col-md-4 text-center">
+          <h2>Resources</h2>
+          <p>Find development resources and get your questions answered</p>
+          <a class="with-right-arrow" href="">View Resources</a>
+        </div> -->
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-logo-wrapper">
+        <a href="https://tomopt.readthedocs.io/en/stable" class="footer-logo"></a>
+      </div>
+
+      <div class="footer-links-wrapper">
+        <div class="footer-links-col">
+          <ul>
+            <!-- <li class="list-title"><a href="https://tomopt.readthedocs.io/en/stable">TomOpt</a></li> -->
+            <!-- <li><a href="">Get Started</a></li> -->
+            <!-- <li><a href="">Features</a></li> -->
+            <!-- <li><a href="">Ecosystem</a></li> -->
+            <!-- <li><a href="">Blog</a></li> -->
+            <!-- <li><a href="">Resources</a></li> -->
+          </ul>
+        </div>
+
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="">Support</a></li>
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography#examples">Tutorials</a></li>
+            <li><a href="https://tomopt.readthedocs.io/en/stable">Docs</a></li>
+            <!-- <li><a href="" target="_blank">Discuss</a></li> -->
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography/blob/main/CHANGES.md" target="_blank">Change Log</a></li>
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography/issues" target="_blank">Github Issues</a></li>
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography/blob/main/CITATION.md" target="_blank">Citation</a></li>
+            <!-- <li><a href="" target="_blank">Slack</a></li> -->
+            <!-- <li><a href="https://github.com/GilesStrong/mode_muon_tomography/blob/main/CONTRIBUTING.md" target="_blank">Contributing</a></li> -->
+          </ul>
+        </div>
+
+        <!-- <div class="footer-links-col follow-us-col">
+          <ul>
+            <li class="list-title">Follow Us</li>
+            <li>
+              <div id="mc_embed_signup">
+                <form
+                  action="https://twitter.us14.list-manage.com/subscribe/post?u=75419c71fe0a935e53dfa4a3f&id=91d0dccd39"
+                  method="post"
+                  id="mc-embedded-subscribe-form"
+                  name="mc-embedded-subscribe-form"
+                  class="email-subscribe-form validate"
+                  target="_blank"
+                  novalidate>
+                  <div id="mc_embed_signup_scroll" class="email-subscribe-form-fields-wrapper">
+                    <div class="mc-field-group">
+                      <label for="mce-EMAIL" style="display:none;">Email Address</label>
+                      <input type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL" placeholder="Email Address">
+                    </div>
+
+                    <div id="mce-responses" class="clear">
+                      <div class="response" id="mce-error-response" style="display:none"></div>
+                      <div class="response" id="mce-success-response" style="display:none"></div>
+                    </div>    real people should not fill this in and expect good things - do not remove this or risk form bot signups
+
+                    <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_75419c71fe0a935e53dfa4a3f_91d0dccd39" tabindex="-1" value=""></div>
+
+                    <div class="clear">
+                      <input type="submit" value="" name="subscribe" id="mc-embedded-subscribe" class="button email-subscribe-button">
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+            </li>
+          </ul>
+
+          <div class="footer-social-icons">
+            <a href="" target="_blank" class="facebook"></a>
+            <a href="" target="_blank" class="twitter"></a>
+          </div>
+        </div> -->
+      </div>
+    </div>
+  </footer>
+
+  <!-- <div class="cookie-banner-wrapper">
+  <div class="container">
+    <p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+    <img class="close-button" src="_static/images/pytorch-x.svg">
+  </div>
+</div> -->
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://tomopt.readthedocs.io/en/stable" aria-label="TomOpt"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <!-- <li>
+            <a href="#">Get Started</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="#">Features</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="#">Ecosystem</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="">Blog</a>
+          </li> -->
+
+          <li>
+            <a href="https://github.com/GilesStrong/mode_muon_tomography#examples">Tutorials</a>
+          </li>
+
+          <li>
+            <a href="https://tomopt.readthedocs.io/en/stable">Docs</a>
+          </li>
+
+          <!-- <li>
+            <a href="">Resources</a>
+          </li> -->
+
+          <li>
+            <a href="https://github.com/GilesStrong/mode_muon_tomography">Github</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+</html>

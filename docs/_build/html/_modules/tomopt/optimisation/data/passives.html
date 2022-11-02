@@ -1,0 +1,818 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>tomopt.optimisation.data.passives &mdash; TomOpt  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../../../_static/tomopt_logo.png"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+
+  
+  <script src="../../../../_static/js/modernizr.min.js"></script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../../../../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://mode_muon_tomography.readthedocs.io/en/stable" aria-label="TomOpt"></a>
+
+      <div class="main-menu">
+        <ul>
+          <!-- <li>
+            <a href="">Get Started</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="">Features</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="">Ecosystem</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="">Blog</a>
+          </li> -->
+
+          <li>
+            <a href="https://github.com/GilesStrong/mode_muon_tomography#examples">Tutorials</a>
+          </li>
+
+          <li>
+            <a href="https://mode_muon_tomography.readthedocs.io/en/stable">Docs</a>
+          </li>
+
+          <!-- <li>
+            <a href="">Resources</a>
+          </li> -->
+
+          <li>
+            <a href="https://github.com/GilesStrong/mode_muon_tomography">Github</a>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+
+  </div>
+</div>
+
+
+<body class="pytorch-body">
+
+   
+
+    
+
+    <div class="table-of-contents-link-wrapper">
+      <span>Table of Contents</span>
+      <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+    </div>
+
+    <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+      <div class="pytorch-side-scroll">
+        <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          <div class="pytorch-left-menu-search">
+            
+
+            
+              
+              
+            
+
+            
+
+
+  
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+            
+          </div>
+
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tomopt.html">tomopt package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tomopt.muon.html">tomopt.muon package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tomopt.volume.html">tomopt.volume package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tomopt.inference.html">tomopt.inference package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tomopt.optimisation.html">tomopt.optimisation package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tomopt.plotting.html">tomopt.plotting package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tomopt.benchmarks.html">tomopt.benchmarks package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <div class="pytorch-container">
+      <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+        <div class="pytorch-breadcrumbs-wrapper">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../../../../index.html">
+          
+            Docs
+          
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="../../../index.html">Module code</a> &gt;</li>
+        
+      <li>tomopt.optimisation.data.passives</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+        </div>
+
+        <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+      </div>
+
+      <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+        <div class="pytorch-content-left">
+
+        
+          
+          <div class="rst-content">
+          
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+             <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+              
+  <h1>Source code for tomopt.optimisation.data.passives</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Generator</span>
+<span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">shuffle</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">abstractmethod</span><span class="p">,</span> <span class="n">ABCMeta</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
+
+<span class="kn">from</span> <span class="nn">...core</span> <span class="kn">import</span> <span class="n">X0</span><span class="p">,</span> <span class="n">RadLengthFunc</span>
+<span class="kn">from</span> <span class="nn">...volume</span> <span class="kn">import</span> <span class="n">Volume</span>
+
+<span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Provides classes that generate and yield passive volume layouts</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;AbsPassiveGenerator&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AbsBlockPassiveGenerator&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;VoxelPassiveGenerator&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;RandomBlockPassiveGenerator&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BlockPresentPassiveGenerator&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PassiveYielder&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<div class="viewcode-block" id="AbsPassiveGenerator"><a class="viewcode-back" href="../../../../tomopt.optimisation.data.html#tomopt.optimisation.AbsPassiveGenerator">[docs]</a><span class="k">class</span> <span class="nc">AbsPassiveGenerator</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abstract base class for classes that generate new passive layouts.</span>
+
+<span class="sd">    The :meth:`~tomopt.optimisation.data.passives.AbsPassiveGenerator._generate` method should be overridden to return:</span>
+<span class="sd">        - A function that provides an xy tensor for a given layer when called with its z position, length and width, and size.</span>
+<span class="sd">        - An optional &quot;target&quot; value for the layout</span>
+
+<span class="sd">    The :meth:`~tomopt.optimisation.data.passives.AbsPassiveGenerator.generate` method will return only the layout function and no target</span>
+<span class="sd">    The :meth:`~tomopt.optimisation.data.passives.AbsPassiveGenerator.get_data` method will return both the layout function and the target</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        volume: Volume that the passive layout will be loaded into</span>
+<span class="sd">        materials: list of material names that can be used in the volume, None -&gt; all materials known to TomOpt</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">volume</span><span class="p">:</span> <span class="n">Volume</span><span class="p">,</span>
+        <span class="n">materials</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialises the generator for a given volume, in case any volume parameters are required by the inheriting generators</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">volume</span> <span class="o">=</span> <span class="n">volume</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">device</span>
+        <span class="k">if</span> <span class="n">materials</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">materials</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">X0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">materials</span> <span class="o">=</span> <span class="n">materials</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lw</span> <span class="o">=</span> <span class="n">volume</span><span class="o">.</span><span class="n">lw</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">z_range</span> <span class="o">=</span> <span class="p">[</span><span class="n">z</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">get_passive_z_range</span><span class="p">()]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">volume</span><span class="o">.</span><span class="n">passive_size</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_generate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">RadLengthFunc</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]]:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inheriting classes should override this.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            RadLengthFunc: A function that provides an xy tensor for a given layer when called with its z position, length and width, and size.</span>
+<span class="sd">            Target: An optional &quot;target&quot; value for the layout</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="AbsPassiveGenerator.get_data"><a class="viewcode-back" href="../../../../tomopt.optimisation.data.html#tomopt.optimisation.AbsPassiveGenerator.get_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">RadLengthFunc</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]]:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            RadLengthFunc: A function that provides an xy tensor for a given layer when called with its z position, length and width, and size.</span>
+<span class="sd">            Target: An optional &quot;target&quot; value for the layout</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="AbsPassiveGenerator.generate"><a class="viewcode-back" href="../../../../tomopt.optimisation.data.html#tomopt.optimisation.AbsPassiveGenerator.generate">[docs]</a>    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RadLengthFunc</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            The layout function and no target</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">f</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">f</span></div></div>
+
+
+<div class="viewcode-block" id="AbsBlockPassiveGenerator"><a class="viewcode-back" href="../../../../tomopt.optimisation.data.html#tomopt.optimisation.AbsBlockPassiveGenerator">[docs]</a><span class="k">class</span> <span class="nc">AbsBlockPassiveGenerator</span><span class="p">(</span><span class="n">AbsPassiveGenerator</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abstract base class for classes that generate new passive layouts which contain a single cuboid of material (block).</span>
+
+<span class="sd">    The :meth:`~tomopt.optimisation.data.passives.AbsPassiveGenerator._generate` method should be overridden to return:</span>
+<span class="sd">        - A function that provides an xy tensor for a given layer when called with its z position, length and width, and size.</span>
+<span class="sd">        - An optional &quot;target&quot; value for the layout</span>
+
+<span class="sd">    The :meth:`~tomopt.optimisation.data.passives.AbsPassiveGenerator.generate` method will return only the layout function and no target</span>
+<span class="sd">    The :meth:`~tomopt.optimisation.data.passives.AbsPassiveGenerator.get_data` method will return both the layout function and the target</span>
+
+<span class="sd">    The block will be centred randomly in the volume, and can either be of fixed or random size.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        volume: Volume that the passive layout will be loaded into</span>
+<span class="sd">        block_size: if set, will generate blocks of the specified size and random orientation, otherwise will randomly set the size of the blocks</span>
+<span class="sd">        block_size_max_half: if True and block_size is None, the maximum size of blocks will be set to half the size of the passive volume</span>
+<span class="sd">        materials: list of material names that can be used in the volume, None -&gt; all materials known to TomOpt</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">volume</span><span class="p">:</span> <span class="n">Volume</span><span class="p">,</span>
+        <span class="n">block_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span>
+        <span class="n">block_size_max_half</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">materials</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialises the generator for a given volume, in case any volume parameters are required by the inheriting generators.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">volume</span><span class="o">=</span><span class="n">volume</span><span class="p">,</span> <span class="n">materials</span><span class="o">=</span><span class="n">materials</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">block_size</span> <span class="o">=</span> <span class="n">block_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">block_size_max</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">lw</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">lw</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_size</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">block_size_max_half</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Random block size requested, but block_size_max_half is None, please set to True or False&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">block_size_max_half</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">block_size_max</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="o">/</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_size_max</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_get_block_coords</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">block_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_size_max</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_size_max</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_size_max</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">block_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">block_size</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="n">block_low</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">high</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lw</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">block_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">high</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lw</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">block_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">block_size</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">block_high</span> <span class="o">=</span> <span class="n">block_low</span> <span class="o">+</span> <span class="n">block_size</span>
+
+        <span class="k">return</span> <span class="n">block_low</span><span class="p">,</span> <span class="n">block_high</span></div>
+
+
+<div class="viewcode-block" id="RandomBlockPassiveGenerator"><a class="viewcode-back" href="../../../../tomopt.optimisation.data.html#tomopt.optimisation.RandomBlockPassiveGenerator">[docs]</a><span class="k">class</span> <span class="nc">RandomBlockPassiveGenerator</span><span class="p">(</span><span class="n">AbsBlockPassiveGenerator</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates new passive layouts which contain a single cuboid of material (block) of random material against a random background material.</span>
+<span class="sd">    Blocks are always present, but can potentially be of the same material as the background.</span>
+<span class="sd">    The target for the volumes is the X0 of the block material.</span>
+
+<span class="sd">    The :meth:`~tomopt.optimisation.data.passives.AbsPassiveGenerator.generate` method will return only the layout function and no target</span>
+<span class="sd">    The :meth:`~tomopt.optimisation.data.passives.AbsPassiveGenerator.get_data` method will return both the layout function and the target</span>
+
+<span class="sd">    The block will be centred randomly in the volume, and can either be of fixed or random size.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        volume: Volume that the passive layout will be loaded into</span>
+<span class="sd">        block_size: if set, will generate blocks of the specified size and random orientation, otherwise will randomly set the size of the blocks</span>
+<span class="sd">        sort_x0: if True, the block will always have a lower X0 than the background, unless they are of the same material</span>
+<span class="sd">        enforce_diff_mat: if True, the block will always be of a different material to the background</span>
+<span class="sd">        block_size_max_half: if True and block_size is None, the maximum size of blocks will be set to half the size of the passive volume</span>
+<span class="sd">        materials: list of material names that can be used in the volume, None -&gt; all materials known to TomOpt</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">volume</span><span class="p">:</span> <span class="n">Volume</span><span class="p">,</span>
+        <span class="n">block_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span>
+        <span class="n">sort_x0</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="n">enforce_diff_mat</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="n">block_size_max_half</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">materials</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialises the generator for a given volume, in case any volume parameters are required by the inheriting generators.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">volume</span><span class="o">=</span><span class="n">volume</span><span class="p">,</span> <span class="n">block_size</span><span class="o">=</span><span class="n">block_size</span><span class="p">,</span> <span class="n">materials</span><span class="o">=</span><span class="n">materials</span><span class="p">,</span> <span class="n">block_size_max_half</span><span class="o">=</span><span class="n">block_size_max_half</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sort_x0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">enforce_diff_mat</span> <span class="o">=</span> <span class="n">sort_x0</span><span class="p">,</span> <span class="n">enforce_diff_mat</span>
+
+    <span class="k">def</span> <span class="nf">_generate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">RadLengthFunc</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates passive layouts containing a (randomly sized) block of random material at a random location surrounded by a random background.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            RadLengthFunc: A function that provides an xy tensor for a given layer when called with its z position, length and width, and size.</span>
+<span class="sd">            Target: The X0 of the block material</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">bkg_mat</span><span class="p">,</span> <span class="n">block_mat</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">while</span> <span class="n">bkg_mat</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">block_mat</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="p">(</span><span class="n">bkg_mat</span> <span class="o">==</span> <span class="n">block_mat</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">enforce_diff_mat</span><span class="p">):</span>
+            <span class="n">bkg_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">materials</span><span class="p">))</span>
+            <span class="n">block_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">materials</span><span class="p">))</span>
+        <span class="n">base_x0</span> <span class="o">=</span> <span class="n">X0</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">materials</span><span class="p">[</span><span class="n">bkg_mat</span><span class="p">]]</span>
+        <span class="n">block_x0</span> <span class="o">=</span> <span class="n">X0</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">materials</span><span class="p">[</span><span class="n">block_mat</span><span class="p">]]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sort_x0</span> <span class="ow">and</span> <span class="n">block_x0</span> <span class="o">&gt;</span> <span class="n">base_x0</span><span class="p">:</span>
+            <span class="n">block_x0</span><span class="p">,</span> <span class="n">base_x0</span> <span class="o">=</span> <span class="n">base_x0</span><span class="p">,</span> <span class="n">block_x0</span>
+
+        <span class="n">block_low</span><span class="p">,</span> <span class="n">block_high</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_block_coords</span><span class="p">()</span>
+
+        <span class="k">def</span> <span class="nf">generator</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">lw</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+            <span class="n">shp</span> <span class="o">=</span> <span class="p">(</span><span class="n">lw</span> <span class="o">/</span> <span class="n">size</span><span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">()</span>
+            <span class="n">low_xy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">block_low</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">size</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">high_xy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">block_high</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">size</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">rad_length</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">shp</span><span class="p">))</span> <span class="o">*</span> <span class="n">base_x0</span>
+            <span class="k">if</span> <span class="n">z</span> <span class="o">&gt;=</span> <span class="n">block_low</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">and</span> <span class="n">z</span> <span class="o">&lt;=</span> <span class="n">block_high</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span>
+                <span class="n">rad_length</span><span class="p">[</span><span class="n">low_xy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">:</span> <span class="n">high_xy</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">low_xy</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="p">:</span> <span class="n">high_xy</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">block_x0</span>
+            <span class="k">return</span> <span class="n">rad_length</span>
+
+        <span class="k">return</span> <span class="n">generator</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">([</span><span class="n">block_x0</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="BlockPresentPassiveGenerator"><a class="viewcode-back" href="../../../../tomopt.optimisation.data.html#tomopt.optimisation.BlockPresentPassiveGenerator">[docs]</a><span class="k">class</span> <span class="nc">BlockPresentPassiveGenerator</span><span class="p">(</span><span class="n">AbsBlockPassiveGenerator</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates new passive layouts which contain a single cuboid of material (block) of random material against a fixed background material.</span>
+<span class="sd">    Blocks are always present, but can potentially be of the same material as the background.</span>
+<span class="sd">    The target for the volumes is the X0 of the block material.</span>
+<span class="sd">    The background material for the background will always be the zeroth material provided during initialisation.</span>
+
+<span class="sd">    The :meth:`~tomopt.optimisation.data.passives.AbsPassiveGenerator.generate` method will return only the layout function and no target</span>
+<span class="sd">    The :meth:`~tomopt.optimisation.data.passives.AbsPassiveGenerator.get_data` method will return both the layout function and the target</span>
+
+<span class="sd">    The block will be centred randomly in the volume, and can either be of fixed or random size.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        volume: Volume that the passive layout will be loaded into</span>
+<span class="sd">        block_size: if set, will generate blocks of the specified size and random orientation, otherwise will randomly set the size of the blocks</span>
+<span class="sd">        block_size_max_half: if True and block_size is None, the maximum size of blocks will be set to half the size of the passive volume</span>
+<span class="sd">        materials: list of material names that can be used in the volume, None -&gt; all materials known to TomOpt</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_generate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">RadLengthFunc</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates passive layouts containing a (randomly sized) block of random material at a random location surrounded by a fixed background.</span>
+<span class="sd">        The background material for the background will always be the zeroth material provided during initialisation.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            RadLengthFunc: A function that provides an xy tensor for a given layer when called with its z position, length and width, and size.</span>
+<span class="sd">            Target: The X0 of the block material</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">bkg_mat</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">block_mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">materials</span><span class="p">))</span>
+        <span class="n">base_x0</span> <span class="o">=</span> <span class="n">X0</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">materials</span><span class="p">[</span><span class="n">bkg_mat</span><span class="p">]]</span>
+        <span class="n">block_x0</span> <span class="o">=</span> <span class="n">X0</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">materials</span><span class="p">[</span><span class="n">block_mat</span><span class="p">]]</span>
+
+        <span class="n">block_low</span><span class="p">,</span> <span class="n">block_high</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_block_coords</span><span class="p">()</span>
+
+        <span class="k">def</span> <span class="nf">generator</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">lw</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+            <span class="n">shp</span> <span class="o">=</span> <span class="p">(</span><span class="n">lw</span> <span class="o">/</span> <span class="n">size</span><span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">()</span>
+            <span class="n">low_xy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">block_low</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">size</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">high_xy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">block_high</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">size</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">rad_length</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">shp</span><span class="p">))</span> <span class="o">*</span> <span class="n">base_x0</span>
+            <span class="k">if</span> <span class="n">z</span> <span class="o">&gt;=</span> <span class="n">block_low</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="ow">and</span> <span class="n">z</span> <span class="o">&lt;=</span> <span class="n">block_high</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span>
+                <span class="n">rad_length</span><span class="p">[</span><span class="n">low_xy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">:</span> <span class="n">high_xy</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">low_xy</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="p">:</span> <span class="n">high_xy</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">block_x0</span>
+            <span class="k">return</span> <span class="n">rad_length</span>
+
+        <span class="k">return</span> <span class="n">generator</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">([</span><span class="n">block_x0</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="VoxelPassiveGenerator"><a class="viewcode-back" href="../../../../tomopt.optimisation.data.html#tomopt.optimisation.VoxelPassiveGenerator">[docs]</a><span class="k">class</span> <span class="nc">VoxelPassiveGenerator</span><span class="p">(</span><span class="n">AbsPassiveGenerator</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates new passive layouts where every voxel is of a random material.</span>
+
+<span class="sd">    The :meth:`~tomopt.optimisation.data.passives.AbsPassiveGenerator.generate` method will return only the layout function and no target</span>
+<span class="sd">    The :meth:`~tomopt.optimisation.data.passives.AbsPassiveGenerator.get_data` method will return both the layout function and the target</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        volume: Volume that the passive layout will be loaded into</span>
+<span class="sd">        materials: list of material names that can be used in the volume, None -&gt; all materials known to TomOpt</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_generate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">RadLengthFunc</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates new passive layouts where ever voxel is of a random material.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            RadLengthFunc: A function that provides an xy tensor for a given layer when called with its z position, length and width, and size.</span>
+<span class="sd">            Target: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">generator</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">lw</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+            <span class="n">x0s</span> <span class="o">=</span> <span class="n">lw</span><span class="o">.</span><span class="n">new_tensor</span><span class="p">([</span><span class="n">X0</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">materials</span><span class="p">])</span>
+            <span class="n">shp</span> <span class="o">=</span> <span class="p">(</span><span class="n">lw</span> <span class="o">/</span> <span class="n">size</span><span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">x0s</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">high</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">x0s</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">shp</span><span class="o">.</span><span class="n">prod</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),),</span> <span class="n">device</span><span class="o">=</span><span class="n">x0s</span><span class="o">.</span><span class="n">device</span><span class="p">)]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">shp</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">generator</span><span class="p">,</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="PassiveYielder"><a class="viewcode-back" href="../../../../tomopt.optimisation.data.html#tomopt.optimisation.PassiveYielder">[docs]</a><span class="k">class</span> <span class="nc">PassiveYielder</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Dataset class that can either:</span>
+<span class="sd">        Yield from a set of pre-specified passive-volume layouts, and optional targets</span>
+<span class="sd">        Generate and yield random layouts and optional targets from a provided generator</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        passives: Either a list of passive-volume functions (and optional targets together in a tuple), or a passive-volume generator</span>
+<span class="sd">        n_passives: if a generator is used, this determines the number of volumes to generator per epoch in training, or in total when predicting</span>
+<span class="sd">        shuffle: If a list of pre-specified layouts is provided, their order will be shuffled if this is True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">passives</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">RadLengthFunc</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]],</span> <span class="n">RadLengthFunc</span><span class="p">]],</span> <span class="n">AbsPassiveGenerator</span><span class="p">],</span>
+        <span class="n">n_passives</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">shuffle</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">passives</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_passives</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">shuffle</span> <span class="o">=</span> <span class="n">passives</span><span class="p">,</span> <span class="n">n_passives</span><span class="p">,</span> <span class="n">shuffle</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">passives</span><span class="p">,</span> <span class="n">AbsPassiveGenerator</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_passives</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;If a AbsPassiveGenerator class is used, n_passives must be specified&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n_passives</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">passives</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_passives</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">RadLengthFunc</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]],</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">passives</span><span class="p">,</span> <span class="n">AbsPassiveGenerator</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_passives</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">passives</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">shuffle</span><span class="p">:</span>
+                <span class="n">shuffle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">passives</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">passives</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                    <span class="k">yield</span> <span class="n">p</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">p</span><span class="p">,</span> <span class="kc">None</span></div>
+</pre></div>
+
+             </article>
+             
+            </div>
+            <footer>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2021-2022, TomOpt Authors.
+
+    </p>
+  </div>
+    
+      <div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/pytorch/tomopt_sphinx_theme">theme</a> provided by <a href="https://pytorch.org/">PyTorch</a> based on a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+     
+
+</footer>
+
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  
+
+
+  
+
+     
+       <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+         <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+         <script src="../../../../_static/jquery.js"></script>
+         <script src="../../../../_static/underscore.js"></script>
+         <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+         <script src="../../../../_static/doctools.js"></script>
+         <script src="../../../../_static/sphinx_highlight.js"></script>
+     
+
+  
+
+  <script type="text/javascript" src="../../../../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../../../../_static/js/vendor/bootstrap.min.js"></script>
+  <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 text-center">
+          <h2>Docs</h2>
+          <p>Access comprehensive developer and user documentation for TomOpt</p>
+          <a class="with-right-arrow" href="https://mode_muon_tomography.readthedocs.io/en/stable">View Docs</a>
+        </div>
+
+        <div class="col-md-6 text-center">
+          <h2>Tutorials</h2>
+          <p>Get tutorials for beginner and advanced researchers demonstrating many of the features of TomOpt</p>
+          <a class="with-right-arrow" href="https://github.com/GilesStrong/mode_muon_tomography#examples">View Tutorials</a>
+        </div>
+
+        <!-- <div class="col-md-4 text-center">
+          <h2>Resources</h2>
+          <p>Find development resources and get your questions answered</p>
+          <a class="with-right-arrow" href="">View Resources</a>
+        </div> -->
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-logo-wrapper">
+        <a href="https://mode_muon_tomography.readthedocs.io/en/stable" class="footer-logo"></a>
+      </div>
+
+      <div class="footer-links-wrapper">
+        <div class="footer-links-col">
+          <ul>
+            <!-- <li class="list-title"><a href="https://mode_muon_tomography.readthedocs.io/en/stable">TomOpt</a></li> -->
+            <!-- <li><a href="">Get Started</a></li> -->
+            <!-- <li><a href="">Features</a></li> -->
+            <!-- <li><a href="">Ecosystem</a></li> -->
+            <!-- <li><a href="">Blog</a></li> -->
+            <!-- <li><a href="">Resources</a></li> -->
+          </ul>
+        </div>
+
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="">Support</a></li>
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography#examples">Tutorials</a></li>
+            <li><a href="https://mode_muon_tomography.readthedocs.io/en/stable">Docs</a></li>
+            <!-- <li><a href="" target="_blank">Discuss</a></li> -->
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography/blob/master/CHANGES.md" target="_blank">Change Log</a></li>
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography/issues" target="_blank">Github Issues</a></li>
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography/blob/master/CITATION.md" target="_blank">Citation</a></li>
+            <!-- <li><a href="" target="_blank">Slack</a></li> -->
+            <!-- <li><a href="https://github.com/GilesStrong/mode_muon_tomography/blob/master/CONTRIBUTING.md" target="_blank">Contributing</a></li> -->
+          </ul>
+        </div>
+
+        <!-- <div class="footer-links-col follow-us-col">
+          <ul>
+            <li class="list-title">Follow Us</li>
+            <li>
+              <div id="mc_embed_signup">
+                <form
+                  action="https://twitter.us14.list-manage.com/subscribe/post?u=75419c71fe0a935e53dfa4a3f&id=91d0dccd39"
+                  method="post"
+                  id="mc-embedded-subscribe-form"
+                  name="mc-embedded-subscribe-form"
+                  class="email-subscribe-form validate"
+                  target="_blank"
+                  novalidate>
+                  <div id="mc_embed_signup_scroll" class="email-subscribe-form-fields-wrapper">
+                    <div class="mc-field-group">
+                      <label for="mce-EMAIL" style="display:none;">Email Address</label>
+                      <input type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL" placeholder="Email Address">
+                    </div>
+
+                    <div id="mce-responses" class="clear">
+                      <div class="response" id="mce-error-response" style="display:none"></div>
+                      <div class="response" id="mce-success-response" style="display:none"></div>
+                    </div>    real people should not fill this in and expect good things - do not remove this or risk form bot signups
+
+                    <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_75419c71fe0a935e53dfa4a3f_91d0dccd39" tabindex="-1" value=""></div>
+
+                    <div class="clear">
+                      <input type="submit" value="" name="subscribe" id="mc-embedded-subscribe" class="button email-subscribe-button">
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+            </li>
+          </ul>
+
+          <div class="footer-social-icons">
+            <a href="" target="_blank" class="facebook"></a>
+            <a href="" target="_blank" class="twitter"></a>
+          </div>
+        </div> -->
+      </div>
+    </div>
+  </footer>
+
+  <!-- <div class="cookie-banner-wrapper">
+  <div class="container">
+    <p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+    <img class="close-button" src="../../../../_static/images/pytorch-x.svg">
+  </div>
+</div> -->
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://mode_muon_tomography.readthedocs.io/en/stable" aria-label="TomOpt"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <!-- <li>
+            <a href="#">Get Started</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="#">Features</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="#">Ecosystem</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="">Blog</a>
+          </li> -->
+
+          <li>
+            <a href="https://github.com/GilesStrong/mode_muon_tomography#examples">Tutorials</a>
+          </li>
+
+          <li>
+            <a href="https://mode_muon_tomography.readthedocs.io/en/stable">Docs</a>
+          </li>
+
+          <!-- <li>
+            <a href="">Resources</a>
+          </li> -->
+
+          <li>
+            <a href="https://github.com/GilesStrong/mode_muon_tomography">Github</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../../../../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+</html>

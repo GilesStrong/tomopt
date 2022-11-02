@@ -1,0 +1,720 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>tomopt.muon.generation &mdash; TomOpt  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../../_static/tomopt_logo.png"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://tomopt.readthedocs.io/en/stable" aria-label="TomOpt"></a>
+
+      <div class="main-menu">
+        <ul>
+          <!-- <li>
+            <a href="">Get Started</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="">Features</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="">Ecosystem</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="">Blog</a>
+          </li> -->
+
+          <li>
+            <a href="https://github.com/GilesStrong/mode_muon_tomography#examples">Tutorials</a>
+          </li>
+
+          <li>
+            <a href="https://tomopt.readthedocs.io/en/stable">Docs</a>
+          </li>
+
+          <!-- <li>
+            <a href="">Resources</a>
+          </li> -->
+
+          <li>
+            <a href="https://github.com/GilesStrong/mode_muon_tomography">Github</a>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+
+  </div>
+</div>
+
+
+<body class="pytorch-body">
+
+   
+
+    
+
+    <div class="table-of-contents-link-wrapper">
+      <span>Table of Contents</span>
+      <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+    </div>
+
+    <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+      <div class="pytorch-side-scroll">
+        <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          <div class="pytorch-left-menu-search">
+            
+
+            
+              
+              
+            
+
+            
+
+
+  
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+            
+          </div>
+
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tomopt.html">tomopt package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tomopt.muon.html">tomopt.muon package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tomopt.volume.html">tomopt.volume package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tomopt.inference.html">tomopt.inference package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tomopt.optimisation.html">tomopt.optimisation package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tomopt.plotting.html">tomopt.plotting package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tomopt.benchmarks.html">tomopt.benchmarks package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <div class="pytorch-container">
+      <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+        <div class="pytorch-breadcrumbs-wrapper">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../../../index.html">
+          
+            Docs
+          
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="../../index.html">Module code</a> &gt;</li>
+        
+      <li>tomopt.muon.generation</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+        </div>
+
+        <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+      </div>
+
+      <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+        <div class="pytorch-content-left">
+
+        
+          
+          <div class="rst-content">
+          
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+             <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+              
+  <h1>Source code for tomopt.muon.generation</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">abstractmethod</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span>
+<span class="kn">from</span> <span class="nn">particle</span> <span class="kn">import</span> <span class="n">Particle</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">..volume</span> <span class="kn">import</span> <span class="n">Volume</span>
+
+<span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Provides generator classes for sampling initial muon kinematics according to literature models.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;AbsMuonGenerator&quot;</span><span class="p">,</span> <span class="s2">&quot;MuonGenerator2015&quot;</span><span class="p">,</span> <span class="s2">&quot;MuonGenerator2016&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="AbsMuonGenerator"><a class="viewcode-back" href="../../../tomopt.muon.html#tomopt.muon.generation.AbsMuonGenerator">[docs]</a><span class="k">class</span> <span class="nc">AbsMuonGenerator</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abstract generator base class implementing core functionality.</span>
+<span class="sd">    Inheriting classes should override the `flux` method.</span>
+
+<span class="sd">    Once initialised, the object can be called, or it&#39;s `generate_set` method called, to generate a set of initial muon kinematics.</span>
+<span class="sd">    Each muon will have a starting x and y position sampled uniformly within a defined region.</span>
+<span class="sd">    Theta and momentum will be defined by sampling the defined flux model.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        x_range: range in metres of the absolute initial x-position in the volume reference frame over which muons can be generated</span>
+<span class="sd">        y_range: range in metres of the absolute initial y-position in the volume reference frame over which muons can be generated</span>
+<span class="sd">        fixed_mom: if not None, will only generate muons with the specified momentum in GeV</span>
+<span class="sd">        energy_range: if fixed_mom is None, muons will have initial momentum sampled according to the flux model in the specified range in GeV</span>
+<span class="sd">        theta_range: muons will have initial theta sampled according to the flux model in the specified range in radians</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_muon_mass2</span> <span class="o">=</span> <span class="p">(</span><span class="n">Particle</span><span class="o">.</span><span class="n">from_pdgid</span><span class="p">(</span><span class="mi">13</span><span class="p">)</span><span class="o">.</span><span class="n">mass</span> <span class="o">*</span> <span class="mf">1e-3</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>  <span class="c1"># GeV^2</span>
+    <span class="n">_n_bins_energy</span> <span class="o">=</span> <span class="mi">200</span>
+    <span class="n">_n_bins_theta</span> <span class="o">=</span> <span class="mi">200</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">x_range</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+        <span class="n">y_range</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+        <span class="n">fixed_mom</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">,</span>
+        <span class="n">energy_range</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">500</span><span class="p">),</span>
+        <span class="n">theta_range</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">70</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span><span class="p">),</span>  <span class="c1"># Models on accurate up to ~70 degrees</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialises the flux model</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">x_range</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_range</span> <span class="o">=</span> <span class="n">x_range</span><span class="p">,</span> <span class="n">y_range</span>
+
+        <span class="c1"># Define intervals and centres</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_mom</span> <span class="o">=</span> <span class="n">fixed_mom</span>
+        <span class="n">energy_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">geomspace</span><span class="p">(</span><span class="n">energy_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">energy_range</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_bins_energy</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_energy_centres</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">energy_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">energy_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">theta_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">theta_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">theta_range</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_bins_theta</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_theta_centres</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">theta_edges</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">theta_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># Calculate 2d flux function</span>
+        <span class="n">xx</span><span class="p">,</span> <span class="n">yy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_energy_centres</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_theta_centres</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_edges_1d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flux</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">))</span>  <span class="c1"># theta x energy --&gt; e0t0, e1t0, ...</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">rep</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Muon generator: x,y range: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">x_range</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">y_range</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_mom</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rep</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; Energy sampled from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_energy_centres</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_energy_centres</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> GeV.&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rep</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; Momentum is fixed at </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_fixed_mom</span><span class="si">}</span><span class="s2"> GeV&quot;</span>
+        <span class="k">return</span> <span class="n">rep</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_muons</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_set</span><span class="p">(</span><span class="n">n_muons</span><span class="p">)</span>
+
+<div class="viewcode-block" id="AbsMuonGenerator.flux"><a class="viewcode-back" href="../../../tomopt.muon.html#tomopt.muon.generation.AbsMuonGenerator.flux">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">flux</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">theta</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inheriting classes should override this to implement their flux model for the supplied pairs of energies and thetas</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            energy: energy values at which to compute the flux, in GeV</span>
+<span class="sd">            theta: theta values at which to compute the flux, in radians</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            muon flux for every energy &amp; theta pair</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="AbsMuonGenerator.from_volume"><a class="viewcode-back" href="../../../tomopt.muon.html#tomopt.muon.generation.AbsMuonGenerator.from_volume">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_volume</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">volume</span><span class="p">:</span> <span class="n">Volume</span><span class="p">,</span>
+        <span class="n">min_angle</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">12</span><span class="p">,</span>
+        <span class="n">fixed_mom</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">,</span>
+        <span class="n">energy_range</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">500</span><span class="p">),</span>
+        <span class="n">theta_range</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">70</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span><span class="p">),</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AbsMuonGenerator</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Class method to initialise x and y ranges of muon generation from the passive volume.</span>
+<span class="sd">        Heuristically computes x,y generation range as (0-d,x+d), (0-d,y+d).</span>
+<span class="sd">        Where d is such that a muon generated at (0-d,1) will only hit the last layer of the passive volume if it&#39;s initial angle is at least min_angle.</span>
+<span class="sd">        This balances a trade-off between generation efficiency and generator realism.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            volume: :class:`~tomopt.volume.volume.Volume` through which the muons will pass</span>
+<span class="sd">            min_angle: the minimum theta angle that a muon generated at the extreme x or y boundary would require to hit at least the last passive layer of the</span>
+<span class="sd">                passive volume, if it&#39;s phi angle were to point directly towards the passive volume.</span>
+<span class="sd">            fixed_mom: if not None, will only generate muons with the specified momentum in GeV</span>
+<span class="sd">            energy_range: if fixed_mom is None, muons will have initial momentum sampled according to the flux model in the specified range in GeV</span>
+<span class="sd">            theta_range: muons will have initial theta sampled according to the flux model in the specified range in radians</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">volume</span><span class="o">.</span><span class="n">lw</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">min_angle</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">volume</span><span class="o">.</span><span class="n">h</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">-</span> <span class="n">volume</span><span class="o">.</span><span class="n">get_passive_z_range</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">+</span> <span class="n">volume</span><span class="o">.</span><span class="n">passive_size</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">x_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span> <span class="o">-</span> <span class="n">d</span><span class="p">,</span> <span class="n">x</span> <span class="o">+</span> <span class="n">d</span><span class="p">),</span> <span class="n">y_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span> <span class="o">-</span> <span class="n">d</span><span class="p">,</span> <span class="n">y</span> <span class="o">+</span> <span class="n">d</span><span class="p">),</span> <span class="n">fixed_mom</span><span class="o">=</span><span class="n">fixed_mom</span><span class="p">,</span> <span class="n">energy_range</span><span class="o">=</span><span class="n">energy_range</span><span class="p">,</span> <span class="n">theta_range</span><span class="o">=</span><span class="n">theta_range</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbsMuonGenerator.generate_set"><a class="viewcode-back" href="../../../tomopt.muon.html#tomopt.muon.generation.AbsMuonGenerator.generate_set">[docs]</a>    <span class="k">def</span> <span class="nf">generate_set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_muons</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates a set of muons as a rank-2 tensor of shape (n_muons, 5), with initial kinematic variables [x, y, momentum, theta, phi].</span>
+<span class="sd">        Theta and, optionally, momentum are sampled from the flux model. x and y are sampled uniformly from the defined ranges.</span>
+<span class="sd">        Phi is sampled uniformly from [0,2pi].</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            n_muons: number of muons to generate</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Rank-2 tensor of shape (n_muons, 5), with initial kinematic variables [x, y, momentum, theta, phi]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Sample 2d function in 1d intervals</span>
+        <span class="n">muon_sample</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_edges_1d</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">n_muons</span><span class="p">)</span>
+        <span class="n">indices_1d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_edges_1d</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">muon_sample</span><span class="p">)</span>
+
+        <span class="c1"># Get corresponding values</span>
+        <span class="n">theta_indices</span><span class="p">,</span> <span class="n">energy_indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">indices_1d</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_bins_energy</span><span class="p">,</span> <span class="n">indices_1d</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_bins_energy</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_mom</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">momentum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_energy_centres</span><span class="p">[</span><span class="n">energy_indices</span><span class="p">])</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_mass2</span><span class="p">)</span>  <span class="c1"># Momentum [GeV/c]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">momentum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">theta_indices</span><span class="p">))</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_mom</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_theta_centres</span><span class="p">[</span><span class="n">theta_indices</span><span class="p">]</span>
+
+        <span class="n">phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">n_muons</span><span class="p">)</span>
+
+        <span class="c1"># Generate x and y randomly</span>
+        <span class="n">coord_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_range</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">n_muons</span><span class="p">)</span>
+        <span class="n">coord_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_range</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">n_muons</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">coord_x</span><span class="p">,</span> <span class="n">coord_y</span><span class="p">,</span> <span class="n">momentum</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">phi</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="MuonGenerator2015"><a class="viewcode-back" href="../../../tomopt.muon.html#tomopt.muon.generation.MuonGenerator2015">[docs]</a><span class="k">class</span> <span class="nc">MuonGenerator2015</span><span class="p">(</span><span class="n">AbsMuonGenerator</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Provides muon generator for sampling initial muon kinematics according to  Guan et al. 2015 (arXiv:1509.06176).</span>
+
+<span class="sd">    Once initialised, the object can be called, or it&#39;s `generate_set` method called, to generate a set of initial muon kinematics.</span>
+<span class="sd">    Each muon will have a starting x and y position sampled uniformly within a defined region.</span>
+<span class="sd">    Theta and momentum will be defined by sampling the defined flux model.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        x_range: range in metres of the absolute initial x-position in the volume reference frame over which muons can be generated</span>
+<span class="sd">        y_range: range in metres of the absolute initial y-position in the volume reference frame over which muons can be generated</span>
+<span class="sd">        fixed_mom: if not None, will only generate muons with the specified momentum in GeV</span>
+<span class="sd">        energy_range: if fixed_mom is None, muons will have initial momentum sampled according to the flux model in the specified range in GeV</span>
+<span class="sd">        theta_range: muons will have initial theta sampled according to the flux model in the specified range in radians</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">P1</span> <span class="o">=</span> <span class="mf">0.102573</span>
+    <span class="n">P2</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.068287</span>
+    <span class="n">P3</span> <span class="o">=</span> <span class="mf">0.958633</span>
+    <span class="n">P4</span> <span class="o">=</span> <span class="mf">0.0407253</span>
+    <span class="n">P5</span> <span class="o">=</span> <span class="mf">0.817285</span>
+
+<div class="viewcode-block" id="MuonGenerator2015.flux"><a class="viewcode-back" href="../../../tomopt.muon.html#tomopt.muon.generation.MuonGenerator2015.flux">[docs]</a>    <span class="k">def</span> <span class="nf">flux</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">theta</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function returning modified Gaisser formula for cosmic muon flux given energy (float/np.array) and incidence angle (float/np.array)</span>
+<span class="sd">        Uses model defined in Guan et al. 2015 (arXiv:1509.06176)</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            energy: energy values at which to compute the flux, in GeV</span>
+<span class="sd">            theta: theta values at which to compute the flux, in radians</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            muon flux for every energy &amp; theta pair</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">cosTheta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="n">cosine</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">cosTheta</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">P1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">P2</span> <span class="o">*</span> <span class="n">cosTheta</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">P3</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">P4</span> <span class="o">*</span> <span class="n">cosTheta</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">P5</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">P1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">P2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">P4</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">flux</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="mf">0.14</span>
+            <span class="o">*</span> <span class="p">(</span><span class="n">energy</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">3.64</span> <span class="o">/</span> <span class="p">(</span><span class="n">energy</span> <span class="o">*</span> <span class="n">cosine</span><span class="o">**</span><span class="mf">1.29</span><span class="p">)))</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="mf">2.7</span><span class="p">)</span>
+            <span class="o">*</span> <span class="p">((</span><span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.1</span> <span class="o">*</span> <span class="n">energy</span> <span class="o">*</span> <span class="n">cosine</span><span class="p">)</span> <span class="o">/</span> <span class="mi">115</span><span class="p">))</span> <span class="o">+</span> <span class="p">(</span><span class="mf">0.054</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.1</span> <span class="o">*</span> <span class="n">energy</span> <span class="o">*</span> <span class="n">cosine</span><span class="p">)</span> <span class="o">/</span> <span class="mi">850</span><span class="p">)))</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">flux</span></div></div>
+
+
+<div class="viewcode-block" id="MuonGenerator2016"><a class="viewcode-back" href="../../../tomopt.muon.html#tomopt.muon.generation.MuonGenerator2016">[docs]</a><span class="k">class</span> <span class="nc">MuonGenerator2016</span><span class="p">(</span><span class="n">AbsMuonGenerator</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Provides muon generator for sampling initial muon kinematics according to Shukla and Sanskrith 2018 arXiv:1606.06907</span>
+
+<span class="sd">    Once initialised, the object can be called, or it&#39;s `generate_set` method called, to generate a set of initial muon kinematics.</span>
+<span class="sd">    Each muon will have a starting x and y position sampled uniformly within a defined region.</span>
+<span class="sd">    Theta and momentum will be defined by sampling the defined flux model.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        x_range: range in metres of the absolute initial x-position in the volume reference frame over which muons can be generated</span>
+<span class="sd">        y_range: range in metres of the absolute initial y-position in the volume reference frame over which muons can be generated</span>
+<span class="sd">        fixed_mom: if not None, will only generate muons with the specified momentum in GeV</span>
+<span class="sd">        energy_range: if fixed_mom is None, muons will have initial momentum sampled according to the flux model in the specified range in GeV</span>
+<span class="sd">        theta_range: muons will have initial theta sampled according to the flux model in the specified range in radians</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">I_0</span> <span class="o">=</span> <span class="mf">88.0</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">E_0</span> <span class="o">=</span> <span class="mf">3.87</span>
+    <span class="n">E_c</span> <span class="o">=</span> <span class="mf">0.5</span>
+    <span class="n">epinv</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="mf">854.0</span>
+    <span class="n">Rod</span> <span class="o">=</span> <span class="mf">174.0</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">E_0</span> <span class="o">+</span> <span class="n">E_c</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MuonGenerator2016.flux"><a class="viewcode-back" href="../../../tomopt.muon.html#tomopt.muon.generation.MuonGenerator2016.flux">[docs]</a>    <span class="k">def</span> <span class="nf">flux</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">theta</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Function returning modified Gaisser formula for cosmic muon flux given energy (float/np.array) and incidence angle (float/np.array)</span>
+<span class="sd">        Uses model defined in Shukla and Sanskrith 2018 arXiv:1606.06907</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            energy: energy values at which to compute the flux, in GeV</span>
+<span class="sd">            theta: theta values at which to compute the flux, in radians</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            muon flux for every energy &amp; theta pair</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">Cosine</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Rod</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Rod</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">Rod</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">))</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">flux</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">I_0</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">E_0</span> <span class="o">+</span> <span class="n">energy</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">energy</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">epinv</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">Cosine</span>
+        <span class="k">return</span> <span class="n">flux</span></div></div>
+</pre></div>
+
+             </article>
+             
+            </div>
+            <footer>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2021-2022, TomOpt Authors.
+
+    </p>
+  </div>
+    
+      <div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/pytorch/tomopt_sphinx_theme">theme</a> provided by <a href="https://pytorch.org/">PyTorch</a> based on a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+     
+
+</footer>
+
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  
+
+
+  
+
+     
+       <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+         <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+         <script src="../../../_static/jquery.js"></script>
+         <script src="../../../_static/underscore.js"></script>
+         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+         <script src="../../../_static/doctools.js"></script>
+         <script src="../../../_static/sphinx_highlight.js"></script>
+     
+
+  
+
+  <script type="text/javascript" src="../../../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../../../_static/js/vendor/bootstrap.min.js"></script>
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 text-center">
+          <h2>Docs</h2>
+          <p>Access comprehensive developer and user documentation for TomOpt</p>
+          <a class="with-right-arrow" href="https://tomopt.readthedocs.io/en/stable">View Docs</a>
+        </div>
+
+        <div class="col-md-6 text-center">
+          <h2>Tutorials</h2>
+          <p>Get tutorials for beginner and advanced researchers demonstrating many of the features of TomOpt</p>
+          <a class="with-right-arrow" href="https://github.com/GilesStrong/mode_muon_tomography#examples">View Tutorials</a>
+        </div>
+
+        <!-- <div class="col-md-4 text-center">
+          <h2>Resources</h2>
+          <p>Find development resources and get your questions answered</p>
+          <a class="with-right-arrow" href="">View Resources</a>
+        </div> -->
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-logo-wrapper">
+        <a href="https://tomopt.readthedocs.io/en/stable" class="footer-logo"></a>
+      </div>
+
+      <div class="footer-links-wrapper">
+        <div class="footer-links-col">
+          <ul>
+            <!-- <li class="list-title"><a href="https://tomopt.readthedocs.io/en/stable">TomOpt</a></li> -->
+            <!-- <li><a href="">Get Started</a></li> -->
+            <!-- <li><a href="">Features</a></li> -->
+            <!-- <li><a href="">Ecosystem</a></li> -->
+            <!-- <li><a href="">Blog</a></li> -->
+            <!-- <li><a href="">Resources</a></li> -->
+          </ul>
+        </div>
+
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="">Support</a></li>
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography#examples">Tutorials</a></li>
+            <li><a href="https://tomopt.readthedocs.io/en/stable">Docs</a></li>
+            <!-- <li><a href="" target="_blank">Discuss</a></li> -->
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography/blob/main/CHANGES.md" target="_blank">Change Log</a></li>
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography/issues" target="_blank">Github Issues</a></li>
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography/blob/main/CITATION.md" target="_blank">Citation</a></li>
+            <!-- <li><a href="" target="_blank">Slack</a></li> -->
+            <!-- <li><a href="https://github.com/GilesStrong/mode_muon_tomography/blob/main/CONTRIBUTING.md" target="_blank">Contributing</a></li> -->
+          </ul>
+        </div>
+
+        <!-- <div class="footer-links-col follow-us-col">
+          <ul>
+            <li class="list-title">Follow Us</li>
+            <li>
+              <div id="mc_embed_signup">
+                <form
+                  action="https://twitter.us14.list-manage.com/subscribe/post?u=75419c71fe0a935e53dfa4a3f&id=91d0dccd39"
+                  method="post"
+                  id="mc-embedded-subscribe-form"
+                  name="mc-embedded-subscribe-form"
+                  class="email-subscribe-form validate"
+                  target="_blank"
+                  novalidate>
+                  <div id="mc_embed_signup_scroll" class="email-subscribe-form-fields-wrapper">
+                    <div class="mc-field-group">
+                      <label for="mce-EMAIL" style="display:none;">Email Address</label>
+                      <input type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL" placeholder="Email Address">
+                    </div>
+
+                    <div id="mce-responses" class="clear">
+                      <div class="response" id="mce-error-response" style="display:none"></div>
+                      <div class="response" id="mce-success-response" style="display:none"></div>
+                    </div>    real people should not fill this in and expect good things - do not remove this or risk form bot signups
+
+                    <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_75419c71fe0a935e53dfa4a3f_91d0dccd39" tabindex="-1" value=""></div>
+
+                    <div class="clear">
+                      <input type="submit" value="" name="subscribe" id="mc-embedded-subscribe" class="button email-subscribe-button">
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+            </li>
+          </ul>
+
+          <div class="footer-social-icons">
+            <a href="" target="_blank" class="facebook"></a>
+            <a href="" target="_blank" class="twitter"></a>
+          </div>
+        </div> -->
+      </div>
+    </div>
+  </footer>
+
+  <!-- <div class="cookie-banner-wrapper">
+  <div class="container">
+    <p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+    <img class="close-button" src="../../../_static/images/pytorch-x.svg">
+  </div>
+</div> -->
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://tomopt.readthedocs.io/en/stable" aria-label="TomOpt"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <!-- <li>
+            <a href="#">Get Started</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="#">Features</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="#">Ecosystem</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="">Blog</a>
+          </li> -->
+
+          <li>
+            <a href="https://github.com/GilesStrong/mode_muon_tomography#examples">Tutorials</a>
+          </li>
+
+          <li>
+            <a href="https://tomopt.readthedocs.io/en/stable">Docs</a>
+          </li>
+
+          <!-- <li>
+            <a href="">Resources</a>
+          </li> -->
+
+          <li>
+            <a href="https://github.com/GilesStrong/mode_muon_tomography">Github</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../../../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+</html>

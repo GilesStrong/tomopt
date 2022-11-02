@@ -1,0 +1,551 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>TomOpt: Differential Muon Tomography Optimisation &mdash; TomOpt  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/tomopt_logo.png"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation" href="installation.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://tomopt.readthedocs.io/en/stable" aria-label="TomOpt"></a>
+
+      <div class="main-menu">
+        <ul>
+          <!-- <li>
+            <a href="">Get Started</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="">Features</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="">Ecosystem</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="">Blog</a>
+          </li> -->
+
+          <li>
+            <a href="https://github.com/GilesStrong/mode_muon_tomography#examples">Tutorials</a>
+          </li>
+
+          <li>
+            <a href="https://tomopt.readthedocs.io/en/stable">Docs</a>
+          </li>
+
+          <!-- <li>
+            <a href="">Resources</a>
+          </li> -->
+
+          <li>
+            <a href="https://github.com/GilesStrong/mode_muon_tomography">Github</a>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+
+  </div>
+</div>
+
+
+<body class="pytorch-body">
+
+   
+
+    
+
+    <div class="table-of-contents-link-wrapper">
+      <span>Table of Contents</span>
+      <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+    </div>
+
+    <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+      <div class="pytorch-side-scroll">
+        <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          <div class="pytorch-left-menu-search">
+            
+
+            
+              
+              
+            
+
+            
+
+
+  
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+            
+          </div>
+
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#testing">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#external-repos">External repos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#authors">Authors</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#testing">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#external-repos">External repos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#authors">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tomopt.html">tomopt package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tomopt.muon.html">tomopt.muon package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tomopt.volume.html">tomopt.volume package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tomopt.inference.html">tomopt.inference package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tomopt.optimisation.html">tomopt.optimisation package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tomopt.plotting.html">tomopt.plotting package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tomopt.benchmarks.html">tomopt.benchmarks package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <div class="pytorch-container">
+      <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+        <div class="pytorch-breadcrumbs-wrapper">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="#">
+          
+            Docs
+          
+        </a> &gt;
+      </li>
+
+        
+      <li>TomOpt: Differential Muon Tomography Optimisation</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            
+              <!-- User defined GitHub URL -->
+              <a href="https://github.com/GilesStrong/mode_muon_tomography" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+        </div>
+
+        <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+      </div>
+
+      <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+        <div class="pytorch-content-left">
+
+        
+          
+          <div class="rst-content">
+          
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+             <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+              
+  <section id="tomopt-differential-muon-tomography-optimisation">
+<h1>TomOpt: Differential Muon Tomography Optimisation<a class="headerlink" href="#tomopt-differential-muon-tomography-optimisation" title="Permalink to this heading">¶</a></h1>
+<section id="package-overview">
+<h2>Package overview<a class="headerlink" href="#package-overview" title="Permalink to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#testing">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#external-repos">External repos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#authors">Authors</a></li>
+</ul>
+</div>
+</section>
+<section id="package-documentation">
+<h2>Package documentation<a class="headerlink" href="#package-documentation" title="Permalink to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#testing">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#external-repos">External repos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#authors">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tomopt.html">tomopt package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tomopt.muon.html">tomopt.muon package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tomopt.volume.html">tomopt.volume package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tomopt.inference.html">tomopt.inference package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tomopt.optimisation.html">tomopt.optimisation package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tomopt.plotting.html">tomopt.plotting package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tomopt.benchmarks.html">tomopt.benchmarks package</a></li>
+</ul>
+</div>
+</section>
+</section>
+<section id="index">
+<h1>Index<a class="headerlink" href="#index" title="Permalink to this heading">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+</ul>
+</section>
+
+
+             </article>
+             
+            </div>
+            <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="installation.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <img src="_static/images/chevron-right-orange.svg" class="next-page"></a>
+      
+      
+    </div>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2021-2022, TomOpt Authors.
+
+    </p>
+  </div>
+    
+      <div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/pytorch/tomopt_sphinx_theme">theme</a> provided by <a href="https://pytorch.org/">PyTorch</a> based on a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+     
+
+</footer>
+
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">TomOpt: Differential Muon Tomography Optimisation</a><ul>
+<li><a class="reference internal" href="#package-overview">Package overview</a></li>
+<li><a class="reference internal" href="#package-documentation">Package documentation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#index">Index</a></li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  
+
+
+  
+
+     
+       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+         <script src="_static/jquery.js"></script>
+         <script src="_static/underscore.js"></script>
+         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+         <script src="_static/doctools.js"></script>
+         <script src="_static/sphinx_highlight.js"></script>
+     
+
+  
+
+  <script type="text/javascript" src="_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="_static/js/vendor/bootstrap.min.js"></script>
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 text-center">
+          <h2>Docs</h2>
+          <p>Access comprehensive developer and user documentation for TomOpt</p>
+          <a class="with-right-arrow" href="https://tomopt.readthedocs.io/en/stable">View Docs</a>
+        </div>
+
+        <div class="col-md-6 text-center">
+          <h2>Tutorials</h2>
+          <p>Get tutorials for beginner and advanced researchers demonstrating many of the features of TomOpt</p>
+          <a class="with-right-arrow" href="https://github.com/GilesStrong/mode_muon_tomography#examples">View Tutorials</a>
+        </div>
+
+        <!-- <div class="col-md-4 text-center">
+          <h2>Resources</h2>
+          <p>Find development resources and get your questions answered</p>
+          <a class="with-right-arrow" href="">View Resources</a>
+        </div> -->
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-logo-wrapper">
+        <a href="https://tomopt.readthedocs.io/en/stable" class="footer-logo"></a>
+      </div>
+
+      <div class="footer-links-wrapper">
+        <div class="footer-links-col">
+          <ul>
+            <!-- <li class="list-title"><a href="https://tomopt.readthedocs.io/en/stable">TomOpt</a></li> -->
+            <!-- <li><a href="">Get Started</a></li> -->
+            <!-- <li><a href="">Features</a></li> -->
+            <!-- <li><a href="">Ecosystem</a></li> -->
+            <!-- <li><a href="">Blog</a></li> -->
+            <!-- <li><a href="">Resources</a></li> -->
+          </ul>
+        </div>
+
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="">Support</a></li>
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography#examples">Tutorials</a></li>
+            <li><a href="https://tomopt.readthedocs.io/en/stable">Docs</a></li>
+            <!-- <li><a href="" target="_blank">Discuss</a></li> -->
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography/blob/main/CHANGES.md" target="_blank">Change Log</a></li>
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography/issues" target="_blank">Github Issues</a></li>
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography/blob/main/CITATION.md" target="_blank">Citation</a></li>
+            <!-- <li><a href="" target="_blank">Slack</a></li> -->
+            <!-- <li><a href="https://github.com/GilesStrong/mode_muon_tomography/blob/main/CONTRIBUTING.md" target="_blank">Contributing</a></li> -->
+          </ul>
+        </div>
+
+        <!-- <div class="footer-links-col follow-us-col">
+          <ul>
+            <li class="list-title">Follow Us</li>
+            <li>
+              <div id="mc_embed_signup">
+                <form
+                  action="https://twitter.us14.list-manage.com/subscribe/post?u=75419c71fe0a935e53dfa4a3f&id=91d0dccd39"
+                  method="post"
+                  id="mc-embedded-subscribe-form"
+                  name="mc-embedded-subscribe-form"
+                  class="email-subscribe-form validate"
+                  target="_blank"
+                  novalidate>
+                  <div id="mc_embed_signup_scroll" class="email-subscribe-form-fields-wrapper">
+                    <div class="mc-field-group">
+                      <label for="mce-EMAIL" style="display:none;">Email Address</label>
+                      <input type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL" placeholder="Email Address">
+                    </div>
+
+                    <div id="mce-responses" class="clear">
+                      <div class="response" id="mce-error-response" style="display:none"></div>
+                      <div class="response" id="mce-success-response" style="display:none"></div>
+                    </div>    real people should not fill this in and expect good things - do not remove this or risk form bot signups
+
+                    <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_75419c71fe0a935e53dfa4a3f_91d0dccd39" tabindex="-1" value=""></div>
+
+                    <div class="clear">
+                      <input type="submit" value="" name="subscribe" id="mc-embedded-subscribe" class="button email-subscribe-button">
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+            </li>
+          </ul>
+
+          <div class="footer-social-icons">
+            <a href="" target="_blank" class="facebook"></a>
+            <a href="" target="_blank" class="twitter"></a>
+          </div>
+        </div> -->
+      </div>
+    </div>
+  </footer>
+
+  <!-- <div class="cookie-banner-wrapper">
+  <div class="container">
+    <p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+    <img class="close-button" src="_static/images/pytorch-x.svg">
+  </div>
+</div> -->
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://tomopt.readthedocs.io/en/stable" aria-label="TomOpt"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <!-- <li>
+            <a href="#">Get Started</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="#">Features</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="#">Ecosystem</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="">Blog</a>
+          </li> -->
+
+          <li>
+            <a href="https://github.com/GilesStrong/mode_muon_tomography#examples">Tutorials</a>
+          </li>
+
+          <li>
+            <a href="https://tomopt.readthedocs.io/en/stable">Docs</a>
+          </li>
+
+          <!-- <li>
+            <a href="">Resources</a>
+          </li> -->
+
+          <li>
+            <a href="https://github.com/GilesStrong/mode_muon_tomography">Github</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+</html>

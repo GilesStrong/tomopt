@@ -1,0 +1,1429 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>tomopt.inference.volume &mdash; TomOpt  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../../_static/tomopt_logo.png"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://tomopt.readthedocs.io/en/stable" aria-label="TomOpt"></a>
+
+      <div class="main-menu">
+        <ul>
+          <!-- <li>
+            <a href="">Get Started</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="">Features</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="">Ecosystem</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="">Blog</a>
+          </li> -->
+
+          <li>
+            <a href="https://github.com/GilesStrong/mode_muon_tomography#examples">Tutorials</a>
+          </li>
+
+          <li>
+            <a href="https://tomopt.readthedocs.io/en/stable">Docs</a>
+          </li>
+
+          <!-- <li>
+            <a href="">Resources</a>
+          </li> -->
+
+          <li>
+            <a href="https://github.com/GilesStrong/mode_muon_tomography">Github</a>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+
+  </div>
+</div>
+
+
+<body class="pytorch-body">
+
+   
+
+    
+
+    <div class="table-of-contents-link-wrapper">
+      <span>Table of Contents</span>
+      <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+    </div>
+
+    <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+      <div class="pytorch-side-scroll">
+        <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          <div class="pytorch-left-menu-search">
+            
+
+            
+              
+              
+            
+
+            
+
+
+  
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+            
+          </div>
+
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tomopt.html">tomopt package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tomopt.muon.html">tomopt.muon package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tomopt.volume.html">tomopt.volume package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tomopt.inference.html">tomopt.inference package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tomopt.optimisation.html">tomopt.optimisation package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tomopt.plotting.html">tomopt.plotting package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tomopt.benchmarks.html">tomopt.benchmarks package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <div class="pytorch-container">
+      <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+        <div class="pytorch-breadcrumbs-wrapper">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../../../index.html">
+          
+            Docs
+          
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="../../index.html">Module code</a> &gt;</li>
+        
+      <li>tomopt.inference.volume</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+        </div>
+
+        <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+      </div>
+
+      <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+        <div class="pytorch-content-left">
+
+        
+          
+          <div class="rst-content">
+          
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+             <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+              
+  <h1>Source code for tomopt.inference.volume</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Callable</span>
+<span class="kn">import</span> <span class="nn">math</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+<span class="kn">from</span> <span class="nn">torch.distributions</span> <span class="kn">import</span> <span class="n">Normal</span>
+
+<span class="kn">from</span> <span class="nn">.scattering</span> <span class="kn">import</span> <span class="n">AbsScatterBatch</span>
+<span class="kn">from</span> <span class="nn">..volume</span> <span class="kn">import</span> <span class="n">PanelDetectorLayer</span><span class="p">,</span> <span class="n">Volume</span>
+<span class="kn">from</span> <span class="nn">..core</span> <span class="kn">import</span> <span class="n">SCATTER_COEF_A</span>
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">jacobian</span>
+
+<span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Provides implementations of classes designed to infer targets of passive volumes</span>
+<span class="sd">using the variables computed by e.g. :class:`~tomopt.inference.scattering.AbsScatterBatch`.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;AbsVolumeInferrer&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AbsX0Inferrer&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AbsIntClassifierFromX0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PanelX0Inferrer&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DenseBlockClassifierFromX0s&quot;</span><span class="p">,</span>
+<span class="p">]</span>  <span class="c1"># &quot;DeepVolumeInferrer&quot;, &quot;WeightedDeepVolumeInferrer&quot;]</span>
+
+
+<div class="viewcode-block" id="AbsVolumeInferrer"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.AbsVolumeInferrer">[docs]</a><span class="k">class</span> <span class="nc">AbsVolumeInferrer</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abstract base class for volume inference.</span>
+
+<span class="sd">    Inheriting classes are expected to be fed multiple :class:`~tomopt.inference.scattering.AbsScatterBatch`s,</span>
+<span class="sd">    via :meth:`~tomopt.inference.volume.AbsVolumeInferrer.add_scatters`, for a single :class:`~tomopt.volume.volume.Volume`</span>
+<span class="sd">    and return a volume prediction based on all of the muon batches when :meth:`~tomopt.inference.volume.AbsVolumeInferrer.get_prediction` is called.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        volume: volume through which the muons will be passed</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume</span><span class="p">:</span> <span class="n">Volume</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialises the inference class for the provided volume.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">scatter_batches</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">AbsScatterBatch</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">volume</span> <span class="o">=</span> <span class="n">volume</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lw</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">passive_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">lw</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">device</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_reset_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inheriting classes must override this method to reset any variable/predictions made from the added scatter batches.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="AbsVolumeInferrer.compute_efficiency"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.AbsVolumeInferrer.compute_efficiency">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">compute_efficiency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scatters</span><span class="p">:</span> <span class="n">AbsScatterBatch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inheriting classes must override this method to provide a computation of the per-muon efficiency, given the individual muon hit efficiencies.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="AbsVolumeInferrer.get_prediction"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.AbsVolumeInferrer.get_prediction">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_prediction</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]]:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inheriting classes must override this method to provide a prediction computed using the added scatter batches.</span>
+<span class="sd">        Predictions can be accompanied by an optional &quot;inverse weight&quot; designed to divide the loss of the predictions: loss(pred,targs)/inv_weight</span>
+<span class="sd">        E.g. the sum of muon efficiencies.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="AbsVolumeInferrer.add_scatters"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.AbsVolumeInferrer.add_scatters">[docs]</a>    <span class="k">def</span> <span class="nf">add_scatters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scatters</span><span class="p">:</span> <span class="n">AbsScatterBatch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Appends a new set of muon scatter variables.</span>
+<span class="sd">        When :meth:`~tomopt.inference.volume.AbsVolumeInferrer.get_prediction` is called, the prediction will be based on all</span>
+<span class="sd">        :class:`~tomopt.inference.scattering.AbsScatterBatch`s added up to that point</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reset_vars</span><span class="p">()</span>  <span class="c1"># Ensure that any previously computed predictions are wiped</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scatter_batches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scatters</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="AbsX0Inferrer"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.AbsX0Inferrer">[docs]</a><span class="k">class</span> <span class="nc">AbsX0Inferrer</span><span class="p">(</span><span class="n">AbsVolumeInferrer</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abstract base class for inferring the X0 of every voxel in the passive volume.</span>
+
+<span class="sd">    The inference is based on the PoCA approach of assigning the entirety of the muon scattering to a single point,</span>
+<span class="sd">    and the X0 computation is based on inversion of the PDG scattering model described in</span>
+<span class="sd">    https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf.</span>
+
+<span class="sd">    Once all scatter batches have been added, the inference proceeds thusly:</span>
+<span class="sd">        - For each muon i, a probability p_ij, is computed according to the probability that the PoCA was located in voxel j.</span>
+<span class="sd">        - These probabilities are computed by integrating over the voxel the PDF of 3 uncorrelated Gaussians centred on the PoCA, with scales equal the uncertainty on the PoCA position in x,y,z.</span>
+<span class="sd">        - p_ij is multiplied by muon efficiency e_i to compute a muon/voxel weight w_ij.</span>
+<span class="sd">        - Inversion of the PDG model gives: :math:`X_0 = \left(\frac{0.0136}{p^{\mathrm{rms}}}\right)^2\frac{\delta z}{\cos\left(\bar{\theta}^{\mathrm{rms}}\right)}\frac{2}{\theta^{\mathrm{rms}}_{\mathrm{tot.}}}`</span>
+<span class="sd">        - In order to account for the muon weights and compute different X0s for the voxels whilst using the whole muon population:</span>
+<span class="sd">            - Weighted RMSs are computed for each of the scattering terms in the right-hand side of the equation.</span>
+<span class="sd">            - In addition to the muon weight w_ij, the variances of the squared values of the scattering variables is used to divide w_ij.</span>
+<span class="sd">        - The result is a set of X0 predictions X0_j.</span>
+
+<span class="sd">    .. important::</span>
+<span class="sd">        Inversion of the PDG model does NOT account for the natural log term.</span>
+
+<span class="sd">    .. important::</span>
+<span class="sd">        To simplify the computation code, this class relies heavily on lazy computation and memoisation; be careful if calling private methods manually.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        volume: volume through which the muons will be passed</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_n_mu</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_muon_scatter_vars</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># (mu, vars)</span>
+    <span class="n">_muon_scatter_var_uncs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># (mu, vars)</span>
+    <span class="n">_muon_probs_per_voxel_zxy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># (mu, z,x,y)</span>
+    <span class="n">_muon_efficiency</span><span class="p">:</span> <span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># (mu, eff)</span>
+    <span class="n">_vox_zxy_x0_preds</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># (z,x,y)</span>
+    <span class="n">_vox_zxy_x0_pred_uncs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># (z,x,y)</span>
+    <span class="n">_var_order_szs</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;poca&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;tot_scatter&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;theta_in&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;theta_out&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;mom&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume</span><span class="p">:</span> <span class="n">Volume</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialises the inference class for the provided volume.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">volume</span><span class="o">=</span><span class="n">volume</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_var_dimensions</span><span class="p">()</span>
+        <span class="c1"># set shapes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shp_xyz</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lw</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">),</span>
+            <span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lw</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">),</span>
+            <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">get_passives</span><span class="p">()),</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shp_zxy</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">shp_xyz</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">shp_xyz</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">shp_xyz</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+
+<div class="viewcode-block" id="AbsX0Inferrer.x0_from_scatters"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.AbsX0Inferrer.x0_from_scatters">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">x0_from_scatters</span><span class="p">(</span><span class="n">deltaz</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">total_scatter</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta_in</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta_out</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">mom</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the X0 of a voxel, by inverting the PDG scattering model in terms of the scattering variables</span>
+
+<span class="sd">        .. important::</span>
+<span class="sd">            Inversion of the PDG model does NOT account for the natural log term.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            deltaz: height of the voxels</span>
+<span class="sd">            total_scatter: (voxels,1) tensor of the (RMS of the) total angular scattering of the muon(s)</span>
+<span class="sd">            theta_in: (voxels,1) tensor of the (RMS of the) theta of the muon(s), as inferred using the incoming trajectory/ies</span>
+<span class="sd">            theta_out: (voxels,1) tensor of the (RMS of the) theta of the muon(s), as inferred using the outgoing trajectory/ies</span>
+<span class="sd">            mom: (voxels,1) tensor of the (RMS of the) momentum/a of the muon(s)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (voxels,1) estimated X0 in metres</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">cos_theta</span> <span class="o">=</span> <span class="p">(</span><span class="n">theta_in</span><span class="o">.</span><span class="n">cos</span><span class="p">()</span> <span class="o">+</span> <span class="n">theta_out</span><span class="o">.</span><span class="n">cos</span><span class="p">())</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="k">return</span> <span class="p">((</span><span class="n">SCATTER_COEF_A</span> <span class="o">/</span> <span class="n">mom</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">deltaz</span> <span class="o">/</span> <span class="p">(</span><span class="n">total_scatter</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">cos_theta</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbsX0Inferrer.get_prediction"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.AbsX0Inferrer.get_prediction">[docs]</a>    <span class="k">def</span> <span class="nf">get_prediction</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]]:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the predicted X0 per voxel as a (z,x,y) tensor via PDG scatter-model inversion for the provided scatter batches.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pred: (z,x,y) voxelwise X0 predictions</span>
+<span class="sd">            inv_weight: sum of muon efficiencies</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scatter_batches</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: unable to scan volume with prescribed number of muons.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">vox_zxy_x0_preds</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">inv_weights</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_weighted_rms</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">wgt</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the weighted root mean squared value of the provided list of variable values</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            x: (N,*) tensor of variable values</span>
+<span class="sd">            wgt: (N,*) weight to assign per row in the x tensor</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Weighted RMS of the variable</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="p">((</span><span class="n">x</span><span class="o">.</span><span class="n">square</span><span class="p">()</span> <span class="o">*</span> <span class="n">wgt</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="n">wgt</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">sqrt</span><span class="p">()</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_weighted_mean</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">wgt</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the weighted mean value of the provided list of variable values</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            x: (N,*) tensor of variable values</span>
+<span class="sd">            wgt: (N,*) weight to assign per row in the x tensor</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Weighted mean of the variable</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">wgt</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="n">wgt</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_reset_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Resets any variable/predictions made from the added scatter batches.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_n_mu</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_vars</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># (mu, vars)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_var_uncs</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># (mu, vars)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_muon_probs_per_voxel_zxy</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># (mu, z,x,y)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_muon_efficiency</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># (mu, eff)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vox_zxy_x0_preds</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># (z,x,y)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vox_zxy_x0_pred_uncs</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># (z,x,y)</span>
+
+    <span class="k">def</span> <span class="nf">_set_var_dimensions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Configures the indexing of the dependent variable and uncertainty tensors</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Configure dimension indexing</span>
+        <span class="n">dims</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">sz</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_var_order_szs</span><span class="p">:</span>
+            <span class="n">dims</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="n">sz</span><span class="p">)</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="n">sz</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_poca_dim</span> <span class="o">=</span> <span class="n">dims</span><span class="p">[</span><span class="s2">&quot;poca&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tot_scatter_dim</span> <span class="o">=</span> <span class="n">dims</span><span class="p">[</span><span class="s2">&quot;tot_scatter&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_theta_in_dim</span> <span class="o">=</span> <span class="n">dims</span><span class="p">[</span><span class="s2">&quot;theta_in&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_theta_out_dim</span> <span class="o">=</span> <span class="n">dims</span><span class="p">[</span><span class="s2">&quot;theta_out&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mom_dim</span> <span class="o">=</span> <span class="n">dims</span><span class="p">[</span><span class="s2">&quot;mom&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_combine_scatters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Combines scatter data from all the batches added so far.</span>
+<span class="sd">        Any muons with NaN or Inf entries will be filtered out of the resulting tensors.</span>
+
+<span class="sd">        To aid in uncertainty computation, a pair of tensors are created with the all scatter variables and their uncertainties.</span>
+<span class="sd">        These are then indexed to retrieve the scatter variables.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">vals</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">uncs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scatter_batches</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No scatter batches have been added&quot;</span><span class="p">)</span>
+
+        <span class="n">vals</span><span class="p">[</span><span class="s2">&quot;poca&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">sb</span><span class="o">.</span><span class="n">poca_xyz</span> <span class="k">for</span> <span class="n">sb</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scatter_batches</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">uncs</span><span class="p">[</span><span class="s2">&quot;poca&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">sb</span><span class="o">.</span><span class="n">poca_xyz_unc</span> <span class="k">for</span> <span class="n">sb</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scatter_batches</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">vals</span><span class="p">[</span><span class="s2">&quot;tot_scatter&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">sb</span><span class="o">.</span><span class="n">total_scatter</span> <span class="k">for</span> <span class="n">sb</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scatter_batches</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">uncs</span><span class="p">[</span><span class="s2">&quot;tot_scatter&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">sb</span><span class="o">.</span><span class="n">total_scatter_unc</span> <span class="k">for</span> <span class="n">sb</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scatter_batches</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">vals</span><span class="p">[</span><span class="s2">&quot;theta_in&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">sb</span><span class="o">.</span><span class="n">theta_in</span> <span class="k">for</span> <span class="n">sb</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scatter_batches</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">uncs</span><span class="p">[</span><span class="s2">&quot;theta_in&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">sb</span><span class="o">.</span><span class="n">theta_in_unc</span> <span class="k">for</span> <span class="n">sb</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scatter_batches</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">vals</span><span class="p">[</span><span class="s2">&quot;theta_out&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">sb</span><span class="o">.</span><span class="n">theta_out</span> <span class="k">for</span> <span class="n">sb</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scatter_batches</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">uncs</span><span class="p">[</span><span class="s2">&quot;theta_out&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">sb</span><span class="o">.</span><span class="n">theta_out_unc</span> <span class="k">for</span> <span class="n">sb</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scatter_batches</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">vals</span><span class="p">[</span><span class="s2">&quot;mom&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">sb</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">mom</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="k">for</span> <span class="n">sb</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scatter_batches</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">uncs</span><span class="p">[</span><span class="s2">&quot;mom&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">vals</span><span class="p">[</span><span class="s2">&quot;mom&quot;</span><span class="p">])</span>
+
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">vals</span><span class="p">[</span><span class="s2">&quot;poca&quot;</span><span class="p">]))</span><span class="o">.</span><span class="n">bool</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">var_sz</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_var_order_szs</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">*=</span> <span class="o">~</span><span class="p">(</span><span class="n">vals</span><span class="p">[</span><span class="n">var_sz</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">isnan</span><span class="p">()</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+            <span class="n">mask</span> <span class="o">*=</span> <span class="o">~</span><span class="p">(</span><span class="n">vals</span><span class="p">[</span><span class="n">var_sz</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">isinf</span><span class="p">()</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+            <span class="n">mask</span> <span class="o">*=</span> <span class="o">~</span><span class="p">(</span><span class="n">uncs</span><span class="p">[</span><span class="n">var_sz</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">isnan</span><span class="p">()</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+            <span class="n">mask</span> <span class="o">*=</span> <span class="o">~</span><span class="p">(</span><span class="n">uncs</span><span class="p">[</span><span class="n">var_sz</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">isinf</span><span class="p">()</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_vars</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">vals</span><span class="p">[</span><span class="n">var_sz</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="n">mask</span><span class="p">]</span> <span class="k">for</span> <span class="n">var_sz</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_var_order_szs</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># (mu, vars)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_var_uncs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">uncs</span><span class="p">[</span><span class="n">var_sz</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="n">mask</span><span class="p">]</span> <span class="k">for</span> <span class="n">var_sz</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_var_order_szs</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># (mu, vars)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_muon_efficiency</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">compute_efficiency</span><span class="p">(</span><span class="n">scatters</span><span class="o">=</span><span class="n">sb</span><span class="p">)</span> <span class="k">for</span> <span class="n">sb</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scatter_batches</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="n">mask</span><span class="p">]</span>  <span class="c1"># (mu, eff)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_n_mu</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_vars</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_voxel_zxy_x0_pred_uncs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the uncertainty on the predicted voxelwise X0s, via gradient-based error propagation.</span>
+<span class="sd">        This computation uses the triangle of the error matrix and does not assume zero-valued off-diagonal elements.</span>
+
+<span class="sd">        .. warning::</span>
+<span class="sd">            This method is incredibly slow and not recommended for use</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (z,x,y) tensor of uncertainties on voxelwise X0s</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">jac</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">jacobian</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vox_zxy_x0_preds</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_vars</span><span class="p">))</span>  <span class="c1"># Compute dx0/dvar  (z,x,y,mu,var)</span>
+        <span class="n">unc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_var_uncs</span>
+        <span class="n">unc</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">unc</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">unc</span><span class="o">.</span><span class="n">type</span><span class="p">()),</span> <span class="n">unc</span><span class="p">)[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>  <span class="c1"># (1,1,1,mu,var)</span>
+        <span class="n">jac</span><span class="p">,</span> <span class="n">unc</span> <span class="o">=</span> <span class="n">jac</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">jac</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">jac</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">jac</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">unc</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">unc</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">unc</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">unc</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># (z,x,y,mu*var)</span>
+
+        <span class="c1"># Compute unc^2 = unc_x*unc_y*dx0/dx*dx0/dy summing over all x,y inclusive combinations</span>
+        <span class="n">idxs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">unc</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">with_replacement</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">unc_2</span> <span class="o">=</span> <span class="p">(</span><span class="n">jac</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="n">idxs</span><span class="p">]</span> <span class="o">*</span> <span class="n">unc</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="n">idxs</span><span class="p">])</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># (z,x,y,N)</span>
+
+        <span class="n">pred_unc</span> <span class="o">=</span> <span class="n">unc_2</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sqrt</span><span class="p">()</span>  <span class="c1"># (z,x,y)</span>
+        <span class="k">return</span> <span class="n">pred_unc</span>
+
+    <span class="k">def</span> <span class="nf">_get_voxel_zxy_x0_preds</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the X0 predictions per voxel using the scatter batched added.</span>
+
+<span class="sd">        TODO: Implement differing x0 according to poca_xyz via Gaussian spread</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (z,x,y) tensor of voxelwise X0 predictions</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Compute variable weights per voxel per muon, variable weights applied to squared variables, therefore use error propagation</span>
+        <span class="n">vox_prob_eff_wgt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">muon_efficiency</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_mu</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">muon_probs_per_voxel_zxy</span>  <span class="c1"># (mu,z,x,y)</span>
+
+        <span class="n">mu_tot_scatter2_var</span> <span class="o">=</span> <span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">muon_total_scatter</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">muon_total_scatter_unc</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_mu</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">mu_theta_in2_var</span> <span class="o">=</span> <span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">muon_theta_in</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">muon_theta_in_unc</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_mu</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">mu_theta_out2_var</span> <span class="o">=</span> <span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">muon_theta_out</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">muon_theta_out_unc</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_mu</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">mu_mom2_var</span> <span class="o">=</span> <span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">muon_mom</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">muon_mom_unc</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_mu</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Compute weighted RMS of scatter variables per voxel</span>
+        <span class="n">vox_tot_total_scatter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_weighted_rms</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">muon_total_scatter</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_mu</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">vox_prob_eff_wgt</span> <span class="o">/</span> <span class="n">mu_tot_scatter2_var</span><span class="p">)</span>
+        <span class="p">)</span>  <span class="c1"># (z,x,y)</span>
+        <span class="n">vox_theta_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_weighted_rms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">muon_theta_in</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_mu</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">vox_prob_eff_wgt</span> <span class="o">/</span> <span class="n">mu_theta_in2_var</span><span class="p">))</span>
+        <span class="n">vox_theta_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_weighted_rms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">muon_theta_out</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_mu</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">vox_prob_eff_wgt</span> <span class="o">/</span> <span class="n">mu_theta_out2_var</span><span class="p">))</span>
+        <span class="n">vox_mom</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_weighted_rms</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">muon_mom</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_mu</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">vox_prob_eff_wgt</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="k">if</span> <span class="p">(</span><span class="n">mu_mom2_var</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="k">else</span> <span class="n">mu_mom2_var</span><span class="p">))</span>
+        <span class="p">)</span>  <span class="c1"># Muon momentum may not have uncertainty</span>
+
+        <span class="n">vox_x0_preds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x0_from_scatters</span><span class="p">(</span>
+            <span class="n">deltaz</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">total_scatter</span><span class="o">=</span><span class="n">vox_tot_total_scatter</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">theta_in</span><span class="o">=</span><span class="n">vox_theta_in</span><span class="p">,</span> <span class="n">theta_out</span><span class="o">=</span><span class="n">vox_theta_out</span><span class="p">,</span> <span class="n">mom</span><span class="o">=</span><span class="n">vox_mom</span>
+        <span class="p">)</span>  <span class="c1"># (z,x,y)</span>
+
+        <span class="k">if</span> <span class="n">vox_x0_preds</span><span class="o">.</span><span class="n">isnan</span><span class="p">()</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Prediction contains NaN values&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">vox_x0_preds</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">vox_zxy_x0_preds</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            (z,x,y) tensor of voxelwise X0 predictions</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vox_zxy_x0_preds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_vox_zxy_x0_preds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_voxel_zxy_x0_preds</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_vox_zxy_x0_pred_uncs</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vox_zxy_x0_preds</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">vox_zxy_x0_pred_uncs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        .. warning::</span>
+<span class="sd">            Not recommended for use: long calculation; not unit-tested</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (z,x,y) tensor of uncertainties on voxelwise X0s</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vox_zxy_x0_pred_uncs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_vox_zxy_x0_pred_uncs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_voxel_zxy_x0_pred_uncs</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vox_zxy_x0_pred_uncs</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">inv_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Sum of muon efficiencies</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">muon_efficiency</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">muon_probs_per_voxel_zxy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>  <span class="c1"># (mu,z,x,y)</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        .. warning::</span>
+<span class="sd">            Integration tested only</span>
+
+<span class="sd">        TODO: Don&#39;t assume that poca_xyz uncertainties are uncorrelated</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (muons,z,x,y) tensor of probabilities that the muons&#39; PoCAs were located in the given voxels.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_probs_per_voxel_zxy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Gaussian spread</span>
+            <span class="n">dists</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">]):</span>
+                <span class="n">dists</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">=</span> <span class="n">Normal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">muon_poca_xyz</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">muon_poca_xyz_unc</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1e-7</span><span class="p">)</span>  <span class="c1"># poca_xyz uncertainty is sometimes zero, causing errors</span>
+
+            <span class="k">def</span> <span class="nf">comp_int</span><span class="p">(</span><span class="n">low</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">high</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">dists</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Normal</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">dists</span><span class="p">[</span><span class="n">d</span><span class="p">]</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">high</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">-</span> <span class="n">dists</span><span class="p">[</span><span class="n">d</span><span class="p">]</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="n">low</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dists</span><span class="p">)],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="n">probs</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">comp_int</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">l</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">passive_size</span><span class="p">,</span> <span class="n">dists</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">edges</span><span class="o">.</span><span class="n">unbind</span><span class="p">()])</span>
+                <span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># prob, mu --&gt; mu, prob</span>
+                <span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">n_mu</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">shp_xyz</span><span class="p">)</span>  <span class="c1"># mu, x, y, z</span>
+                <span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># mu, z, x, y</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_muon_probs_per_voxel_zxy</span> <span class="o">=</span> <span class="n">probs</span> <span class="o">+</span> <span class="mf">1e-15</span>  <span class="c1"># Sometimes probability is zero</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_probs_per_voxel_zxy</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">n_mu</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Total number muons included in the inference</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_vars</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_var_uncs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_combine_scatters</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_mu</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">muon_poca_xyz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            (muons,xyz) tensor of PoCA locations</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_vars</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_var_uncs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_combine_scatters</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_vars</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_poca_dim</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">muon_poca_xyz_unc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            (muons,xyz) tensor of PoCA location uncertainties</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_vars</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_var_uncs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_combine_scatters</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_var_uncs</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_poca_dim</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">muon_total_scatter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            (muons,1) tensor of total angular scatterings</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_vars</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_var_uncs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_combine_scatters</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_vars</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tot_scatter_dim</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">muon_total_scatter_unc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            (muons,1) tensor of uncertainties on the total angular scatterings</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_vars</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_var_uncs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_combine_scatters</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_var_uncs</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tot_scatter_dim</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">muon_theta_in</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            (muons,1) tensor of the thetas of the incoming muons</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_vars</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_var_uncs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_combine_scatters</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_vars</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_theta_in_dim</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">muon_theta_in_unc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            (muons,1) tensor of the uncertainty on the theta of the incoming muons</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_vars</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_var_uncs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_combine_scatters</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_var_uncs</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_theta_in_dim</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">muon_theta_out</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            (muons,1) tensor of the thetas of the outgoing muons</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_vars</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_var_uncs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_combine_scatters</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_vars</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_theta_out_dim</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">muon_theta_out_unc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            (muons,1) tensor of the uncertainty on the theta of the outgoing muons</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_vars</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_var_uncs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_combine_scatters</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_var_uncs</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_theta_out_dim</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">muon_mom</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            (muons,1) tensor of the momenta of the muons</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_vars</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_var_uncs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_combine_scatters</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_vars</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mom_dim</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">muon_mom_unc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            (muons,1) tensor of the uncertainty on the momenta of the muons</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_vars</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_var_uncs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_combine_scatters</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_var_uncs</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mom_dim</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">muon_efficiency</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            (muons,1) tensor of the efficiencies of the muons</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_vars</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_var_uncs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_combine_scatters</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muon_efficiency</span></div>
+
+
+<div class="viewcode-block" id="PanelX0Inferrer"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.PanelX0Inferrer">[docs]</a><span class="k">class</span> <span class="nc">PanelX0Inferrer</span><span class="p">(</span><span class="n">AbsX0Inferrer</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for inferring the X0 of every voxel in the passive volume using hits recorded by :class:`~tomopt.volume.layer.PanelDetectorLayer`s.</span>
+
+<span class="sd">    The inference is based on the PoCA approach of assigning the entirety of the muon scattering to a single point,</span>
+<span class="sd">    and the X0 computation is based on inversion of the PDG scattering model described in</span>
+<span class="sd">    https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf.</span>
+
+<span class="sd">    Once all scatter batches have been added, the inference proceeds thusly:</span>
+<span class="sd">        - For each muon i, a probability p_ij, is computed according to the probability that the PoCA was located in voxel j.</span>
+<span class="sd">        - These probabilities are computed by integrating over the voxel the PDF of 3 uncorrelated Gaussians centred on the PoCA, with scales equal the uncertainty on the PoCA position in x,y,z.</span>
+<span class="sd">        - p_ij is multiplied by muon efficiency e_i to compute a muon/voxel weight w_ij.</span>
+<span class="sd">        - Inversion of the PDG model gives: :math:`X_0 = \left(\frac{0.0136}{p^{\mathrm{rms}}}\right)^2\frac{\delta z}{\cos\left(\bar{\theta}^{\mathrm{rms}}\right)}\frac{2}{\theta^{\mathrm{rms}}_{\mathrm{tot.}}}`</span>
+<span class="sd">        - In order to account for the muon weights and compute different X0s for the voxels whilst using the whole muon population:</span>
+<span class="sd">            - Weighted RMSs are computed for each of the scattering terms in the right-hand side of the equation.</span>
+<span class="sd">            - In addition to the muon weight w_ij, the variances of the squared values of the scattering variables is used to divide w_ij.</span>
+<span class="sd">        - The result is a set of X0 predictions X0_j.</span>
+
+<span class="sd">    .. important::</span>
+<span class="sd">        Inversion of the PDG model does NOT account for the natural log term.</span>
+
+<span class="sd">    .. important::</span>
+<span class="sd">        To simplify the computation code, this class relies heavily on lazy computation and memoisation; be careful if calling private methods manually.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        volume: volume through which the muons will be passed</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PanelX0Inferrer.compute_efficiency"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.PanelX0Inferrer.compute_efficiency">[docs]</a>    <span class="k">def</span> <span class="nf">compute_efficiency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scatters</span><span class="p">:</span> <span class="n">AbsScatterBatch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the per-muon efficiency, given the individual muon hit efficiencies,</span>
+<span class="sd">        as the probability of at least two hits above and below the passive volume.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            scatters: scatter batch containing muons whose efficiency should be computed</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (muons) tensor of muon efficiencies</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">eff</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">pos</span><span class="p">,</span> <span class="n">hits</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="n">scatters</span><span class="o">.</span><span class="n">above_gen_hits</span><span class="p">,</span> <span class="n">scatters</span><span class="o">.</span><span class="n">below_gen_hits</span><span class="p">]):</span>
+            <span class="n">leff</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">det</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">get_detectors</span><span class="p">()[</span><span class="n">pos</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">det</span><span class="p">,</span> <span class="n">PanelDetectorLayer</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detector </span><span class="si">{</span><span class="n">det</span><span class="si">}</span><span class="s2"> is not a PanelDetectorLayer&quot;</span><span class="p">)</span>
+            <span class="n">panel_idxs</span> <span class="o">=</span> <span class="n">det</span><span class="o">.</span><span class="n">get_panel_zorder</span><span class="p">()</span>
+            <span class="n">effs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">det</span><span class="o">.</span><span class="n">panels</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">get_efficiency</span><span class="p">(</span><span class="n">hits</span><span class="p">[:,</span> <span class="n">i</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">panel_idxs</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="c1"># Muon goes through any combination of at least 2 panels</span>
+            <span class="n">p_miss</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">effs</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">effs</span><span class="p">)),</span> <span class="n">r</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">effs</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">effs</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)]</span>  <span class="c1"># Reverse order to match panel hit</span>
+            <span class="n">p_one_hit</span> <span class="o">=</span> <span class="p">(</span><span class="n">effs</span> <span class="o">*</span> <span class="n">p_miss</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">p_no_hit</span> <span class="o">=</span> <span class="n">p_miss</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">leff</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">p_one_hit</span> <span class="o">-</span> <span class="n">p_no_hit</span>
+            <span class="k">if</span> <span class="n">eff</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">eff</span> <span class="o">=</span> <span class="n">leff</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">eff</span> <span class="o">=</span> <span class="n">eff</span> <span class="o">*</span> <span class="n">leff</span>  <span class="c1"># Muons detected above &amp; below passive volume</span>
+        <span class="k">return</span> <span class="n">eff</span></div></div>
+
+
+<span class="c1"># class DeepVolumeInferrer(AbsVolumeInferrer):</span>
+<span class="c1">#     def __init__(</span>
+<span class="c1">#         self,</span>
+<span class="c1">#         model: Union[torch.jit._script.RecursiveScriptModule, nn.Module],</span>
+<span class="c1">#         base_inferrer: AbsX0Inferrer,</span>
+<span class="c1">#         volume: Volume,</span>
+<span class="c1">#         grp_feats: List[str],</span>
+<span class="c1">#         include_unc: bool = False,</span>
+<span class="c1">#     ):</span>
+<span class="c1">#         super().__init__(volume=volume)</span>
+<span class="c1">#         self.model, self.base_inferrer, self.include_unc = model, base_inferrer, include_unc</span>
+<span class="c1">#         self.voxel_centres = self.volume.centres</span>
+<span class="c1">#         self.tomopt_device = self.volume.device</span>
+<span class="c1">#         self.model_device = next(self.model.parameters()).device</span>
+
+<span class="c1">#         self.in_vars: List[Tensor] = []</span>
+<span class="c1">#         self.in_var_uncs: List[Tensor] = []</span>
+<span class="c1">#         self.efficiencies: List[Tensor] = []</span>
+<span class="c1">#         self.in_var: Optional[Tensor] = None</span>
+<span class="c1">#         self.in_var_unc: Optional[Tensor] = None</span>
+<span class="c1">#         self.efficiency: Optional[Tensor] = None</span>
+
+<span class="c1">#         self.grp_feats = grp_feats</span>
+<span class="c1">#         self.in_feats = []</span>
+<span class="c1">#         if &quot;pred_x0&quot; in self.grp_feats:</span>
+<span class="c1">#             self.in_feats += [&quot;pred_x0&quot;]</span>
+<span class="c1">#         if &quot;delta_angles&quot; in self.grp_feats:</span>
+<span class="c1">#             self.in_feats += [&quot;dtheta&quot;, &quot;dphi&quot;]</span>
+<span class="c1">#         if &quot;total_scatter&quot; in self.grp_feats:</span>
+<span class="c1">#             self.in_feats += [&quot;total_scatter&quot;]</span>
+<span class="c1">#         if &quot;track_angles&quot; in self.grp_feats:</span>
+<span class="c1">#             self.in_feats += [&quot;theta_x_in&quot;, &quot;theta_y_in&quot;, &quot;theta_x_out&quot;, &quot;theta_y_out&quot;]</span>
+<span class="c1">#         if &quot;track_xy&quot; in self.grp_feats:</span>
+<span class="c1">#             self.in_feats += [&quot;x_in&quot;, &quot;y_in&quot;, &quot;x_out&quot;, &quot;y_out&quot;]</span>
+<span class="c1">#         if &quot;poca&quot; in self.grp_feats:</span>
+<span class="c1">#             self.in_feats += [&quot;poca_x&quot;, &quot;poca_y&quot;, &quot;poca_z&quot;]</span>
+<span class="c1">#         if &quot;dpoca&quot; in self.grp_feats:</span>
+<span class="c1">#             self.in_feats += [&quot;dpoca_x&quot;, &quot;dpoca_y&quot;, &quot;dpoca_z&quot;, &quot;dpoca_r&quot;]</span>
+<span class="c1">#         if &quot;voxels&quot; in self.grp_feats:</span>
+<span class="c1">#             self.in_feats += [&quot;vox_x&quot;, &quot;vox_y&quot;, &quot;vox_z&quot;]</span>
+
+<span class="c1">#     def compute_efficiency(self, scatters: AbsScatterBatch) -&gt; Tensor:</span>
+<span class="c1">#         return self.base_inferrer.compute_efficiency(scatters=scatters)</span>
+
+<span class="c1">#     def get_base_predictions(self, scatters: AbsScatterBatch) -&gt; Tuple[Tensor, Tensor]:</span>
+<span class="c1">#         x, u = self.base_inferrer.muon_x0_from_scatters(scatters=scatters)</span>
+<span class="c1">#         return x[:, None], u[:, None]</span>
+
+<span class="c1">#     def _build_vars(self, scatters: AbsScatterBatch, pred_x0: Tensor, pred_x0_unc: Tensor) -&gt; None:</span>
+<span class="c1">#         feats, uncs = [], []</span>
+<span class="c1">#         if &quot;pred_x0&quot; in self.grp_feats:</span>
+<span class="c1">#             feats += [pred_x0]</span>
+<span class="c1">#             if self.include_unc:</span>
+<span class="c1">#                 uncs += [pred_x0_unc]</span>
+<span class="c1">#         if &quot;delta_angles&quot; in self.grp_feats:</span>
+<span class="c1">#             feats += [scatters.dtheta, scatters.dphi]</span>
+<span class="c1">#             if self.include_unc:</span>
+<span class="c1">#                 uncs += [scatters.dtheta_unc, scatters.dphi_unc]</span>
+<span class="c1">#         if &quot;total_scatter&quot; in self.grp_feats:</span>
+<span class="c1">#             feats += [scatters.total_scatter]</span>
+<span class="c1">#             if self.include_unc:</span>
+<span class="c1">#                 uncs += [scatters.total_scatter_unc]</span>
+<span class="c1">#         if &quot;track_angles&quot; in self.grp_feats:</span>
+<span class="c1">#             feats += [scatters.theta_xy_in, scatters.theta_xy_out]</span>
+<span class="c1">#             if self.include_unc:</span>
+<span class="c1">#                 uncs += [scatters.theta_xy_in_unc, scatters.theta_xy_out_unc]</span>
+<span class="c1">#         if &quot;track_xy&quot; in self.grp_feats:</span>
+<span class="c1">#             feats += [scatters.xyz_in[:, :2], scatters.xyz_out[:, :2]]</span>
+<span class="c1">#             if self.include_unc:</span>
+<span class="c1">#                 uncs += [scatters.xyz_in_unc[:, :2], scatters.xyz_out_unc[:, :2]]</span>
+<span class="c1">#         if &quot;poca&quot; in self.grp_feats:</span>
+<span class="c1">#             feats += [scatters.poca_xyz]</span>
+<span class="c1">#             if self.include_unc:</span>
+<span class="c1">#                 uncs += [scatters.poca_xyz_unc]</span>
+<span class="c1">#         if &quot;dpoca&quot; in self.grp_feats:</span>
+<span class="c1">#             feats += [scatters.poca_xyz]</span>
+<span class="c1">#             if self.include_unc:</span>
+<span class="c1">#                 uncs += [scatters.poca_xyz_unc]</span>
+
+<span class="c1">#         self.in_vars.append(torch.cat(feats, dim=-1))</span>
+<span class="c1">#         if self.include_unc:</span>
+<span class="c1">#             self.in_var_uncs.append(torch.cat(uncs, dim=-1))</span>
+<span class="c1">#         self.efficiencies.append(self.compute_efficiency(scatters=scatters)[:, None])</span>
+
+<span class="c1">#     def add_scatters(self, scatters: AbsScatterBatch) -&gt; None:</span>
+<span class="c1">#         self.scatter_batches.append(scatters)</span>
+<span class="c1">#         pred_x0, pred_x0_unc = self.get_base_predictions(scatters)</span>
+<span class="c1">#         self._build_vars(scatters, pred_x0, pred_x0_unc)</span>
+
+<span class="c1">#     def _build_inputs(self, in_var: Tensor) -&gt; Tensor:</span>
+<span class="c1">#         data = in_var[None, :].repeat_interleave(len(self.voxel_centres), dim=0)</span>
+<span class="c1">#         if &quot;dpoca&quot; in self.grp_feats:</span>
+<span class="c1">#             i = self.in_feats.index(&quot;dpoca_x&quot;)</span>
+<span class="c1">#             j = self.in_feats.index(&quot;dpoca_r&quot;)</span>
+<span class="c1">#             data[:, :, i:j] -= self.voxel_centres[:, None].repeat_interleave(len(in_var), dim=1)</span>
+<span class="c1">#             data = torch.cat((data, torch.norm(data[:, :, i:j], dim=-1, keepdim=True)), dim=-1)  # dR</span>
+<span class="c1">#         # Add voxel centres</span>
+<span class="c1">#         if &quot;voxels&quot; in self.grp_feats:</span>
+<span class="c1">#             data = torch.cat((data, self.voxel_centres[:, None].repeat_interleave(len(in_var), dim=1)), dim=-1)</span>
+<span class="c1">#         return data</span>
+
+<span class="c1">#     def _get_weight(self) -&gt; Tensor:</span>
+<span class="c1">#         &quot;&quot;&quot;Maybe alter this to include resolution/pred uncertainties&quot;&quot;&quot;</span>
+<span class="c1">#         return self.efficiency.sum()</span>
+
+<span class="c1">#     def get_prediction(self) -&gt; Tuple[Optional[Tensor], Optional[Tensor]]:</span>
+<span class="c1">#         self.in_var = torch.cat(self.in_vars, dim=0)</span>
+<span class="c1">#         if self.include_unc:</span>
+<span class="c1">#             self.in_var_unc = torch.cat(self.in_var_uncs, dim=0)</span>
+<span class="c1">#         self.efficiency = torch.cat(self.efficiencies, dim=0)</span>
+
+<span class="c1">#         inputs = self._build_inputs(self.in_var)</span>
+<span class="c1">#         pred = self.model(inputs[None].to(self.model_device)).to(self.tomopt_device)</span>
+<span class="c1">#         weight = self._get_weight()</span>
+<span class="c1">#         return pred, weight</span>
+
+
+<span class="c1"># class WeightedDeepVolumeInferrer(DeepVolumeInferrer):</span>
+<span class="c1">#     def __init__(</span>
+<span class="c1">#         self,</span>
+<span class="c1">#         model: Union[torch.jit._script.RecursiveScriptModule, nn.Module],</span>
+<span class="c1">#         base_inferrer: AbsX0Inferrer,</span>
+<span class="c1">#         volume: Volume,</span>
+<span class="c1">#         grp_feats: List[str],</span>
+<span class="c1">#         include_unc: bool = False,</span>
+<span class="c1">#     ):</span>
+<span class="c1">#         super().__init__(model=model, base_inferrer=base_inferrer, volume=volume, grp_feats=grp_feats, include_unc=include_unc)</span>
+<span class="c1">#         self.in_var_weights: List[Tensor] = []</span>
+
+<span class="c1">#     def add_scatters(self, scatters: AbsScatterBatch) -&gt; None:</span>
+<span class="c1">#         self.scatter_batches.append(scatters)</span>
+<span class="c1">#         pred_x0, pred_x0_unc = self.get_base_predictions(scatters)</span>
+<span class="c1">#         self._build_vars(scatters, pred_x0, pred_x0_unc)</span>
+<span class="c1">#         self.in_var_weights.append((pred_x0_unc / pred_x0) ** 2)</span>
+
+<span class="c1">#     def get_prediction(self) -&gt; Tuple[Optional[Tensor], Optional[Tensor]]:</span>
+<span class="c1">#         self.in_var = torch.cat(self.in_vars, dim=0)</span>
+<span class="c1">#         if self.include_unc:</span>
+<span class="c1">#             self.in_var_unc = torch.cat(self.in_var_uncs, dim=0)</span>
+<span class="c1">#         self.efficiency = torch.cat(self.efficiencies, dim=0)</span>
+<span class="c1">#         self.in_var_weight = torch.cat(self.in_var_weights, dim=0)</span>
+
+<span class="c1">#         weight = self.efficiency / self.in_var_weight</span>
+<span class="c1">#         weighted_vars = torch.cat((weight, self.in_var), dim=1)</span>
+<span class="c1">#         inputs = self._build_inputs(weighted_vars)</span>
+<span class="c1">#         pred = self.model(inputs[None].to(self.model_device)).to(self.tomopt_device)</span>
+<span class="c1">#         weight = self._get_weight()</span>
+<span class="c1">#         return pred, weight</span>
+
+
+<div class="viewcode-block" id="DenseBlockClassifierFromX0s"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.DenseBlockClassifierFromX0s">[docs]</a><span class="k">class</span> <span class="nc">DenseBlockClassifierFromX0s</span><span class="p">(</span><span class="n">AbsVolumeInferrer</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class for inferreing the presence of a small amount of denser material in the passive volume.</span>
+
+<span class="sd">    Transforms voxel-wise X0 preds into binary classification statistic under the hypothesis of a small, dense block against a light-weight background.</span>
+<span class="sd">    This test statistic, s is computed as:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        r = 2 \frac{\bar{X0}_{0,\mathrm{bkg}} - \bar{X0}_{0,\mathrm{blk}}}{\bar{X0}_{0,\mathrm{bkg}} + \bar{X0}_{0,\mathrm{blk}}}</span>
+<span class="sd">        s = \sigma\!(a(r+b))</span>
+
+<span class="sd">    where :math:`\bar{X0}_{0,\mathrm{blk}}` is the mean X0 of the N lowest X0 voxels,</span>
+<span class="sd">    and :math:`\bar{X0}_{0,\mathrm{bkg}}` is the mean X0 of the remaining voxels.</span>
+<span class="sd">    a and b are rescaling coefficients and offsets.</span>
+
+<span class="sd">    This results in a differentiable value constrained beween 0 and 1, with values near 0 indicating that no relatively dense material is present,</span>
+<span class="sd">    and values nearer 1 indicating that it is present.</span>
+<span class="sd">    In case it is expected that the dense material forms a contiguous block, the voxelwise X0s can be blurred via a stride-1 kernel-size-3 average pooling.</span>
+
+<span class="sd">    In actuality, the &quot;cut&quot; on X0s into background and block is implemented as a sigmoid weight, centred at the necessary kth value of the X0.</span>
+<span class="sd">    This means that the test statisitc is also differentiable w.r.t. the cut.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        n_block_voxels: number of voxels expected to be occupied by the dense material, if present</span>
+<span class="sd">        partial_x0_inferrer: (partial) class to instatiate to provide the voxelwise X0 predictions</span>
+<span class="sd">        volume: volume through which the muons will be passed</span>
+<span class="sd">        use_avgpool: wether to blur voxelwise X0 predicitons with a stride-1 kernel-size-3 average pooling</span>
+<span class="sd">            useful when the dense material is expected to form a contiguous block</span>
+<span class="sd">        cut_coef: the &quot;sharpness&quot; of the sigmoid weight that splits voxels into block and background.</span>
+<span class="sd">            Higher values results in a sharper cut.</span>
+<span class="sd">        ratio_offset: additive constant for the X0 ratio</span>
+<span class="sd">        ratio_coef: multiplicative coefficient for the offset X0 ratio</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">n_block_voxels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">partial_x0_inferrer</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">AbsX0Inferrer</span><span class="p">],</span>
+        <span class="n">volume</span><span class="p">:</span> <span class="n">Volume</span><span class="p">,</span>
+        <span class="n">use_avgpool</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">cut_coef</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e4</span><span class="p">,</span>
+        <span class="n">ratio_offset</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">ratio_coef</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialises the inference class for the provided volume.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">volume</span><span class="o">=</span><span class="n">volume</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">use_avgpool</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cut_coef</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ratio_offset</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ratio_coef</span> <span class="o">=</span> <span class="n">use_avgpool</span><span class="p">,</span> <span class="n">cut_coef</span><span class="p">,</span> <span class="n">ratio_offset</span><span class="p">,</span> <span class="n">ratio_coef</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x0_inferrer</span> <span class="o">=</span> <span class="n">partial_x0_inferrer</span><span class="p">(</span><span class="n">volume</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frac</span> <span class="o">=</span> <span class="n">n_block_voxels</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">centres</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span>
+
+<div class="viewcode-block" id="DenseBlockClassifierFromX0s.add_scatters"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.DenseBlockClassifierFromX0s.add_scatters">[docs]</a>    <span class="k">def</span> <span class="nf">add_scatters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scatters</span><span class="p">:</span> <span class="n">AbsScatterBatch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Appends a new set of muon scatter vairables.</span>
+<span class="sd">        When :meth:`~tomopt.inference.volume.DenseBlockClassifierFromX0s.get_prediction` is called, the prediction will be based on all</span>
+<span class="sd">        :class:`~tomopt.inference.scattering.AbsScatterBatch` s added up to that point</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">x0_inferrer</span><span class="o">.</span><span class="n">add_scatters</span><span class="p">(</span><span class="n">scatters</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DenseBlockClassifierFromX0s.compute_efficiency"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.DenseBlockClassifierFromX0s.compute_efficiency">[docs]</a>    <span class="k">def</span> <span class="nf">compute_efficiency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scatters</span><span class="p">:</span> <span class="n">AbsScatterBatch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compuates the per-muon efficiency according to the method implemented by the X0 inferrer.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            scatters: scatter batch containing muons whose efficiency should be computed</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (muons) tensor of muon efficiencies</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">x0_inferrer</span><span class="o">.</span><span class="n">compute_efficiency</span><span class="p">(</span><span class="n">scatters</span><span class="o">=</span><span class="n">scatters</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DenseBlockClassifierFromX0s.get_prediction"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.DenseBlockClassifierFromX0s.get_prediction">[docs]</a>    <span class="k">def</span> <span class="nf">get_prediction</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]]:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the test statistic for the volume, with values near 0 indicating that no relatively dense material is present,</span>
+<span class="sd">        and values nearer 1 indicating that it is present.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pred: (1,1,1) volume prediction</span>
+<span class="sd">            inv_weight: sum of muon efficiencies</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">vox_preds</span><span class="p">,</span> <span class="n">inv_weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x0_inferrer</span><span class="o">.</span><span class="n">get_prediction</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_avgpool</span><span class="p">:</span>
+            <span class="n">vox_preds</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">avg_pool3d</span><span class="p">(</span><span class="n">vox_preds</span><span class="p">[</span><span class="kc">None</span><span class="p">],</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">count_include_pad</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">flat_preds</span> <span class="o">=</span> <span class="n">vox_preds</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="n">cut</span> <span class="o">=</span> <span class="n">flat_preds</span><span class="o">.</span><span class="n">kthvalue</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frac</span> <span class="o">*</span> <span class="p">(</span><span class="n">flat_preds</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)))</span><span class="o">.</span><span class="n">values</span>
+
+        <span class="n">w_bkg</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cut_coef</span> <span class="o">*</span> <span class="p">(</span><span class="n">flat_preds</span> <span class="o">-</span> <span class="n">cut</span><span class="p">))</span>
+        <span class="n">w_blk</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">w_bkg</span>
+
+        <span class="n">mean_bkg</span> <span class="o">=</span> <span class="p">(</span><span class="n">w_bkg</span> <span class="o">*</span> <span class="n">flat_preds</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">w_bkg</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">mean_blk</span> <span class="o">=</span> <span class="p">(</span><span class="n">w_blk</span> <span class="o">*</span> <span class="n">flat_preds</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">w_blk</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+        <span class="n">r</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">mean_bkg</span> <span class="o">-</span> <span class="n">mean_blk</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">mean_bkg</span> <span class="o">+</span> <span class="n">mean_blk</span><span class="p">)</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="p">(</span><span class="n">r</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">ratio_offset</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">ratio_coef</span>
+        <span class="n">pred</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">pred</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">inv_weights</span></div>
+
+    <span class="k">def</span> <span class="nf">_reset_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Resets any variable/predictions made from the added scatter batches.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">x0_inferrer</span><span class="o">.</span><span class="n">_reset_vars</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="AbsIntClassifierFromX0"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.AbsIntClassifierFromX0">[docs]</a><span class="k">class</span> <span class="nc">AbsIntClassifierFromX0</span><span class="p">(</span><span class="n">AbsVolumeInferrer</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abstract base class for inferring integer targets through multiclass classification from voxelwise X0 predictions.</span>
+<span class="sd">    Inheriting classes must provide a way to convert voxelwise X0s into class probabilities of the required dimension.</span>
+<span class="sd">    Requires a basic inferrer for providing the voxelwise X0 predictions.</span>
+<span class="sd">    Optionally, the predictions can be returns as the raw class predictions, or the most probable class.</span>
+<span class="sd">    In case of the latter, this class can be optionally be converted to a float value via a user-provided processing function.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        partial_x0_inferrer: (partial) class to instatiate to provide the voxelwise X0 predictions</span>
+<span class="sd">        volume: volume through which the muons will be passed</span>
+<span class="sd">        output_probs: if True, will return the per-class probabilites, otherwise will return the argmax of the probabilities, over the last dimension</span>
+<span class="sd">        class2float: optional function to convert class indices to a floating value</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">partial_x0_inferrer</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">AbsX0Inferrer</span><span class="p">],</span>
+        <span class="n">volume</span><span class="p">:</span> <span class="n">Volume</span><span class="p">,</span>
+        <span class="n">output_probs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">class2float</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Volume</span><span class="p">],</span> <span class="n">Tensor</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialises the inference class for the provided volume.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">volume</span><span class="o">=</span><span class="n">volume</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_probs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">class2float</span> <span class="o">=</span> <span class="n">output_probs</span><span class="p">,</span> <span class="n">class2float</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x0_inferrer</span> <span class="o">=</span> <span class="n">partial_x0_inferrer</span><span class="p">(</span><span class="n">volume</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="p">)</span>
+
+<div class="viewcode-block" id="AbsIntClassifierFromX0.x02probs"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.AbsIntClassifierFromX0.x02probs">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">x02probs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vox_preds</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inheriting classes must override this method to convert voxelwise X0 predictions to class probabilities</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            vox_preds: (z,x,y) tensor of voxelwise X0 predictions</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (*) tensor of class probabilities</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="AbsIntClassifierFromX0.add_scatters"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.AbsIntClassifierFromX0.add_scatters">[docs]</a>    <span class="k">def</span> <span class="nf">add_scatters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scatters</span><span class="p">:</span> <span class="n">AbsScatterBatch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Appends a new set of muon scatter vairables.</span>
+<span class="sd">        When :meth:`~tomopt.inference.volume.DenseBlockClassifierFromX0s.get_prediction` is called, the prediction will be based on all</span>
+<span class="sd">        :class:`~tomopt.inference.scattering.AbsScatterBatch` s added up to that point</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">x0_inferrer</span><span class="o">.</span><span class="n">add_scatters</span><span class="p">(</span><span class="n">scatters</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbsIntClassifierFromX0.compute_efficiency"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.AbsIntClassifierFromX0.compute_efficiency">[docs]</a>    <span class="k">def</span> <span class="nf">compute_efficiency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scatters</span><span class="p">:</span> <span class="n">AbsScatterBatch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compuates the per-muon efficiency according to the method implemented by the X0 inferrer.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            scatters: scatter batch containing muons whose efficiency should be computed</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (muons) tensor of muon efficiencies</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">x0_inferrer</span><span class="o">.</span><span class="n">compute_efficiency</span><span class="p">(</span><span class="n">scatters</span><span class="o">=</span><span class="n">scatters</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbsIntClassifierFromX0.get_prediction"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.AbsIntClassifierFromX0.get_prediction">[docs]</a>    <span class="k">def</span> <span class="nf">get_prediction</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]]:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the predicions for the volume.</span>
+<span class="sd">        If class probabilities were requested during initialisation, then these will be returned.</span>
+<span class="sd">        Otherwise the most probable class will be returned, and this will be converted to a float value if `class2float` is not None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pred: (*) volume prediction</span>
+<span class="sd">            inv_weight: sum of muon efficiencies</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">vox_preds</span><span class="p">,</span> <span class="n">inv_weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x0_inferrer</span><span class="o">.</span><span class="n">get_prediction</span><span class="p">()</span>
+
+        <span class="n">probs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x02probs</span><span class="p">(</span><span class="n">vox_preds</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_probs</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">probs</span><span class="p">,</span> <span class="n">inv_weights</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pred</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">probs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">class2float</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">pred</span><span class="p">,</span> <span class="n">inv_weights</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">class2float</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="p">),</span> <span class="n">inv_weights</span></div>
+
+    <span class="k">def</span> <span class="nf">_reset_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Resets any variable/predictions made from the added scatter batches.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">x0_inferrer</span><span class="o">.</span><span class="n">_reset_vars</span><span class="p">()</span></div>
+</pre></div>
+
+             </article>
+             
+            </div>
+            <footer>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2021-2022, TomOpt Authors.
+
+    </p>
+  </div>
+    
+      <div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/pytorch/tomopt_sphinx_theme">theme</a> provided by <a href="https://pytorch.org/">PyTorch</a> based on a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+     
+
+</footer>
+
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  
+
+
+  
+
+     
+       <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+         <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+         <script src="../../../_static/jquery.js"></script>
+         <script src="../../../_static/underscore.js"></script>
+         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+         <script src="../../../_static/doctools.js"></script>
+         <script src="../../../_static/sphinx_highlight.js"></script>
+     
+
+  
+
+  <script type="text/javascript" src="../../../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../../../_static/js/vendor/bootstrap.min.js"></script>
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 text-center">
+          <h2>Docs</h2>
+          <p>Access comprehensive developer and user documentation for TomOpt</p>
+          <a class="with-right-arrow" href="https://tomopt.readthedocs.io/en/stable">View Docs</a>
+        </div>
+
+        <div class="col-md-6 text-center">
+          <h2>Tutorials</h2>
+          <p>Get tutorials for beginner and advanced researchers demonstrating many of the features of TomOpt</p>
+          <a class="with-right-arrow" href="https://github.com/GilesStrong/mode_muon_tomography#examples">View Tutorials</a>
+        </div>
+
+        <!-- <div class="col-md-4 text-center">
+          <h2>Resources</h2>
+          <p>Find development resources and get your questions answered</p>
+          <a class="with-right-arrow" href="">View Resources</a>
+        </div> -->
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-logo-wrapper">
+        <a href="https://tomopt.readthedocs.io/en/stable" class="footer-logo"></a>
+      </div>
+
+      <div class="footer-links-wrapper">
+        <div class="footer-links-col">
+          <ul>
+            <!-- <li class="list-title"><a href="https://tomopt.readthedocs.io/en/stable">TomOpt</a></li> -->
+            <!-- <li><a href="">Get Started</a></li> -->
+            <!-- <li><a href="">Features</a></li> -->
+            <!-- <li><a href="">Ecosystem</a></li> -->
+            <!-- <li><a href="">Blog</a></li> -->
+            <!-- <li><a href="">Resources</a></li> -->
+          </ul>
+        </div>
+
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="">Support</a></li>
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography#examples">Tutorials</a></li>
+            <li><a href="https://tomopt.readthedocs.io/en/stable">Docs</a></li>
+            <!-- <li><a href="" target="_blank">Discuss</a></li> -->
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography/blob/main/CHANGES.md" target="_blank">Change Log</a></li>
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography/issues" target="_blank">Github Issues</a></li>
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography/blob/main/CITATION.md" target="_blank">Citation</a></li>
+            <!-- <li><a href="" target="_blank">Slack</a></li> -->
+            <!-- <li><a href="https://github.com/GilesStrong/mode_muon_tomography/blob/main/CONTRIBUTING.md" target="_blank">Contributing</a></li> -->
+          </ul>
+        </div>
+
+        <!-- <div class="footer-links-col follow-us-col">
+          <ul>
+            <li class="list-title">Follow Us</li>
+            <li>
+              <div id="mc_embed_signup">
+                <form
+                  action="https://twitter.us14.list-manage.com/subscribe/post?u=75419c71fe0a935e53dfa4a3f&id=91d0dccd39"
+                  method="post"
+                  id="mc-embedded-subscribe-form"
+                  name="mc-embedded-subscribe-form"
+                  class="email-subscribe-form validate"
+                  target="_blank"
+                  novalidate>
+                  <div id="mc_embed_signup_scroll" class="email-subscribe-form-fields-wrapper">
+                    <div class="mc-field-group">
+                      <label for="mce-EMAIL" style="display:none;">Email Address</label>
+                      <input type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL" placeholder="Email Address">
+                    </div>
+
+                    <div id="mce-responses" class="clear">
+                      <div class="response" id="mce-error-response" style="display:none"></div>
+                      <div class="response" id="mce-success-response" style="display:none"></div>
+                    </div>    real people should not fill this in and expect good things - do not remove this or risk form bot signups
+
+                    <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_75419c71fe0a935e53dfa4a3f_91d0dccd39" tabindex="-1" value=""></div>
+
+                    <div class="clear">
+                      <input type="submit" value="" name="subscribe" id="mc-embedded-subscribe" class="button email-subscribe-button">
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+            </li>
+          </ul>
+
+          <div class="footer-social-icons">
+            <a href="" target="_blank" class="facebook"></a>
+            <a href="" target="_blank" class="twitter"></a>
+          </div>
+        </div> -->
+      </div>
+    </div>
+  </footer>
+
+  <!-- <div class="cookie-banner-wrapper">
+  <div class="container">
+    <p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+    <img class="close-button" src="../../../_static/images/pytorch-x.svg">
+  </div>
+</div> -->
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://tomopt.readthedocs.io/en/stable" aria-label="TomOpt"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <!-- <li>
+            <a href="#">Get Started</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="#">Features</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="#">Ecosystem</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="">Blog</a>
+          </li> -->
+
+          <li>
+            <a href="https://github.com/GilesStrong/mode_muon_tomography#examples">Tutorials</a>
+          </li>
+
+          <li>
+            <a href="https://tomopt.readthedocs.io/en/stable">Docs</a>
+          </li>
+
+          <!-- <li>
+            <a href="">Resources</a>
+          </li> -->
+
+          <li>
+            <a href="https://github.com/GilesStrong/mode_muon_tomography">Github</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../../../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+</html>

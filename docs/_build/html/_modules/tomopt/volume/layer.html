@@ -1,0 +1,1038 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>tomopt.volume.layer &mdash; TomOpt  documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../../_static/tomopt_logo_black.png"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://mode_muon_tomography.readthedocs.io/en/stable" aria-label="TomOpt"></a>
+
+      <div class="main-menu">
+        <ul>
+          <!-- <li>
+            <a href="">Get Started</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="">Features</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="">Ecosystem</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="">Blog</a>
+          </li> -->
+
+          <li>
+            <a href="https://github.com/GilesStrong/mode_muon_tomography#examples">Tutorials</a>
+          </li>
+
+          <li>
+            <a href="https://mode_muon_tomography.readthedocs.io/en/stable">Docs</a>
+          </li>
+
+          <!-- <li>
+            <a href="">Resources</a>
+          </li> -->
+
+          <li>
+            <a href="https://github.com/GilesStrong/mode_muon_tomography">Github</a>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+
+  </div>
+</div>
+
+
+<body class="pytorch-body">
+
+   
+
+    
+
+    <div class="table-of-contents-link-wrapper">
+      <span>Table of Contents</span>
+      <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+    </div>
+
+    <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+      <div class="pytorch-side-scroll">
+        <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          <div class="pytorch-left-menu-search">
+            
+
+            
+              
+              
+            
+
+            
+
+
+  
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+            
+          </div>
+
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../tomopt.html">tomopt package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tomopt.muon.html">tomopt.muon package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tomopt.volume.html">tomopt.volume package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tomopt.inference.html">tomopt.inference package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tomopt.optimisation.html">tomopt.optimisation package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tomopt.plotting.html">tomopt.plotting package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tomopt.benchmarks.html">tomopt.benchmarks package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <div class="pytorch-container">
+      <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+        <div class="pytorch-breadcrumbs-wrapper">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../../../index.html">
+          
+            Docs
+          
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="../../index.html">Module code</a> &gt;</li>
+        
+      <li>tomopt.volume.layer</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+        </div>
+
+        <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+          Shortcuts
+        </div>
+      </div>
+
+      <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+        <div class="pytorch-content-left">
+
+        
+          
+          <div class="rst-content">
+          
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+             <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+              
+  <h1>Source code for tomopt.volume.layer</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">import</span> <span class="nn">math</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span><span class="p">,</span> <span class="n">Tensor</span>
+
+<span class="kn">from</span> <span class="nn">.scatter_model</span> <span class="kn">import</span> <span class="n">PGEANT_SCATTER_MODEL</span>
+<span class="kn">from</span> <span class="nn">..core</span> <span class="kn">import</span> <span class="n">DEVICE</span><span class="p">,</span> <span class="n">SCATTER_COEF_A</span><span class="p">,</span> <span class="n">SCATTER_COEF_B</span><span class="p">,</span> <span class="n">RadLengthFunc</span>
+<span class="kn">from</span> <span class="nn">..muon</span> <span class="kn">import</span> <span class="n">MuonBatch</span>
+<span class="kn">from</span> <span class="nn">tomopt.volume.panel</span> <span class="kn">import</span> <span class="n">DetectorPanel</span>
+<span class="kn">from</span> <span class="nn">tomopt.volume.heatmap</span> <span class="kn">import</span> <span class="n">DetectorHeatMap</span>
+
+<span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Provides implementations of the layers in z, which are used to construct volumes, both the passive scattering layers, and the active detection layers.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;AbsLayer&quot;</span><span class="p">,</span> <span class="s2">&quot;PassiveLayer&quot;</span><span class="p">,</span> <span class="s2">&quot;AbsDetectorLayer&quot;</span><span class="p">,</span> <span class="s2">&quot;PanelDetectorLayer&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="AbsLayer"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.AbsLayer">[docs]</a><span class="k">class</span> <span class="nc">AbsLayer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abstract base class for volume layers.</span>
+<span class="sd">    The length and width (`lw`) is the spans of the layer in metres in x and y, and the layer begins at x=0, y=0.</span>
+<span class="sd">    z indicates the position of the top of the layer, in meters, and size is the distance from the top of the layer to the bottom.</span>
+<span class="sd">    size is also used to set the length, width, and height of the voxels that make up the layer.</span>
+
+<span class="sd">    .. important::</span>
+<span class="sd">        Users must ensure that both the length and width of the layer are divisible by size</span>
+
+<span class="sd">    If the layer is set to scatter muons (`rad_length` is not None), then two scattering models are available:</span>
+<span class="sd">        - &#39;pdg&#39;: The default and currently recommended model based on the Gaussian scattering model described in https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf</span>
+<span class="sd">        - &#39;pgeant&#39;: An under-development model based on a parameterised fit to data sampled from GEANT 4</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        lw: the length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0).</span>
+<span class="sd">        z: the z position of the top of layer in metres. The bottom of the layer will be located at z-size</span>
+<span class="sd">        size: the voxel size in metres. Must be such that lw is divisible by the specified size.</span>
+<span class="sd">        scatter_model: String selection for the scattering model to use. Currently either &#39;pdg&#39; or &#39;pgeant&#39;.</span>
+<span class="sd">        device: device on which to place tensors</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lw</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">scatter_model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;pdg&quot;</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">DEVICE</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lw</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scatter_model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">lw</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">z</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">),</span>
+            <span class="n">size</span><span class="p">,</span>
+            <span class="n">scatter_model</span><span class="p">,</span>
+            <span class="n">device</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rad_length</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="AbsLayer.forward"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.AbsLayer.forward">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="n">MuonBatch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inheriting classes should override this method to implement the passage of the muons through the layer.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            mu: the incoming batch of muons</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="AbsLayer.scatter_and_propagate"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.AbsLayer.scatter_and_propagate">[docs]</a>    <span class="k">def</span> <span class="nf">scatter_and_propagate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="n">MuonBatch</span><span class="p">,</span> <span class="n">deltaz</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Propagates the muons through (part of) the layer, such that afterwards all the muons are deltaz lower than their starting position.</span>
+<span class="sd">        If the layer is set to scatter muons (`rad_length` is not None),</span>
+<span class="sd">        then the muons will also undergo scattering (changes in their trajectories and positions) according to the scatter model of the layer.</span>
+
+<span class="sd">        .. warning::</span>
+<span class="sd">            When computing scatterings, the X0 used for each muon is that of the starting voxel:</span>
+<span class="sd">            If a muon moves into a neighbouring voxel of differing X0, then this will only be accounted for in the next deltaz step.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            mu: muons to propagate</span>
+<span class="sd">            deltaz: amount of distance in metres in the negative z direction that the muons should travel (positive number lowers the muon position)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rad_length</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">mu</span><span class="o">.</span><span class="n">get_xy_mask</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">lw</span><span class="p">)</span>  <span class="c1"># Only scatter muons inside volume</span>
+            <span class="n">xy_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu_abs2idx</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+
+            <span class="n">x0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rad_length</span><span class="p">[</span><span class="n">xy_idx</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">xy_idx</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]]</span>
+            <span class="n">scatterings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_scattering</span><span class="p">(</span>
+                <span class="n">x0</span><span class="o">=</span><span class="n">x0</span><span class="p">,</span> <span class="n">deltaz</span><span class="o">=</span><span class="n">deltaz</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="n">mu</span><span class="o">.</span><span class="n">theta</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">theta_x</span><span class="o">=</span><span class="n">mu</span><span class="o">.</span><span class="n">theta_x</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">theta_y</span><span class="o">=</span><span class="n">mu</span><span class="o">.</span><span class="n">theta_y</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">mom</span><span class="o">=</span><span class="n">mu</span><span class="o">.</span><span class="n">mom</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Update to position at scattering.</span>
+            <span class="n">mu</span><span class="o">.</span><span class="n">scatter_dxy</span><span class="p">(</span><span class="n">dx_vol</span><span class="o">=</span><span class="n">scatterings</span><span class="p">[</span><span class="s2">&quot;dx_vol&quot;</span><span class="p">],</span> <span class="n">dy_vol</span><span class="o">=</span><span class="n">scatterings</span><span class="p">[</span><span class="s2">&quot;dy_vol&quot;</span><span class="p">],</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)</span>
+            <span class="n">mu</span><span class="o">.</span><span class="n">propagate</span><span class="p">(</span><span class="n">deltaz</span><span class="p">)</span>
+            <span class="n">mu</span><span class="o">.</span><span class="n">scatter_dtheta_dphi</span><span class="p">(</span><span class="n">dtheta_vol</span><span class="o">=</span><span class="n">scatterings</span><span class="p">[</span><span class="s2">&quot;dtheta_vol&quot;</span><span class="p">],</span> <span class="n">dphi_vol</span><span class="o">=</span><span class="n">scatterings</span><span class="p">[</span><span class="s2">&quot;dphi_vol&quot;</span><span class="p">],</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mu</span><span class="o">.</span><span class="n">propagate</span><span class="p">(</span><span class="n">deltaz</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbsLayer.mu_abs2idx"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.AbsLayer.mu_abs2idx">[docs]</a>    <span class="k">def</span> <span class="nf">mu_abs2idx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="n">MuonBatch</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Helper method to return the voxel indices in the layer that muons currently occupy.</span>
+
+<span class="sd">        .. warning::</span>
+<span class="sd">            This method does NOT account for the possibility of muons being outside the layer.</span>
+<span class="sd">            Please also supply a mask, to only select muons inside the layer.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            mu: muons to look up</span>
+<span class="sd">            mask: Optional (muons) Boolean tensor where True indicates that the muon position should be checked</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (muons,2) tensor of voxel indices in x,y</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">xy</span> <span class="o">=</span> <span class="n">mu</span><span class="o">.</span><span class="n">xy</span>
+        <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">xy</span> <span class="o">=</span> <span class="n">xy</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">abs2idx</span><span class="p">(</span><span class="n">xy</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbsLayer.abs2idx"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.AbsLayer.abs2idx">[docs]</a>    <span class="k">def</span> <span class="nf">abs2idx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xy</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Helper method to return the voxel indices in the layer of the supplied tensor of xy positions.</span>
+
+<span class="sd">        .. warning::</span>
+<span class="sd">            This method does NOT account for the possibility of positions may be outside the layer.</span>
+<span class="sd">            Please ensure that positions are inside the layer.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            xy: (N,xy) tensor of absolute xy positions in metres in the volume frame</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (N,xy) tensor of voxel indices in x,y</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">xy</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_pgeant_scatter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">x0</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">deltaz</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">theta</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta_x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta_y</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">mom</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the scattering of the muons using the parameterised GEANT 4 model.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            x0: (N,) tensor of the X0 of the voxel each muon is traversing</span>
+<span class="sd">            deltaz: The amount of distance the muons will travel in the z direction in metres</span>
+<span class="sd">            theta: (N,) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons</span>
+<span class="sd">            theta_x: (N,) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons&#39; frame to the volume&#39;s</span>
+<span class="sd">            theta_y: (N,) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons&#39; frame to the volume&#39;s</span>
+<span class="sd">            mom: (N,) tensor of the absolute value of the momentum of each muon</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, &amp; dy_vol</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">PGEANT_SCATTER_MODEL</span><span class="o">.</span><span class="n">compute_scattering</span><span class="p">(</span><span class="n">x0</span><span class="o">=</span><span class="n">x0</span><span class="p">,</span> <span class="n">deltaz</span><span class="o">=</span><span class="n">deltaz</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">,</span> <span class="n">theta_x</span><span class="o">=</span><span class="n">theta_x</span><span class="p">,</span> <span class="n">theta_y</span><span class="o">=</span><span class="n">theta_y</span><span class="p">,</span> <span class="n">mom</span><span class="o">=</span><span class="n">mom</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_pdg_scatter</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">x0</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">deltaz</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">theta</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta_x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta_y</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">mom</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">log_term</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the scattering of the muons using the PDG model https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            x0: (N,) tensor of the X0 of the voxel each muon is traversing</span>
+<span class="sd">            deltaz: The amount of distance the muons will travel in the z direction in metres</span>
+<span class="sd">            theta: (N,) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons</span>
+<span class="sd">            theta_x: (N,) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons&#39; frames to the volume&#39;s</span>
+<span class="sd">            theta_y: (N,) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons&#39; frames to the volume&#39;s</span>
+<span class="sd">            mom: (N,) tensor of the absolute value of the momentum of each muon</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, &amp; dy_vol</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">flight</span> <span class="o">=</span> <span class="n">deltaz</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="n">n_x0</span> <span class="o">=</span> <span class="n">flight</span> <span class="o">/</span> <span class="n">x0</span>
+
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">n_x0</span><span class="p">)</span>
+        <span class="n">z1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">z2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">theta0</span> <span class="o">=</span> <span class="p">(</span><span class="n">SCATTER_COEF_A</span> <span class="o">/</span> <span class="n">mom</span><span class="p">)</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n_x0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">log_term</span><span class="p">:</span>
+            <span class="n">theta0</span> <span class="o">=</span> <span class="n">theta0</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="n">SCATTER_COEF_B</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">n_x0</span><span class="p">)))</span>
+        <span class="c1"># These are in the muons&#39; reference frames NOT the volume&#39;s!!!</span>
+        <span class="n">dtheta_xy_mu</span> <span class="o">=</span> <span class="n">z1</span> <span class="o">*</span> <span class="n">theta0</span>
+        <span class="n">dxy_mu</span> <span class="o">=</span> <span class="n">flight</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta0</span><span class="p">)</span> <span class="o">*</span> <span class="p">((</span><span class="n">z1</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">12</span><span class="p">))</span> <span class="o">+</span> <span class="p">(</span><span class="n">z2</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span>
+
+        <span class="c1"># We compute dtheta_xy in muon ref frame, but we&#39;re free to rotate the muon,</span>
+        <span class="c1"># since dtheta_xy doesn&#39;t depend on muon position</span>
+        <span class="c1"># Therefore assign theta_x axis (muon ref) to be in the theta direction (vol ref),</span>
+        <span class="c1"># and theta_y axis (muon ref) to be in the phi direction (vol ref)</span>
+        <span class="n">dtheta_vol</span> <span class="o">=</span> <span class="n">dtheta_xy_mu</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># dtheta_x in muon ref</span>
+        <span class="n">dphi_vol</span> <span class="o">=</span> <span class="n">dtheta_xy_mu</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># dtheta_y in muon ref</span>
+
+        <span class="c1"># Note that if a track indices on a layer</span>
+        <span class="c1"># with angle theta_mu, the dx and dy displacements are relative to zero angle</span>
+        <span class="c1"># (generation of MSC formulas are oblivious of angle of incidence) so we need</span>
+        <span class="c1"># to rescale them by cos of theta_x and theta_y</span>
+        <span class="n">dx_vol</span> <span class="o">=</span> <span class="n">dxy_mu</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta_x</span><span class="p">)</span>
+        <span class="n">dy_vol</span> <span class="o">=</span> <span class="n">dxy_mu</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta_y</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;dtheta_vol&quot;</span><span class="p">:</span> <span class="n">dtheta_vol</span><span class="p">,</span> <span class="s2">&quot;dphi_vol&quot;</span><span class="p">:</span> <span class="n">dphi_vol</span><span class="p">,</span> <span class="s2">&quot;dx_vol&quot;</span><span class="p">:</span> <span class="n">dx_vol</span><span class="p">,</span> <span class="s2">&quot;dy_vol&quot;</span><span class="p">:</span> <span class="n">dy_vol</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">_compute_scattering</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">x0</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">deltaz</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">theta</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta_x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta_y</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">mom</span><span class="p">:</span> <span class="n">Tensor</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the scattering of the muons using the chosen model</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            x0: (N,) tensor of the X0 of the voxel each muon is traversing</span>
+<span class="sd">            deltaz: The amount of distance the muons will travel in the z direction in metres</span>
+<span class="sd">            theta: (N,) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons</span>
+<span class="sd">            theta_x: (N,) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons&#39; frames to the volume&#39;s</span>
+<span class="sd">            theta_y: (N,) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons&#39; frames to the volume&#39;s</span>
+<span class="sd">            mom: (N,) tensor of the absolute value of the momentum of each muon</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, &amp; dy_vol</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scatter_model</span> <span class="o">==</span> <span class="s2">&quot;pdg&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pdg_scatter</span><span class="p">(</span><span class="n">x0</span><span class="o">=</span><span class="n">x0</span><span class="p">,</span> <span class="n">deltaz</span><span class="o">=</span><span class="n">deltaz</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">,</span> <span class="n">theta_x</span><span class="o">=</span><span class="n">theta_x</span><span class="p">,</span> <span class="n">theta_y</span><span class="o">=</span><span class="n">theta_y</span><span class="p">,</span> <span class="n">mom</span><span class="o">=</span><span class="n">mom</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">scatter_model</span> <span class="o">==</span> <span class="s2">&quot;pgeant&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pgeant_scatter</span><span class="p">(</span><span class="n">x0</span><span class="o">=</span><span class="n">x0</span><span class="p">,</span> <span class="n">deltaz</span><span class="o">=</span><span class="n">deltaz</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">,</span> <span class="n">theta_x</span><span class="o">=</span><span class="n">theta_x</span><span class="p">,</span> <span class="n">theta_y</span><span class="o">=</span><span class="n">theta_y</span><span class="p">,</span> <span class="n">mom</span><span class="o">=</span><span class="n">mom</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Scatter model </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">scatter_model</span><span class="si">}</span><span class="s2"> is not currently supported.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PassiveLayer"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.PassiveLayer">[docs]</a><span class="k">class</span> <span class="nc">PassiveLayer</span><span class="p">(</span><span class="n">AbsLayer</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Default layer of containing passive material that scatters the muons.</span>
+<span class="sd">    The length and width (`lw`) is the spans of the layer in metres in x and y, and the layer begins at x=0, y=0.</span>
+<span class="sd">    z indicates the position of the top of the layer, in meters, and size is the distance from the top of the layer to the bottom.</span>
+<span class="sd">    size is also used to set the length, width, and height of the voxels that make up the layer.</span>
+
+<span class="sd">    .. important::</span>
+<span class="sd">        Users must ensure that both the length and width of the layer are divisible by size</span>
+
+<span class="sd">    If the layer is set to scatter muons (`rad_length` is not None), then two scattering models are available:</span>
+<span class="sd">        - &#39;pdg&#39;: The default and currently recommended model based on the Gaussian scattering model described in https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf</span>
+<span class="sd">        - &#39;pgeant&#39;: An under-development model based on a parameterised fit to data sampled from GEANT 4</span>
+
+<span class="sd">    The X0 values of each voxel is defined via a &quot;radiation-length function&quot;, which should return an (n_x,n_y) tensor of voxel X0 values,</span>
+<span class="sd">    when called with the `z`, `lw`, and `size` of the layer. For example:</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        def arb_rad_length(*, z: float, lw: Tensor, size: float) -&gt; float:</span>
+<span class="sd">            rad_length = torch.ones(list((lw / size).long())) * X0[&quot;lead&quot;]</span>
+<span class="sd">            if z &lt; 0.5:</span>
+<span class="sd">                rad_length[...] = X0[&quot;beryllium&quot;]</span>
+<span class="sd">            return rad_length</span>
+
+<span class="sd">    This function can either be supplied during initialisation, or later via the `load_rad_length` method.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        lw: the length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0).</span>
+<span class="sd">        z: the z position of the top of layer in metres. The bottom of the layer will be located at z-size</span>
+<span class="sd">        size: the voxel size in metres. Must be such that lw is divisible by the specified size.</span>
+<span class="sd">        rad_length_func: lookup function that returns an (n_x,n_y) tensor of voxel X0 values for the layer.</span>
+<span class="sd">            After initialisation, the `load_rad_length` method may be used to load X0 layouts.</span>
+<span class="sd">        dz_step: The step size in metres over which to compute muon propagation and scattering.</span>
+<span class="sd">            Should be such that the `size` of the layer is divisible by `dz_step`.</span>
+<span class="sd">        scatter_model: String selection for the scattering model to use. Currently either &#39;pdg&#39; or &#39;pgeant&#39;.</span>
+<span class="sd">        device: device on which to place tensors</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">lw</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">z</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">size</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">rad_length_func</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RadLengthFunc</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">dz_step</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+        <span class="n">scatter_model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;pdg&quot;</span><span class="p">,</span>
+        <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">DEVICE</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">lw</span><span class="o">=</span><span class="n">lw</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="n">z</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dz_step</span> <span class="o">=</span> <span class="n">dz_step</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_steps</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dz_step</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scatter_model</span> <span class="o">=</span> <span class="n">scatter_model</span>
+        <span class="k">if</span> <span class="n">rad_length_func</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_rad_length</span><span class="p">(</span><span class="n">rad_length_func</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;PassiveLayer located at z=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="si">}</span><span class="s2">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PassiveLayer.load_rad_length"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.PassiveLayer.load_rad_length">[docs]</a>    <span class="k">def</span> <span class="nf">load_rad_length</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rad_length_func</span><span class="p">:</span> <span class="n">RadLengthFunc</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loads a new X0 layout into the layer voxels.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            rad_length_func: lookup function that returns an (n_x,n_y) tensor of voxel X0 values for the layer.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">rad_length</span> <span class="o">=</span> <span class="n">rad_length_func</span><span class="p">(</span><span class="n">z</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lw</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PassiveLayer.forward"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.PassiveLayer.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="n">MuonBatch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Propagates the muons through the layer to the bottom in a series of scattering steps.</span>
+<span class="sd">        If the &#39;pdg&#39; model is used, then the step size is the `dz_step` of the layer, as supplied during initialisation.</span>
+<span class="sd">        If the &#39;pgeant&#39; model is used, the the step size specified as part of the fitting of the scattering model.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            mu: the incoming batch of muons</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scatter_model</span> <span class="o">==</span> <span class="s2">&quot;pgeant&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">PGEANT_SCATTER_MODEL</span><span class="o">.</span><span class="n">initialised</span><span class="p">:</span>
+                <span class="n">PGEANT_SCATTER_MODEL</span><span class="o">.</span><span class="n">load_data</span><span class="p">()</span>  <span class="c1"># Delay loading until required</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">/</span> <span class="n">PGEANT_SCATTER_MODEL</span><span class="o">.</span><span class="n">deltaz</span><span class="p">)</span>
+            <span class="n">dz</span> <span class="o">=</span> <span class="n">PGEANT_SCATTER_MODEL</span><span class="o">.</span><span class="n">deltaz</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">scatter_model</span> <span class="o">==</span> <span class="s2">&quot;pdg&quot;</span><span class="p">:</span>
+            <span class="n">dz</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dz_step</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_steps</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Scatter model </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">scatter_model</span><span class="si">}</span><span class="s2"> is not currently supported.&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scatter_and_propagate</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">deltaz</span><span class="o">=</span><span class="n">dz</span><span class="p">)</span>
+        <span class="n">mu</span><span class="o">.</span><span class="n">propagate</span><span class="p">(</span><span class="n">mu</span><span class="o">.</span><span class="n">z</span> <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>  <span class="c1"># In case of floating point-precision, ensure muons are at the bottom of the layer</span></div></div>
+
+
+<div class="viewcode-block" id="AbsDetectorLayer"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.AbsDetectorLayer">[docs]</a><span class="k">class</span> <span class="nc">AbsDetectorLayer</span><span class="p">(</span><span class="n">AbsLayer</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abstract base class for layers designed to record muon positions (hits) using detectors.</span>
+<span class="sd">    Inheriting classes should override a number methods to do with costs/budgets, and hit recording.</span>
+
+<span class="sd">    When optimisation of operating in &#39;fixed budget&#39; mode, the :class:`~tomopt.volume.volume.Volume` will check the `_n_costs` class attribute of the layer</span>
+<span class="sd">    and will add this to the total number of learnable budget assignments, and pass that number of budgets as an (_n_costs) tensor.</span>
+<span class="sd">    By default this is zero, and inheriting classes should set the correct number during initialisation, or via a new default value.</span>
+
+<span class="sd">    Some parts of TomOpt act differently on detector layers, according to how the detectors are modelled.</span>
+<span class="sd">    A `type_label` attribute is used to encode extra information, rather than relying purely on the object-instance type.</span>
+
+<span class="sd">    Multiple detection layers can be grouped together, via their `pos` attribute (position); a string-encoded value.</span>
+<span class="sd">    By default, the inference methods expect detectors above the passive layer to have `pos==&#39;above&#39;`,</span>
+<span class="sd">    and those below the passive volume to have `pos==&#39;below&#39;`.</span>
+<span class="sd">    When retrieving hits from the muon batch, hits will be stacked together with other hits from the same `pos`.</span>
+
+<span class="sd">    The length and width (`lw`) is the spans of the layer in metres in x and y, and the layer begins at x=0, y=0.</span>
+<span class="sd">    z indicates the position of the top of the layer, in meters, and size is the distance from the top of the layer to the bottom.</span>
+
+<span class="sd">    .. important::</span>
+<span class="sd">        By default, the detectors will not scatter muons.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        pos: string-encoding of the detector-layer group</span>
+<span class="sd">        lw: the length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0).</span>
+<span class="sd">        z: the z position of the top of layer in metres. The bottom of the layer will be located at z-size</span>
+<span class="sd">        size: the voxel size in metres. Must be such that lw is divisible by the specified size.</span>
+<span class="sd">        device: device on which to place tensors</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_n_costs</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># number of budgets that the detector layer requests</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">pos</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">lw</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">z</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">size</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">DEVICE</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">lw</span><span class="o">=</span><span class="n">lw</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="n">z</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">pos</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type_label</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+<div class="viewcode-block" id="AbsDetectorLayer.forward"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.AbsDetectorLayer.forward">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="n">MuonBatch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inheriting classes should override this method to implement the passage of the muons through the layer,</span>
+<span class="sd">        and record muon positions (hits) according to the detector model.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            mu: the incoming batch of muons</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="AbsDetectorLayer.get_cost"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.AbsDetectorLayer.get_cost">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_cost</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inheriting classes should override this method to return the total, current cost of the detector(s) in the layer.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Single-element tensor with the current total cost of the detector in the layer.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="AbsDetectorLayer.conform_detector"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.AbsDetectorLayer.conform_detector">[docs]</a>    <span class="k">def</span> <span class="nf">conform_detector</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Optional method designed to ensure that the detector parameters lie within any require boundaries, etc.</span>
+<span class="sd">        It will be called via the :class:`~tomopt.optimisation.wrapper.AbsVolumeWrapper` after any update to the detector layers, but by default does nothing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="AbsDetectorLayer.assign_budget"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.AbsDetectorLayer.assign_budget">[docs]</a>    <span class="k">def</span> <span class="nf">assign_budget</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">budget</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inheriting classes should override this method to correctly assign elements of an (_n_costs) tensor to the parts of the detector to which they relate.</span>
+<span class="sd">        All ordering of the tensor is defined using the function,</span>
+<span class="sd">        but proper optimisation of the budgets may require that the same ordering is used, or that it is deterministic.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            budget: (_n_costs) tensor of budget assignments in unit currency</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">pass</span></div></div>
+
+
+<div class="viewcode-block" id="PanelDetectorLayer"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.PanelDetectorLayer">[docs]</a><span class="k">class</span> <span class="nc">PanelDetectorLayer</span><span class="p">(</span><span class="n">AbsDetectorLayer</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A detector layer class that uses multiple &quot;panels&quot; to record muon positions (hits).</span>
+<span class="sd">    Currently, two &quot;panel&quot; types are available: :class:`~tomopt.volume.panel.DetectorPanel` and :class:`~tomopt.volume.heatmap.DetectorHeatMap`</span>
+<span class="sd">    Each detector layer, however, should contain the same type of panel, as this is used to set the `type_label` of the layer.</span>
+
+<span class="sd">    When optimisation of operating in &#39;fixed budget&#39; mode, the :class:`~tomopt.volume.volume.Volume` will check the `_n_costs` class attribute of the layer</span>
+<span class="sd">    and will add this to the total number of learnable budget assignments, and pass that number of budgets as an (_n_costs) tensor.</span>
+<span class="sd">    During initialisation, this is set to the number of panels in the layer, at time of initialisation.</span>
+
+<span class="sd">    Multiple detection layers can be grouped together, via their `pos` attribute (position); a string-encoded value.</span>
+<span class="sd">    By default, the inference methods expect detectors above the passive layer to have `pos==&#39;above&#39;`,</span>
+<span class="sd">    and those below the passive volume to have `pos==&#39;below&#39;`.</span>
+<span class="sd">    When retrieving hits from the muon batch, hits will be stacked together with other hits from the same `pos`.</span>
+
+<span class="sd">    The length and width (`lw`) is the spans of the layer in metres in x and y, and the layer begins at x=0, y=0.</span>
+<span class="sd">    z indicates the position of the top of the layer, in meters, and size is the distance from the top of the layer to the bottom.</span>
+
+<span class="sd">    .. important::</span>
+<span class="sd">        The detector panels do not scatter muons.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        pos: string-encoding of the detector-layer group</span>
+<span class="sd">        lw: the length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0).</span>
+<span class="sd">        z: the z position of the top of layer in metres. The bottom of the layer will be located at z-size</span>
+<span class="sd">        size: the voxel size in metres. Must be such that lw is divisible by the specified size.</span>
+<span class="sd">        panels: The set of initialised panels to contain in the detector layer</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">lw</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">panels</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">DetectorPanel</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">DetectorHeatMap</span><span class="p">],</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">panels</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">panels</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">(</span><span class="n">panels</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">pos</span><span class="o">=</span><span class="n">pos</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="n">lw</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="n">z</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_device</span><span class="p">(</span><span class="n">panels</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">panels</span> <span class="o">=</span> <span class="n">panels</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">panels</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">DetectorHeatMap</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">type_label</span> <span class="o">=</span> <span class="s2">&quot;heatmap&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_n_costs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">panels</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">panels</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">DetectorPanel</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">type_label</span> <span class="o">=</span> <span class="s2">&quot;panel&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_n_costs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">panels</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PanelDetectorLayer.get_device"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.PanelDetectorLayer.get_device">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_device</span><span class="p">(</span><span class="n">panels</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Helper method to ensure that all panels are on the same device, and return that device.</span>
+<span class="sd">        If not all the panels are on the same device, then an exception will be raised.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            panels: ModuleLists of either :class:`~tomopt.volume.panel.DetectorPanel` or :class:`~tomopt.volume.heatmap.DetectorHeatMap` objects on device</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Device on which all the panels are.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">device</span> <span class="o">=</span> <span class="n">panels</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">device</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">panels</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">panels</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+                <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">device</span> <span class="o">!=</span> <span class="n">device</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;All panels must use the same device, but found multiple devices&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">device</span></div>
+
+<div class="viewcode-block" id="PanelDetectorLayer.get_panel_zorder"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.PanelDetectorLayer.get_panel_zorder">[docs]</a>    <span class="k">def</span> <span class="nf">get_panel_zorder</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            The indices of the panels in order of decreasing z-position.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">([</span><span class="n">p</span><span class="o">.</span><span class="n">z</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">panels</span><span class="p">])[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="PanelDetectorLayer.yield_zordered_panels"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.PanelDetectorLayer.yield_zordered_panels">[docs]</a>    <span class="k">def</span> <span class="nf">yield_zordered_panels</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Iterator</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">DetectorPanel</span><span class="p">]],</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">DetectorHeatMap</span><span class="p">]]]:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Yields the index of the panel, and the panel, in order of decreasing z-position.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Iterator yielding panel indices and panels in order of decreasing z-position.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_panel_zorder</span><span class="p">():</span>
+            <span class="k">yield</span> <span class="n">i</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">panels</span><span class="p">[</span><span class="n">i</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="PanelDetectorLayer.conform_detector"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.PanelDetectorLayer.conform_detector">[docs]</a>    <span class="k">def</span> <span class="nf">conform_detector</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loops through panels and calls their `clamp_params` method, to ensure that panels are located within the bounds of the detector layer.</span>
+<span class="sd">        It will be called via the :class:`~tomopt.optimisation.wrapper.AbsVolumeWrapper` after any update to the detector layers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">lw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lw</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">panels</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type_label</span> <span class="o">==</span> <span class="s2">&quot;heatmap&quot;</span><span class="p">:</span>
+                <span class="n">xy_low</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">xy_fix</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">p</span><span class="o">.</span><span class="n">range_mult</span> <span class="o">*</span> <span class="n">p</span><span class="o">.</span><span class="n">delta_xy</span>
+                <span class="n">xy_high</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">xy_fix</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">p</span><span class="o">.</span><span class="n">range_mult</span> <span class="o">*</span> <span class="n">p</span><span class="o">.</span><span class="n">delta_xy</span>
+                <span class="n">xy_low</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span> <span class="n">xy_low</span><span class="p">)</span>
+                <span class="n">xy_high</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">lw</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">xy_high</span><span class="p">)</span>
+
+                <span class="n">p</span><span class="o">.</span><span class="n">clamp_params</span><span class="p">(</span>
+                    <span class="n">musigz_low</span><span class="o">=</span><span class="p">(</span><span class="n">xy_low</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">z</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">),</span>
+                    <span class="n">musigz_high</span><span class="o">=</span><span class="p">(</span><span class="n">xy_high</span><span class="p">,</span> <span class="n">lw</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">z</span><span class="p">),</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">p</span><span class="o">.</span><span class="n">clamp_params</span><span class="p">(</span>
+                    <span class="n">xyz_low</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">z</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">),</span>
+                    <span class="n">xyz_high</span><span class="o">=</span><span class="p">(</span><span class="n">lw</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lw</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">z</span><span class="p">),</span>
+                <span class="p">)</span></div>
+
+<div class="viewcode-block" id="PanelDetectorLayer.forward"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.PanelDetectorLayer.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="n">MuonBatch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Propagates muons to each detector panel, in order of decreasing z-position, and calls their `get_hits` method to record hits to the muon batch.</span>
+<span class="sd">        After this, the muons will be propagated to the bottom of the detector layer.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            mu: the incoming batch of muons</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">yield_zordered_panels</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scatter_and_propagate</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">mu</span><span class="o">.</span><span class="n">z</span> <span class="o">-</span> <span class="n">p</span><span class="o">.</span><span class="n">z</span><span class="o">.</span><span class="n">detach</span><span class="p">())</span>  <span class="c1"># Move to panel</span>
+            <span class="n">hits</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">get_hits</span><span class="p">(</span><span class="n">mu</span><span class="p">)</span>
+            <span class="n">mu</span><span class="o">.</span><span class="n">append_hits</span><span class="p">(</span><span class="n">hits</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scatter_and_propagate</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">mu</span><span class="o">.</span><span class="n">z</span> <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>  <span class="c1"># Move to bottom of layer</span></div>
+
+<div class="viewcode-block" id="PanelDetectorLayer.get_cost"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.PanelDetectorLayer.get_cost">[docs]</a>    <span class="k">def</span> <span class="nf">get_cost</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the total, current cost of the detector(s) in the layer, as computed by looping over the panels and summing the returned values of calls to</span>
+<span class="sd">        their `get_cost` methods.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Single-element tensor with the current total cost of the detector in the layer.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">cost</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">panels</span><span class="p">:</span>
+            <span class="n">cost</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">get_cost</span><span class="p">()</span> <span class="k">if</span> <span class="n">cost</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">cost</span> <span class="o">+</span> <span class="n">p</span><span class="o">.</span><span class="n">get_cost</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">cost</span></div>
+
+<div class="viewcode-block" id="PanelDetectorLayer.assign_budget"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.PanelDetectorLayer.assign_budget">[docs]</a>    <span class="k">def</span> <span class="nf">assign_budget</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">budget</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Passes elements of an (_n_costs) tensor to each of the panels&#39; `assign_budget` method.</span>
+<span class="sd">        Panels are ordered by decreasing z-position, i.e. the zeroth budget element will relate always to the highest panel,</span>
+<span class="sd">        rather than necessarily to the same panel through the optimisation process</span>
+
+<span class="sd">        # TODO investigate whether it would be better to instead assign budgets based on a fixed ordering, rather than the z-order of the panels.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            budget: (_n_costs) tensor of budget assignments in unit currency</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">budget</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">yield_zordered_panels</span><span class="p">():</span>  <span class="c1"># This really should be an enumerate, but MyPy then thinks assign_budget is a Tensor...</span>
+                <span class="n">p</span><span class="o">.</span><span class="n">assign_budget</span><span class="p">(</span><span class="n">budget</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span></div></div>
+</pre></div>
+
+             </article>
+             
+            </div>
+            <footer>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2021-2022, TomOpt Authors.
+
+    </p>
+  </div>
+    
+      <div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/pytorch/tomopt_sphinx_theme">theme</a> provided by <a href="https://pytorch.org/">PyTorch</a> based on a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+     
+
+</footer>
+
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  
+
+
+  
+
+     
+       <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+         <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+         <script src="../../../_static/jquery.js"></script>
+         <script src="../../../_static/underscore.js"></script>
+         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+         <script src="../../../_static/doctools.js"></script>
+         <script src="../../../_static/sphinx_highlight.js"></script>
+     
+
+  
+
+  <script type="text/javascript" src="../../../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../../../_static/js/vendor/bootstrap.min.js"></script>
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 text-center">
+          <h2>Docs</h2>
+          <p>Access comprehensive developer and user documentation for TomOpt</p>
+          <a class="with-right-arrow" href="https://mode_muon_tomography.readthedocs.io/en/stable">View Docs</a>
+        </div>
+
+        <div class="col-md-6 text-center">
+          <h2>Tutorials</h2>
+          <p>Get tutorials for beginner and advanced researchers demonstrating many of the features of TomOpt</p>
+          <a class="with-right-arrow" href="https://github.com/GilesStrong/mode_muon_tomography#examples">View Tutorials</a>
+        </div>
+
+        <!-- <div class="col-md-4 text-center">
+          <h2>Resources</h2>
+          <p>Find development resources and get your questions answered</p>
+          <a class="with-right-arrow" href="">View Resources</a>
+        </div> -->
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-logo-wrapper">
+        <a href="https://mode_muon_tomography.readthedocs.io/en/stable" class="footer-logo"></a>
+      </div>
+
+      <div class="footer-links-wrapper">
+        <div class="footer-links-col">
+          <ul>
+            <!-- <li class="list-title"><a href="https://mode_muon_tomography.readthedocs.io/en/stable">TomOpt</a></li> -->
+            <!-- <li><a href="">Get Started</a></li> -->
+            <!-- <li><a href="">Features</a></li> -->
+            <!-- <li><a href="">Ecosystem</a></li> -->
+            <!-- <li><a href="">Blog</a></li> -->
+            <!-- <li><a href="">Resources</a></li> -->
+          </ul>
+        </div>
+
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="">Support</a></li>
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography#examples">Tutorials</a></li>
+            <li><a href="https://mode_muon_tomography.readthedocs.io/en/stable">Docs</a></li>
+            <!-- <li><a href="" target="_blank">Discuss</a></li> -->
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography/blob/master/CHANGES.md" target="_blank">Change Log</a></li>
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography/issues" target="_blank">Github Issues</a></li>
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography/blob/master/CITATION.md" target="_blank">Citation</a></li>
+            <!-- <li><a href="" target="_blank">Slack</a></li> -->
+            <!-- <li><a href="https://github.com/GilesStrong/mode_muon_tomography/blob/master/CONTRIBUTING.md" target="_blank">Contributing</a></li> -->
+          </ul>
+        </div>
+
+        <!-- <div class="footer-links-col follow-us-col">
+          <ul>
+            <li class="list-title">Follow Us</li>
+            <li>
+              <div id="mc_embed_signup">
+                <form
+                  action="https://twitter.us14.list-manage.com/subscribe/post?u=75419c71fe0a935e53dfa4a3f&id=91d0dccd39"
+                  method="post"
+                  id="mc-embedded-subscribe-form"
+                  name="mc-embedded-subscribe-form"
+                  class="email-subscribe-form validate"
+                  target="_blank"
+                  novalidate>
+                  <div id="mc_embed_signup_scroll" class="email-subscribe-form-fields-wrapper">
+                    <div class="mc-field-group">
+                      <label for="mce-EMAIL" style="display:none;">Email Address</label>
+                      <input type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL" placeholder="Email Address">
+                    </div>
+
+                    <div id="mce-responses" class="clear">
+                      <div class="response" id="mce-error-response" style="display:none"></div>
+                      <div class="response" id="mce-success-response" style="display:none"></div>
+                    </div>    real people should not fill this in and expect good things - do not remove this or risk form bot signups
+
+                    <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_75419c71fe0a935e53dfa4a3f_91d0dccd39" tabindex="-1" value=""></div>
+
+                    <div class="clear">
+                      <input type="submit" value="" name="subscribe" id="mc-embedded-subscribe" class="button email-subscribe-button">
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+            </li>
+          </ul>
+
+          <div class="footer-social-icons">
+            <a href="" target="_blank" class="facebook"></a>
+            <a href="" target="_blank" class="twitter"></a>
+          </div>
+        </div> -->
+      </div>
+    </div>
+  </footer>
+
+  <!-- <div class="cookie-banner-wrapper">
+  <div class="container">
+    <p class="gdpr-notice">To analyze traffic and optimize your experience, we serve cookies on this site. By clicking or navigating, you agree to allow our usage of cookies. As the current maintainers of this site, Facebook’s Cookies Policy applies. Learn more, including about available controls: <a href="https://www.facebook.com/policies/cookies/">Cookies Policy</a>.</p>
+    <img class="close-button" src="../../../_static/images/pytorch-x.svg">
+  </div>
+</div> -->
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://mode_muon_tomography.readthedocs.io/en/stable" aria-label="TomOpt"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <!-- <li>
+            <a href="#">Get Started</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="#">Features</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="#">Ecosystem</a>
+          </li> -->
+
+          <!-- <li>
+            <a href="">Blog</a>
+          </li> -->
+
+          <li>
+            <a href="https://github.com/GilesStrong/mode_muon_tomography#examples">Tutorials</a>
+          </li>
+
+          <li>
+            <a href="https://mode_muon_tomography.readthedocs.io/en/stable">Docs</a>
+          </li>
+
+          <!-- <li>
+            <a href="">Resources</a>
+          </li> -->
+
+          <li>
+            <a href="https://github.com/GilesStrong/mode_muon_tomography">Github</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../../../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function() {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function(e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+</html>
