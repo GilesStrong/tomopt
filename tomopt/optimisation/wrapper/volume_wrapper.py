@@ -5,24 +5,19 @@ from fastprogress.fastprogress import ConsoleProgressBar, NBProgressBar, Progres
 from fastprogress import master_bar, progress_bar
 import numpy as np
 from abc import ABCMeta, abstractmethod
+from collections import defaultdict
 
 import torch
 from torch import Tensor
 from torch.optim.optimizer import Optimizer
 
 from ..data import PassiveYielder
-from ..callbacks import MetricLogger, PredHandler
-from ..callbacks.callback import Callback
-from ..callbacks.cyclic_callbacks import CyclicCallback
-from ..callbacks.eval_metric import EvalMetric
+from ..callbacks import MetricLogger, PredHandler, WarmupCallback, Callback, CyclicCallback, EvalMetric
 from ...optimisation.loss.loss import AbsDetectorLoss
-from ...volume import Volume, PanelDetectorLayer
-from ...volume.layer import AbsDetectorLayer
+from ...volume import Volume, PanelDetectorLayer, AbsDetectorLayer
 from ...core import PartialOpt, DEVICE
-from ...muon import MuonGenerator2016, MuonBatch
-from ...muon.generation import AbsMuonGenerator
-from ...inference.scattering import AbsScatterBatch, PanelScatterBatch
-from ...inference.volume import AbsVolumeInferrer, PanelX0Inferrer
+from ...muon import MuonGenerator2016, MuonBatch, AbsMuonGenerator
+from ...inference import AbsScatterBatch, PanelScatterBatch, AbsVolumeInferrer, PanelX0Inferrer
 
 __all__ = ["FitParams", "AbsVolumeWrapper", "PanelVolumeWrapper", "HeatMapVolumeWrapper"]
 
@@ -81,10 +76,12 @@ class FitParams:
     stop: Optional[bool] = None
     epoch: int = 0
     cyclic_cbs: Optional[List[CyclicCallback]] = None
+    warmup_cbs: Optional[List[WarmupCallback]] = None
     metric_log: Optional[MetricLogger] = None
     metric_cbs: Optional[List[EvalMetric]] = None
     passive_bar: Optional[Union[NBProgressBar, ConsoleProgressBar]] = None
     device: torch.device = DEVICE
+    skip_opt_step: bool = False
 
     def __init__(self, **kwargs: Any) -> None:
         r"""
@@ -329,13 +326,14 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
 
         if cbs is None:
             cbs = []
-        cyclic_cbs, metric_log, metric_cbs = self._sort_cbs(cbs)
+        sorted_cbs = self._sort_cbs(cbs)
 
         self.fit_params = FitParams(
             cbs=cbs,
-            cyclic_cbs=cyclic_cbs,
-            metric_log=metric_log,
-            metric_cbs=metric_cbs,
+            cyclic_cbs=sorted_cbs["cyclic_cbs"],
+            warmup_cbs=sorted_cbs["warmup_cbs"],
+            metric_log=sorted_cbs["metric_log"][0],
+            metric_cbs=sorted_cbs["metric_cbs"],
             stop=False,
             n_epochs=n_epochs,
             mu_bs=mu_bs,
@@ -473,7 +471,7 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
             self.opts[opt].param_groups[0]["momentum"] = mom
 
     @staticmethod
-    def _sort_cbs(cbs: List[Callback]) -> Tuple[List[CyclicCallback], Optional[MetricLogger], Optional[List[EvalMetric]]]:
+    def _sort_cbs(cbs: List[Callback]) -> Dict[str, Optional[List[Callback]]]:
         r"""
         Sorts callbacks into lists according to their type and whether other callbacks might need to be aware of them.
 
@@ -486,15 +484,22 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
             metric: list of callbacks that compute performance metrics about the detector
         """
 
-        cyclic_cbs, metric_log, metric_cbs = [], None, []
+        sorted_cbs: Dict[str, Optional[List[Callback]]] = defaultdict(list)
+        n_warmup = 0
         for c in cbs:
             if isinstance(c, CyclicCallback):
-                cyclic_cbs.append(c)  # CBs that might prevent a wrapper from stopping training due to a hyper-param cycle
+                sorted_cbs["cyclic_cbs"].append(c)  # CBs that might prevent a wrapper from stopping training due to a hyper-param cycle
+            if isinstance(c, WarmupCallback):
+                sorted_cbs["warmup_cbs"].append(c)  # CBs that might act on a warmup cycle whilst optimisation is frozen
+                n_warmup += c.n_warmup
             if isinstance(c, MetricLogger):
-                metric_log = c  # CB that logs losses and eval_metrics
+                sorted_cbs["metric_log"].append(c)  # CB that logs losses and eval_metrics
             if isinstance(c, EvalMetric):
-                metric_cbs.append(c)  # CB that computes additional performance metrics
-        return cyclic_cbs, metric_log, metric_cbs
+                sorted_cbs["metric_cbs"].append(c)  # CBs that computes additional performance metrics
+        print(f'{len(sorted_cbs["warmup_cbs"])} warmup callbacks found, with a total warmup period of {n_warmup} epochs.')
+        if len(sorted_cbs["metric_log"]) == 0:
+            sorted_cbs["metric_log"].append(None)
+        return sorted_cbs
 
     def _fit_epoch(self) -> None:
         r"""
@@ -564,7 +569,7 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
                         self.fit_params.mean_loss.backward()
                     for c in self.fit_params.cbs:
                         c.on_backwards_end()
-                    if self.fit_params.mean_loss is not None:
+                    if self.fit_params.mean_loss is not None and not self.fit_params.skip_opt_step:
                         for o in self.opts.values():
                             o.step()
                     for d in self.volume.get_detectors():
