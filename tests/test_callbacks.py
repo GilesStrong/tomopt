@@ -524,13 +524,10 @@ def test_panel_opt_config():
     xy_span_mult = 2
     poc = PanelOptConfig(n_warmup=2, xy_pos_rate=xy_pos_rate, z_pos_rate=z_pos_rate, xy_span_rate=xy_span_rate)
     poc.set_wrapper(vw)
+    vw.fit_params.warmup_cbs = [poc]
 
     poc.on_train_begin()
-    for o in ["xy_pos_opt", "z_pos_opt", "xy_span_opt"]:
-        assert vw.get_opt_lr(o) == 0.0
     for e in range(3):
-        if e < 2:
-            assert poc.tracking is True
         for s in range(2):  # Training & validation
             vw.fit_params.state = "train" if s == 0 else "valid"
             for p in panel_det.panels:
@@ -545,12 +542,6 @@ def test_panel_opt_config():
                 assert poc.stats["xy_pos_opt"][-1].mean() == xy_pos_mult * e
                 assert poc.stats["z_pos_opt"][-1].mean() == z_pos_mult * e
                 assert poc.stats["xy_span_opt"][-1].mean() == xy_span_mult * e
-            poc.on_epoch_end()
-            if e >= 1:
-                assert poc.tracking is False
-                assert vw.get_opt_lr("xy_pos_opt") == xy_pos_rate / (xy_pos_mult / 2)
-                assert vw.get_opt_lr("z_pos_opt") == np.abs(z_pos_rate / (z_pos_mult / 2))
-                assert vw.get_opt_lr("xy_span_opt") == xy_span_rate / (xy_span_mult / 2)
 
 
 def test_muon_resampler_callback():
