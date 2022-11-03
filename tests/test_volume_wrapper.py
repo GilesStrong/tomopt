@@ -371,7 +371,7 @@ def test_volume_wrapper_scan_volumes(state, mocker):  # noqa F811
         assert vw.opts["z_pos_opt"].zero_grad.call_count == 2
         assert vw.opts["xy_span_opt"].zero_grad.call_count == 2
         assert vw.opts["xy_pos_opt"].step.call_count == 2
-        assert vw.opts["z_pos_opt"].zero_grad.call_count == 2
+        assert vw.opts["z_pos_opt"].step.call_count == 2
         assert vw.opts["xy_span_opt"].step.call_count == 2
         assert vw.opts["budget_opt"].step.call_count == 2
     else:
@@ -384,6 +384,32 @@ def test_volume_wrapper_scan_volumes(state, mocker):  # noqa F811
         assert vw.opts["z_pos_opt"].step.call_count == 0
         assert vw.opts["xy_span_opt"].step.call_count == 0
         assert vw.opts["budget_opt"].step.call_count == 0
+
+
+def test_volume_wrapper_opt_skip_step(mocker):  # noqa F811
+    volume = Volume(get_panel_layers(), budget=32)
+    vw = PanelVolumeWrapper(
+        volume,
+        xy_pos_opt=partial(optim.SGD, lr=0),
+        z_pos_opt=partial(optim.SGD, lr=0),
+        xy_span_opt=partial(optim.SGD, lr=0),
+        budget_opt=partial(optim.SGD, lr=0),
+        loss_func=VoxelX0Loss(target_budget=None),
+    )
+    vw.fit_params = FitParams(n_mu_per_volume=100, mu_bs=10, skip_opt_step=True, cbs=[], state="train", passive_bs=2)
+    py = PassiveYielder([arb_rad_length, arb_rad_length, arb_rad_length, arb_rad_length, arb_rad_length])
+    mocker.spy(vw.opts["xy_pos_opt"], "step")
+    mocker.spy(vw.opts["z_pos_opt"], "step")
+    mocker.spy(vw.opts["xy_span_opt"], "step")
+    mocker.spy(vw.opts["budget_opt"], "step")
+
+    mocker.patch.object(vw, "loss_func", return_value=torch.tensor(3.0, requires_grad=True))
+
+    vw._scan_volumes(py)
+    assert vw.opts["xy_pos_opt"].step.call_count == 0
+    assert vw.opts["z_pos_opt"].step.call_count == 0
+    assert vw.opts["xy_span_opt"].step.call_count == 0
+    assert vw.opts["budget_opt"].step.call_count == 0
 
 
 @pytest.mark.flaky(max_runs=2, min_passes=1)
