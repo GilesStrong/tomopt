@@ -152,6 +152,12 @@
             
             
               <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html#testing">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html#external-repos">External repos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html#authors">Authors</a></li>
+</ul>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../tomopt.html">tomopt package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../tomopt.muon.html">tomopt.muon package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../tomopt.volume.html">tomopt.volume package</a></li>
@@ -279,13 +285,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">volume</span> <span class="o">=</span> <span class="n">volume</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lw</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">passive_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">lw</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">device</span>
 
-    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="AbsVolumeInferrer._reset_vars"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.AbsVolumeInferrer._reset_vars">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">_reset_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Inheriting classes must override this method to reset any variable/predictions made from the added scatter batches.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">pass</span>
+        <span class="k">pass</span></div>
 
 <div class="viewcode-block" id="AbsVolumeInferrer.compute_efficiency"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.AbsVolumeInferrer.compute_efficiency">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">compute_efficiency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scatters</span><span class="p">:</span> <span class="n">AbsScatterBatch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
@@ -404,7 +410,7 @@
             <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">vox_zxy_x0_preds</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">inv_weights</span></div>
 
-    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="AbsX0Inferrer._weighted_rms"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.AbsX0Inferrer._weighted_rms">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_weighted_rms</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">wgt</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the weighted root mean squared value of the provided list of variable values</span>
@@ -417,9 +423,9 @@
 <span class="sd">            Weighted RMS of the variable</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">return</span> <span class="p">((</span><span class="n">x</span><span class="o">.</span><span class="n">square</span><span class="p">()</span> <span class="o">*</span> <span class="n">wgt</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="n">wgt</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">sqrt</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">((</span><span class="n">x</span><span class="o">.</span><span class="n">square</span><span class="p">()</span> <span class="o">*</span> <span class="n">wgt</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="n">wgt</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">sqrt</span><span class="p">()</span></div>
 
-    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="AbsX0Inferrer._weighted_mean"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.AbsX0Inferrer._weighted_mean">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_weighted_mean</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">wgt</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the weighted mean value of the provided list of variable values</span>
@@ -432,9 +438,9 @@
 <span class="sd">            Weighted mean of the variable</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">return</span> <span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">wgt</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="n">wgt</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">wgt</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="n">wgt</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">_reset_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="AbsX0Inferrer._reset_vars"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.AbsX0Inferrer._reset_vars">[docs]</a>    <span class="k">def</span> <span class="nf">_reset_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Resets any variable/predictions made from the added scatter batches.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -445,9 +451,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_muon_probs_per_voxel_zxy</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># (mu, z,x,y)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_muon_efficiency</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># (mu, eff)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_vox_zxy_x0_preds</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># (z,x,y)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_vox_zxy_x0_pred_uncs</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># (z,x,y)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vox_zxy_x0_pred_uncs</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># (z,x,y)</span></div>
 
-    <span class="k">def</span> <span class="nf">_set_var_dimensions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="AbsX0Inferrer._set_var_dimensions"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.AbsX0Inferrer._set_var_dimensions">[docs]</a>    <span class="k">def</span> <span class="nf">_set_var_dimensions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Configures the indexing of the dependent variable and uncertainty tensors</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -462,9 +468,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_tot_scatter_dim</span> <span class="o">=</span> <span class="n">dims</span><span class="p">[</span><span class="s2">&quot;tot_scatter&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_theta_in_dim</span> <span class="o">=</span> <span class="n">dims</span><span class="p">[</span><span class="s2">&quot;theta_in&quot;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_theta_out_dim</span> <span class="o">=</span> <span class="n">dims</span><span class="p">[</span><span class="s2">&quot;theta_out&quot;</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_mom_dim</span> <span class="o">=</span> <span class="n">dims</span><span class="p">[</span><span class="s2">&quot;mom&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mom_dim</span> <span class="o">=</span> <span class="n">dims</span><span class="p">[</span><span class="s2">&quot;mom&quot;</span><span class="p">]</span></div>
 
-    <span class="k">def</span> <span class="nf">_combine_scatters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="AbsX0Inferrer._combine_scatters"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.AbsX0Inferrer._combine_scatters">[docs]</a>    <span class="k">def</span> <span class="nf">_combine_scatters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Combines scatter data from all the batches added so far.</span>
 <span class="sd">        Any muons with NaN or Inf entries will be filtered out of the resulting tensors.</span>
@@ -500,9 +506,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_vars</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">vals</span><span class="p">[</span><span class="n">var_sz</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="n">mask</span><span class="p">]</span> <span class="k">for</span> <span class="n">var_sz</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_var_order_szs</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># (mu, vars)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_var_uncs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">uncs</span><span class="p">[</span><span class="n">var_sz</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="n">mask</span><span class="p">]</span> <span class="k">for</span> <span class="n">var_sz</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_var_order_szs</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># (mu, vars)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_muon_efficiency</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">compute_efficiency</span><span class="p">(</span><span class="n">scatters</span><span class="o">=</span><span class="n">sb</span><span class="p">)</span> <span class="k">for</span> <span class="n">sb</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scatter_batches</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="n">mask</span><span class="p">]</span>  <span class="c1"># (mu, eff)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_n_mu</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_vars</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_n_mu</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_muon_scatter_vars</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">_get_voxel_zxy_x0_pred_uncs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+<div class="viewcode-block" id="AbsX0Inferrer._get_voxel_zxy_x0_pred_uncs"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.AbsX0Inferrer._get_voxel_zxy_x0_pred_uncs">[docs]</a>    <span class="k">def</span> <span class="nf">_get_voxel_zxy_x0_pred_uncs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the uncertainty on the predicted voxelwise X0s, via gradient-based error propagation.</span>
 <span class="sd">        This computation uses the triangle of the error matrix and does not assume zero-valued off-diagonal elements.</span>
@@ -524,9 +530,9 @@
         <span class="n">unc_2</span> <span class="o">=</span> <span class="p">(</span><span class="n">jac</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="n">idxs</span><span class="p">]</span> <span class="o">*</span> <span class="n">unc</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="n">idxs</span><span class="p">])</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># (z,x,y,N)</span>
 
         <span class="n">pred_unc</span> <span class="o">=</span> <span class="n">unc_2</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sqrt</span><span class="p">()</span>  <span class="c1"># (z,x,y)</span>
-        <span class="k">return</span> <span class="n">pred_unc</span>
+        <span class="k">return</span> <span class="n">pred_unc</span></div>
 
-    <span class="k">def</span> <span class="nf">_get_voxel_zxy_x0_preds</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+<div class="viewcode-block" id="AbsX0Inferrer._get_voxel_zxy_x0_preds"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.AbsX0Inferrer._get_voxel_zxy_x0_preds">[docs]</a>    <span class="k">def</span> <span class="nf">_get_voxel_zxy_x0_preds</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the X0 predictions per voxel using the scatter batched added.</span>
 
@@ -561,7 +567,7 @@
         <span class="k">if</span> <span class="n">vox_x0_preds</span><span class="o">.</span><span class="n">isnan</span><span class="p">()</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Prediction contains NaN values&quot;</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">vox_x0_preds</span>
+        <span class="k">return</span> <span class="n">vox_x0_preds</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">vox_zxy_x0_preds</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
@@ -1076,12 +1082,12 @@
         <span class="n">pred</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">pred</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">inv_weights</span></div>
 
-    <span class="k">def</span> <span class="nf">_reset_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="DenseBlockClassifierFromX0s._reset_vars"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.DenseBlockClassifierFromX0s._reset_vars">[docs]</a>    <span class="k">def</span> <span class="nf">_reset_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Resets any variable/predictions made from the added scatter batches.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">x0_inferrer</span><span class="o">.</span><span class="n">_reset_vars</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x0_inferrer</span><span class="o">.</span><span class="n">_reset_vars</span><span class="p">()</span></div></div>
 
 
 <div class="viewcode-block" id="AbsIntClassifierFromX0"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.AbsIntClassifierFromX0">[docs]</a><span class="k">class</span> <span class="nc">AbsIntClassifierFromX0</span><span class="p">(</span><span class="n">AbsVolumeInferrer</span><span class="p">):</span>
@@ -1173,12 +1179,12 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">class2float</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="p">),</span> <span class="n">inv_weights</span></div>
 
-    <span class="k">def</span> <span class="nf">_reset_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="AbsIntClassifierFromX0._reset_vars"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.AbsIntClassifierFromX0._reset_vars">[docs]</a>    <span class="k">def</span> <span class="nf">_reset_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Resets any variable/predictions made from the added scatter batches.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">x0_inferrer</span><span class="o">.</span><span class="n">_reset_vars</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x0_inferrer</span><span class="o">.</span><span class="n">_reset_vars</span><span class="p">()</span></div></div>
 </pre></div>
 
              </article>
@@ -1197,7 +1203,7 @@
   </div>
     
       <div>
-        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/pytorch/tomopt_sphinx_theme">theme</a> provided by <a href="https://pytorch.org/">PyTorch</a> based on a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/GilesStrong/tomopt_sphinx_theme">theme</a> based on a <a href="https://github.com/pytorch/pytorch_sphinx_theme">theme</a> provided by <a href="https://pytorch.org/">PyTorch</a> based on a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
       </div>
      
 

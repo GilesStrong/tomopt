@@ -11,6 +11,8 @@ temp*
 *.jpg
 *.jpeg
 *.csv
+dev/*
+exps/*
 
 # settings
 .vscode/*

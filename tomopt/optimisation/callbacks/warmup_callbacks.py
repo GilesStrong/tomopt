@@ -13,14 +13,38 @@ __all__ = ["WarmupCallback", "CostCoefWarmup", "PanelOptConfig"]
 
 
 class WarmupCallback(Callback):
+    r"""
+    Warmup callbacks act at the start of training to track and set paramters based on the initial state of the detector.
+    During warmup, optimisation of the detector is prevented, via a flag.
+    If multiple warmup callbacks aare present, they will wait to warmup according to the order they are provided in.
+    Once the last warmup callback finished, the flag will be set to allow the detectors to be optimised.
+    When a `WarmupCallback` is warming up, its `warmup_active` attribute will be True.
+
+    .. important::
+        When inheriting from `WarmupCallback`, the super methods of `on_train_begin`, `on_epoch_begin`, and `on_epoch_end` must be called.
+
+    Arguments:
+        n_warmup: number of training epochs overwhich to warmup
+    """
+
     def __init__(self, n_warmup: int):
         self.n_warmup = n_warmup
 
     def on_train_begin(self) -> None:
+        r"""
+        Prepares to warmup
+        """
+
         super().on_train_begin()
         self._reset()
 
     def check_warmups(self) -> None:
+        r"""
+        If a `WarmupCallback` has finished, then its `warmup_active` is set to False,
+        and the next `WarmupCallback` will have its `warmup_active` is set to True.
+        If the finishing callback was the last `WarmupCallback`, then the "skip optimisation" flag is unset.
+        """
+
         for i, c in enumerate(self.wrapper.fit_params.warmup_cbs):
             if c.warmup_active and c.epoch_cnt >= c.n_warmup:
                 c.warmup_active = False
@@ -32,7 +56,7 @@ class WarmupCallback(Callback):
 
     def on_epoch_begin(self) -> None:
         r"""
-        Runs when a new training or validations epoch begins.
+        Ensures that when one `WarmupCallback` has finished, either the next is called, or the detectors are set to be optimised.
         """
 
         if self.wrapper.fit_params.state == "train":
@@ -40,7 +64,7 @@ class WarmupCallback(Callback):
 
     def on_epoch_end(self) -> None:
         r"""
-        Runs when a training or validations epoch ends.
+        After a training epoch is finished, increments the number of epochs that the callback has been warming up, provided it is active.
         """
 
         if not self.warmup_active:
@@ -49,6 +73,10 @@ class WarmupCallback(Callback):
             self.epoch_cnt += 1
 
     def _reset(self) -> None:
+        r"""
+        Prepares the callback to warmup, and ensures that only the first `WarmupCallback` is active.
+        """
+
         self.epoch_cnt = 0
         self.warmup_active = False
         self.wrapper.fit_params.skip_opt_step = True
@@ -71,7 +99,7 @@ class CostCoefWarmup(WarmupCallback):
 
     def on_volume_end(self) -> None:
         r"""
-        If training, grabs the inference-error for the latest volume and adds to the running sum
+        If training, grabs the inference-error for the latest volume
         """
 
         if not self.warmup_active:
@@ -81,9 +109,7 @@ class CostCoefWarmup(WarmupCallback):
 
     def on_epoch_end(self) -> None:
         r"""
-        If training, adds the epoch mean inference error to a new running sum of errors.
-        If then enough epochs have past, the overall mean inference-error is computed and used to set the cost coefficient in the loss,
-        and the learning rates of the optimisers are set back to their original non-zero values.
+        If enough epochs have past, the overall median inference-error is computed and used to set the cost coefficient in the loss.
         """
 
         if not self.warmup_active:

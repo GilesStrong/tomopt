@@ -102,3 +102,12 @@ tomopt.optimisation.callbacks.pred\_callbacks module
    :undoc-members:
    :show-inheritance:
    :private-members:
+
+tomopt.optimisation.callbacks.warmup\_callbacks module
+----------------------------------------------------
+
+.. automodule:: tomopt.optimisation.callbacks.warmup_callbacks
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :private-members:
