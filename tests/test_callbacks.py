@@ -487,20 +487,18 @@ def test_cost_coef_warmup():
                 loss.sub_losses["error"] = Tensor([((-1) ** s) * (2**e) * (3**v)])  # Unique value per epoch per volume
                 ccw.on_volume_end()
             if e < 5:
-                assert ccw.error_sum.item() == np.sum([((2**i)) + ((2**i) * 3) + ((2**i) * 9) for i in range(e + 1)])
-                assert ccw.volume_cnt == 3 * (e + 1)
+                assert np.sum(ccw.errors) == np.sum([((2**i)) + ((2**i) * 3) + ((2**i) * 9) for i in range(e + 1)])
             else:  # Tracking stopped
-                assert ccw.error_sum.item() == np.sum([((2**i)) + ((2**i) * 3) + ((2**i) * 9) for i in range(5)])
-                assert ccw.volume_cnt == 3 * 5
+                assert np.sum(ccw.errors) == np.sum([((2**i)) + ((2**i) * 3) + ((2**i) * 9) for i in range(5)])
             ccw.on_epoch_end()
             if e < 5:
-                assert np.abs(ccw.error_sum.item() - np.sum([((2**i)) + ((2**i) * 3) + ((2**i) * 9) for i in range(e + 1)])) < 1e-4
+                assert np.abs(np.sum(ccw.errors) - np.sum([((2**i)) + ((2**i) * 3) + ((2**i) * 9) for i in range(e + 1)])) < 1e-4
                 assert ccw.epoch_cnt == e + 1
             else:  # warm-up finished
                 assert ccw.warmup_active is False
-                assert np.abs(ccw.error_sum.item() - (sum := np.sum([((2**i)) + ((2**i) * 3) + ((2**i) * 9) for i in range(5)]))) < 1e-4
+                assert np.abs(np.sum(ccw.errors) - np.sum([((2**i)) + ((2**i) * 3) + ((2**i) * 9) for i in range(5)])) < 1e-4
                 assert ccw.epoch_cnt == 5
-                assert np.abs(loss.cost_coef.item() - sum / 15) < 1e-4
+                assert np.abs(loss.cost_coef - np.median(ccw.errors)) < 1e-4
 
 
 def test_panel_opt_config():
@@ -539,9 +537,9 @@ def test_panel_opt_config():
                 assert len(poc.stats["xy_pos_opt"]) == e + 1
                 assert len(poc.stats["z_pos_opt"]) == e + 1
                 assert len(poc.stats["xy_span_opt"]) == e + 1
-                assert poc.stats["xy_pos_opt"][-1].mean() == xy_pos_mult * e
-                assert poc.stats["z_pos_opt"][-1].mean() == z_pos_mult * e
-                assert poc.stats["xy_span_opt"][-1].mean() == xy_span_mult * e
+                assert poc.stats["xy_pos_opt"][-1].mean() == np.abs(xy_pos_mult * e)
+                assert poc.stats["z_pos_opt"][-1].mean() == np.abs(z_pos_mult * e)
+                assert poc.stats["xy_span_opt"][-1].mean() == np.abs(xy_span_mult * e)
 
 
 def test_muon_resampler_callback():
