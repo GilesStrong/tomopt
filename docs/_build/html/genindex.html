@@ -541,8 +541,6 @@
 </li>
       <li><a href="tomopt.inference.html#tomopt.inference.scattering.AbsScatterBatch._hit_uncs">_hit_uncs (tomopt.inference.scattering.AbsScatterBatch attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="tomopt.benchmarks.ladle_furnace.html#tomopt.benchmarks.ladle_furnace.loss.LadleFurnaceIntClassLoss._is_full_backward_hook">_is_full_backward_hook (tomopt.benchmarks.ladle_furnace.loss.LadleFurnaceIntClassLoss attribute)</a>
 
       <ul>
@@ -575,6 +573,8 @@
         <li><a href="tomopt.volume.html#tomopt.volume.volume.Volume._is_full_backward_hook">(tomopt.volume.volume.Volume attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="tomopt.muon.html#tomopt.muon.muon_batch.MuonBatch._keep_mask">_keep_mask (tomopt.muon.muon_batch.MuonBatch attribute)</a>
 </li>
       <li><a href="tomopt.optimisation.loss.html#tomopt.optimisation.loss.loss.AbsMaterialClassLoss._load_state_dict_pre_hooks">_load_state_dict_pre_hooks (tomopt.optimisation.loss.loss.AbsMaterialClassLoss attribute)</a>
@@ -697,6 +697,12 @@
         <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.heatmap_gif.HeatMapGif._reset">(tomopt.optimisation.callbacks.heatmap_gif.HeatMapGif method)</a>
 </li>
         <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.monitors.MetricLogger._reset">(tomopt.optimisation.callbacks.monitors.MetricLogger method)</a>
+</li>
+        <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.CostCoefWarmup._reset">(tomopt.optimisation.callbacks.warmup_callbacks.CostCoefWarmup method)</a>
+</li>
+        <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.PanelOptConfig._reset">(tomopt.optimisation.callbacks.warmup_callbacks.PanelOptConfig method)</a>
+</li>
+        <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback._reset">(tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback method)</a>
 </li>
       </ul></li>
       <li><a href="tomopt.inference.html#tomopt.inference.volume.AbsIntClassifierFromX0._reset_vars">_reset_vars() (tomopt.inference.volume.AbsIntClassifierFromX0 method)</a>
@@ -913,6 +919,8 @@
 </li>
       <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.data_callbacks.MuonResampler.check_mu_batch">check_mu_batch() (tomopt.optimisation.callbacks.data_callbacks.MuonResampler static method)</a>
 </li>
+      <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback.check_warmups">check_warmups() (tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback method)</a>
+</li>
       <li><a href="tomopt.benchmarks.phi_detector.html#tomopt.benchmarks.phi_detector.detector.PhiDetectorPanel.clamp_params">clamp_params() (tomopt.benchmarks.phi_detector.detector.PhiDetectorPanel method)</a>
 
       <ul>
@@ -943,9 +951,11 @@
       </ul></li>
       <li><a href="tomopt.muon.html#tomopt.muon.muon_batch.MuonBatch.copy">copy() (tomopt.muon.muon_batch.MuonBatch method)</a>
 </li>
-      <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.loss_callbacks.CostCoefWarmup">CostCoefWarmup (class in tomopt.optimisation.callbacks.loss_callbacks)</a>
+      <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.CostCoefWarmup">CostCoefWarmup (class in tomopt.optimisation.callbacks.warmup_callbacks)</a>
 </li>
       <li><a href="tomopt.optimisation.wrapper.html#tomopt.optimisation.wrapper.volume_wrapper.FitParams.cyclic_cbs">cyclic_cbs (tomopt.optimisation.wrapper.volume_wrapper.FitParams attribute)</a>
+</li>
+      <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.cyclic_callbacks.CyclicCallback">CyclicCallback (class in tomopt.optimisation.callbacks.cyclic_callbacks)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -1329,13 +1339,11 @@
 </li>
         <li><a href="tomopt.optimisation.callbacks.html#module-tomopt.optimisation.callbacks.heatmap_gif">tomopt.optimisation.callbacks.heatmap_gif</a>
 </li>
-        <li><a href="tomopt.optimisation.callbacks.html#module-tomopt.optimisation.callbacks.loss_callbacks">tomopt.optimisation.callbacks.loss_callbacks</a>
-</li>
         <li><a href="tomopt.optimisation.callbacks.html#module-tomopt.optimisation.callbacks.monitors">tomopt.optimisation.callbacks.monitors</a>
 </li>
-        <li><a href="tomopt.optimisation.callbacks.html#module-tomopt.optimisation.callbacks.opt_callbacks">tomopt.optimisation.callbacks.opt_callbacks</a>
-</li>
         <li><a href="tomopt.optimisation.callbacks.html#module-tomopt.optimisation.callbacks.pred_callbacks">tomopt.optimisation.callbacks.pred_callbacks</a>
+</li>
+        <li><a href="tomopt.optimisation.callbacks.html#module-tomopt.optimisation.callbacks.warmup_callbacks">tomopt.optimisation.callbacks.warmup_callbacks</a>
 </li>
         <li><a href="tomopt.optimisation.data.html#module-tomopt.optimisation.data.passives">tomopt.optimisation.data.passives</a>
 </li>
@@ -1451,7 +1459,7 @@
 </li>
         <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.monitors.MetricLogger.on_backwards_end">(tomopt.optimisation.callbacks.monitors.MetricLogger method)</a>
 </li>
-        <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.opt_callbacks.PanelOptConfig.on_backwards_end">(tomopt.optimisation.callbacks.opt_callbacks.PanelOptConfig method)</a>
+        <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.PanelOptConfig.on_backwards_end">(tomopt.optimisation.callbacks.warmup_callbacks.PanelOptConfig method)</a>
 </li>
       </ul></li>
       <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.callback.Callback.on_epoch_begin">on_epoch_begin() (tomopt.optimisation.callbacks.callback.Callback method)</a>
@@ -1459,19 +1467,21 @@
       <ul>
         <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.heatmap_gif.HeatMapGif.on_epoch_begin">(tomopt.optimisation.callbacks.heatmap_gif.HeatMapGif method)</a>
 </li>
-        <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.loss_callbacks.CostCoefWarmup.on_epoch_begin">(tomopt.optimisation.callbacks.loss_callbacks.CostCoefWarmup method)</a>
-</li>
         <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.monitors.MetricLogger.on_epoch_begin">(tomopt.optimisation.callbacks.monitors.MetricLogger method)</a>
+</li>
+        <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback.on_epoch_begin">(tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback method)</a>
 </li>
       </ul></li>
       <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.callback.Callback.on_epoch_end">on_epoch_end() (tomopt.optimisation.callbacks.callback.Callback method)</a>
 
       <ul>
-        <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.loss_callbacks.CostCoefWarmup.on_epoch_end">(tomopt.optimisation.callbacks.loss_callbacks.CostCoefWarmup method)</a>
-</li>
         <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.monitors.MetricLogger.on_epoch_end">(tomopt.optimisation.callbacks.monitors.MetricLogger method)</a>
 </li>
-        <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.opt_callbacks.PanelOptConfig.on_epoch_end">(tomopt.optimisation.callbacks.opt_callbacks.PanelOptConfig method)</a>
+        <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.CostCoefWarmup.on_epoch_end">(tomopt.optimisation.callbacks.warmup_callbacks.CostCoefWarmup method)</a>
+</li>
+        <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.PanelOptConfig.on_epoch_end">(tomopt.optimisation.callbacks.warmup_callbacks.PanelOptConfig method)</a>
+</li>
+        <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback.on_epoch_end">(tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback method)</a>
 </li>
       </ul></li>
       <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.callback.Callback.on_mu_batch_begin">on_mu_batch_begin() (tomopt.optimisation.callbacks.callback.Callback method)</a>
@@ -1500,6 +1510,8 @@
         <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.diagnostic_callbacks.ScatterRecord.on_scatter_end">(tomopt.optimisation.callbacks.diagnostic_callbacks.ScatterRecord method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.callback.Callback.on_train_begin">on_train_begin() (tomopt.optimisation.callbacks.callback.Callback method)</a>
 
       <ul>
@@ -1509,15 +1521,11 @@
 </li>
         <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.heatmap_gif.HeatMapGif.on_train_begin">(tomopt.optimisation.callbacks.heatmap_gif.HeatMapGif method)</a>
 </li>
-        <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.loss_callbacks.CostCoefWarmup.on_train_begin">(tomopt.optimisation.callbacks.loss_callbacks.CostCoefWarmup method)</a>
-</li>
         <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.monitors.MetricLogger.on_train_begin">(tomopt.optimisation.callbacks.monitors.MetricLogger method)</a>
 </li>
-        <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.opt_callbacks.PanelOptConfig.on_train_begin">(tomopt.optimisation.callbacks.opt_callbacks.PanelOptConfig method)</a>
+        <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback.on_train_begin">(tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.callback.Callback.on_train_end">on_train_end() (tomopt.optimisation.callbacks.callback.Callback method)</a>
 
       <ul>
@@ -1539,9 +1547,9 @@
       <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.callback.Callback.on_volume_end">on_volume_end() (tomopt.optimisation.callbacks.callback.Callback method)</a>
 
       <ul>
-        <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.loss_callbacks.CostCoefWarmup.on_volume_end">(tomopt.optimisation.callbacks.loss_callbacks.CostCoefWarmup method)</a>
-</li>
         <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.monitors.MetricLogger.on_volume_end">(tomopt.optimisation.callbacks.monitors.MetricLogger method)</a>
+</li>
+        <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.CostCoefWarmup.on_volume_end">(tomopt.optimisation.callbacks.warmup_callbacks.CostCoefWarmup method)</a>
 </li>
       </ul></li>
       <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.callback.Callback.on_x0_pred_begin">on_x0_pred_begin() (tomopt.optimisation.callbacks.callback.Callback method)</a>
@@ -1586,7 +1594,7 @@
 </li>
       <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.monitors.PanelMetricLogger">PanelMetricLogger (class in tomopt.optimisation.callbacks.monitors)</a>
 </li>
-      <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.opt_callbacks.PanelOptConfig">PanelOptConfig (class in tomopt.optimisation.callbacks.opt_callbacks)</a>
+      <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.PanelOptConfig">PanelOptConfig (class in tomopt.optimisation.callbacks.warmup_callbacks)</a>
 </li>
       <li><a href="tomopt.inference.html#tomopt.inference.scattering.PanelScatterBatch">PanelScatterBatch (class in tomopt.inference.scattering)</a>
 </li>
@@ -1723,6 +1731,8 @@
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.callback.Callback.set_wrapper">set_wrapper() (tomopt.optimisation.callbacks.callback.Callback method)</a>
+</li>
+      <li><a href="tomopt.optimisation.wrapper.html#tomopt.optimisation.wrapper.volume_wrapper.FitParams.skip_opt_step">skip_opt_step (tomopt.optimisation.wrapper.volume_wrapper.FitParams attribute)</a>
 </li>
       <li><a href="tomopt.benchmarks.small_walls.html#tomopt.benchmarks.small_walls.data.SmallWallsPassiveGenerator">SmallWallsPassiveGenerator (class in tomopt.benchmarks.small_walls.data)</a>
 </li>
@@ -1927,20 +1937,13 @@
         <li><a href="tomopt.optimisation.callbacks.html#module-tomopt.optimisation.callbacks.grad_callbacks">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     tomopt.optimisation.callbacks.heatmap_gif
 
       <ul>
         <li><a href="tomopt.optimisation.callbacks.html#module-tomopt.optimisation.callbacks.heatmap_gif">module</a>
-</li>
-      </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li>
-    tomopt.optimisation.callbacks.loss_callbacks
-
-      <ul>
-        <li><a href="tomopt.optimisation.callbacks.html#module-tomopt.optimisation.callbacks.loss_callbacks">module</a>
 </li>
       </ul></li>
       <li>
@@ -1951,17 +1954,17 @@
 </li>
       </ul></li>
       <li>
-    tomopt.optimisation.callbacks.opt_callbacks
-
-      <ul>
-        <li><a href="tomopt.optimisation.callbacks.html#module-tomopt.optimisation.callbacks.opt_callbacks">module</a>
-</li>
-      </ul></li>
-      <li>
     tomopt.optimisation.callbacks.pred_callbacks
 
       <ul>
         <li><a href="tomopt.optimisation.callbacks.html#module-tomopt.optimisation.callbacks.pred_callbacks">module</a>
+</li>
+      </ul></li>
+      <li>
+    tomopt.optimisation.callbacks.warmup_callbacks
+
+      <ul>
+        <li><a href="tomopt.optimisation.callbacks.html#module-tomopt.optimisation.callbacks.warmup_callbacks">module</a>
 </li>
       </ul></li>
       <li>
@@ -2168,8 +2171,12 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.monitors.MetricLogger.w_mid">w_mid (tomopt.optimisation.callbacks.monitors.MetricLogger attribute)</a>
 </li>
+      <li><a href="tomopt.optimisation.wrapper.html#tomopt.optimisation.wrapper.volume_wrapper.FitParams.warmup_cbs">warmup_cbs (tomopt.optimisation.wrapper.volume_wrapper.FitParams attribute)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback">WarmupCallback (class in tomopt.optimisation.callbacks.warmup_callbacks)</a>
+</li>
       <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.callback.Callback.wrapper">wrapper (tomopt.optimisation.callbacks.callback.Callback attribute)</a>
 </li>
   </ul></td>

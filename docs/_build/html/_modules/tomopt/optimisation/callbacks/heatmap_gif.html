@@ -14,7 +14,7 @@
 
   
   
-    <link rel="shortcut icon" href="../../../../_static/tomopt_logo_black.png"/>
+    <link rel="shortcut icon" href="../../../../_static/tomopt_logo.png"/>
   
   
   
@@ -61,7 +61,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://mode_muon_tomography.readthedocs.io/en/stable" aria-label="TomOpt"></a>
+      <a class="header-logo" href="https://tomopt.readthedocs.io/en/stable" aria-label="TomOpt"></a>
 
       <div class="main-menu">
         <ul>
@@ -86,7 +86,7 @@
           </li>
 
           <li>
-            <a href="https://mode_muon_tomography.readthedocs.io/en/stable">Docs</a>
+            <a href="https://tomopt.readthedocs.io/en/stable">Docs</a>
           </li>
 
           <!-- <li>
@@ -152,6 +152,12 @@
             
             
               <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html#testing">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html#external-repos">External repos</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html#authors">Authors</a></li>
+</ul>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../tomopt.html">tomopt package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../tomopt.muon.html">tomopt.muon package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../tomopt.volume.html">tomopt.volume package</a></li>
@@ -244,7 +250,7 @@
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;HeatMapGif&quot;</span><span class="p">]</span>
 
 
-<div class="viewcode-block" id="HeatMapGif"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.HeatMapGif">[docs]</a><span class="k">class</span> <span class="nc">HeatMapGif</span><span class="p">(</span><span class="n">Callback</span><span class="p">):</span>
+<div class="viewcode-block" id="HeatMapGif"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.heatmap_gif.HeatMapGif">[docs]</a><span class="k">class</span> <span class="nc">HeatMapGif</span><span class="p">(</span><span class="n">Callback</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Records a gif of the first heatmap in the first detector layer during training.</span>
 
@@ -260,7 +266,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">gif_filename</span> <span class="o">=</span> <span class="n">gif_filename</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_reset</span><span class="p">()</span>
 
-<div class="viewcode-block" id="HeatMapGif.on_train_begin"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.HeatMapGif.on_train_begin">[docs]</a>    <span class="k">def</span> <span class="nf">on_train_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="HeatMapGif.on_train_begin"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.heatmap_gif.HeatMapGif.on_train_begin">[docs]</a>    <span class="k">def</span> <span class="nf">on_train_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Prepares to record a new gif</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -268,7 +274,7 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">on_train_begin</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_reset</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="HeatMapGif.on_epoch_begin"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.HeatMapGif.on_epoch_begin">[docs]</a>    <span class="k">def</span> <span class="nf">on_epoch_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="HeatMapGif.on_epoch_begin"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.heatmap_gif.HeatMapGif.on_epoch_begin">[docs]</a>    <span class="k">def</span> <span class="nf">on_epoch_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        When a new training epoch begins, saves an image of the current layout of the first heatmap in the first detector layer</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -276,7 +282,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrapper</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s2">&quot;train&quot;</span><span class="p">:</span>  <span class="c1"># Avoid doubling the length  of the GIF</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_plot_current</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="HeatMapGif.on_train_end"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.HeatMapGif.on_train_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_train_end</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="HeatMapGif.on_train_end"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.heatmap_gif.HeatMapGif.on_train_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_train_end</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        When training, saves an image of the current layout of the first heatmap in the first detector layer</span>
 <span class="sd">        and then combines all images into a gif</span>
@@ -285,7 +291,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_plot_current</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_create_gif</span><span class="p">()</span></div>
 
-    <span class="k">def</span> <span class="nf">_plot_current</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="HeatMapGif._plot_current"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.heatmap_gif.HeatMapGif._plot_current">[docs]</a>    <span class="k">def</span> <span class="nf">_plot_current</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Saves an image of the current layout of the first heatmap in the first detector layer</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -299,16 +305,16 @@
                     <span class="k">break</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;HeatMapGif does not yet support </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="p">,</span> <span class="n">l</span><span class="o">.</span><span class="n">type_label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="k">break</span>
+            <span class="k">break</span></div>
 
-    <span class="k">def</span> <span class="nf">_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="HeatMapGif._reset"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.heatmap_gif.HeatMapGif._reset">[docs]</a>    <span class="k">def</span> <span class="nf">_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Prepares to record a new gif</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_buffer_files</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_buffer_files</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span></div>
 
-    <span class="k">def</span> <span class="nf">_create_gif</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="HeatMapGif._create_gif"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.heatmap_gif.HeatMapGif._create_gif">[docs]</a>    <span class="k">def</span> <span class="nf">_create_gif</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Combines recorded images into a gif</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -319,7 +325,7 @@
                 <span class="n">writer</span><span class="o">.</span><span class="n">append_data</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_buffer_files</span><span class="p">):</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span></div>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span></div></div>
 </pre></div>
 
              </article>
@@ -338,7 +344,7 @@
   </div>
     
       <div>
-        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/pytorch/tomopt_sphinx_theme">theme</a> provided by <a href="https://pytorch.org/">PyTorch</a> based on a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/GilesStrong/tomopt_sphinx_theme">theme</a> based on a <a href="https://github.com/pytorch/pytorch_sphinx_theme">theme</a> provided by <a href="https://pytorch.org/">PyTorch</a> based on a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
       </div>
      
 
@@ -392,7 +398,7 @@
         <div class="col-md-6 text-center">
           <h2>Docs</h2>
           <p>Access comprehensive developer and user documentation for TomOpt</p>
-          <a class="with-right-arrow" href="https://mode_muon_tomography.readthedocs.io/en/stable">View Docs</a>
+          <a class="with-right-arrow" href="https://tomopt.readthedocs.io/en/stable">View Docs</a>
         </div>
 
         <div class="col-md-6 text-center">
@@ -413,13 +419,13 @@
   <footer class="site-footer">
     <div class="container footer-container">
       <div class="footer-logo-wrapper">
-        <a href="https://mode_muon_tomography.readthedocs.io/en/stable" class="footer-logo"></a>
+        <a href="https://tomopt.readthedocs.io/en/stable" class="footer-logo"></a>
       </div>
 
       <div class="footer-links-wrapper">
         <div class="footer-links-col">
           <ul>
-            <!-- <li class="list-title"><a href="https://mode_muon_tomography.readthedocs.io/en/stable">TomOpt</a></li> -->
+            <!-- <li class="list-title"><a href="https://tomopt.readthedocs.io/en/stable">TomOpt</a></li> -->
             <!-- <li><a href="">Get Started</a></li> -->
             <!-- <li><a href="">Features</a></li> -->
             <!-- <li><a href="">Ecosystem</a></li> -->
@@ -432,13 +438,13 @@
           <ul>
             <li class="list-title"><a href="">Support</a></li>
             <li><a href="https://github.com/GilesStrong/mode_muon_tomography#examples">Tutorials</a></li>
-            <li><a href="https://mode_muon_tomography.readthedocs.io/en/stable">Docs</a></li>
+            <li><a href="https://tomopt.readthedocs.io/en/stable">Docs</a></li>
             <!-- <li><a href="" target="_blank">Discuss</a></li> -->
-            <li><a href="https://github.com/GilesStrong/mode_muon_tomography/blob/master/CHANGES.md" target="_blank">Change Log</a></li>
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography/blob/main/CHANGES.md" target="_blank">Change Log</a></li>
             <li><a href="https://github.com/GilesStrong/mode_muon_tomography/issues" target="_blank">Github Issues</a></li>
-            <li><a href="https://github.com/GilesStrong/mode_muon_tomography/blob/master/CITATION.md" target="_blank">Citation</a></li>
+            <li><a href="https://github.com/GilesStrong/mode_muon_tomography/blob/main/CITATION.md" target="_blank">Citation</a></li>
             <!-- <li><a href="" target="_blank">Slack</a></li> -->
-            <!-- <li><a href="https://github.com/GilesStrong/mode_muon_tomography/blob/master/CONTRIBUTING.md" target="_blank">Contributing</a></li> -->
+            <!-- <li><a href="https://github.com/GilesStrong/mode_muon_tomography/blob/main/CONTRIBUTING.md" target="_blank">Contributing</a></li> -->
           </ul>
         </div>
 
@@ -502,7 +508,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://mode_muon_tomography.readthedocs.io/en/stable" aria-label="TomOpt"></a>
+          <a class="header-logo" href="https://tomopt.readthedocs.io/en/stable" aria-label="TomOpt"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>
@@ -532,7 +538,7 @@
           </li>
 
           <li>
-            <a href="https://mode_muon_tomography.readthedocs.io/en/stable">Docs</a>
+            <a href="https://tomopt.readthedocs.io/en/stable">Docs</a>
           </li>
 
           <!-- <li>

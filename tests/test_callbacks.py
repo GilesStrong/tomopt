@@ -29,6 +29,7 @@ from tomopt.optimisation.callbacks import (
     HeatMapGif,
     VolumeTargetPredHandler,
     Save2HDF5PredHandler,
+    WarmupCallback,
 )
 from tomopt.optimisation.loss import VoxelX0Loss
 from tomopt.optimisation.wrapper.volume_wrapper import AbsVolumeWrapper, FitParams, PanelVolumeWrapper
@@ -406,6 +407,62 @@ def test_hit_record():
     assert np.all(df.layer.values == np.array([0, 1, 2, 3]))
 
 
+def test_warmup_callback():
+    vw = MockWrapper()
+    wc1 = WarmupCallback(1)
+    wc2 = WarmupCallback(2)
+    vw.fit_params = FitParams(warmup_cbs=[wc1, wc2], state="train")
+    wc1.set_wrapper(vw)
+    wc2.set_wrapper(vw)
+
+    # CBs initialise ok
+    assert wc1.n_warmup == 1
+    assert wc2.n_warmup == 2
+    wc1.on_train_begin()
+    wc2.on_train_begin()
+    assert wc1.epoch_cnt == 0
+    assert wc1.warmup_active
+    assert not wc2.warmup_active
+    assert vw.fit_params.skip_opt_step
+
+    # wc1 begins warmup first
+    wc1.on_epoch_begin()
+    wc2.on_epoch_begin()
+    assert wc1.warmup_active
+    assert not wc2.warmup_active
+
+    # wc1 only updates on training epochs and wc2 doesn't update
+    vw.fit_params.state = "valid"
+    wc1.on_epoch_end()
+    assert wc1.epoch_cnt == 0
+    vw.fit_params.state = "train"
+    wc2.on_epoch_end()
+    assert wc2.epoch_cnt == 0
+
+    # wc1 competes warmup
+    wc1.on_epoch_end()
+    assert wc1.epoch_cnt == 1
+    assert wc1.warmup_active
+
+    # wc1 deactivates and wc2 begins warmup
+    wc1.on_epoch_begin()
+    assert not wc1.warmup_active
+    assert wc2.warmup_active
+    wc2.on_epoch_end()
+    assert wc2.epoch_cnt == 1
+    wc1.on_epoch_begin()
+    assert wc2.warmup_active
+    wc2.on_epoch_end()
+    assert wc2.epoch_cnt == 2
+    assert vw.fit_params.skip_opt_step
+    assert wc2.warmup_active
+
+    # All warmups complete, fitting begins
+    wc1.on_epoch_begin()
+    assert not wc2.warmup_active
+    assert not vw.fit_params.skip_opt_step
+
+
 def test_cost_coef_warmup():
     class VW(AbsVolumeWrapper):
         def _build_opt(self, **kwargs) -> None:
@@ -416,14 +473,11 @@ def test_cost_coef_warmup():
     vol.parameters = []
     vw = VW(volume=vol, partial_opts={}, loss_func=loss, partial_scatter_inferrer=None, partial_volume_inferrer=None)
     vw.fit_params = FitParams(pred=10)
-    opt = MockOpt()
-    opt.param_groups = [{"lr": 1e2}]
-    vw.opts = {"mock_opt": opt}
     ccw = CostCoefWarmup(5)
     ccw.set_wrapper(vw)
+    vw.fit_params.warmup_cbs = [ccw]
 
     ccw.on_train_begin()
-    assert opt.param_groups[0]["lr"] == 0.0
     for e in range(6):
         for s in range(2):  # Training & validation
             vw.fit_params.state = "train" if s == 0 else "valid"
@@ -433,25 +487,18 @@ def test_cost_coef_warmup():
                 loss.sub_losses["error"] = Tensor([((-1) ** s) * (2**e) * (3**v)])  # Unique value per epoch per volume
                 ccw.on_volume_end()
             if e < 5:
-                if s == 0:
-                    assert ccw.v_sum.item() == ((2**e)) + ((2**e) * 3) + ((2**e) * 9)
-                    assert ccw.volume_cnt == 3
-                else:
-                    assert ccw.v_sum.item() == 0.0
-                    assert ccw.volume_cnt == 0
+                assert np.sum(ccw.errors) == np.sum([((2**i)) + ((2**i) * 3) + ((2**i) * 9) for i in range(e + 1)])
             else:  # Tracking stopped
-                assert ccw.v_sum.item() == 0.0
-                assert ccw.volume_cnt == 0
+                assert np.sum(ccw.errors) == np.sum([((2**i)) + ((2**i) * 3) + ((2**i) * 9) for i in range(5)])
             ccw.on_epoch_end()
             if e < 5:
-                assert np.abs(ccw.e_sum.item() - np.sum([((2**i)) + ((2**i) * 3) + ((2**i) * 9) for i in range(0, e + 1)]) / 3) < 1e-4
+                assert np.abs(np.sum(ccw.errors) - np.sum([((2**i)) + ((2**i) * 3) + ((2**i) * 9) for i in range(e + 1)])) < 1e-4
                 assert ccw.epoch_cnt == e + 1
             else:  # warm-up finished
-                assert ccw.tracking is False
-                assert opt.param_groups[0]["lr"] == 1e2
-                assert np.abs(ccw.e_sum.item() - (sum := np.sum([((2**i)) + ((2**i) * 3) + ((2**i) * 9) for i in range(0, 5)]) / 3)) < 1e-4
+                assert ccw.warmup_active is False
+                assert np.abs(np.sum(ccw.errors) - np.sum([((2**i)) + ((2**i) * 3) + ((2**i) * 9) for i in range(5)])) < 1e-4
                 assert ccw.epoch_cnt == 5
-                assert np.abs(loss.cost_coef.item() - sum / 5) < 1e-4
+                assert np.abs(loss.cost_coef - np.median(ccw.errors)) < 1e-4
 
 
 def test_panel_opt_config():
@@ -475,13 +522,10 @@ def test_panel_opt_config():
     xy_span_mult = 2
     poc = PanelOptConfig(n_warmup=2, xy_pos_rate=xy_pos_rate, z_pos_rate=z_pos_rate, xy_span_rate=xy_span_rate)
     poc.set_wrapper(vw)
+    vw.fit_params.warmup_cbs = [poc]
 
     poc.on_train_begin()
-    for o in ["xy_pos_opt", "z_pos_opt", "xy_span_opt"]:
-        assert vw.get_opt_lr(o) == 0.0
     for e in range(3):
-        if e < 2:
-            assert poc.tracking is True
         for s in range(2):  # Training & validation
             vw.fit_params.state = "train" if s == 0 else "valid"
             for p in panel_det.panels:
@@ -493,15 +537,9 @@ def test_panel_opt_config():
                 assert len(poc.stats["xy_pos_opt"]) == e + 1
                 assert len(poc.stats["z_pos_opt"]) == e + 1
                 assert len(poc.stats["xy_span_opt"]) == e + 1
-                assert poc.stats["xy_pos_opt"][-1].mean() == xy_pos_mult * e
-                assert poc.stats["z_pos_opt"][-1].mean() == z_pos_mult * e
-                assert poc.stats["xy_span_opt"][-1].mean() == xy_span_mult * e
-            poc.on_epoch_end()
-            if e >= 1:
-                assert poc.tracking is False
-                assert vw.get_opt_lr("xy_pos_opt") == xy_pos_rate / (xy_pos_mult / 2)
-                assert vw.get_opt_lr("z_pos_opt") == np.abs(z_pos_rate / (z_pos_mult / 2))
-                assert vw.get_opt_lr("xy_span_opt") == xy_span_rate / (xy_span_mult / 2)
+                assert poc.stats["xy_pos_opt"][-1].mean() == np.abs(xy_pos_mult * e)
+                assert poc.stats["z_pos_opt"][-1].mean() == np.abs(z_pos_mult * e)
+                assert poc.stats["xy_span_opt"][-1].mean() == np.abs(xy_span_mult * e)
 
 
 def test_muon_resampler_callback():

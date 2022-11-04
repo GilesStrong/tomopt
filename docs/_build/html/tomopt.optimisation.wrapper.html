@@ -161,11 +161,7 @@
 <li class="toctree-l1"><a class="reference internal" href="installation.html#authors">Authors</a></li>
 </ul>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation.html#testing">Testing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation.html#external-repos">External repos</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation.html#authors">Authors</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tomopt.html">tomopt package</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="tomopt.html">tomopt package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tomopt.muon.html">tomopt.muon package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tomopt.volume.html">tomopt.volume package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tomopt.inference.html">tomopt.inference package</a></li>
@@ -769,7 +765,7 @@ The prediction loop can be supported by callbacks.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.FitParams.cyclic_cbs">
-<span class="sig-name descname"><span class="pre">cyclic_cbs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">CyclicCallback</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.cyclic_cbs" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">cyclic_cbs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.cyclic_callbacks.CyclicCallback" title="tomopt.optimisation.callbacks.cyclic_callbacks.CyclicCallback"><span class="pre">CyclicCallback</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.cyclic_cbs" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -853,6 +849,11 @@ The prediction loop can be supported by callbacks.</p>
 <dd></dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.FitParams.skip_opt_step">
+<span class="sig-name descname"><span class="pre">skip_opt_step</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.skip_opt_step" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.FitParams.state">
 <span class="sig-name descname"><span class="pre">state</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.state" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -885,6 +886,11 @@ The prediction loop can be supported by callbacks.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.FitParams.volume_inferrer">
 <span class="sig-name descname"><span class="pre">volume_inferrer</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="tomopt.inference.html#tomopt.inference.volume.AbsVolumeInferrer" title="tomopt.inference.volume.AbsVolumeInferrer"><span class="pre">AbsVolumeInferrer</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.volume_inferrer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.wrapper.volume_wrapper.FitParams.warmup_cbs">
+<span class="sig-name descname"><span class="pre">warmup_cbs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback" title="tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback"><span class="pre">WarmupCallback</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.warmup_cbs" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -1530,6 +1536,7 @@ viv. <cite>loss</cite> = 0</p>
 <li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.passive_bs"><code class="docutils literal notranslate"><span class="pre">FitParams.passive_bs</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.pred"><code class="docutils literal notranslate"><span class="pre">FitParams.pred</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.sb"><code class="docutils literal notranslate"><span class="pre">FitParams.sb</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.skip_opt_step"><code class="docutils literal notranslate"><span class="pre">FitParams.skip_opt_step</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.state"><code class="docutils literal notranslate"><span class="pre">FitParams.state</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.stop"><code class="docutils literal notranslate"><span class="pre">FitParams.stop</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.trn_passives"><code class="docutils literal notranslate"><span class="pre">FitParams.trn_passives</span></code></a></li>
@@ -1537,6 +1544,7 @@ viv. <cite>loss</cite> = 0</p>
 <li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.val_passives"><code class="docutils literal notranslate"><span class="pre">FitParams.val_passives</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.volume_id"><code class="docutils literal notranslate"><span class="pre">FitParams.volume_id</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.volume_inferrer"><code class="docutils literal notranslate"><span class="pre">FitParams.volume_inferrer</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.FitParams.warmup_cbs"><code class="docutils literal notranslate"><span class="pre">FitParams.warmup_cbs</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#tomopt.optimisation.wrapper.volume_wrapper.HeatMapVolumeWrapper"><code class="docutils literal notranslate"><span class="pre">HeatMapVolumeWrapper</span></code></a><ul>

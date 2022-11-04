@@ -9,7 +9,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>tomopt.optimisation.loss.sub_losses &mdash; TomOpt  documentation</title>
+  <title>tomopt.optimisation.callbacks.cyclic_callbacks &mdash; TomOpt  documentation</title>
   
 
   
@@ -207,7 +207,7 @@
         
           <li><a href="../../../index.html">Module code</a> &gt;</li>
         
-      <li>tomopt.optimisation.loss.sub_losses</li>
+      <li>tomopt.optimisation.callbacks.cyclic_callbacks</li>
     
     
       <li class="pytorch-breadcrumbs-aside">
@@ -235,72 +235,20 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
               
-  <h1>Source code for tomopt.optimisation.loss.sub_losses</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+  <h1>Source code for tomopt.optimisation.callbacks.cyclic_callbacks</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
 
-<span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
+<span class="kn">from</span> <span class="nn">.callback</span> <span class="kn">import</span> <span class="n">Callback</span>
 
 <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Provides functions to compute sub-loss components</span>
+<span class="sd">Provides callbacks designed to act in cycles over a number of epochs, e.g. to affect learning rates.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;integer_class_loss&quot;</span><span class="p">]</span>
+<span class="n">__all__</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;CyclicCallback&quot;</span><span class="p">]</span>
 
 
-<div class="viewcode-block" id="integer_class_loss"><a class="viewcode-back" href="../../../../tomopt.optimisation.loss.html#tomopt.optimisation.loss.sub_losses.integer_class_loss">[docs]</a><span class="k">def</span> <span class="nf">integer_class_loss</span><span class="p">(</span>
-    <span class="n">int_probs</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
-    <span class="n">target_int</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
-    <span class="n">pred_start_int</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="n">use_mse</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
-    <span class="n">weight</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">reduction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Loss for classifying integers, when regression is not applicable.</span>
-<span class="sd">    It assumed that the the integers really are quantifiably comparable, and not categorical codes of classes.</span>
-
-<span class="sd">    Like multiclass-classification, predictions are a probabilities for each possible integer,</span>
-<span class="sd">    but the ICL aims to penalise close predictions less than far-off ones:</span>
-<span class="sd">    For a target of 3 and a close prediction of `softmax([1,3,10,5,5,3,1])` and a far-off prediction of `softmax([10,3,1,5,5,3,1])`,</span>
-<span class="sd">    the categorical cross-entropy produces the same loss for both predictions (5.0154) despite the close prediction having a higher probability near the target.</span>
-
-<span class="sd">    ICL instead computes the absolute error, or squared error, between each of the possible integers and the true target.</span>
-<span class="sd">    These errors are then normalised, weighted by the predicted probabilities, and summed.</span>
-<span class="sd">    I.e. integers close to the target have a lower error, and these are given greater weight in the sum if they have a higher probability.</span>
-
-<span class="sd">    For the example, the ICL produces a loss of 1.0007 for the close prediction, and 8.8773 for the far-off one.</span>
-
-<span class="sd">    Arguments:</span>
-<span class="sd">        int_probs: (*,integers) tensor of predicted probabilities</span>
-<span class="sd">        target_int: (*) tensor of target integers</span>
-<span class="sd">        pred_start_int: the integer that the zeroth probability in predictions corresponds to</span>
-<span class="sd">        use_mse: whether to compute errors as absolute or squared</span>
-<span class="sd">        weight: Optional (*) tensor of multiplicative weights for the unreduced ICLs</span>
-<span class="sd">        reduction: &#39;mean&#39; return the average ICL, &#39;sum&#39; sum the ICLs, &#39;none&#39;, return the individual ICLs</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">ints</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">pred_start_int</span><span class="p">,</span> <span class="n">pred_start_int</span> <span class="o">+</span> <span class="n">int_probs</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
-    <span class="n">diffs</span> <span class="o">=</span> <span class="n">target_int</span> <span class="o">-</span> <span class="n">ints</span>
-    <span class="k">if</span> <span class="n">use_mse</span><span class="p">:</span>
-        <span class="n">diffs</span> <span class="o">=</span> <span class="n">diffs</span><span class="o">**</span><span class="mi">2</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">diffs</span> <span class="o">=</span> <span class="n">diffs</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span>
-    <span class="n">diffs</span> <span class="o">=</span> <span class="n">diffs</span> <span class="o">/</span> <span class="n">diffs</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">loss</span> <span class="o">=</span> <span class="n">diffs</span> <span class="o">*</span> <span class="n">int_probs</span>
-    <span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">weight</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">loss</span> <span class="o">=</span> <span class="n">loss</span> <span class="o">*</span> <span class="n">weight</span>
-
-    <span class="k">if</span> <span class="n">reduction</span> <span class="o">==</span> <span class="s2">&quot;mean&quot;</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">loss</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-    <span class="k">elif</span> <span class="n">reduction</span> <span class="o">==</span> <span class="s2">&quot;sum&quot;</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">loss</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-    <span class="k">elif</span> <span class="n">reduction</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">loss</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown reduction </span><span class="si">{</span><span class="n">reduction</span><span class="si">}</span><span class="s2">. Please use [&#39;mean&#39;, &#39;sum&#39;, &#39;none&#39;].&quot;</span><span class="p">)</span></div>
+<div class="viewcode-block" id="CyclicCallback"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.cyclic_callbacks.CyclicCallback">[docs]</a><span class="k">class</span> <span class="nc">CyclicCallback</span><span class="p">(</span><span class="n">Callback</span><span class="p">):</span>
+    <span class="k">pass</span></div>
 </pre></div>
 
              </article>

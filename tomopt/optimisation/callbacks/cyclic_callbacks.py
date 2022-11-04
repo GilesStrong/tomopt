@@ -6,7 +6,7 @@ r"""
 Provides callbacks designed to act in cycles over a number of epochs, e.g. to affect learning rates.
 """
 
-__all__: List[str] = []
+__all__: List[str] = ["CyclicCallback"]
 
 
 class CyclicCallback(Callback):
