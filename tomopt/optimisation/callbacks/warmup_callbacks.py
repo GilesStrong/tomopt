@@ -2,8 +2,6 @@ from prettytable import PrettyTable
 import numpy as np
 from typing import Dict, List, Optional
 
-import torch
-
 from .callback import Callback
 from ...volume import PanelDetectorLayer
 
@@ -69,8 +67,7 @@ class CostCoefWarmup(WarmupCallback):
 
     def _reset(self) -> None:
         super()._reset()
-        self.error_sum = torch.zeros(1, device=self.wrapper.device)
-        self.volume_cnt = 0
+        self.errors: List[np.ndarray] = []
 
     def on_volume_end(self) -> None:
         r"""
@@ -80,8 +77,7 @@ class CostCoefWarmup(WarmupCallback):
         if not self.warmup_active:
             return
         if self.wrapper.fit_params.state == "train" and self.wrapper.fit_params.pred is not None:
-            self.error_sum += self.wrapper.loss_func.sub_losses["error"].detach().clone()
-            self.volume_cnt += 1
+            self.errors.append(self.wrapper.loss_func.sub_losses["error"].detach().cpu().numpy())
 
     def on_epoch_end(self) -> None:
         r"""
@@ -95,7 +91,7 @@ class CostCoefWarmup(WarmupCallback):
         super().on_epoch_end()
         if self.wrapper.fit_params.state == "train":
             if self.epoch_cnt >= self.n_warmup:
-                avg = self.error_sum / self.volume_cnt
+                avg = np.median(self.errors)
                 print(f"{type(self).__name__}: Warmed up, average error = {avg}")
                 self.wrapper.loss_func.cost_coef = avg
 
@@ -142,16 +138,16 @@ class PanelOptConfig(WarmupCallback):
             return
         if self.wrapper.fit_params.state == "train":
             if "budget_opt" in self.rates:
-                self.stats["budget_opt"].append(self.wrapper.volume.budget_weights.grad.cpu().numpy())
+                self.stats["budget_opt"].append(self.wrapper.volume.budget_weights.grad.abs().cpu().numpy())
             for l in self.wrapper.volume.get_detectors():
                 if isinstance(l, PanelDetectorLayer):
                     for p in l.panels:
                         if "xy_pos_opt" in self.rates:
-                            self.stats["xy_pos_opt"].append(p.xy.grad.cpu().numpy())
+                            self.stats["xy_pos_opt"].append(p.xy.grad.abs().cpu().numpy())
                         if "z_pos_opt" in self.rates:
-                            self.stats["z_pos_opt"].append(p.z.grad.cpu().numpy())
+                            self.stats["z_pos_opt"].append(p.z.grad.abs().cpu().numpy())
                         if "xy_span_opt" in self.rates:
-                            self.stats["xy_span_opt"].append(p.xy_span.grad.cpu().numpy())
+                            self.stats["xy_span_opt"].append(p.xy_span.grad.abs().cpu().numpy())
 
     def on_epoch_end(self) -> None:
         r"""
@@ -166,7 +162,7 @@ class PanelOptConfig(WarmupCallback):
                 print(f"{type(self).__name__}: Optimiser warm-up completed")
                 pt = PrettyTable(["Param", "Median Grad", "LR"])
                 for k, v in self.stats.items():  # Allow optimisation
-                    avg = np.abs(np.median(v))
+                    avg = np.nanmedian(v)
                     lr = self.rates[k] / avg
                     pt.add_row([k, avg, lr])
                     self.wrapper.set_opt_lr(lr, k)
