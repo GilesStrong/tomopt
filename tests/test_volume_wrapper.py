@@ -10,17 +10,20 @@ from torch import nn, Tensor, optim
 from tomopt.core import X0
 from tomopt.volume import Volume, PassiveLayer, PanelDetectorLayer, DetectorPanel, DetectorHeatMap
 from tomopt.optimisation.wrapper.volume_wrapper import FitParams, PanelVolumeWrapper, HeatMapVolumeWrapper
-from tomopt.optimisation.callbacks.callback import Callback
-from tomopt.optimisation.callbacks.cyclic_callbacks import CyclicCallback
-from tomopt.optimisation.callbacks.monitors import MetricLogger
-from tomopt.optimisation.callbacks.diagnostic_callbacks import ScatterRecord
 from tomopt.optimisation.data.passives import PassiveYielder
 from tomopt.optimisation.loss import VoxelX0Loss
-from tomopt.optimisation.callbacks.grad_callbacks import NoMoreNaNs
-from tomopt.optimisation.callbacks.eval_metric import EvalMetric
-from tomopt.optimisation.callbacks.data_callbacks import MuonResampler
+from tomopt.optimisation.callbacks import (
+    Callback,
+    CyclicCallback,
+    MetricLogger,
+    ScatterRecord,
+    NoMoreNaNs,
+    EvalMetric,
+    MuonResampler,
+    PredHandler,
+    WarmupCallback,
+)
 from tomopt.muon.generation import MuonGenerator2016
-from tomopt.optimisation.callbacks.pred_callbacks import PredHandler
 
 LW = Tensor([1, 1])
 SZ = 0.1
@@ -449,13 +452,16 @@ def test_volume_wrapper_fit_epoch(mocker):  # noqa F811
 
 
 def test_volume_wrapper_sort_cbs():
-    cbs = [Callback(), CyclicCallback(), MetricLogger(), EvalMetric(False)]
-    cyclic_cbs, metric_log, metric_cbs = PanelVolumeWrapper._sort_cbs(cbs)
-    assert len(cyclic_cbs) == 1
-    assert len(metric_cbs) == 1
-    assert cyclic_cbs[0] == cbs[1]
-    assert metric_log == cbs[2]
-    assert metric_cbs[0] == cbs[3]
+    cbs = [Callback(), CyclicCallback(), MetricLogger(), WarmupCallback(1), EvalMetric(False)]
+    sorted_cbs = PanelVolumeWrapper._sort_cbs(cbs)
+    assert len(sorted_cbs["cyclic_cbs"]) == 1
+    assert len(sorted_cbs["warmup_cbs"]) == 1
+    assert len(sorted_cbs["metric_log"]) == 1
+    assert len(sorted_cbs["metric_cbs"]) == 1
+    assert sorted_cbs["cyclic_cbs"][0] == cbs[1]
+    assert sorted_cbs["metric_log"][0] == cbs[2]
+    assert sorted_cbs["warmup_cbs"][0] == cbs[3]
+    assert sorted_cbs["metric_cbs"][0] == cbs[4]
 
 
 @pytest.mark.flaky(max_runs=2, min_passes=1)
