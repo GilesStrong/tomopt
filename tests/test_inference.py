@@ -135,6 +135,13 @@ def test_panel_scatter_batch(mock_show, panel_scatter_batch):
     assert xy_unc.max().item() < 0.1
     assert xy_unc.std().item() > 0
 
+    # efficiencies
+    _, panel = next(volume.get_detectors()[0].yield_zordered_panels())
+    effs = sb._get_hit_effs([panel], sb.reco_hits[:, 0:1])
+    assert effs.min().item() > 0
+    assert effs.max().item() < 1
+    assert effs.std().item() > 0
+
     sb.plot_scatter(0)
 
     mask = sb.get_scatter_mask()
