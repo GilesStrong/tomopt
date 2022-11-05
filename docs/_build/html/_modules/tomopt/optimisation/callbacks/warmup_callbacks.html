@@ -251,7 +251,7 @@
 
 
 <div class="viewcode-block" id="WarmupCallback"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback">[docs]</a><span class="k">class</span> <span class="nc">WarmupCallback</span><span class="p">(</span><span class="n">Callback</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&#39;&#39;&#39;</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Warmup callbacks act at the start of training to track and set paramters based on the initial state of the detector.</span>
 <span class="sd">    During warmup, optimisation of the detector is prevented, via a flag.</span>
 <span class="sd">    If multiple warmup callbacks aare present, they will wait to warmup according to the order they are provided in.</span>
@@ -259,30 +259,30 @@
 <span class="sd">    When a `WarmupCallback` is warming up, its `warmup_active` attribute will be True.</span>
 
 <span class="sd">    .. important::</span>
-<span class="sd">        When inheriting from `WarmupCallback`, the super methods of `on_train_begin`, `on_epoch_begin`, and `on_epoch_end` must be called. </span>
-<span class="sd">    </span>
+<span class="sd">        When inheriting from `WarmupCallback`, the super methods of `on_train_begin`, `on_epoch_begin`, and `on_epoch_end` must be called.</span>
+
 <span class="sd">    Arguments:</span>
 <span class="sd">        n_warmup: number of training epochs overwhich to warmup</span>
-<span class="sd">    &#39;&#39;&#39;</span>
-    
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_warmup</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_warmup</span> <span class="o">=</span> <span class="n">n_warmup</span>
 
 <div class="viewcode-block" id="WarmupCallback.on_train_begin"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback.on_train_begin">[docs]</a>    <span class="k">def</span> <span class="nf">on_train_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&#39;&#39;&#39;</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Prepares to warmup</span>
-<span class="sd">        &#39;&#39;&#39;</span>
-        
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">on_train_begin</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_reset</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="WarmupCallback.check_warmups"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback.check_warmups">[docs]</a>    <span class="k">def</span> <span class="nf">check_warmups</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&#39;&#39;&#39;</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        If a `WarmupCallback` has finished, then its `warmup_active` is set to False,</span>
 <span class="sd">        and the next `WarmupCallback` will have its `warmup_active` is set to True.</span>
 <span class="sd">        If the finishing callback was the last `WarmupCallback`, then the &quot;skip optimisation&quot; flag is unset.</span>
-<span class="sd">        &#39;&#39;&#39;</span>
-        
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wrapper</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">warmup_cbs</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">warmup_active</span> <span class="ow">and</span> <span class="n">c</span><span class="o">.</span><span class="n">epoch_cnt</span> <span class="o">&gt;=</span> <span class="n">c</span><span class="o">.</span><span class="n">n_warmup</span><span class="p">:</span>
                 <span class="n">c</span><span class="o">.</span><span class="n">warmup_active</span> <span class="o">=</span> <span class="kc">False</span>
@@ -311,10 +311,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">epoch_cnt</span> <span class="o">+=</span> <span class="mi">1</span></div>
 
 <div class="viewcode-block" id="WarmupCallback._reset"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback._reset">[docs]</a>    <span class="k">def</span> <span class="nf">_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&#39;&#39;&#39;</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Prepares the callback to warmup, and ensures that only the first `WarmupCallback` is active.</span>
-<span class="sd">        &#39;&#39;&#39;</span>
-        
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">epoch_cnt</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">warmup_active</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">wrapper</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">skip_opt_step</span> <span class="o">=</span> <span class="kc">True</span>

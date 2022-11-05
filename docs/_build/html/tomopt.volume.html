@@ -1142,12 +1142,11 @@ registered hooks while the latter silently ignores them.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.volume.panel.DetectorPanel.get_efficiency">
-<span class="sig-name descname"><span class="pre">get_efficiency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">as_2d</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/panel.html#DetectorPanel.get_efficiency"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.panel.DetectorPanel.get_efficiency" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_efficiency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/panel.html#DetectorPanel.get_efficiency"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.panel.DetectorPanel.get_efficiency" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the efficiency of panel at the supplied list of xy points.
 If running in evaluation mode with <cite>realistic_validation</cite>,
 then these will be the full efficiency of the panel for points inside the panel (indicated by the mask), and zero outside.
-Otherwise, the Gaussian model will be used.
-By default, a single efficiency will be computed, but xy components can be requested (efficiency is the product of these)</p>
+Otherwise, the Gaussian model will be used.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -1155,14 +1154,13 @@ By default, a single efficiency will be computed, but xy components can be reque
 <li><p><strong>mask</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]) – optional pre-computed (N,) Boolean mask, where True indicates that the xy point is inside the panel.
 Only used in evaluation mode and if <cite>realistic_validation</cite> is True.
 If required, but not supplied, than will be computed automatically.</p></li>
-<li><p><strong>as_2d</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – if True, will return the x,y components of the efficiency model, otherwise will return their product</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>eff, a (N,) or (N,xy) tensor of the efficiency (components) at the xy points</p>
+<dd class="field-odd"><p>eff, a (N,)tensor of the efficiency at the xy points</p>
 </dd>
 </dl>
 </dd></dl>
