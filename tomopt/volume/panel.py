@@ -3,6 +3,7 @@ import numpy as np
 
 import torch
 from torch import nn, Tensor
+import torch.nn.functional as F
 
 from ..muon import MuonBatch
 from ..core import DEVICE
@@ -220,10 +221,11 @@ class DetectorPanel(nn.Module):
 
         span = self.get_scaled_xy_span()
         mask = mu.get_xy_mask(self.xy - (span / 2), self.xy + (span / 2))  # Muons in panel
+        true_mu_xy = mu.xy.data
 
         xy0 = self.xy - (span / 2)  # Low-left of panel
-        rel_xy = mu.xy - xy0
-        res = self.get_resolution(mu.xy, mask)
+        rel_xy = true_mu_xy - xy0
+        res = self.get_resolution(true_mu_xy, mask)
         rel_xy = rel_xy + (torch.randn((len(mu), 2), device=self.device) / res)
 
         if not self.training and self.realistic_validation:  # Prevent reco hit from exiting panel
@@ -233,8 +235,10 @@ class DetectorPanel(nn.Module):
 
         hits = {
             "reco_xy": reco_xy,
-            "gen_xy": mu.xy.detach().clone(),
+            "gen_xy": true_mu_xy,
             "z": self.z.expand_as(mu.x)[:, None],
+            "unc_xyz": F.pad(1 / res, (0, 1)),  # Add zero for z unc
+            "eff": self.get_efficiency(true_mu_xy, mask),
         }
         return hits
 
