@@ -127,8 +127,7 @@ def test_panel_scatter_batch(mock_show, panel_scatter_batch):
     assert (sb.theta_msc.abs() >= 0).all() and (sb.theta_msc < torch.pi).all()
 
     # uncertainties
-    _, panel = next(volume.get_detectors()[0].yield_zordered_panels())
-    uncs = sb._get_hit_uncs([panel], sb.reco_hits[:, 0:1])
+    uncs = sb.hit_uncs
     assert (uncs[0][:, 2] == 0).all()
     xy_unc = uncs[0][:, :2]
     assert xy_unc.min().item() > 0
@@ -136,8 +135,7 @@ def test_panel_scatter_batch(mock_show, panel_scatter_batch):
     assert xy_unc.std().item() > 0
 
     # efficiencies
-    _, panel = next(volume.get_detectors()[0].yield_zordered_panels())
-    effs = sb._get_hit_effs([panel], sb.reco_hits[:, 0:1])
+    effs = sb.hit_effs
     assert effs.min().item() > 0
     assert effs.max().item() < 1
     assert effs.std().item() > 0
@@ -217,6 +215,8 @@ def test_scatter_batch_compute(mocker, panel_scatter_batch):  # noqa F811
         "above": {
             "reco_xy": Tensor([[[0.0, 0.0], [0.1, 0.0]]]),
             "gen_xy": Tensor([[[0.0, 0.0], [0.1, 0.0]]]),
+            "unc_xyz": Tensor([[[1, 1, 1], [1, 1, 1]]]),
+            "eff": Tensor([[[1], [1]]]),
             "z": Tensor(
                 [
                     [[1.0], [0.9]],
@@ -234,6 +234,8 @@ def test_scatter_batch_compute(mocker, panel_scatter_batch):  # noqa F811
                     [[0.1, 0.0], [0.0, 0.0]],
                 ]
             ),
+            "unc_xyz": Tensor([[[1, 1, 1], [1, 1, 1]]]),
+            "eff": Tensor([[[1], [1]]]),
             "z": Tensor(
                 [
                     [[0.1], [0.0]],
@@ -276,6 +278,8 @@ def test_gen_scatter_batch_compute(mocker, panel_scatter_batch):  # noqa F811
         "above": {
             "reco_xy": Tensor([[[10.0, -2.0], [1, 0.3]]]),
             "gen_xy": Tensor([[[0.0, 0.0], [0.1, 0.0]]]),
+            "unc_xyz": Tensor([[[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]]),
+            "eff": Tensor([[[1], [1]]]),
             "z": Tensor(
                 [
                     [[1.0], [0.9]],
@@ -293,6 +297,8 @@ def test_gen_scatter_batch_compute(mocker, panel_scatter_batch):  # noqa F811
                     [[0.1, 0.0], [0.0, 0.0]],
                 ]
             ),
+            "unc_xyz": Tensor([[[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]]),
+            "eff": Tensor([[[1], [1]]]),
             "z": Tensor(
                 [
                     [[0.1], [0.0]],
@@ -517,14 +523,50 @@ def test_x0_inferrer_scatter_inversion_via_scatter_batch():
     layer = PassiveLayer(lw=Tensor([1, 1]), z=1, size=0.1)
     pdg_scattering = layer._pdg_scatter(x0=x0, deltaz=0.01, theta=muons.theta, theta_x=muons.theta_x, theta_y=muons.theta_y, mom=muons.mom, log_term=False)
 
-    muons.append_hits({"reco_xy": muons.xy.detach().clone(), "gen_xy": muons.xy.detach().clone(), "z": muons.z.expand_as(muons.x)[:, None]}, pos="above")
+    muons.append_hits(
+        {
+            "reco_xy": muons.xy.detach().clone(),
+            "gen_xy": muons.xy.detach().clone(),
+            "z": muons.z.expand_as(muons.x)[:, None],
+            "unc_xyz": torch.zeros(len(muons), 3),
+            "eff": torch.ones(len(muons), 1),
+        },
+        pos="above",
+    )
     muons.propagate(0.1)
-    muons.append_hits({"reco_xy": muons.xy.detach().clone(), "gen_xy": muons.xy.detach().clone(), "z": muons.z.expand_as(muons.x)[:, None]}, pos="above")
+    muons.append_hits(
+        {
+            "reco_xy": muons.xy.detach().clone(),
+            "gen_xy": muons.xy.detach().clone(),
+            "z": muons.z.expand_as(muons.x)[:, None],
+            "unc_xyz": torch.zeros(len(muons), 3),
+            "eff": torch.ones(len(muons), 1),
+        },
+        pos="above",
+    )
     muons.propagate(0.01)
     muons.scatter_dtheta_dphi(dtheta_vol=pdg_scattering["dtheta_vol"], dphi_vol=pdg_scattering["dphi_vol"])
-    muons.append_hits({"reco_xy": muons.xy.detach().clone(), "gen_xy": muons.xy.detach().clone(), "z": muons.z.expand_as(muons.x)[:, None]}, pos="below")
+    muons.append_hits(
+        {
+            "reco_xy": muons.xy.detach().clone(),
+            "gen_xy": muons.xy.detach().clone(),
+            "z": muons.z.expand_as(muons.x)[:, None],
+            "unc_xyz": torch.zeros(len(muons), 3),
+            "eff": torch.ones(len(muons), 1),
+        },
+        pos="below",
+    )
     muons.propagate(0.1)
-    muons.append_hits({"reco_xy": muons.xy.detach().clone(), "gen_xy": muons.xy.detach().clone(), "z": muons.z.expand_as(muons.x)[:, None]}, pos="below")
+    muons.append_hits(
+        {
+            "reco_xy": muons.xy.detach().clone(),
+            "gen_xy": muons.xy.detach().clone(),
+            "z": muons.z.expand_as(muons.x)[:, None],
+            "unc_xyz": torch.zeros(len(muons), 3),
+            "eff": torch.ones(len(muons), 1),
+        },
+        pos="below",
+    )
 
     class MockVolume:
         lw = Tensor([10, 10])

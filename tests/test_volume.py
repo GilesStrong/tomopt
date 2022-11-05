@@ -164,12 +164,15 @@ def test_panel_detector_layer(mocker, batch):  # noqa F811
     assert len(hits) == 1
     assert hits["above"]["reco_xy"].shape == torch.Size([len(batch), 1, 2])
     assert hits["above"]["gen_xy"].shape == torch.Size([len(batch), 1, 2])
+    assert hits["above"]["unc_xyz"].shape == torch.Size([len(batch), 1, 3])
+    assert hits["above"]["eff"].shape == torch.Size([len(batch), 1, 1])
 
     # every reco hit (x,y) is function of panel position and size
-    for v in [dl.panels[0].xy, dl.panels[0].xy_span]:
-        grad = jacobian(hits["above"]["reco_xy"][:, 0], v).sum((-1))
-        assert not grad.isnan().any()
-        assert (grad != 0).sum() > 0
+    for var in ["reco_xy", "unc_xyz", "eff"]:
+        for dep_var in [dl.panels[0].xy, dl.panels[0].xy_span]:
+            grad = jacobian(hits["above"][var][:, 0], dep_var).sum((-1))
+            assert not grad.isnan().any()
+            assert (grad != 0).sum() > 0
 
     dl = PanelDetectorLayer(
         pos="above",
@@ -337,18 +340,35 @@ def test_volume_forward_panel():
 
     hits = batch.get_hits()
     assert "above" in hits and "below" in hits
-    assert hits["above"]["reco_xy"].shape[1] == 4
-    assert hits["below"]["reco_xy"].shape[1] == 4
-    assert hits["above"]["gen_xy"].shape[1] == 4
-    assert hits["below"]["gen_xy"].shape[1] == 4
+    assert hits["above"]["reco_xy"].shape == torch.Size([N, 4, 2])
+    assert hits["below"]["reco_xy"].shape == torch.Size([N, 4, 2])
+    assert hits["above"]["gen_xy"].shape == torch.Size([N, 4, 2])
+    assert hits["below"]["gen_xy"].shape == torch.Size([N, 4, 2])
+    assert hits["above"]["unc_xyz"].shape == torch.Size([N, 4, 3])
+    assert hits["below"]["unc_xyz"].shape == torch.Size([N, 4, 3])
+    assert hits["above"]["eff"].shape == torch.Size([N, 4, 1])
+    assert hits["below"]["eff"].shape == torch.Size([N, 4, 1])
+
+    # uncertainties
+    for pos in hits:
+        assert hits[pos]["unc_xyz"][:, :, :2].min().item() > 0
+        assert hits[pos]["unc_xyz"][:, :, :2].std().item() > 0
+        assert (hits[pos]["unc_xyz"][:, :, 2] == 0).all()
+
+    # efficiencies
+    for pos in hits:
+        assert hits[pos]["eff"].min().item() > 0
+        assert hits[pos]["eff"].max().item() < 1
+        assert hits[pos]["eff"].std().item() > 0
 
     # every reco hit (x,y) is function of panel position and size
     for i, l in enumerate(volume.get_detectors()):
         for j, (_, p) in enumerate(l.yield_zordered_panels()):
-            for v in [p.xy, p.xy_span]:
-                grad = jacobian(hits["above" if l.z > 0.5 else "below"]["reco_xy"][:, j], v).nansum((-1))
-                assert grad.isnan().sum() == 0
-                assert (grad != 0).sum() > 0
+            for dep_var in [p.xy, p.xy_span]:
+                for var in ["reco_xy", "unc_xyz", "eff"]:
+                    grad = jacobian(hits["above" if l.z > 0.5 else "below"][var][:, j], dep_var).nansum((-1))
+                    assert grad.isnan().sum() == 0
+                    assert (grad != 0).sum() > 0
 
 
 def test_detector_panel_properties():
