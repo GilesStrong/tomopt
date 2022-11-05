@@ -553,6 +553,11 @@ Any hits associated with a muon are &gt;= 1e10</p>
 <dd></dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.inference.scattering.AbsScatterBatch._hit_effs">
+<span class="sig-name descname"><span class="pre">_hit_effs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#tomopt.inference.scattering.AbsScatterBatch._hit_effs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="tomopt.inference.scattering.AbsScatterBatch._hit_uncs">
 <span class="sig-name descname"><span class="pre">_hit_uncs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#tomopt.inference.scattering.AbsScatterBatch._hit_uncs" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -727,6 +732,18 @@ This assumption has been tested and found to be good.</p>
 </dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="tomopt.inference.scattering.AbsScatterBatch.above_hit_effs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">above_hit_effs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.inference.scattering.AbsScatterBatch.above_hit_effs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns:
+(muons,hits,effs) tensor of hit efficiencies in the “above” detectors</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="tomopt.inference.scattering.AbsScatterBatch.above_hit_uncs">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">above_hit_uncs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.inference.scattering.AbsScatterBatch.above_hit_uncs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns:
@@ -755,6 +772,18 @@ This assumption has been tested and found to be good.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">below_gen_hits</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.inference.scattering.AbsScatterBatch.below_gen_hits" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns:
 (muons,hits,xyz) tensor of true hits in the “below” detectors</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.inference.scattering.AbsScatterBatch.below_hit_effs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">below_hit_effs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.inference.scattering.AbsScatterBatch.below_hit_effs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns:
+(muons,hits,eff) tensor of hit efficiencies in the “below” detectors</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]</p>
@@ -931,6 +960,18 @@ start: (muons,xyz) initial point of fitted-vector</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>(muons) Boolean tensor where True indicates that the PoCA of the muon is located within the passive volume</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.inference.scattering.AbsScatterBatch.hit_effs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hit_effs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.inference.scattering.AbsScatterBatch.hit_effs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns:
+(muons,hits,eff) tensor of hit efficiencies</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1426,7 +1467,7 @@ This assumption has been tested and found to be good.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.inference.scattering.PanelScatterBatch._compute_tracks">
 <span class="sig-name descname"><span class="pre">_compute_tracks</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/inference/scattering.html#PanelScatterBatch._compute_tracks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.inference.scattering.PanelScatterBatch._compute_tracks" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes tracks from hits according to the uncertainty on the hits, computed as 1/(resolution*efficiency).</p>
+<dd><p>Computes tracks from hits according to the uncertainty and efficiency of the hits, computed as 1/(resolution*efficiency).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
@@ -1435,14 +1476,30 @@ This assumption has been tested and found to be good.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="tomopt.inference.scattering.PanelScatterBatch._get_hit_effs">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_get_hit_effs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zordered_panels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hits</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/inference/scattering.html#PanelScatterBatch._get_hit_effs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.inference.scattering.PanelScatterBatch._get_hit_effs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes hit efficiencies.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>zordered_panels</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="tomopt.volume.html#tomopt.volume.panel.DetectorPanel" title="tomopt.volume.panel.DetectorPanel"><code class="xref py py-class docutils literal notranslate"><span class="pre">DetectorPanel</span></code></a>]) – list of panels in order of decreasing z position</p></li>
+<li><p><strong>hits</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (muons,panels,xyz) tensor of hit locations</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(muons,panels,eff) hit efficiencies</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="tomopt.inference.scattering.PanelScatterBatch._get_hit_uncs">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_get_hit_uncs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zordered_panels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hits</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/inference/scattering.html#PanelScatterBatch._get_hit_uncs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.inference.scattering.PanelScatterBatch._get_hit_uncs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes hit uncertainties as the 1/(resolution*efficiency) for x and y.
+<dd><p>Computes hit uncertainties as the 1/(resolution) for x and y.
 No uncertainty is assumed for z.</p>
-<div class="admonition important">
-<p class="admonition-title">Important</p>
-<p>These are NOT the physical uncertainties on the hits, since they include the efficiency.</p>
-</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -2312,6 +2369,7 @@ as the probability of at least two hits above and below the passive volume.</p>
 <li><a class="reference internal" href="#tomopt.inference.scattering.AbsScatterBatch._extract_hits"><code class="docutils literal notranslate"><span class="pre">AbsScatterBatch._extract_hits()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.inference.scattering.AbsScatterBatch._filter_scatters"><code class="docutils literal notranslate"><span class="pre">AbsScatterBatch._filter_scatters()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.inference.scattering.AbsScatterBatch._gen_hits"><code class="docutils literal notranslate"><span class="pre">AbsScatterBatch._gen_hits</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.inference.scattering.AbsScatterBatch._hit_effs"><code class="docutils literal notranslate"><span class="pre">AbsScatterBatch._hit_effs</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.inference.scattering.AbsScatterBatch._hit_uncs"><code class="docutils literal notranslate"><span class="pre">AbsScatterBatch._hit_uncs</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.inference.scattering.AbsScatterBatch._phi_in"><code class="docutils literal notranslate"><span class="pre">AbsScatterBatch._phi_in</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.inference.scattering.AbsScatterBatch._phi_in_unc"><code class="docutils literal notranslate"><span class="pre">AbsScatterBatch._phi_in_unc</span></code></a></li>
@@ -2343,9 +2401,11 @@ as the probability of at least two hits above and below the passive volume.</p>
 <li><a class="reference internal" href="#tomopt.inference.scattering.AbsScatterBatch._xyz_out"><code class="docutils literal notranslate"><span class="pre">AbsScatterBatch._xyz_out</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.inference.scattering.AbsScatterBatch._xyz_out_unc"><code class="docutils literal notranslate"><span class="pre">AbsScatterBatch._xyz_out_unc</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.inference.scattering.AbsScatterBatch.above_gen_hits"><code class="docutils literal notranslate"><span class="pre">AbsScatterBatch.above_gen_hits</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.inference.scattering.AbsScatterBatch.above_hit_effs"><code class="docutils literal notranslate"><span class="pre">AbsScatterBatch.above_hit_effs</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.inference.scattering.AbsScatterBatch.above_hit_uncs"><code class="docutils literal notranslate"><span class="pre">AbsScatterBatch.above_hit_uncs</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.inference.scattering.AbsScatterBatch.above_hits"><code class="docutils literal notranslate"><span class="pre">AbsScatterBatch.above_hits</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.inference.scattering.AbsScatterBatch.below_gen_hits"><code class="docutils literal notranslate"><span class="pre">AbsScatterBatch.below_gen_hits</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.inference.scattering.AbsScatterBatch.below_hit_effs"><code class="docutils literal notranslate"><span class="pre">AbsScatterBatch.below_hit_effs</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.inference.scattering.AbsScatterBatch.below_hit_uncs"><code class="docutils literal notranslate"><span class="pre">AbsScatterBatch.below_hit_uncs</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.inference.scattering.AbsScatterBatch.below_hits"><code class="docutils literal notranslate"><span class="pre">AbsScatterBatch.below_hits</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.inference.scattering.AbsScatterBatch.dphi"><code class="docutils literal notranslate"><span class="pre">AbsScatterBatch.dphi</span></code></a></li>
@@ -2359,6 +2419,7 @@ as the probability of at least two hits above and below the passive volume.</p>
 <li><a class="reference internal" href="#tomopt.inference.scattering.AbsScatterBatch.gen_hits"><code class="docutils literal notranslate"><span class="pre">AbsScatterBatch.gen_hits</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.inference.scattering.AbsScatterBatch.get_muon_trajectory"><code class="docutils literal notranslate"><span class="pre">AbsScatterBatch.get_muon_trajectory()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.inference.scattering.AbsScatterBatch.get_scatter_mask"><code class="docutils literal notranslate"><span class="pre">AbsScatterBatch.get_scatter_mask()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.inference.scattering.AbsScatterBatch.hit_effs"><code class="docutils literal notranslate"><span class="pre">AbsScatterBatch.hit_effs</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.inference.scattering.AbsScatterBatch.hit_uncs"><code class="docutils literal notranslate"><span class="pre">AbsScatterBatch.hit_uncs</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.inference.scattering.AbsScatterBatch.hits"><code class="docutils literal notranslate"><span class="pre">AbsScatterBatch.hits</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.inference.scattering.AbsScatterBatch.n_hits_above"><code class="docutils literal notranslate"><span class="pre">AbsScatterBatch.n_hits_above</span></code></a></li>
@@ -2401,6 +2462,7 @@ as the probability of at least two hits above and below the passive volume.</p>
 <li><a class="reference internal" href="#tomopt.inference.scattering.PanelScatterBatch"><code class="docutils literal notranslate"><span class="pre">PanelScatterBatch</span></code></a><ul>
 <li><a class="reference internal" href="#tomopt.inference.scattering.PanelScatterBatch._abc_impl"><code class="docutils literal notranslate"><span class="pre">PanelScatterBatch._abc_impl</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.inference.scattering.PanelScatterBatch._compute_tracks"><code class="docutils literal notranslate"><span class="pre">PanelScatterBatch._compute_tracks()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.inference.scattering.PanelScatterBatch._get_hit_effs"><code class="docutils literal notranslate"><span class="pre">PanelScatterBatch._get_hit_effs()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.inference.scattering.PanelScatterBatch._get_hit_uncs"><code class="docutils literal notranslate"><span class="pre">PanelScatterBatch._get_hit_uncs()</span></code></a></li>
 </ul>
 </li>

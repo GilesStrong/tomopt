@@ -8,7 +8,7 @@ import torch.nn.functional as F
 from torch.distributions import Normal
 
 from .scattering import AbsScatterBatch
-from ..volume import PanelDetectorLayer, Volume
+from ..volume import Volume
 from ..core import SCATTER_COEF_A
 from ..utils import jacobian
 
@@ -569,13 +569,9 @@ class PanelX0Inferrer(AbsX0Inferrer):
         """
 
         eff = None
-        for pos, hits in enumerate([scatters.above_gen_hits, scatters.below_gen_hits]):
+        for effs in [scatters.above_hit_effs, scatters.below_hit_effs]:
             leff = None
-            det = self.volume.get_detectors()[pos]
-            if not isinstance(det, PanelDetectorLayer):
-                raise ValueError(f"Detector {det} is not a PanelDetectorLayer")
-            panel_idxs = det.get_panel_zorder()
-            effs = torch.stack([det.panels[i].get_efficiency(hits[:, i, :2]) for i in panel_idxs], dim=0)
+            effs = effs.squeeze(-1).transpose(0, -1)
             # Muon goes through any combination of at least 2 panels
             p_miss = 1 - effs
             c = torch.combinations(torch.arange(0, len(effs)), r=len(effs) - 1)

@@ -163,40 +163,34 @@ class DetectorPanel(nn.Module):
             res[mask] = self.resolution
         return res
 
-    def get_efficiency(self, xy: Tensor, mask: Optional[Tensor] = None, as_2d: bool = False) -> Tensor:
+    def get_efficiency(self, xy: Tensor, mask: Optional[Tensor] = None) -> Tensor:
         r"""
         Computes the efficiency of panel at the supplied list of xy points.
         If running in evaluation mode with `realistic_validation`,
         then these will be the full efficiency of the panel for points inside the panel (indicated by the mask), and zero outside.
         Otherwise, the Gaussian model will be used.
-        By default, a single efficiency will be computed, but xy components can be requested (efficiency is the product of these)
 
         Arguments:
             xy: (N,) or (N,xy) tensor of positions
             mask: optional pre-computed (N,) Boolean mask, where True indicates that the xy point is inside the panel.
                 Only used in evaluation mode and if `realistic_validation` is True.
                 If required, but not supplied, than will be computed automatically.
-            as_2d: if True, will return the x,y components of the efficiency model, otherwise will return their product
 
         Returns:
-            eff, a (N,) or (N,xy) tensor of the efficiency (components) at the xy points
+            eff, a (N,)tensor of the efficiency at the xy points
         """
 
         if not isinstance(self.efficiency, Tensor):
             raise ValueError(f"{self.efficiency} is not a Tensor for some reason.")  # To appease MyPy
         if self.training or not self.realistic_validation:
             g = self.get_gauss()
-            scale = torch.exp(g.log_prob(xy)) / torch.exp(g.log_prob(self.xy))
-            if not as_2d:
-                scale = torch.prod(scale, dim=-1)  # Maybe weight product by xy distance?
+            scale = (torch.exp(g.log_prob(xy)) / torch.exp(g.log_prob(self.xy))).prod(dim=-1)
             eff = self.efficiency * scale
         else:
             if mask is None:
                 mask = self.get_xy_mask(xy)
             eff = torch.zeros(len(xy), device=self.device)  # Zero detection outside detector
             eff[mask] = self.efficiency
-            if as_2d:
-                eff = eff[:, None]
         return eff
 
     def assign_budget(self, budget: Optional[Tensor] = None) -> None:

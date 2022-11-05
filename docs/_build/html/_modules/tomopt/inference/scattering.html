@@ -294,7 +294,8 @@
     <span class="c1"># Hits</span>
     <span class="n">_reco_hits</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># (muons,hits,xyz) recorded hits with finite xy resolution</span>
     <span class="n">_gen_hits</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># (muons,hits,xyz) true positions of the muons</span>
-    <span class="n">_hit_uncs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># (muons,hits,xyz) uncertainty on the hits</span>
+    <span class="n">_hit_uncs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># (muons,hits,xyz) uncertainty on the hits due to resolution</span>
+    <span class="n">_hit_effs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># (muons,hits,eff) efficiencies of the hits</span>
 
     <span class="c1"># Tracks</span>
     <span class="n">_track_in</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># (muons,xyz) incoming xyz vector</span>
@@ -906,6 +907,15 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hit_uncs</span>
 
     <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">hit_effs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            (muons,hits,eff) tensor of hit efficiencies</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hit_effs</span>
+
+    <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">above_hit_uncs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
@@ -928,6 +938,30 @@
             <span class="k">return</span> <span class="kc">None</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hit_uncs</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_hits_above</span> <span class="p">:]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">above_hit_effs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            (muons,hits,effs) tensor of hit efficiencies in the &quot;above&quot; detectors</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hit_effs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hit_effs</span><span class="p">[:,</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_hits_above</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">below_hit_effs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            (muons,hits,eff) tensor of hit efficiencies in the &quot;below&quot; detectors</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hit_effs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hit_effs</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_hits_above</span> <span class="p">:]</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">track_in</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]:</span>
@@ -1349,11 +1383,8 @@
 <div class="viewcode-block" id="PanelScatterBatch._get_hit_uncs"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.scattering.PanelScatterBatch._get_hit_uncs">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_get_hit_uncs</span><span class="p">(</span><span class="n">zordered_panels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">DetectorPanel</span><span class="p">],</span> <span class="n">hits</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Computes hit uncertainties as the 1/(resolution*efficiency) for x and y.</span>
+<span class="sd">        Computes hit uncertainties as the 1/(resolution) for x and y.</span>
 <span class="sd">        No uncertainty is assumed for z.</span>
-
-<span class="sd">        .. important::</span>
-<span class="sd">            These are NOT the physical uncertainties on the hits, since they include the efficiency.</span>
 
 <span class="sd">        Arguments:</span>
 <span class="sd">            zordered_panels: list of panels in order of decreasing z position</span>
@@ -1366,13 +1397,31 @@
         <span class="n">uncs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">l</span><span class="p">,</span> <span class="n">h</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">zordered_panels</span><span class="p">,</span> <span class="n">hits</span><span class="o">.</span><span class="n">unbind</span><span class="p">(</span><span class="mi">1</span><span class="p">)):</span>
             <span class="n">xy</span> <span class="o">=</span> <span class="n">h</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span>
-            <span class="n">r</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">get_resolution</span><span class="p">(</span><span class="n">xy</span><span class="p">)</span> <span class="o">*</span> <span class="n">l</span><span class="o">.</span><span class="n">get_efficiency</span><span class="p">(</span><span class="n">xy</span><span class="p">,</span> <span class="n">as_2d</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">get_resolution</span><span class="p">(</span><span class="n">xy</span><span class="p">))</span>
             <span class="n">uncs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">r</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">),</span> <span class="mi">1</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="n">r</span><span class="o">.</span><span class="n">device</span><span class="p">)],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">uncs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># muons, panels, unc xyz</span></div>
 
+<div class="viewcode-block" id="PanelScatterBatch._get_hit_effs"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.scattering.PanelScatterBatch._get_hit_effs">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_get_hit_effs</span><span class="p">(</span><span class="n">zordered_panels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">DetectorPanel</span><span class="p">],</span> <span class="n">hits</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes hit efficiencies.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            zordered_panels: list of panels in order of decreasing z position</span>
+<span class="sd">            hits: (muons,panels,xyz) tensor of hit locations</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (muons,panels,eff) hit efficiencies</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">effs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">l</span><span class="p">,</span> <span class="n">h</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">zordered_panels</span><span class="p">,</span> <span class="n">hits</span><span class="o">.</span><span class="n">unbind</span><span class="p">(</span><span class="mi">1</span><span class="p">)):</span>
+            <span class="n">effs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">get_efficiency</span><span class="p">(</span><span class="n">h</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">])[:,</span> <span class="kc">None</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">effs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># muons, panels, eff</span></div>
+
 <div class="viewcode-block" id="PanelScatterBatch._compute_tracks"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.scattering.PanelScatterBatch._compute_tracks">[docs]</a>    <span class="k">def</span> <span class="nf">_compute_tracks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Computes tracks from hits according to the uncertainty on the hits, computed as 1/(resolution*efficiency).</span>
+<span class="sd">        Computes tracks from hits according to the uncertainty and efficiency of the hits, computed as 1/(resolution*efficiency).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">def</span> <span class="nf">_get_panels</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">DetectorPanel</span><span class="p">]:</span>
@@ -1383,9 +1432,11 @@
                 <span class="n">panels</span> <span class="o">+=</span> <span class="p">[</span><span class="n">det</span><span class="o">.</span><span class="n">panels</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">det</span><span class="o">.</span><span class="n">get_panel_zorder</span><span class="p">()]</span>
             <span class="k">return</span> <span class="n">panels</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_hit_uncs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_hit_uncs</span><span class="p">(</span><span class="n">_get_panels</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">gen_hits</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_track_in</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_track_start_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_muon_trajectory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">above_hits</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">above_hit_uncs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">lw</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_track_out</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_track_start_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_muon_trajectory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">below_hits</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">below_hit_uncs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">lw</span><span class="p">)</span></div></div>
+        <span class="n">panels</span> <span class="o">=</span> <span class="n">_get_panels</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hit_uncs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_hit_uncs</span><span class="p">(</span><span class="n">panels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gen_hits</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hit_effs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_hit_effs</span><span class="p">(</span><span class="n">panels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gen_hits</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_track_in</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_track_start_in</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_muon_trajectory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">above_hits</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">above_hit_uncs</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">above_hit_effs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">lw</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_track_out</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_track_start_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_muon_trajectory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">below_hits</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">below_hit_uncs</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">below_hit_effs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">lw</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="GenScatterBatch"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.scattering.GenScatterBatch">[docs]</a><span class="k">class</span> <span class="nc">GenScatterBatch</span><span class="p">(</span><span class="n">AbsScatterBatch</span><span class="p">):</span>

@@ -3,7 +3,6 @@ from pytest_mock import mocker  # noqa F401
 import numpy as np
 from unittest.mock import patch
 from typing import Tuple
-import types
 import math
 
 import torch
@@ -135,6 +134,13 @@ def test_panel_scatter_batch(mock_show, panel_scatter_batch):
     assert xy_unc.min().item() > 0
     assert xy_unc.max().item() < 0.1
     assert xy_unc.std().item() > 0
+
+    # efficiencies
+    _, panel = next(volume.get_detectors()[0].yield_zordered_panels())
+    effs = sb._get_hit_effs([panel], sb.reco_hits[:, 0:1])
+    assert effs.min().item() > 0
+    assert effs.max().item() < 1
+    assert effs.std().item() > 0
 
     sb.plot_scatter(0)
 
@@ -474,17 +480,11 @@ def test_panel_inferrer_multi_batch():
 def test_panel_x0_inferrer_efficiency(mocker, panel_scatter_batch):  # noqa F811
     mu, volume, sb = panel_scatter_batch
     inferrer = PanelX0Inferrer(volume=volume)
-    a_effs = Tensor([0.6, 0.2, 0.3, 0.4])
-    b_effs = Tensor([0.5, 0.6, 0.7, 0.8])
+    effs = Tensor([0.6, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8])
     true_eff = 0.4263  # from MC sim
 
-    def get_efficiency(self, xy):
-        return self.eff.expand(len(xy)).clone()
-
-    for i, d in enumerate(volume.get_detectors()):
-        for j, p in enumerate(d.panels):
-            p.eff = a_effs[j] if i == 0 else b_effs[j]
-            p.get_efficiency = types.MethodType(get_efficiency, p)
+    for i, e in enumerate(effs):
+        sb._hit_effs[:, i] = e
 
     assert (inferrer.compute_efficiency(scatters=sb)[0] - true_eff).abs() < 1e-3
 

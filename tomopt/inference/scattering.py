@@ -56,7 +56,8 @@ class AbsScatterBatch(metaclass=ABCMeta):
     # Hits
     _reco_hits: Optional[Tensor] = None  # (muons,hits,xyz) recorded hits with finite xy resolution
     _gen_hits: Optional[Tensor] = None  # (muons,hits,xyz) true positions of the muons
-    _hit_uncs: Optional[Tensor] = None  # (muons,hits,xyz) uncertainty on the hits
+    _hit_uncs: Optional[Tensor] = None  # (muons,hits,xyz) uncertainty on the hits due to resolution
+    _hit_effs: Optional[Tensor] = None  # (muons,hits,eff) efficiencies of the hits
 
     # Tracks
     _track_in: Optional[Tensor] = None  # (muons,xyz) incoming xyz vector
@@ -668,6 +669,15 @@ class AbsScatterBatch(metaclass=ABCMeta):
         return self._hit_uncs
 
     @property
+    def hit_effs(self) -> Optional[Tensor]:
+        r"""
+        Returns:
+            (muons,hits,eff) tensor of hit efficiencies
+        """
+
+        return self._hit_effs
+
+    @property
     def above_hit_uncs(self) -> Optional[Tensor]:
         r"""
         Returns:
@@ -690,6 +700,30 @@ class AbsScatterBatch(metaclass=ABCMeta):
             return None
         else:
             return self._hit_uncs[:, self.n_hits_above :]
+
+    @property
+    def above_hit_effs(self) -> Optional[Tensor]:
+        r"""
+        Returns:
+            (muons,hits,effs) tensor of hit efficiencies in the "above" detectors
+        """
+
+        if self._hit_effs is None:
+            return None
+        else:
+            return self._hit_effs[:, : self.n_hits_above]
+
+    @property
+    def below_hit_effs(self) -> Optional[Tensor]:
+        r"""
+        Returns:
+            (muons,hits,eff) tensor of hit efficiencies in the "below" detectors
+        """
+
+        if self._hit_effs is None:
+            return None
+        else:
+            return self._hit_effs[:, self.n_hits_above :]
 
     @property
     def track_in(self) -> Optional[Tensor]:
@@ -1111,11 +1145,8 @@ class PanelScatterBatch(AbsScatterBatch):
     @staticmethod
     def _get_hit_uncs(zordered_panels: List[DetectorPanel], hits: Tensor) -> Tensor:
         r"""
-        Computes hit uncertainties as the 1/(resolution*efficiency) for x and y.
+        Computes hit uncertainties as the 1/(resolution) for x and y.
         No uncertainty is assumed for z.
-
-        .. important::
-            These are NOT the physical uncertainties on the hits, since they include the efficiency.
 
         Arguments:
             zordered_panels: list of panels in order of decreasing z position
@@ -1128,13 +1159,31 @@ class PanelScatterBatch(AbsScatterBatch):
         uncs: List[Tensor] = []
         for l, h in zip(zordered_panels, hits.unbind(1)):
             xy = h[:, :2]
-            r = 1 / (l.get_resolution(xy) * l.get_efficiency(xy, as_2d=True))
+            r = 1 / l.get_resolution(xy)
             uncs.append(torch.cat([r, torch.zeros((len(r), 1), device=r.device)], dim=-1))
         return torch.stack(uncs, dim=1)  # muons, panels, unc xyz
 
+    @staticmethod
+    def _get_hit_effs(zordered_panels: List[DetectorPanel], hits: Tensor) -> Tensor:
+        r"""
+        Computes hit efficiencies.
+
+        Arguments:
+            zordered_panels: list of panels in order of decreasing z position
+            hits: (muons,panels,xyz) tensor of hit locations
+
+        Returns:
+            (muons,panels,eff) hit efficiencies
+        """
+
+        effs: List[Tensor] = []
+        for l, h in zip(zordered_panels, hits.unbind(1)):
+            effs.append(l.get_efficiency(h[:, :2])[:, None])
+        return torch.stack(effs, dim=1)  # muons, panels, eff
+
     def _compute_tracks(self) -> None:
         r"""
-        Computes tracks from hits according to the uncertainty on the hits, computed as 1/(resolution*efficiency).
+        Computes tracks from hits according to the uncertainty and efficiency of the hits, computed as 1/(resolution*efficiency).
         """
 
         def _get_panels() -> List[DetectorPanel]:
@@ -1145,9 +1194,11 @@ class PanelScatterBatch(AbsScatterBatch):
                 panels += [det.panels[j] for j in det.get_panel_zorder()]
             return panels
 
-        self._hit_uncs = self._get_hit_uncs(_get_panels(), self.gen_hits)
-        self._track_in, self._track_start_in = self.get_muon_trajectory(self.above_hits, self.above_hit_uncs, self.volume.lw)
-        self._track_out, self._track_start_out = self.get_muon_trajectory(self.below_hits, self.below_hit_uncs, self.volume.lw)
+        panels = _get_panels()
+        self._hit_uncs = self._get_hit_uncs(panels, self.gen_hits)
+        self._hit_effs = self._get_hit_effs(panels, self.gen_hits)
+        self._track_in, self._track_start_in = self.get_muon_trajectory(self.above_hits, self.above_hit_uncs / self.above_hit_effs, self.volume.lw)
+        self._track_out, self._track_start_out = self.get_muon_trajectory(self.below_hits, self.below_hit_uncs / self.below_hit_effs, self.volume.lw)
 
 
 class GenScatterBatch(AbsScatterBatch):
