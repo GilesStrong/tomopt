@@ -14,7 +14,7 @@ from tomopt.muon import MuonBatch, MuonGenerator2016
 from tomopt.core import X0
 from tomopt.inference import (
     PanelX0Inferrer,
-    PanelScatterBatch,
+    ScatterBatch,
     GenScatterBatch,
     DenseBlockClassifierFromX0s,
 )
@@ -76,13 +76,13 @@ def get_panel_layers(init_res: float = 1e5, init_eff: float = 0.9, n_panels: int
 
 
 @pytest.fixture
-def panel_scatter_batch() -> Tuple[MuonBatch, Volume, PanelScatterBatch]:
+def panel_scatter_batch() -> Tuple[MuonBatch, Volume, ScatterBatch]:
     volume = Volume(get_panel_layers())
     gen = MuonGenerator2016.from_volume(volume)
     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
-    sb = PanelScatterBatch(mu=mu, volume=volume)
+    sb = ScatterBatch(mu=mu, volume=volume)
     return mu, volume, sb
 
 
@@ -161,7 +161,7 @@ def test_panel_scatter_batch(mock_show, panel_scatter_batch):
     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
-    sb = PanelScatterBatch(mu=mu, volume=volume)
+    sb = ScatterBatch(mu=mu, volume=volume)
     assert sb.poca_xyz_unc[:, :2].mean() < loc_xy_unc
     assert sb.poca_xyz_unc[:, 2].mean() < loc_z_unc
     assert sb.dxy_unc.mean() < dxy_unc
@@ -175,26 +175,22 @@ def test_scatter_batch_trajectory_fit():
     xa0 = Tensor([[0, 0, 1]])
     xa1 = Tensor([[1, 1, 0]])
     # Same unc
-    traj, start = PanelScatterBatch.get_muon_trajectory(
-        torch.stack([xa0, xa1], dim=1), torch.stack([Tensor([[1, 1]]), Tensor([[1, 1]])], dim=1), lw=Tensor([1, 1])
-    )
+    traj, start = ScatterBatch.get_muon_trajectory(torch.stack([xa0, xa1], dim=1), torch.stack([Tensor([[1, 1]]), Tensor([[1, 1]])], dim=1), lw=Tensor([1, 1]))
     assert (traj == Tensor([[1, 1, -1]])).all()
     assert (start == xa0).all()
     # Different unc
-    traj, _ = PanelScatterBatch.get_muon_trajectory(
-        torch.stack([xa0, xa1], dim=1), torch.stack([Tensor([[10, 10]]), Tensor([[1, 1]])], dim=1), lw=Tensor([1, 1])
-    )
+    traj, _ = ScatterBatch.get_muon_trajectory(torch.stack([xa0, xa1], dim=1), torch.stack([Tensor([[10, 10]]), Tensor([[1, 1]])], dim=1), lw=Tensor([1, 1]))
     assert (traj == Tensor([[1, 1, -1]])).all()
 
     # 3 Hits inline
     xa2 = Tensor([[0.5, 0.5, 0.5]])
     # Same unc
-    traj, _ = PanelScatterBatch.get_muon_trajectory(
+    traj, _ = ScatterBatch.get_muon_trajectory(
         torch.stack([xa0, xa1, xa2], dim=1), torch.stack([Tensor([[1, 1]]), Tensor([[1, 1]]), Tensor([[1, 1]])], dim=1), lw=Tensor([1, 1])
     )
     assert (traj == Tensor([[1, 1, -1]])).all()
     # Different unc
-    traj, _ = PanelScatterBatch.get_muon_trajectory(
+    traj, _ = ScatterBatch.get_muon_trajectory(
         torch.stack([xa0, xa1, xa2], dim=1), torch.stack([Tensor([[10, 10]]), Tensor([[1, 1]]), Tensor([[1, 1]])], dim=1), lw=Tensor([1, 1])
     )
     assert (traj == Tensor([[1, 1, -1]])).all()
@@ -204,12 +200,12 @@ def test_scatter_batch_trajectory_fit():
     xa1 = Tensor([[0, 1, 0.5]])
     xa2 = Tensor([[1, 0, 0.5]])
     # Same unc
-    traj, _ = PanelScatterBatch.get_muon_trajectory(
+    traj, _ = ScatterBatch.get_muon_trajectory(
         torch.stack([xa0, xa1, xa2], dim=1), torch.stack([Tensor([[1, 1]]), Tensor([[1, 1]]), Tensor([[1, 1]])], dim=1), lw=Tensor([1, 1])
     )
     assert (traj - Tensor([[0.5, 0.5, -0.5]])).sum() < 1e-5
     # Different unc
-    traj, _ = PanelScatterBatch.get_muon_trajectory(
+    traj, _ = ScatterBatch.get_muon_trajectory(
         torch.stack([xa0, xa1, xa2], dim=1), torch.stack([Tensor([[1, 1]]), Tensor([[1e9, 1e9]]), Tensor([[1, 1]])], dim=1), lw=Tensor([1, 1])
     )
     assert (traj - Tensor([[1, 0, -0.5]])).sum() < 1e-5
@@ -253,7 +249,7 @@ def test_scatter_batch_compute(mocker, panel_scatter_batch):  # noqa F811
 
     mocker.patch("tomopt.inference.scattering.jacobian", mock_jac)
 
-    sb = PanelScatterBatch(mu=mu, volume=volume)
+    sb = ScatterBatch(mu=mu, volume=volume)
     assert (sb.poca_xyz - Tensor([[0.0, 0.5, 0.5]])).sum().abs() < 1e-3
     assert (sb.dxy - Tensor([[0.0, 0.0]])).sum().abs() < 1e-3
     assert (sb.theta_in - (torch.pi / 4)).sum().abs() < 1e-3
@@ -345,7 +341,7 @@ def test_panel_x0_inferrer_methods(mocker):  # noqa F811
     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
-    sb = PanelScatterBatch(mu=mu, volume=volume)
+    sb = ScatterBatch(mu=mu, volume=volume)
     inferrer = PanelX0Inferrer(volume=volume)
 
     pt = inferrer.x0_from_scatters(deltaz=SZ, total_scatter=sb.total_scatter, theta_in=sb.theta_in, theta_out=sb.theta_out, mom=sb.mu.reco_mom[:, None])
@@ -423,7 +419,7 @@ def test_panel_x0_inferrer_methods(mocker):  # noqa F811
     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
-    sb2 = PanelScatterBatch(mu=mu, volume=volume)
+    sb2 = ScatterBatch(mu=mu, volume=volume)
     inferrer.add_scatters(sb2)
     for p in [
         inferrer._n_mu,
@@ -455,7 +451,7 @@ def test_panel_inferrer_multi_batch():
 
     # one batch
     inf = PanelX0Inferrer(volume=volume)
-    inf.add_scatters(PanelScatterBatch(mu=mu, volume=volume))
+    inf.add_scatters(ScatterBatch(mu=mu, volume=volume))
     pred1, weight1 = inf.get_prediction()
 
     # multi-batch
@@ -470,7 +466,7 @@ def test_panel_inferrer_multi_batch():
             for var in mu._hits[pos]:
                 for xy_pos in mu._hits[pos][var]:
                     mu_batch._hits[pos][var].append(xy_pos[mask])
-        inf.add_scatters(PanelScatterBatch(mu=mu_batch, volume=volume))
+        inf.add_scatters(ScatterBatch(mu=mu_batch, volume=volume))
     pred4, weight4 = inf.get_prediction()
 
     assert (((pred1 - pred4) / pred1).abs() < 1e-4).all()
@@ -564,7 +560,7 @@ def test_x0_inferrer_scatter_inversion_via_scatter_batch():
 #     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
 #     mu = MuonBatch(mus, init_z=volume.h)
 #     volume(mu)
-#     sb = PanelScatterBatch(mu=mu, volume=volume)
+#     sb = ScatterBatch(mu=mu, volume=volume)
 #     nvalid = len(mu)
 
 #     grp_feats = ["pred_x0", "track_xy", "delta_angles", "theta_msc", "track_angles", "poca", "dpoca", "voxels"]  # 1  # 4  # 2  # 1  # 4  # 3  # 3->4  # 0->3
@@ -628,7 +624,7 @@ def test_dense_block_classifier_from_x0s():
 
     volume.load_rad_length(u_rad_length)
     volume(mu)
-    sb = PanelScatterBatch(mu=mu, volume=volume)
+    sb = ScatterBatch(mu=mu, volume=volume)
     inferrer = DenseBlockClassifierFromX0s(12, PanelX0Inferrer, volume=volume)
     inferrer.add_scatters(sb)
 
@@ -648,7 +644,7 @@ def test_abs_int_classifier_from_x0():
     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
-    sb = PanelScatterBatch(mu=mu, volume=volume)
+    sb = ScatterBatch(mu=mu, volume=volume)
 
     class Inf(AbsIntClassifierFromX0):
         def x02probs(self, vox_preds: Tensor) -> Tensor:

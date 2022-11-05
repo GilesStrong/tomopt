@@ -8,7 +8,7 @@ import torch.nn.functional as F
 from tomopt.core import X0
 from tomopt.volume import Volume, PassiveLayer, PanelDetectorLayer, DetectorPanel, DetectorHeatMap
 from tomopt.muon import MuonBatch, MuonGenerator2016
-from tomopt.inference import PanelScatterBatch, PanelX0Inferrer
+from tomopt.inference import ScatterBatch, PanelX0Inferrer
 from tomopt.optimisation import VoxelX0Loss, MuonResampler
 
 LW = Tensor([1, 1])
@@ -105,7 +105,7 @@ def panel_inferrer() -> PanelX0Inferrer:
     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
-    sb = PanelScatterBatch(mu=mu, volume=volume)
+    sb = ScatterBatch(mu=mu, volume=volume)
     inf = PanelX0Inferrer(volume=volume)
     inf.add_scatters(sb)
     return inf
@@ -118,7 +118,7 @@ def fixed_budget_panel_inferrer() -> PanelX0Inferrer:
     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
-    sb = PanelScatterBatch(mu=mu, volume=volume)
+    sb = ScatterBatch(mu=mu, volume=volume)
     inf = PanelX0Inferrer(volume=volume)
     inf.add_scatters(sb)
     return inf
@@ -131,7 +131,7 @@ def heatmap_inferrer() -> PanelX0Inferrer:
     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
-    sb = PanelScatterBatch(mu=mu, volume=volume)
+    sb = ScatterBatch(mu=mu, volume=volume)
     inf = PanelX0Inferrer(volume=volume)
     inf.add_scatters(sb)
     return inf
@@ -145,7 +145,7 @@ def heatmap_inferrer() -> PanelX0Inferrer:
 #     mu = MuonBatch(mus, init_z=volume.h)
 #     volume._target = Tensor([1])
 #     volume(mu)
-#     sb = PanelScatterBatch(mu=mu, volume=volume)
+#     sb = ScatterBatch(mu=mu, volume=volume)
 #     grp_feats = ["pred_x0", "delta_angles", "theta_msc", "voxels"]
 #     n_infeats = 4
 

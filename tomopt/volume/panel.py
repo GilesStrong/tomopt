@@ -238,7 +238,7 @@ class DetectorPanel(nn.Module):
             "gen_xy": true_mu_xy,
             "z": self.z.expand_as(mu.x)[:, None],
             "unc_xyz": F.pad(1 / res, (0, 1)),  # Add zero for z unc
-            "eff": self.get_efficiency(true_mu_xy, mask),
+            "eff": self.get_efficiency(true_mu_xy, mask)[:, None],
         }
         return hits
 

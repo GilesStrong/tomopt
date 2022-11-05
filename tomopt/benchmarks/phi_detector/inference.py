@@ -3,14 +3,14 @@ from typing import List, Tuple
 import torch
 from torch import Tensor
 
-from ...inference.scattering import AbsScatterBatch
+from ...inference.scattering import ScatterBatch
 
 from .detector import PhiDetectorPanel
 
 __all__ = ["PhiDetScatterBatch"]
 
 
-class PhiDetScatterBatch(AbsScatterBatch):
+class PhiDetScatterBatch(ScatterBatch):
     r"""
     Untested: no unit tests
     """

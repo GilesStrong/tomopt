@@ -1,5 +1,4 @@
-from abc import ABCMeta, abstractmethod
-from typing import Optional, List, Tuple, Dict
+from typing import Optional, Tuple, Dict
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -7,33 +6,31 @@ import torch
 from torch import Tensor
 
 from ..muon import MuonBatch
-from ..volume import Volume, DetectorPanel
-from ..volume.layer import PanelDetectorLayer
+from ..volume import Volume
 from ..utils import jacobian
 
 r"""
 Provides implementations of inference algorithms designed to extract variables related to muon scattering from the hits recorded by the detectors
 """
 
-__all__ = ["AbsScatterBatch", "PanelScatterBatch", "GenScatterBatch"]
+__all__ = ["ScatterBatch", "GenScatterBatch"]
 
 
-class AbsScatterBatch(metaclass=ABCMeta):
+class ScatterBatch:
     r"""
-    Abstract base class for computing scattering information from the hits via incoming/outgoing trajectory fitting.
+    Class for computing scattering information from the hits via incoming/outgoing trajectory fitting.
 
     Linear fits are performed separately to all hits associated with layer groups, as indicated by the `pos` attribute of the layers which recorded hits.
     Currently, the inference methods expect detectors above the passive layer to have `pos=='above'`,
     and those below the passive volume to have `pos=='below'`.
-    Trajectory fitting is performed using an analytic likelihood minimisation, which considers "uncertainties" on the hits in x and y.
-    These uncertainties need to be defined in inheriting classes, according to the detector model used.
+    Trajectory fitting is performed using an analytic likelihood minimisation, which considers uncertainties and efficiencies on the hits in x and y.
 
     .. important::
         The current separation of hits into above and below groups does not allow for e.g. a third set of detectors,
         since this split is based on the value of the `n_hits_above` attribute.
 
     One instance of this class should created for each :class:`~tomopt.muon.muon_batch.MuonBatch`.
-    As part of the initialisation, muons will be filtered using :meth:`~tomopt.inference.AbsScatterBatch._filter_scatters`
+    As part of the initialisation, muons will be filtered using :meth:`~tomopt.inference.ScatterBatch._filter_scatters`
     in order to avoid NaN/Inf gradients or values. This results in direct, in-place changes to the :class:`~tomopt.muon.muon_batch.MuonBatch`.
 
     Since many variables of the scattering can be inferred, but not all are required for further inference downstream,
@@ -105,7 +102,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
         r"""
         Initialise scatter batch from a muon batch.
         During initialisation:
-            The muons will be filtered in-place via :meth:`~tomopt.inference.AbsScatterBatch._filter_scatters`
+            The muons will be filtered in-place via :meth:`~tomopt.inference.ScatterBatch._filter_scatters`
             The trajectories for the incoming and outgoing muons will be fitted.
         """
 
@@ -116,15 +113,6 @@ class AbsScatterBatch(metaclass=ABCMeta):
 
     def __len__(self) -> int:
         return len(self.mu)
-
-    @abstractmethod
-    def _compute_tracks(self) -> None:
-        r"""
-        Inheriting classes must override this method to compute hit uncertainties according to the detector model,
-        and interface with :meth:`~tomopt.inference.AbsScatterBatch.get_muon_trajectory`
-        """
-
-        pass
 
     @staticmethod
     def get_muon_trajectory(hits: Tensor, uncs: Tensor, lw: Tensor) -> Tuple[Tensor, Tensor]:
@@ -425,6 +413,16 @@ class AbsScatterBatch(metaclass=ABCMeta):
         # Combine all input vars into single tensor, NB ideally would stack to new dim but can't assume same number of panels above & below
         self._reco_hits = torch.cat((above_hits, below_hits), dim=1)  # muons, all panels, reco xyz
         self._gen_hits = torch.cat((_above_gen_hits, _below_gen_hits), dim=1)  # muons, all panels, true xyz
+        self._hit_uncs = torch.cat((self.hits["above"]["unc_xyz"], self.hits["below"]["unc_xyz"]), dim=1)  # muons, all panels, xyz unc
+        self._hit_effs = torch.cat((self.hits["above"]["eff"], self.hits["below"]["eff"]), dim=1)  # muons, all panels, eff
+
+    def _compute_tracks(self) -> None:
+        r"""
+        Computes tracks from hits according to the uncertainty and efficiency of the hits, computed as 1/(resolution*efficiency).
+        """
+
+        self._track_in, self._track_start_in = self.get_muon_trajectory(self.above_hits, self.above_hit_uncs / self.above_hit_effs, self.volume.lw)
+        self._track_out, self._track_start_out = self.get_muon_trajectory(self.below_hits, self.below_hit_uncs / self.below_hit_effs, self.volume.lw)
 
     def _filter_scatters(self) -> None:
         r"""
@@ -1105,103 +1103,7 @@ class AbsScatterBatch(metaclass=ABCMeta):
         return self._theta_msc_unc
 
 
-class PanelScatterBatch(AbsScatterBatch):
-    r"""
-    Class for computing scattering information from the hits via incoming/outgoing trajectory fitting
-    for hits recorded with :class:`~tomopt.volume.layer.PanelDetectorLayer`s.
-
-    Linear fits are performed separately to all hits associated with layer groups, as indicated by the `pos` attribute of the layers which recorded hits.
-    Currently, the inference methods expect detectors above the passive layer to have `pos=='above'`,
-    and those below the passive volume to have `pos=='below'`.
-    Trajectory fitting is performed using an analytic likelihood minimisation, which considers "uncertainties" on the hits in x and y.
-
-    Hit uncertainties are computed as the inverse of (the hit resolution times the hit efficiency)
-
-    .. important::
-        The current separation of hits into above and below groups does not allow for e.g. a third set of detectors,
-        since this split is based on the value of the `n_hits_above` attribute.
-
-    One instance of this class should created for each :class:`~tomopt.muon.muon_batch.MuonBatch`.
-    As part of the initialisation, muons will be filtered using :meth:`~tomopt.inference.AbsScatterBatch._filter_scatters`
-    in order to avoid NaN/Inf gradients or values. This results in direct, in-place changes to the :class:`~tomopt.muon.muon_batch.MuonBatch`.
-
-    Since many variables of the scattering can be inferred, but not all are required for further inference downstream,
-    variables, and their uncertainties, are computed on a lazy basis, with memoisation: the values are only computed on the first request (if at all)
-    and then stored in case of further requests.
-
-    The dtheta, dphi, and total scattering variables are computed under the assumption of small angular scatterings.
-    An assumption is necessary here, since there is a loss of information in the when the muons undergo scattering in theta and phi:
-    since theta is [0,pi] a negative scattering in theta will always results in a positive theta, but phi can become phi+pi.
-    When inferring the angular scattering, one cannot precisely tell whether instead a large scattering in phi occurred.
-    The total scattering (`total_scatter`) is the quadrature sum of dtheta and dphi, and all three are computed under both hypotheses.
-    The final values of these are chosen using the hypothesis which minimises the total amount of scattering.
-    This assumption has been tested and found to be good.
-
-    Arguments:
-        mu: muons with hits to infer on
-        volume: volume through which the muons travelled
-    """
-
-    @staticmethod
-    def _get_hit_uncs(zordered_panels: List[DetectorPanel], hits: Tensor) -> Tensor:
-        r"""
-        Computes hit uncertainties as the 1/(resolution) for x and y.
-        No uncertainty is assumed for z.
-
-        Arguments:
-            zordered_panels: list of panels in order of decreasing z position
-            hits: (muons,panels,xyz) tensor of hit locations
-
-        Returns:
-            (muons,panels,(unc_x,unc_y,0)) uncertainties on hits
-        """
-
-        uncs: List[Tensor] = []
-        for l, h in zip(zordered_panels, hits.unbind(1)):
-            xy = h[:, :2]
-            r = 1 / l.get_resolution(xy)
-            uncs.append(torch.cat([r, torch.zeros((len(r), 1), device=r.device)], dim=-1))
-        return torch.stack(uncs, dim=1)  # muons, panels, unc xyz
-
-    @staticmethod
-    def _get_hit_effs(zordered_panels: List[DetectorPanel], hits: Tensor) -> Tensor:
-        r"""
-        Computes hit efficiencies.
-
-        Arguments:
-            zordered_panels: list of panels in order of decreasing z position
-            hits: (muons,panels,xyz) tensor of hit locations
-
-        Returns:
-            (muons,panels,eff) hit efficiencies
-        """
-
-        effs: List[Tensor] = []
-        for l, h in zip(zordered_panels, hits.unbind(1)):
-            effs.append(l.get_efficiency(h[:, :2])[:, None])
-        return torch.stack(effs, dim=1)  # muons, panels, eff
-
-    def _compute_tracks(self) -> None:
-        r"""
-        Computes tracks from hits according to the uncertainty and efficiency of the hits, computed as 1/(resolution*efficiency).
-        """
-
-        def _get_panels() -> List[DetectorPanel]:
-            panels = []
-            for det in self.volume.get_detectors():
-                if not isinstance(det, PanelDetectorLayer):
-                    raise ValueError(f"Detector {det} is not a PanelDetectorLayer")
-                panels += [det.panels[j] for j in det.get_panel_zorder()]
-            return panels
-
-        panels = _get_panels()
-        self._hit_uncs = self._get_hit_uncs(panels, self.gen_hits)
-        self._hit_effs = self._get_hit_effs(panels, self.gen_hits)
-        self._track_in, self._track_start_in = self.get_muon_trajectory(self.above_hits, self.above_hit_uncs / self.above_hit_effs, self.volume.lw)
-        self._track_out, self._track_start_out = self.get_muon_trajectory(self.below_hits, self.below_hit_uncs / self.below_hit_effs, self.volume.lw)
-
-
-class GenScatterBatch(AbsScatterBatch):
+class GenScatterBatch(ScatterBatch):
     r"""
     Class for computing scattering information from the true hits via incoming/outgoing trajectory fitting.
 
@@ -1219,7 +1121,7 @@ class GenScatterBatch(AbsScatterBatch):
         since this split is based on the value of the `n_hits_above` attribute.
 
     One instance of this class should created for each :class:`~tomopt.muon.muon_batch.MuonBatch`.
-    As part of the initialisation, muons will be filtered using :meth:`~tomopt.inference.AbsScatterBatch._filter_scatters`
+    As part of the initialisation, muons will be filtered using :meth:`~tomopt.inference.ScatterBatch._filter_scatters`
     in order to avoid NaN/Inf values. This results in direct, in-place changes to the :class:`~tomopt.muon.muon_batch.MuonBatch`.
 
     Since many variables of the scattering can be inferred, but not all are required for further inference downstream,

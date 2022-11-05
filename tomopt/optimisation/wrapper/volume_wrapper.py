@@ -17,7 +17,7 @@ from ...optimisation.loss.loss import AbsDetectorLoss
 from ...volume import Volume, PanelDetectorLayer, AbsDetectorLayer
 from ...core import PartialOpt, DEVICE
 from ...muon import MuonGenerator2016, MuonBatch, AbsMuonGenerator
-from ...inference import AbsScatterBatch, PanelScatterBatch, AbsVolumeInferrer, PanelX0Inferrer
+from ...inference import ScatterBatch, AbsVolumeInferrer, PanelX0Inferrer
 
 __all__ = ["FitParams", "AbsVolumeWrapper", "PanelVolumeWrapper", "HeatMapVolumeWrapper"]
 
@@ -62,7 +62,7 @@ class FitParams:
     mu_bs: Optional[int] = None
     mu: Optional[MuonBatch] = None
     cbs: Optional[List[Callback]] = None
-    sb: Optional[AbsScatterBatch] = None
+    sb: Optional[ScatterBatch] = None
     loss_val: Optional[Tensor] = None
     volume_id: Optional[int] = None
     cb_savepath: Optional[Path] = None
@@ -224,7 +224,7 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
         *,
         partial_opts: Dict[str, PartialOpt],
         loss_func: Optional[AbsDetectorLoss] = None,
-        partial_scatter_inferrer: Type[AbsScatterBatch],
+        partial_scatter_inferrer: Type[ScatterBatch],
         partial_volume_inferrer: Type[AbsVolumeInferrer],
         mu_generator: Optional[AbsMuonGenerator] = None,
     ):
@@ -757,7 +757,7 @@ class PanelVolumeWrapper(AbsVolumeWrapper):
         xy_span_opt: PartialOpt,
         budget_opt: Optional[PartialOpt] = None,
         loss_func: Optional[AbsDetectorLoss] = None,
-        partial_scatter_inferrer: Type[AbsScatterBatch] = PanelScatterBatch,
+        partial_scatter_inferrer: Type[ScatterBatch] = ScatterBatch,
         partial_volume_inferrer: Type[AbsVolumeInferrer] = PanelX0Inferrer,
         mu_generator: Optional[AbsMuonGenerator] = None,
     ):
@@ -786,7 +786,7 @@ class PanelVolumeWrapper(AbsVolumeWrapper):
         xy_span_opt: PartialOpt,
         budget_opt: Optional[PartialOpt] = None,
         loss_func: Optional[AbsDetectorLoss],
-        partial_scatter_inferrer: Type[AbsScatterBatch] = PanelScatterBatch,
+        partial_scatter_inferrer: Type[ScatterBatch] = ScatterBatch,
         partial_volume_inferrer: Type[AbsVolumeInferrer] = PanelX0Inferrer,
         mu_generator: Optional[AbsMuonGenerator] = None,
     ) -> AbsVolumeWrapper:
@@ -980,7 +980,7 @@ class HeatMapVolumeWrapper(AbsVolumeWrapper):
         sig_opt: PartialOpt,
         z_pos_opt: PartialOpt,
         loss_func: Optional[AbsDetectorLoss],
-        partial_scatter_inferrer: Type[AbsScatterBatch] = PanelScatterBatch,
+        partial_scatter_inferrer: Type[ScatterBatch] = ScatterBatch,
         partial_volume_inferrer: Type[AbsVolumeInferrer] = PanelX0Inferrer,
         mu_generator: Optional[AbsMuonGenerator] = None,
     ):
@@ -1004,7 +1004,7 @@ class HeatMapVolumeWrapper(AbsVolumeWrapper):
         sig_opt: PartialOpt,
         z_pos_opt: PartialOpt,
         loss_func: Optional[AbsDetectorLoss],
-        partial_scatter_inferrer: Type[AbsScatterBatch] = PanelScatterBatch,
+        partial_scatter_inferrer: Type[ScatterBatch] = ScatterBatch,
         partial_volume_inferrer: Type[AbsVolumeInferrer] = PanelX0Inferrer,
         mu_generator: Optional[AbsMuonGenerator] = None,
     ) -> AbsVolumeWrapper:
