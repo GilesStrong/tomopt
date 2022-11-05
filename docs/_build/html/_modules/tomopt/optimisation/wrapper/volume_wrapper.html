@@ -255,7 +255,7 @@
 <span class="kn">from</span> <span class="nn">...volume</span> <span class="kn">import</span> <span class="n">Volume</span><span class="p">,</span> <span class="n">PanelDetectorLayer</span><span class="p">,</span> <span class="n">AbsDetectorLayer</span>
 <span class="kn">from</span> <span class="nn">...core</span> <span class="kn">import</span> <span class="n">PartialOpt</span><span class="p">,</span> <span class="n">DEVICE</span>
 <span class="kn">from</span> <span class="nn">...muon</span> <span class="kn">import</span> <span class="n">MuonGenerator2016</span><span class="p">,</span> <span class="n">MuonBatch</span><span class="p">,</span> <span class="n">AbsMuonGenerator</span>
-<span class="kn">from</span> <span class="nn">...inference</span> <span class="kn">import</span> <span class="n">AbsScatterBatch</span><span class="p">,</span> <span class="n">PanelScatterBatch</span><span class="p">,</span> <span class="n">AbsVolumeInferrer</span><span class="p">,</span> <span class="n">PanelX0Inferrer</span>
+<span class="kn">from</span> <span class="nn">...inference</span> <span class="kn">import</span> <span class="n">ScatterBatch</span><span class="p">,</span> <span class="n">AbsVolumeInferrer</span><span class="p">,</span> <span class="n">PanelX0Inferrer</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;FitParams&quot;</span><span class="p">,</span> <span class="s2">&quot;AbsVolumeWrapper&quot;</span><span class="p">,</span> <span class="s2">&quot;PanelVolumeWrapper&quot;</span><span class="p">,</span> <span class="s2">&quot;HeatMapVolumeWrapper&quot;</span><span class="p">]</span>
 
@@ -300,7 +300,7 @@
     <span class="n">mu_bs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">mu</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MuonBatch</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">cbs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Callback</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">sb</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AbsScatterBatch</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">sb</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ScatterBatch</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">loss_val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">volume_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">cb_savepath</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
@@ -462,7 +462,7 @@
         <span class="o">*</span><span class="p">,</span>
         <span class="n">partial_opts</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">PartialOpt</span><span class="p">],</span>
         <span class="n">loss_func</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AbsDetectorLoss</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">partial_scatter_inferrer</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">AbsScatterBatch</span><span class="p">],</span>
+        <span class="n">partial_scatter_inferrer</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">ScatterBatch</span><span class="p">],</span>
         <span class="n">partial_volume_inferrer</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">AbsVolumeInferrer</span><span class="p">],</span>
         <span class="n">mu_generator</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AbsMuonGenerator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
@@ -995,7 +995,7 @@
         <span class="n">xy_span_opt</span><span class="p">:</span> <span class="n">PartialOpt</span><span class="p">,</span>
         <span class="n">budget_opt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PartialOpt</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">loss_func</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AbsDetectorLoss</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">partial_scatter_inferrer</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">AbsScatterBatch</span><span class="p">]</span> <span class="o">=</span> <span class="n">PanelScatterBatch</span><span class="p">,</span>
+        <span class="n">partial_scatter_inferrer</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">ScatterBatch</span><span class="p">]</span> <span class="o">=</span> <span class="n">ScatterBatch</span><span class="p">,</span>
         <span class="n">partial_volume_inferrer</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">AbsVolumeInferrer</span><span class="p">]</span> <span class="o">=</span> <span class="n">PanelX0Inferrer</span><span class="p">,</span>
         <span class="n">mu_generator</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AbsMuonGenerator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
@@ -1024,7 +1024,7 @@
         <span class="n">xy_span_opt</span><span class="p">:</span> <span class="n">PartialOpt</span><span class="p">,</span>
         <span class="n">budget_opt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PartialOpt</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">loss_func</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AbsDetectorLoss</span><span class="p">],</span>
-        <span class="n">partial_scatter_inferrer</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">AbsScatterBatch</span><span class="p">]</span> <span class="o">=</span> <span class="n">PanelScatterBatch</span><span class="p">,</span>
+        <span class="n">partial_scatter_inferrer</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">ScatterBatch</span><span class="p">]</span> <span class="o">=</span> <span class="n">ScatterBatch</span><span class="p">,</span>
         <span class="n">partial_volume_inferrer</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">AbsVolumeInferrer</span><span class="p">]</span> <span class="o">=</span> <span class="n">PanelX0Inferrer</span><span class="p">,</span>
         <span class="n">mu_generator</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AbsMuonGenerator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AbsVolumeWrapper</span><span class="p">:</span>
@@ -1218,7 +1218,7 @@
         <span class="n">sig_opt</span><span class="p">:</span> <span class="n">PartialOpt</span><span class="p">,</span>
         <span class="n">z_pos_opt</span><span class="p">:</span> <span class="n">PartialOpt</span><span class="p">,</span>
         <span class="n">loss_func</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AbsDetectorLoss</span><span class="p">],</span>
-        <span class="n">partial_scatter_inferrer</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">AbsScatterBatch</span><span class="p">]</span> <span class="o">=</span> <span class="n">PanelScatterBatch</span><span class="p">,</span>
+        <span class="n">partial_scatter_inferrer</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">ScatterBatch</span><span class="p">]</span> <span class="o">=</span> <span class="n">ScatterBatch</span><span class="p">,</span>
         <span class="n">partial_volume_inferrer</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">AbsVolumeInferrer</span><span class="p">]</span> <span class="o">=</span> <span class="n">PanelX0Inferrer</span><span class="p">,</span>
         <span class="n">mu_generator</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AbsMuonGenerator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
@@ -1242,7 +1242,7 @@
         <span class="n">sig_opt</span><span class="p">:</span> <span class="n">PartialOpt</span><span class="p">,</span>
         <span class="n">z_pos_opt</span><span class="p">:</span> <span class="n">PartialOpt</span><span class="p">,</span>
         <span class="n">loss_func</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AbsDetectorLoss</span><span class="p">],</span>
-        <span class="n">partial_scatter_inferrer</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">AbsScatterBatch</span><span class="p">]</span> <span class="o">=</span> <span class="n">PanelScatterBatch</span><span class="p">,</span>
+        <span class="n">partial_scatter_inferrer</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">ScatterBatch</span><span class="p">]</span> <span class="o">=</span> <span class="n">ScatterBatch</span><span class="p">,</span>
         <span class="n">partial_volume_inferrer</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">AbsVolumeInferrer</span><span class="p">]</span> <span class="o">=</span> <span class="n">PanelX0Inferrer</span><span class="p">,</span>
         <span class="n">mu_generator</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AbsMuonGenerator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AbsVolumeWrapper</span><span class="p">:</span>
