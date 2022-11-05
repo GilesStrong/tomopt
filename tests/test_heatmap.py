@@ -67,12 +67,12 @@ def test_heatmap_detector_layer(batch):
 
     hits = batch.get_hits()
     assert len(hits) == 1
-    assert hits["above"]["reco_xy"].shape == torch.Size([len(batch), 1, 2])
-    assert hits["above"]["gen_xy"].shape == torch.Size([len(batch), 1, 2])
+    assert hits["above"]["reco_xyz"].shape == torch.Size([len(batch), 1, 3])
+    assert hits["above"]["gen_xyz"].shape == torch.Size([len(batch), 1, 3])
 
     # every reco hit (x,y) is function of GMM parameters
     for v in [dl.panels[0].mu, dl.panels[0].sig, dl.panels[0].norm]:
-        grad = jacobian(hits["above"]["reco_xy"][:, 0], v).sum((-1))
+        grad = jacobian(hits["above"]["reco_xyz"][:, 0], v).sum((-1))
         assert not grad.isnan().any()
         assert (grad != 0).sum() > 0
 
@@ -236,16 +236,16 @@ def test_volume_forward_panel():
 
     hits = batch.get_hits()
     assert "above" in hits and "below" in hits
-    assert hits["above"]["reco_xy"].shape[1] == 4
-    assert hits["below"]["reco_xy"].shape[1] == 4
-    assert hits["above"]["gen_xy"].shape[1] == 4
-    assert hits["below"]["gen_xy"].shape[1] == 4
+    assert hits["above"]["reco_xyz"].shape[1] == 4
+    assert hits["below"]["reco_xyz"].shape[1] == 4
+    assert hits["above"]["gen_xyz"].shape[1] == 4
+    assert hits["below"]["gen_xyz"].shape[1] == 4
 
     # every reco hit (x,y) is function of gmm parameters
     for i, l in enumerate(volume.get_detectors()):
         for j, (_, p) in enumerate(l.yield_zordered_panels()):
             for v in [p.mu, p.sig, p.norm]:
-                grad = jacobian(hits["above" if l.z > 0.5 else "below"]["reco_xy"][:, j], v).nansum((-1))
+                grad = jacobian(hits["above" if l.z > 0.5 else "below"]["reco_xyz"][:, j], v).nansum((-1))
                 assert grad.isnan().sum() == 0
                 assert (grad != 0).sum() > 0
 
@@ -326,25 +326,25 @@ def test_detector_panel_methods():
     mu = MuonBatch(mg(100), 1)
     mu._xy = torch.ones_like(mu.xy) / 2
     hits = panel.get_hits(mu)
-    assert (hits["gen_xy"] == mu.xy).all()
-    assert (hits["z"].mean() - 0.9).abs() < 1e-5
-    assert (hits["reco_xy"].mean(0) - Tensor([0.5, 0.5]) < 0.25).all()
+    assert (hits["gen_xyz"][:, :2] == mu.xy).all()
+    assert (hits["gen_xyz"][:, 2].mean() - 0.9).abs() < 1e-5
+    assert (hits["reco_xyz"][:, :2].mean(0) - Tensor([0.5, 0.5]) < 0.25).all()
 
     panel.realistic_validation = True
     mu._xy = torch.zeros_like(mu.xy)
     hits = panel.get_hits(mu)
-    assert hits["reco_xy"].isinf().sum() == 0
+    assert hits["reco_xyz"].isinf().sum() == 0
 
     # TODO: wait until realistic validation
     # panel.eval()
     # hits = panel.get_hits(mu)
-    # assert hits["reco_xy"].isinf().sum() == 2 * len(mu)
+    # assert hits["reco_xyz"].isinf().sum() == 2 * len(mu)
     # mu = MuonBatch(mg(100), 1)
     # hits = panel.get_hits(mu)
-    # mask = hits["reco_xy"].isinf().prod(1) - 1 < 0
+    # mask = hits["reco_xyz"].isinf().prod(1) - 1 < 0
     # # Reco hits can't leave panel
-    # assert (Tensor([0.25, 0.25]) <= hits["reco_xy"][mask]).all()
-    # assert (hits["reco_xy"][mask] <= Tensor([0.75, 0.75])).all()
+    # assert (Tensor([0.25, 0.25]) <= hits["reco_xyz"][mask]).all()
+    # assert (hits["reco_xyz"][mask] <= Tensor([0.75, 0.75])).all()
 
     # get_cost
     cost = panel.get_cost()

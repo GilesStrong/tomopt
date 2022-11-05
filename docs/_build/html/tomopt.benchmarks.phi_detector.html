@@ -286,8 +286,7 @@ A small random number &lt; 1e-3 is added/subtracted to the min/max z position of
 <dd><p>Computes the efficiency of panel at the supplied list of xy points.
 If running in evaluation mode with <cite>realistic_validation</cite>,
 then these will be the full efficiency of the panel for points inside the panel (indicated by the mask), and zero outside.
-Otherwise, the Gaussian model will be used.
-By default, a single efficiency will be computed, but xy components can be requested (efficiency is the product of these)</p>
+Otherwise, the Gaussian model will be used.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -295,14 +294,13 @@ By default, a single efficiency will be computed, but xy components can be reque
 <li><p><strong>mask</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]) – optional pre-computed (N,) Boolean mask, where True indicates that the xy point is inside the panel.
 Only used in evaluation mode and if <cite>realistic_validation</cite> is True.
 If required, but not supplied, than will be computed automatically.</p></li>
-<li><p><strong>as_2d</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – if True, will return the x,y components of the efficiency model, otherwise will return their product</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>eff, a (N,) or (N,xy) tensor of the efficiency (components) at the xy points</p>
+<dd class="field-odd"><p>eff, a (N,)tensor of the efficiency at the xy points</p>
 </dd>
 </dl>
 </dd></dl>
@@ -365,18 +363,12 @@ If required, but not supplied, than will be computed automatically.</p></li>
 <dl class="py class">
 <dt class="sig sig-object py" id="tomopt.benchmarks.phi_detector.inference.PhiDetScatterBatch">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.benchmarks.phi_detector.inference.</span></span><span class="sig-name descname"><span class="pre">PhiDetScatterBatch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/phi_detector/inference.html#PhiDetScatterBatch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.phi_detector.inference.PhiDetScatterBatch" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="tomopt.inference.html#tomopt.inference.scattering.AbsScatterBatch" title="tomopt.inference.scattering.AbsScatterBatch"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsScatterBatch</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="tomopt.inference.html#tomopt.inference.scattering.ScatterBatch" title="tomopt.inference.scattering.ScatterBatch"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScatterBatch</span></code></a></p>
 <p>Untested: no unit tests</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.benchmarks.phi_detector.inference.PhiDetScatterBatch._abc_impl">
-<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#tomopt.benchmarks.phi_detector.inference.PhiDetScatterBatch._abc_impl" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.benchmarks.phi_detector.inference.PhiDetScatterBatch._compute_tracks">
 <span class="sig-name descname"><span class="pre">_compute_tracks</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/phi_detector/inference.html#PhiDetScatterBatch._compute_tracks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.phi_detector.inference.PhiDetScatterBatch._compute_tracks" title="Permalink to this definition">¶</a></dt>
-<dd><p>Inheriting classes must override this method to compute hit uncertainties according to the detector model,
-and interface with <code class="xref py py-meth docutils literal notranslate"><span class="pre">get_muon_trajectory()</span></code></p>
+<dd><p>Computes tracks from hits according to the uncertainty and efficiency of the hits, computed as 1/(resolution*efficiency).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
@@ -508,7 +500,6 @@ Muons with &gt;=2 hits in panels have valid trajectories</p>
 </li>
 <li><a class="reference internal" href="#module-tomopt.benchmarks.phi_detector.inference">tomopt.benchmarks.phi_detector.inference module</a><ul>
 <li><a class="reference internal" href="#tomopt.benchmarks.phi_detector.inference.PhiDetScatterBatch"><code class="docutils literal notranslate"><span class="pre">PhiDetScatterBatch</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.benchmarks.phi_detector.inference.PhiDetScatterBatch._abc_impl"><code class="docutils literal notranslate"><span class="pre">PhiDetScatterBatch._abc_impl</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.benchmarks.phi_detector.inference.PhiDetScatterBatch._compute_tracks"><code class="docutils literal notranslate"><span class="pre">PhiDetScatterBatch._compute_tracks()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.benchmarks.phi_detector.inference.PhiDetScatterBatch._extract_hits"><code class="docutils literal notranslate"><span class="pre">PhiDetScatterBatch._extract_hits()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.benchmarks.phi_detector.inference.PhiDetScatterBatch._get_hit_uncs"><code class="docutils literal notranslate"><span class="pre">PhiDetScatterBatch._get_hit_uncs()</span></code></a></li>

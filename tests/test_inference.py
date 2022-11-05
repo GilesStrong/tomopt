@@ -14,7 +14,7 @@ from tomopt.muon import MuonBatch, MuonGenerator2016
 from tomopt.core import X0
 from tomopt.inference import (
     PanelX0Inferrer,
-    PanelScatterBatch,
+    ScatterBatch,
     GenScatterBatch,
     DenseBlockClassifierFromX0s,
 )
@@ -76,13 +76,13 @@ def get_panel_layers(init_res: float = 1e5, init_eff: float = 0.9, n_panels: int
 
 
 @pytest.fixture
-def panel_scatter_batch() -> Tuple[MuonBatch, Volume, PanelScatterBatch]:
+def panel_scatter_batch() -> Tuple[MuonBatch, Volume, ScatterBatch]:
     volume = Volume(get_panel_layers())
     gen = MuonGenerator2016.from_volume(volume)
     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
-    sb = PanelScatterBatch(mu=mu, volume=volume)
+    sb = ScatterBatch(mu=mu, volume=volume)
     return mu, volume, sb
 
 
@@ -94,14 +94,13 @@ def test_panel_scatter_batch(mock_show, panel_scatter_batch):
 
     # hits
     hits = mu.get_hits()
-    assert sb.hits["above"]["z"].shape == hits["above"]["z"].shape
     assert sb.n_hits_above == 4
     assert sb.n_hits_below == 4
     for i in range(4):
-        assert (sb.above_hits[:, i, :2] == hits["above"]["reco_xy"][:, i]).all()
-        assert (sb.below_hits[:, i, :2] == hits["below"]["reco_xy"][:, i]).all()
-        assert (sb.above_gen_hits[:, i, :2] == hits["above"]["gen_xy"][:, i]).all()
-        assert (sb.below_gen_hits[:, i, :2] == hits["below"]["gen_xy"][:, i]).all()
+        assert (sb.above_hits[:, i] == hits["above"]["reco_xyz"][:, i]).all()
+        assert (sb.below_hits[:, i] == hits["below"]["reco_xyz"][:, i]).all()
+        assert (sb.above_gen_hits[:, i] == hits["above"]["gen_xyz"][:, i]).all()
+        assert (sb.below_gen_hits[:, i] == hits["below"]["gen_xyz"][:, i]).all()
 
     assert (loc_xy_unc := sb.poca_xyz_unc[:, :2].mean()) < 1.0
     assert (loc_z_unc := sb.poca_xyz_unc[:, 2].mean()) < 1.5
@@ -127,8 +126,7 @@ def test_panel_scatter_batch(mock_show, panel_scatter_batch):
     assert (sb.theta_msc.abs() >= 0).all() and (sb.theta_msc < torch.pi).all()
 
     # uncertainties
-    _, panel = next(volume.get_detectors()[0].yield_zordered_panels())
-    uncs = sb._get_hit_uncs([panel], sb.reco_hits[:, 0:1])
+    uncs = sb.hit_uncs
     assert (uncs[0][:, 2] == 0).all()
     xy_unc = uncs[0][:, :2]
     assert xy_unc.min().item() > 0
@@ -136,8 +134,7 @@ def test_panel_scatter_batch(mock_show, panel_scatter_batch):
     assert xy_unc.std().item() > 0
 
     # efficiencies
-    _, panel = next(volume.get_detectors()[0].yield_zordered_panels())
-    effs = sb._get_hit_effs([panel], sb.reco_hits[:, 0:1])
+    effs = sb.hit_effs
     assert effs.min().item() > 0
     assert effs.max().item() < 1
     assert effs.std().item() > 0
@@ -161,7 +158,7 @@ def test_panel_scatter_batch(mock_show, panel_scatter_batch):
     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
-    sb = PanelScatterBatch(mu=mu, volume=volume)
+    sb = ScatterBatch(mu=mu, volume=volume)
     assert sb.poca_xyz_unc[:, :2].mean() < loc_xy_unc
     assert sb.poca_xyz_unc[:, 2].mean() < loc_z_unc
     assert sb.dxy_unc.mean() < dxy_unc
@@ -175,26 +172,22 @@ def test_scatter_batch_trajectory_fit():
     xa0 = Tensor([[0, 0, 1]])
     xa1 = Tensor([[1, 1, 0]])
     # Same unc
-    traj, start = PanelScatterBatch.get_muon_trajectory(
-        torch.stack([xa0, xa1], dim=1), torch.stack([Tensor([[1, 1]]), Tensor([[1, 1]])], dim=1), lw=Tensor([1, 1])
-    )
+    traj, start = ScatterBatch.get_muon_trajectory(torch.stack([xa0, xa1], dim=1), torch.stack([Tensor([[1, 1]]), Tensor([[1, 1]])], dim=1), lw=Tensor([1, 1]))
     assert (traj == Tensor([[1, 1, -1]])).all()
     assert (start == xa0).all()
     # Different unc
-    traj, _ = PanelScatterBatch.get_muon_trajectory(
-        torch.stack([xa0, xa1], dim=1), torch.stack([Tensor([[10, 10]]), Tensor([[1, 1]])], dim=1), lw=Tensor([1, 1])
-    )
+    traj, _ = ScatterBatch.get_muon_trajectory(torch.stack([xa0, xa1], dim=1), torch.stack([Tensor([[10, 10]]), Tensor([[1, 1]])], dim=1), lw=Tensor([1, 1]))
     assert (traj == Tensor([[1, 1, -1]])).all()
 
     # 3 Hits inline
     xa2 = Tensor([[0.5, 0.5, 0.5]])
     # Same unc
-    traj, _ = PanelScatterBatch.get_muon_trajectory(
+    traj, _ = ScatterBatch.get_muon_trajectory(
         torch.stack([xa0, xa1, xa2], dim=1), torch.stack([Tensor([[1, 1]]), Tensor([[1, 1]]), Tensor([[1, 1]])], dim=1), lw=Tensor([1, 1])
     )
     assert (traj == Tensor([[1, 1, -1]])).all()
     # Different unc
-    traj, _ = PanelScatterBatch.get_muon_trajectory(
+    traj, _ = ScatterBatch.get_muon_trajectory(
         torch.stack([xa0, xa1, xa2], dim=1), torch.stack([Tensor([[10, 10]]), Tensor([[1, 1]]), Tensor([[1, 1]])], dim=1), lw=Tensor([1, 1])
     )
     assert (traj == Tensor([[1, 1, -1]])).all()
@@ -204,12 +197,12 @@ def test_scatter_batch_trajectory_fit():
     xa1 = Tensor([[0, 1, 0.5]])
     xa2 = Tensor([[1, 0, 0.5]])
     # Same unc
-    traj, _ = PanelScatterBatch.get_muon_trajectory(
+    traj, _ = ScatterBatch.get_muon_trajectory(
         torch.stack([xa0, xa1, xa2], dim=1), torch.stack([Tensor([[1, 1]]), Tensor([[1, 1]]), Tensor([[1, 1]])], dim=1), lw=Tensor([1, 1])
     )
     assert (traj - Tensor([[0.5, 0.5, -0.5]])).sum() < 1e-5
     # Different unc
-    traj, _ = PanelScatterBatch.get_muon_trajectory(
+    traj, _ = ScatterBatch.get_muon_trajectory(
         torch.stack([xa0, xa1, xa2], dim=1), torch.stack([Tensor([[1, 1]]), Tensor([[1e9, 1e9]]), Tensor([[1, 1]])], dim=1), lw=Tensor([1, 1])
     )
     assert (traj - Tensor([[1, 0, -0.5]])).sum() < 1e-5
@@ -219,30 +212,24 @@ def test_scatter_batch_compute(mocker, panel_scatter_batch):  # noqa F811
     mu, volume = panel_scatter_batch[0], panel_scatter_batch[1]
     hits = {
         "above": {
-            "reco_xy": Tensor([[[0.0, 0.0], [0.1, 0.0]]]),
-            "gen_xy": Tensor([[[0.0, 0.0], [0.1, 0.0]]]),
-            "z": Tensor(
-                [
-                    [[1.0], [0.9]],
-                ]
-            ),
+            "reco_xyz": Tensor([[[0.0, 0.0, 1.0], [0.1, 0.0, 0.9]]]),
+            "gen_xyz": Tensor([[[0.0, 0.0, 1.0], [0.1, 0.0, 0.9]]]),
+            "unc_xyz": Tensor([[[1, 1, 1], [1, 1, 1]]]),
+            "eff": Tensor([[[1], [1]]]),
         },
         "below": {
-            "reco_xy": Tensor(
+            "reco_xyz": Tensor(
                 [
-                    [[0.1, 0.0], [0.0, 0.0]],
+                    [[0.1, 0.0, 0.1], [0.0, 0.0, 0.0]],
                 ]
             ),
-            "gen_xy": Tensor(
+            "gen_xyz": Tensor(
                 [
-                    [[0.1, 0.0], [0.0, 0.0]],
+                    [[0.1, 0.0, 0.1], [0.0, 0.0, 0.0]],
                 ]
             ),
-            "z": Tensor(
-                [
-                    [[0.1], [0.0]],
-                ]
-            ),
+            "unc_xyz": Tensor([[[1, 1, 1], [1, 1, 1]]]),
+            "eff": Tensor([[[1], [1]]]),
         },
     }
     mocker.patch.object(mu, "get_hits", return_value=hits)
@@ -253,7 +240,7 @@ def test_scatter_batch_compute(mocker, panel_scatter_batch):  # noqa F811
 
     mocker.patch("tomopt.inference.scattering.jacobian", mock_jac)
 
-    sb = PanelScatterBatch(mu=mu, volume=volume)
+    sb = ScatterBatch(mu=mu, volume=volume)
     assert (sb.poca_xyz - Tensor([[0.0, 0.5, 0.5]])).sum().abs() < 1e-3
     assert (sb.dxy - Tensor([[0.0, 0.0]])).sum().abs() < 1e-3
     assert (sb.theta_in - (torch.pi / 4)).sum().abs() < 1e-3
@@ -278,30 +265,24 @@ def test_gen_scatter_batch_compute(mocker, panel_scatter_batch):  # noqa F811
     mu, volume = panel_scatter_batch[0], panel_scatter_batch[1]
     hits = {
         "above": {
-            "reco_xy": Tensor([[[10.0, -2.0], [1, 0.3]]]),
-            "gen_xy": Tensor([[[0.0, 0.0], [0.1, 0.0]]]),
-            "z": Tensor(
-                [
-                    [[1.0], [0.9]],
-                ]
-            ),
+            "reco_xyz": Tensor([[[10.0, -2.0, 1.0], [1, 0.3, 0.9]]]),
+            "gen_xyz": Tensor([[[0.0, 0.0, 1.0], [0.1, 0.0, 0.9]]]),
+            "unc_xyz": Tensor([[[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]]),
+            "eff": Tensor([[[1], [1]]]),
         },
         "below": {
-            "reco_xy": Tensor(
+            "reco_xyz": Tensor(
                 [
-                    [[np.nan, 0.1], [10.0, -20.0]],
+                    [[np.nan, 0.1, 0.1], [10.0, -20.0, 0.0]],
                 ]
             ),
-            "gen_xy": Tensor(
+            "gen_xyz": Tensor(
                 [
-                    [[0.1, 0.0], [0.0, 0.0]],
+                    [[0.1, 0.0, 0.1], [0.0, 0.0, 0.0]],
                 ]
             ),
-            "z": Tensor(
-                [
-                    [[0.1], [0.0]],
-                ]
-            ),
+            "unc_xyz": Tensor([[[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]]),
+            "eff": Tensor([[[1], [1]]]),
         },
     }
     mocker.patch.object(mu, "get_hits", return_value=hits)
@@ -345,7 +326,7 @@ def test_panel_x0_inferrer_methods(mocker):  # noqa F811
     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
-    sb = PanelScatterBatch(mu=mu, volume=volume)
+    sb = ScatterBatch(mu=mu, volume=volume)
     inferrer = PanelX0Inferrer(volume=volume)
 
     pt = inferrer.x0_from_scatters(deltaz=SZ, total_scatter=sb.total_scatter, theta_in=sb.theta_in, theta_out=sb.theta_out, mom=sb.mu.reco_mom[:, None])
@@ -423,7 +404,7 @@ def test_panel_x0_inferrer_methods(mocker):  # noqa F811
     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
-    sb2 = PanelScatterBatch(mu=mu, volume=volume)
+    sb2 = ScatterBatch(mu=mu, volume=volume)
     inferrer.add_scatters(sb2)
     for p in [
         inferrer._n_mu,
@@ -455,7 +436,7 @@ def test_panel_inferrer_multi_batch():
 
     # one batch
     inf = PanelX0Inferrer(volume=volume)
-    inf.add_scatters(PanelScatterBatch(mu=mu, volume=volume))
+    inf.add_scatters(ScatterBatch(mu=mu, volume=volume))
     pred1, weight1 = inf.get_prediction()
 
     # multi-batch
@@ -470,7 +451,7 @@ def test_panel_inferrer_multi_batch():
             for var in mu._hits[pos]:
                 for xy_pos in mu._hits[pos][var]:
                     mu_batch._hits[pos][var].append(xy_pos[mask])
-        inf.add_scatters(PanelScatterBatch(mu=mu_batch, volume=volume))
+        inf.add_scatters(ScatterBatch(mu=mu_batch, volume=volume))
     pred4, weight4 = inf.get_prediction()
 
     assert (((pred1 - pred4) / pred1).abs() < 1e-4).all()
@@ -521,14 +502,54 @@ def test_x0_inferrer_scatter_inversion_via_scatter_batch():
     layer = PassiveLayer(lw=Tensor([1, 1]), z=1, size=0.1)
     pdg_scattering = layer._pdg_scatter(x0=x0, deltaz=0.01, theta=muons.theta, theta_x=muons.theta_x, theta_y=muons.theta_y, mom=muons.mom, log_term=False)
 
-    muons.append_hits({"reco_xy": muons.xy.detach().clone(), "gen_xy": muons.xy.detach().clone(), "z": muons.z.expand_as(muons.x)[:, None]}, pos="above")
+    xyz = F.pad(muons.xy.detach().clone(), (0, 1))
+    xyz[:, 2] = muons.z.detach().clone()
+    muons.append_hits(
+        {
+            "reco_xyz": xyz,
+            "gen_xyz": xyz,
+            "unc_xyz": torch.zeros(len(muons), 3),
+            "eff": torch.ones(len(muons), 1),
+        },
+        pos="above",
+    )
     muons.propagate(0.1)
-    muons.append_hits({"reco_xy": muons.xy.detach().clone(), "gen_xy": muons.xy.detach().clone(), "z": muons.z.expand_as(muons.x)[:, None]}, pos="above")
+    xyz = F.pad(muons.xy.detach().clone(), (0, 1))
+    xyz[:, 2] = muons.z.detach().clone()
+    muons.append_hits(
+        {
+            "reco_xyz": xyz,
+            "gen_xyz": xyz,
+            "unc_xyz": torch.zeros(len(muons), 3),
+            "eff": torch.ones(len(muons), 1),
+        },
+        pos="above",
+    )
     muons.propagate(0.01)
     muons.scatter_dtheta_dphi(dtheta_vol=pdg_scattering["dtheta_vol"], dphi_vol=pdg_scattering["dphi_vol"])
-    muons.append_hits({"reco_xy": muons.xy.detach().clone(), "gen_xy": muons.xy.detach().clone(), "z": muons.z.expand_as(muons.x)[:, None]}, pos="below")
+    xyz = F.pad(muons.xy.detach().clone(), (0, 1))
+    xyz[:, 2] = muons.z.detach().clone()
+    muons.append_hits(
+        {
+            "reco_xyz": xyz,
+            "gen_xyz": xyz,
+            "unc_xyz": torch.zeros(len(muons), 3),
+            "eff": torch.ones(len(muons), 1),
+        },
+        pos="below",
+    )
     muons.propagate(0.1)
-    muons.append_hits({"reco_xy": muons.xy.detach().clone(), "gen_xy": muons.xy.detach().clone(), "z": muons.z.expand_as(muons.x)[:, None]}, pos="below")
+    xyz = F.pad(muons.xy.detach().clone(), (0, 1))
+    xyz[:, 2] = muons.z.detach().clone()
+    muons.append_hits(
+        {
+            "reco_xyz": xyz,
+            "gen_xyz": xyz,
+            "unc_xyz": torch.zeros(len(muons), 3),
+            "eff": torch.ones(len(muons), 1),
+        },
+        pos="below",
+    )
 
     class MockVolume:
         lw = Tensor([10, 10])
@@ -564,7 +585,7 @@ def test_x0_inferrer_scatter_inversion_via_scatter_batch():
 #     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
 #     mu = MuonBatch(mus, init_z=volume.h)
 #     volume(mu)
-#     sb = PanelScatterBatch(mu=mu, volume=volume)
+#     sb = ScatterBatch(mu=mu, volume=volume)
 #     nvalid = len(mu)
 
 #     grp_feats = ["pred_x0", "track_xy", "delta_angles", "theta_msc", "track_angles", "poca", "dpoca", "voxels"]  # 1  # 4  # 2  # 1  # 4  # 3  # 3->4  # 0->3
@@ -628,7 +649,7 @@ def test_dense_block_classifier_from_x0s():
 
     volume.load_rad_length(u_rad_length)
     volume(mu)
-    sb = PanelScatterBatch(mu=mu, volume=volume)
+    sb = ScatterBatch(mu=mu, volume=volume)
     inferrer = DenseBlockClassifierFromX0s(12, PanelX0Inferrer, volume=volume)
     inferrer.add_scatters(sb)
 
@@ -648,7 +669,7 @@ def test_abs_int_classifier_from_x0():
     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
     mu = MuonBatch(mus, init_z=volume.h)
     volume(mu)
-    sb = PanelScatterBatch(mu=mu, volume=volume)
+    sb = ScatterBatch(mu=mu, volume=volume)
 
     class Inf(AbsIntClassifierFromX0):
         def x02probs(self, vox_preds: Tensor) -> Tensor:

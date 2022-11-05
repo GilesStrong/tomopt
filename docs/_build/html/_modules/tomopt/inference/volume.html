@@ -245,14 +245,14 @@
 <span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
 <span class="kn">from</span> <span class="nn">torch.distributions</span> <span class="kn">import</span> <span class="n">Normal</span>
 
-<span class="kn">from</span> <span class="nn">.scattering</span> <span class="kn">import</span> <span class="n">AbsScatterBatch</span>
+<span class="kn">from</span> <span class="nn">.scattering</span> <span class="kn">import</span> <span class="n">ScatterBatch</span>
 <span class="kn">from</span> <span class="nn">..volume</span> <span class="kn">import</span> <span class="n">Volume</span>
 <span class="kn">from</span> <span class="nn">..core</span> <span class="kn">import</span> <span class="n">SCATTER_COEF_A</span>
 <span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">jacobian</span>
 
 <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Provides implementations of classes designed to infer targets of passive volumes</span>
-<span class="sd">using the variables computed by e.g. :class:`~tomopt.inference.scattering.AbsScatterBatch`.</span>
+<span class="sd">using the variables computed by e.g. :class:`~tomopt.inference.scattering.ScatterBatch`.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
@@ -268,7 +268,7 @@
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Abstract base class for volume inference.</span>
 
-<span class="sd">    Inheriting classes are expected to be fed multiple :class:`~tomopt.inference.scattering.AbsScatterBatch`s,</span>
+<span class="sd">    Inheriting classes are expected to be fed multiple :class:`~tomopt.inference.scattering.ScatterBatch`s,</span>
 <span class="sd">    via :meth:`~tomopt.inference.volume.AbsVolumeInferrer.add_scatters`, for a single :class:`~tomopt.volume.volume.Volume`</span>
 <span class="sd">    and return a volume prediction based on all of the muon batches when :meth:`~tomopt.inference.volume.AbsVolumeInferrer.get_prediction` is called.</span>
 
@@ -281,7 +281,7 @@
 <span class="sd">        Initialises the inference class for the provided volume.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">scatter_batches</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">AbsScatterBatch</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scatter_batches</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ScatterBatch</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">volume</span> <span class="o">=</span> <span class="n">volume</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lw</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">passive_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">lw</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">device</span>
 
@@ -294,7 +294,7 @@
         <span class="k">pass</span></div>
 
 <div class="viewcode-block" id="AbsVolumeInferrer.compute_efficiency"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.AbsVolumeInferrer.compute_efficiency">[docs]</a>    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">compute_efficiency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scatters</span><span class="p">:</span> <span class="n">AbsScatterBatch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">compute_efficiency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scatters</span><span class="p">:</span> <span class="n">ScatterBatch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Inheriting classes must override this method to provide a computation of the per-muon efficiency, given the individual muon hit efficiencies.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -311,11 +311,11 @@
 
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="AbsVolumeInferrer.add_scatters"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.AbsVolumeInferrer.add_scatters">[docs]</a>    <span class="k">def</span> <span class="nf">add_scatters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scatters</span><span class="p">:</span> <span class="n">AbsScatterBatch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="AbsVolumeInferrer.add_scatters"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.AbsVolumeInferrer.add_scatters">[docs]</a>    <span class="k">def</span> <span class="nf">add_scatters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scatters</span><span class="p">:</span> <span class="n">ScatterBatch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Appends a new set of muon scatter variables.</span>
 <span class="sd">        When :meth:`~tomopt.inference.volume.AbsVolumeInferrer.get_prediction` is called, the prediction will be based on all</span>
-<span class="sd">        :class:`~tomopt.inference.scattering.AbsScatterBatch`s added up to that point</span>
+<span class="sd">        :class:`~tomopt.inference.scattering.ScatterBatch`s added up to that point</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_reset_vars</span><span class="p">()</span>  <span class="c1"># Ensure that any previously computed predictions are wiped</span>
@@ -794,7 +794,7 @@
 <span class="sd">        volume: volume through which the muons will be passed</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="PanelX0Inferrer.compute_efficiency"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.PanelX0Inferrer.compute_efficiency">[docs]</a>    <span class="k">def</span> <span class="nf">compute_efficiency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scatters</span><span class="p">:</span> <span class="n">AbsScatterBatch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+<div class="viewcode-block" id="PanelX0Inferrer.compute_efficiency"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.PanelX0Inferrer.compute_efficiency">[docs]</a>    <span class="k">def</span> <span class="nf">compute_efficiency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scatters</span><span class="p">:</span> <span class="n">ScatterBatch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the per-muon efficiency, given the individual muon hit efficiencies,</span>
 <span class="sd">        as the probability of at least two hits above and below the passive volume.</span>
@@ -865,14 +865,14 @@
 <span class="c1">#         if &quot;voxels&quot; in self.grp_feats:</span>
 <span class="c1">#             self.in_feats += [&quot;vox_x&quot;, &quot;vox_y&quot;, &quot;vox_z&quot;]</span>
 
-<span class="c1">#     def compute_efficiency(self, scatters: AbsScatterBatch) -&gt; Tensor:</span>
+<span class="c1">#     def compute_efficiency(self, scatters: ScatterBatch) -&gt; Tensor:</span>
 <span class="c1">#         return self.base_inferrer.compute_efficiency(scatters=scatters)</span>
 
-<span class="c1">#     def get_base_predictions(self, scatters: AbsScatterBatch) -&gt; Tuple[Tensor, Tensor]:</span>
+<span class="c1">#     def get_base_predictions(self, scatters: ScatterBatch) -&gt; Tuple[Tensor, Tensor]:</span>
 <span class="c1">#         x, u = self.base_inferrer.muon_x0_from_scatters(scatters=scatters)</span>
 <span class="c1">#         return x[:, None], u[:, None]</span>
 
-<span class="c1">#     def _build_vars(self, scatters: AbsScatterBatch, pred_x0: Tensor, pred_x0_unc: Tensor) -&gt; None:</span>
+<span class="c1">#     def _build_vars(self, scatters: ScatterBatch, pred_x0: Tensor, pred_x0_unc: Tensor) -&gt; None:</span>
 <span class="c1">#         feats, uncs = [], []</span>
 <span class="c1">#         if &quot;pred_x0&quot; in self.grp_feats:</span>
 <span class="c1">#             feats += [pred_x0]</span>
@@ -908,7 +908,7 @@
 <span class="c1">#             self.in_var_uncs.append(torch.cat(uncs, dim=-1))</span>
 <span class="c1">#         self.efficiencies.append(self.compute_efficiency(scatters=scatters)[:, None])</span>
 
-<span class="c1">#     def add_scatters(self, scatters: AbsScatterBatch) -&gt; None:</span>
+<span class="c1">#     def add_scatters(self, scatters: ScatterBatch) -&gt; None:</span>
 <span class="c1">#         self.scatter_batches.append(scatters)</span>
 <span class="c1">#         pred_x0, pred_x0_unc = self.get_base_predictions(scatters)</span>
 <span class="c1">#         self._build_vars(scatters, pred_x0, pred_x0_unc)</span>
@@ -953,7 +953,7 @@
 <span class="c1">#         super().__init__(model=model, base_inferrer=base_inferrer, volume=volume, grp_feats=grp_feats, include_unc=include_unc)</span>
 <span class="c1">#         self.in_var_weights: List[Tensor] = []</span>
 
-<span class="c1">#     def add_scatters(self, scatters: AbsScatterBatch) -&gt; None:</span>
+<span class="c1">#     def add_scatters(self, scatters: ScatterBatch) -&gt; None:</span>
 <span class="c1">#         self.scatter_batches.append(scatters)</span>
 <span class="c1">#         pred_x0, pred_x0_unc = self.get_base_predictions(scatters)</span>
 <span class="c1">#         self._build_vars(scatters, pred_x0, pred_x0_unc)</span>
@@ -1028,16 +1028,16 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">x0_inferrer</span> <span class="o">=</span> <span class="n">partial_x0_inferrer</span><span class="p">(</span><span class="n">volume</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">frac</span> <span class="o">=</span> <span class="n">n_block_voxels</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">centres</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span>
 
-<div class="viewcode-block" id="DenseBlockClassifierFromX0s.add_scatters"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.DenseBlockClassifierFromX0s.add_scatters">[docs]</a>    <span class="k">def</span> <span class="nf">add_scatters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scatters</span><span class="p">:</span> <span class="n">AbsScatterBatch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="DenseBlockClassifierFromX0s.add_scatters"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.DenseBlockClassifierFromX0s.add_scatters">[docs]</a>    <span class="k">def</span> <span class="nf">add_scatters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scatters</span><span class="p">:</span> <span class="n">ScatterBatch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Appends a new set of muon scatter vairables.</span>
 <span class="sd">        When :meth:`~tomopt.inference.volume.DenseBlockClassifierFromX0s.get_prediction` is called, the prediction will be based on all</span>
-<span class="sd">        :class:`~tomopt.inference.scattering.AbsScatterBatch` s added up to that point</span>
+<span class="sd">        :class:`~tomopt.inference.scattering.ScatterBatch` s added up to that point</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">x0_inferrer</span><span class="o">.</span><span class="n">add_scatters</span><span class="p">(</span><span class="n">scatters</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="DenseBlockClassifierFromX0s.compute_efficiency"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.DenseBlockClassifierFromX0s.compute_efficiency">[docs]</a>    <span class="k">def</span> <span class="nf">compute_efficiency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scatters</span><span class="p">:</span> <span class="n">AbsScatterBatch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+<div class="viewcode-block" id="DenseBlockClassifierFromX0s.compute_efficiency"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.DenseBlockClassifierFromX0s.compute_efficiency">[docs]</a>    <span class="k">def</span> <span class="nf">compute_efficiency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scatters</span><span class="p">:</span> <span class="n">ScatterBatch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compuates the per-muon efficiency according to the method implemented by the X0 inferrer.</span>
 
@@ -1130,16 +1130,16 @@
 
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="AbsIntClassifierFromX0.add_scatters"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.AbsIntClassifierFromX0.add_scatters">[docs]</a>    <span class="k">def</span> <span class="nf">add_scatters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scatters</span><span class="p">:</span> <span class="n">AbsScatterBatch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="AbsIntClassifierFromX0.add_scatters"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.AbsIntClassifierFromX0.add_scatters">[docs]</a>    <span class="k">def</span> <span class="nf">add_scatters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scatters</span><span class="p">:</span> <span class="n">ScatterBatch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Appends a new set of muon scatter vairables.</span>
 <span class="sd">        When :meth:`~tomopt.inference.volume.DenseBlockClassifierFromX0s.get_prediction` is called, the prediction will be based on all</span>
-<span class="sd">        :class:`~tomopt.inference.scattering.AbsScatterBatch` s added up to that point</span>
+<span class="sd">        :class:`~tomopt.inference.scattering.ScatterBatch` s added up to that point</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">x0_inferrer</span><span class="o">.</span><span class="n">add_scatters</span><span class="p">(</span><span class="n">scatters</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="AbsIntClassifierFromX0.compute_efficiency"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.AbsIntClassifierFromX0.compute_efficiency">[docs]</a>    <span class="k">def</span> <span class="nf">compute_efficiency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scatters</span><span class="p">:</span> <span class="n">AbsScatterBatch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+<div class="viewcode-block" id="AbsIntClassifierFromX0.compute_efficiency"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.AbsIntClassifierFromX0.compute_efficiency">[docs]</a>    <span class="k">def</span> <span class="nf">compute_efficiency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scatters</span><span class="p">:</span> <span class="n">ScatterBatch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compuates the per-muon efficiency according to the method implemented by the X0 inferrer.</span>
 

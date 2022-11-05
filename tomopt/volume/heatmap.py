@@ -5,6 +5,7 @@ import seaborn as sns
 
 import torch
 from torch import nn, Tensor
+import torch.nn.functional as F
 
 from ..muon import MuonBatch
 from ..core import DEVICE
@@ -115,9 +116,11 @@ class DetectorHeatMap(nn.Module):
             raise ValueError(f"{self.xy_span_fix} is not a Tensor for some reason.")  # To appease MyPy
 
         mask = mu.get_xy_mask(self.xy_fix - self.range_mult * self.delta_xy, self.xy_fix + self.range_mult * self.delta_xy)  # Muons in panel
+        true_mu_xy = mu.xy.data
+
         xy0 = self.xy_fix - (self.delta_xy / 2)  # approx. Low-left of panel
-        rel_xy = mu.xy - xy0
-        res = self.get_resolution(mu.xy, mask)
+        rel_xy = true_mu_xy - xy0
+        res = self.get_resolution(true_mu_xy, mask)
         rel_xy = rel_xy + (torch.randn((len(mu), 2), device=self.device) / res)
 
         if not self.training and self.realistic_validation:  # Prevent reco hit from exiting panel
@@ -126,10 +129,15 @@ class DetectorHeatMap(nn.Module):
             rel_xy[mask] = torch.stack([torch.clamp(rel_xy[mask][:, 0], 0, span[0]), torch.clamp(rel_xy[mask][:, 1], 0, span[1])], dim=-1)
         reco_xy = xy0 + rel_xy
 
+        reco_xyz = F.pad(reco_xy, (0, 1))
+        reco_xyz[:, 2] = self.z
+        gen_xyz = F.pad(true_mu_xy, (0, 1))
+        gen_xyz[:, 2] = self.z
         hits = {
-            "reco_xy": reco_xy,
-            "gen_xy": mu.xy.detach().clone(),
-            "z": self.z.expand_as(mu.x)[:, None],
+            "reco_xyz": reco_xyz,
+            "gen_xyz": gen_xyz,
+            "unc_xyz": F.pad(1 / res, (0, 1)),  # Add zero for z unc
+            "eff": self.get_efficiency(true_mu_xy, mask)[:, None],
         }
         return hits
 

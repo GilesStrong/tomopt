@@ -49,7 +49,7 @@ class PhiDetectorPanel(DetectorPanel):
         hits = {
             "reco_h": reco_h,
             "gen_h": gen_h,
-            "gen_xy": xy,
+            "gen_xyz": xy,
             "z": self.z.expand_as(mu.x)[:, None],
             "phi": self.phi.expand_as(mu.x)[:, None],
         }

@@ -7,14 +7,14 @@ from torch import Tensor
 import torch.nn.functional as F
 from torch.distributions import Normal
 
-from .scattering import AbsScatterBatch
+from .scattering import ScatterBatch
 from ..volume import Volume
 from ..core import SCATTER_COEF_A
 from ..utils import jacobian
 
 r"""
 Provides implementations of classes designed to infer targets of passive volumes
-using the variables computed by e.g. :class:`~tomopt.inference.scattering.AbsScatterBatch`.
+using the variables computed by e.g. :class:`~tomopt.inference.scattering.ScatterBatch`.
 """
 
 __all__ = [
@@ -30,7 +30,7 @@ class AbsVolumeInferrer(metaclass=ABCMeta):
     r"""
     Abstract base class for volume inference.
 
-    Inheriting classes are expected to be fed multiple :class:`~tomopt.inference.scattering.AbsScatterBatch`s,
+    Inheriting classes are expected to be fed multiple :class:`~tomopt.inference.scattering.ScatterBatch`s,
     via :meth:`~tomopt.inference.volume.AbsVolumeInferrer.add_scatters`, for a single :class:`~tomopt.volume.volume.Volume`
     and return a volume prediction based on all of the muon batches when :meth:`~tomopt.inference.volume.AbsVolumeInferrer.get_prediction` is called.
 
@@ -43,7 +43,7 @@ class AbsVolumeInferrer(metaclass=ABCMeta):
         Initialises the inference class for the provided volume.
         """
 
-        self.scatter_batches: List[AbsScatterBatch] = []
+        self.scatter_batches: List[ScatterBatch] = []
         self.volume = volume
         self.size, self.lw, self.device = self.volume.passive_size, self.volume.lw, self.volume.device
 
@@ -56,7 +56,7 @@ class AbsVolumeInferrer(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
+    def compute_efficiency(self, scatters: ScatterBatch) -> Tensor:
         r"""
         Inheriting classes must override this method to provide a computation of the per-muon efficiency, given the individual muon hit efficiencies.
         """
@@ -73,11 +73,11 @@ class AbsVolumeInferrer(metaclass=ABCMeta):
 
         pass
 
-    def add_scatters(self, scatters: AbsScatterBatch) -> None:
+    def add_scatters(self, scatters: ScatterBatch) -> None:
         r"""
         Appends a new set of muon scatter variables.
         When :meth:`~tomopt.inference.volume.AbsVolumeInferrer.get_prediction` is called, the prediction will be based on all
-        :class:`~tomopt.inference.scattering.AbsScatterBatch`s added up to that point
+        :class:`~tomopt.inference.scattering.ScatterBatch`s added up to that point
         """
 
         self._reset_vars()  # Ensure that any previously computed predictions are wiped
@@ -556,7 +556,7 @@ class PanelX0Inferrer(AbsX0Inferrer):
         volume: volume through which the muons will be passed
     """
 
-    def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
+    def compute_efficiency(self, scatters: ScatterBatch) -> Tensor:
         r"""
         Computes the per-muon efficiency, given the individual muon hit efficiencies,
         as the probability of at least two hits above and below the passive volume.
@@ -627,14 +627,14 @@ class PanelX0Inferrer(AbsX0Inferrer):
 #         if "voxels" in self.grp_feats:
 #             self.in_feats += ["vox_x", "vox_y", "vox_z"]
 
-#     def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
+#     def compute_efficiency(self, scatters: ScatterBatch) -> Tensor:
 #         return self.base_inferrer.compute_efficiency(scatters=scatters)
 
-#     def get_base_predictions(self, scatters: AbsScatterBatch) -> Tuple[Tensor, Tensor]:
+#     def get_base_predictions(self, scatters: ScatterBatch) -> Tuple[Tensor, Tensor]:
 #         x, u = self.base_inferrer.muon_x0_from_scatters(scatters=scatters)
 #         return x[:, None], u[:, None]
 
-#     def _build_vars(self, scatters: AbsScatterBatch, pred_x0: Tensor, pred_x0_unc: Tensor) -> None:
+#     def _build_vars(self, scatters: ScatterBatch, pred_x0: Tensor, pred_x0_unc: Tensor) -> None:
 #         feats, uncs = [], []
 #         if "pred_x0" in self.grp_feats:
 #             feats += [pred_x0]
@@ -670,7 +670,7 @@ class PanelX0Inferrer(AbsX0Inferrer):
 #             self.in_var_uncs.append(torch.cat(uncs, dim=-1))
 #         self.efficiencies.append(self.compute_efficiency(scatters=scatters)[:, None])
 
-#     def add_scatters(self, scatters: AbsScatterBatch) -> None:
+#     def add_scatters(self, scatters: ScatterBatch) -> None:
 #         self.scatter_batches.append(scatters)
 #         pred_x0, pred_x0_unc = self.get_base_predictions(scatters)
 #         self._build_vars(scatters, pred_x0, pred_x0_unc)
@@ -715,7 +715,7 @@ class PanelX0Inferrer(AbsX0Inferrer):
 #         super().__init__(model=model, base_inferrer=base_inferrer, volume=volume, grp_feats=grp_feats, include_unc=include_unc)
 #         self.in_var_weights: List[Tensor] = []
 
-#     def add_scatters(self, scatters: AbsScatterBatch) -> None:
+#     def add_scatters(self, scatters: ScatterBatch) -> None:
 #         self.scatter_batches.append(scatters)
 #         pred_x0, pred_x0_unc = self.get_base_predictions(scatters)
 #         self._build_vars(scatters, pred_x0, pred_x0_unc)
@@ -790,16 +790,16 @@ class DenseBlockClassifierFromX0s(AbsVolumeInferrer):
         self.x0_inferrer = partial_x0_inferrer(volume=self.volume)
         self.frac = n_block_voxels / self.volume.centres.numel()
 
-    def add_scatters(self, scatters: AbsScatterBatch) -> None:
+    def add_scatters(self, scatters: ScatterBatch) -> None:
         r"""
         Appends a new set of muon scatter vairables.
         When :meth:`~tomopt.inference.volume.DenseBlockClassifierFromX0s.get_prediction` is called, the prediction will be based on all
-        :class:`~tomopt.inference.scattering.AbsScatterBatch` s added up to that point
+        :class:`~tomopt.inference.scattering.ScatterBatch` s added up to that point
         """
 
         self.x0_inferrer.add_scatters(scatters)
 
-    def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
+    def compute_efficiency(self, scatters: ScatterBatch) -> Tensor:
         r"""
         Compuates the per-muon efficiency according to the method implemented by the X0 inferrer.
 
@@ -892,16 +892,16 @@ class AbsIntClassifierFromX0(AbsVolumeInferrer):
 
         pass
 
-    def add_scatters(self, scatters: AbsScatterBatch) -> None:
+    def add_scatters(self, scatters: ScatterBatch) -> None:
         r"""
         Appends a new set of muon scatter vairables.
         When :meth:`~tomopt.inference.volume.DenseBlockClassifierFromX0s.get_prediction` is called, the prediction will be based on all
-        :class:`~tomopt.inference.scattering.AbsScatterBatch` s added up to that point
+        :class:`~tomopt.inference.scattering.ScatterBatch` s added up to that point
         """
 
         self.x0_inferrer.add_scatters(scatters)
 
-    def compute_efficiency(self, scatters: AbsScatterBatch) -> Tensor:
+    def compute_efficiency(self, scatters: ScatterBatch) -> Tensor:
         r"""
         Compuates the per-muon efficiency according to the method implemented by the X0 inferrer.
 
