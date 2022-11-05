@@ -129,10 +129,13 @@ class DetectorHeatMap(nn.Module):
             rel_xy[mask] = torch.stack([torch.clamp(rel_xy[mask][:, 0], 0, span[0]), torch.clamp(rel_xy[mask][:, 1], 0, span[1])], dim=-1)
         reco_xy = xy0 + rel_xy
 
+        reco_xyz = F.pad(reco_xy, (0, 1))
+        reco_xyz[:, 2] = self.z
+        gen_xyz = F.pad(true_mu_xy, (0, 1))
+        gen_xyz[:, 2] = self.z
         hits = {
-            "reco_xy": reco_xy,
-            "gen_xy": true_mu_xy,
-            "z": self.z.expand_as(mu.x)[:, None],
+            "reco_xyz": reco_xyz,
+            "gen_xyz": gen_xyz,
             "unc_xyz": F.pad(1 / res, (0, 1)),  # Add zero for z unc
             "eff": self.get_efficiency(true_mu_xy, mask)[:, None],
         }

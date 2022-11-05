@@ -162,13 +162,13 @@ def test_panel_detector_layer(mocker, batch):  # noqa F811
 
     hits = batch.get_hits()
     assert len(hits) == 1
-    assert hits["above"]["reco_xy"].shape == torch.Size([len(batch), 1, 2])
-    assert hits["above"]["gen_xy"].shape == torch.Size([len(batch), 1, 2])
+    assert hits["above"]["reco_xyz"].shape == torch.Size([len(batch), 1, 3])
+    assert hits["above"]["gen_xyz"].shape == torch.Size([len(batch), 1, 3])
     assert hits["above"]["unc_xyz"].shape == torch.Size([len(batch), 1, 3])
     assert hits["above"]["eff"].shape == torch.Size([len(batch), 1, 1])
 
     # every reco hit (x,y) is function of panel position and size
-    for var in ["reco_xy", "unc_xyz", "eff"]:
+    for var in ["reco_xyz", "unc_xyz", "eff"]:
         for dep_var in [dl.panels[0].xy, dl.panels[0].xy_span]:
             grad = jacobian(hits["above"][var][:, 0], dep_var).sum((-1))
             assert not grad.isnan().any()
@@ -340,10 +340,10 @@ def test_volume_forward_panel():
 
     hits = batch.get_hits()
     assert "above" in hits and "below" in hits
-    assert hits["above"]["reco_xy"].shape == torch.Size([N, 4, 2])
-    assert hits["below"]["reco_xy"].shape == torch.Size([N, 4, 2])
-    assert hits["above"]["gen_xy"].shape == torch.Size([N, 4, 2])
-    assert hits["below"]["gen_xy"].shape == torch.Size([N, 4, 2])
+    assert hits["above"]["reco_xyz"].shape == torch.Size([N, 4, 3])
+    assert hits["below"]["reco_xyz"].shape == torch.Size([N, 4, 3])
+    assert hits["above"]["gen_xyz"].shape == torch.Size([N, 4, 3])
+    assert hits["below"]["gen_xyz"].shape == torch.Size([N, 4, 3])
     assert hits["above"]["unc_xyz"].shape == torch.Size([N, 4, 3])
     assert hits["below"]["unc_xyz"].shape == torch.Size([N, 4, 3])
     assert hits["above"]["eff"].shape == torch.Size([N, 4, 1])
@@ -365,7 +365,7 @@ def test_volume_forward_panel():
     for i, l in enumerate(volume.get_detectors()):
         for j, (_, p) in enumerate(l.yield_zordered_panels()):
             for dep_var in [p.xy, p.xy_span]:
-                for var in ["reco_xy", "unc_xyz", "eff"]:
+                for var in ["reco_xyz", "unc_xyz", "eff"]:
                     grad = jacobian(hits["above" if l.z > 0.5 else "below"][var][:, j], dep_var).nansum((-1))
                     assert grad.isnan().sum() == 0
                     assert (grad != 0).sum() > 0
@@ -458,24 +458,24 @@ def test_detector_panel_methods():
     mu = MuonBatch(mg(100), 1)
     mu._xy = torch.ones_like(mu.xy) / 2
     hits = panel.get_hits(mu)
-    assert (hits["gen_xy"] == mu.xy).all()
-    assert (hits["z"].mean() - 0.9).abs() < 1e-5
-    assert (hits["reco_xy"].mean(0) - Tensor([0.5, 0.5]) < 0.25).all()
+    assert (hits["gen_xyz"][:, :2] == mu.xy).all()
+    assert (hits["gen_xyz"][:, 2].mean() - 0.9).abs() < 1e-5
+    assert (hits["reco_xyz"][:, :2].mean(0) - Tensor([0.5, 0.5]) < 0.25).all()
 
     panel.realistic_validation = True
     mu._xy = torch.zeros_like(mu.xy)
     hits = panel.get_hits(mu)
-    assert hits["reco_xy"].isinf().sum() == 0
+    assert hits["reco_xyz"].isinf().sum() == 0
 
     panel.eval()
     hits = panel.get_hits(mu)
-    assert hits["reco_xy"].isinf().sum() == 2 * len(mu)
+    assert hits["reco_xyz"].isinf().sum() == 2 * len(mu)
     mu = MuonBatch(mg(100), 1)
     hits = panel.get_hits(mu)
-    mask = hits["reco_xy"].isinf().prod(1) - 1 < 0
+    mask = hits["reco_xyz"][:, :2].isinf().prod(1) - 1 < 0
     # Reco hits can't leave panel
-    assert (Tensor([0.25, 0.25]) <= hits["reco_xy"][mask]).all()
-    assert (hits["reco_xy"][mask] <= Tensor([0.75, 0.75])).all()
+    assert (Tensor([0.25, 0.25]) <= hits["reco_xyz"][mask][:, :2]).all()
+    assert (hits["reco_xyz"][mask][:, :2] <= Tensor([0.75, 0.75])).all()
 
     # get_cost
     cost = panel.get_cost()

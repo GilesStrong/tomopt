@@ -32,11 +32,11 @@ class PhiDetScatterBatch(ScatterBatch):
             dim=1,
         )
         _above_gen_hits = torch.stack(
-            [torch.cat([self.hits["above"]["gen_xy"][:, i], self.hits["above"]["z"][:, i]], dim=-1) for i in range(self.hits["above"]["gen_xy"].shape[1])],
+            [torch.cat([self.hits["above"]["gen_xyz"][:, i], self.hits["above"]["z"][:, i]], dim=-1) for i in range(self.hits["above"]["gen_xyz"].shape[1])],
             dim=1,
         )  # muons, panels, xyz
         _below_gen_hits = torch.stack(
-            [torch.cat([self.hits["below"]["gen_xy"][:, i], self.hits["below"]["z"][:, i]], dim=-1) for i in range(self.hits["below"]["gen_xy"].shape[1])],
+            [torch.cat([self.hits["below"]["gen_xyz"][:, i], self.hits["below"]["z"][:, i]], dim=-1) for i in range(self.hits["below"]["gen_xyz"].shape[1])],
             dim=1,
         )
         self._n_hits_above = above_hits.shape[1]

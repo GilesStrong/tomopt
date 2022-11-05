@@ -188,9 +188,9 @@ class ScatterBatch:
             idx: index of muon to plot
         """
 
-        xin, xout = self.hits["above"]["reco_xy"][idx, :, 0].detach().cpu().numpy(), self.hits["below"]["reco_xy"][idx, :, 0].detach().cpu().numpy()
-        yin, yout = self.hits["above"]["reco_xy"][idx, :, 1].detach().cpu().numpy(), self.hits["below"]["reco_xy"][idx, :, 1].detach().cpu().numpy()
-        zin, zout = self.hits["above"]["z"][idx, :, 0].detach().cpu().numpy(), self.hits["below"]["z"][idx, :, 0].detach().cpu().numpy()
+        xin, xout = self.hits["above"]["reco_xyz"][idx, :, 0].detach().cpu().numpy(), self.hits["below"]["reco_xyz"][idx, :, 0].detach().cpu().numpy()
+        yin, yout = self.hits["above"]["reco_xyz"][idx, :, 1].detach().cpu().numpy(), self.hits["below"]["reco_xyz"][idx, :, 1].detach().cpu().numpy()
+        zin, zout = self.hits["above"]["reco_xyz"][idx, :, 2].detach().cpu().numpy(), self.hits["below"]["reco_xyz"][idx, :, 2].detach().cpu().numpy()
         scatter = self.poca_xyz[idx].detach().cpu().numpy()
         dtheta_xy = self.dtheta_xy[idx].detach().cpu().numpy()
         dphi = self.dphi[idx].detach().cpu().numpy()
@@ -390,29 +390,12 @@ class ScatterBatch:
         Takes the dictionary of hits from the muons and combines them into single tensors of recorded and true hits.
         """
 
-        # reco x, reco y, gen z, must be a list to allow computation of uncertainty
-        above_hits = torch.stack(
-            [torch.cat([self.hits["above"]["reco_xy"][:, i], self.hits["above"]["z"][:, i]], dim=-1) for i in range(self.hits["above"]["reco_xy"].shape[1])],
-            dim=1,
-        )  # muons, panels, xyz
-        below_hits = torch.stack(
-            [torch.cat([self.hits["below"]["reco_xy"][:, i], self.hits["below"]["z"][:, i]], dim=-1) for i in range(self.hits["below"]["reco_xy"].shape[1])],
-            dim=1,
-        )
-        _above_gen_hits = torch.stack(
-            [torch.cat([self.hits["above"]["gen_xy"][:, i], self.hits["above"]["z"][:, i]], dim=-1) for i in range(self.hits["above"]["gen_xy"].shape[1])],
-            dim=1,
-        )  # muons, panels, xyz
-        _below_gen_hits = torch.stack(
-            [torch.cat([self.hits["below"]["gen_xy"][:, i], self.hits["below"]["z"][:, i]], dim=-1) for i in range(self.hits["below"]["gen_xy"].shape[1])],
-            dim=1,
-        )
-        self._n_hits_above = above_hits.shape[1]
-        self._n_hits_below = below_hits.shape[1]
+        self._n_hits_above = self.hits["above"]["reco_xyz"].shape[1]
+        self._n_hits_below = self.hits["below"]["reco_xyz"].shape[1]
 
         # Combine all input vars into single tensor, NB ideally would stack to new dim but can't assume same number of panels above & below
-        self._reco_hits = torch.cat((above_hits, below_hits), dim=1)  # muons, all panels, reco xyz
-        self._gen_hits = torch.cat((_above_gen_hits, _below_gen_hits), dim=1)  # muons, all panels, true xyz
+        self._reco_hits = torch.cat((self.hits["above"]["reco_xyz"], self.hits["below"]["reco_xyz"]), dim=1)  # muons, all panels, reco xyz
+        self._gen_hits = torch.cat((self.hits["above"]["gen_xyz"], self.hits["below"]["gen_xyz"]), dim=1)  # muons, all panels, true xyz
         self._hit_uncs = torch.cat((self.hits["above"]["unc_xyz"], self.hits["below"]["unc_xyz"]), dim=1)  # muons, all panels, xyz unc
         self._hit_effs = torch.cat((self.hits["above"]["eff"], self.hits["below"]["eff"]), dim=1)  # muons, all panels, eff
 

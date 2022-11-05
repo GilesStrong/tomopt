@@ -94,14 +94,13 @@ def test_panel_scatter_batch(mock_show, panel_scatter_batch):
 
     # hits
     hits = mu.get_hits()
-    assert sb.hits["above"]["z"].shape == hits["above"]["z"].shape
     assert sb.n_hits_above == 4
     assert sb.n_hits_below == 4
     for i in range(4):
-        assert (sb.above_hits[:, i, :2] == hits["above"]["reco_xy"][:, i]).all()
-        assert (sb.below_hits[:, i, :2] == hits["below"]["reco_xy"][:, i]).all()
-        assert (sb.above_gen_hits[:, i, :2] == hits["above"]["gen_xy"][:, i]).all()
-        assert (sb.below_gen_hits[:, i, :2] == hits["below"]["gen_xy"][:, i]).all()
+        assert (sb.above_hits[:, i] == hits["above"]["reco_xyz"][:, i]).all()
+        assert (sb.below_hits[:, i] == hits["below"]["reco_xyz"][:, i]).all()
+        assert (sb.above_gen_hits[:, i] == hits["above"]["gen_xyz"][:, i]).all()
+        assert (sb.below_gen_hits[:, i] == hits["below"]["gen_xyz"][:, i]).all()
 
     assert (loc_xy_unc := sb.poca_xyz_unc[:, :2].mean()) < 1.0
     assert (loc_z_unc := sb.poca_xyz_unc[:, 2].mean()) < 1.5
@@ -213,34 +212,24 @@ def test_scatter_batch_compute(mocker, panel_scatter_batch):  # noqa F811
     mu, volume = panel_scatter_batch[0], panel_scatter_batch[1]
     hits = {
         "above": {
-            "reco_xy": Tensor([[[0.0, 0.0], [0.1, 0.0]]]),
-            "gen_xy": Tensor([[[0.0, 0.0], [0.1, 0.0]]]),
+            "reco_xyz": Tensor([[[0.0, 0.0, 1.0], [0.1, 0.0, 0.9]]]),
+            "gen_xyz": Tensor([[[0.0, 0.0, 1.0], [0.1, 0.0, 0.9]]]),
             "unc_xyz": Tensor([[[1, 1, 1], [1, 1, 1]]]),
             "eff": Tensor([[[1], [1]]]),
-            "z": Tensor(
-                [
-                    [[1.0], [0.9]],
-                ]
-            ),
         },
         "below": {
-            "reco_xy": Tensor(
+            "reco_xyz": Tensor(
                 [
-                    [[0.1, 0.0], [0.0, 0.0]],
+                    [[0.1, 0.0, 0.1], [0.0, 0.0, 0.0]],
                 ]
             ),
-            "gen_xy": Tensor(
+            "gen_xyz": Tensor(
                 [
-                    [[0.1, 0.0], [0.0, 0.0]],
+                    [[0.1, 0.0, 0.1], [0.0, 0.0, 0.0]],
                 ]
             ),
             "unc_xyz": Tensor([[[1, 1, 1], [1, 1, 1]]]),
             "eff": Tensor([[[1], [1]]]),
-            "z": Tensor(
-                [
-                    [[0.1], [0.0]],
-                ]
-            ),
         },
     }
     mocker.patch.object(mu, "get_hits", return_value=hits)
@@ -276,34 +265,24 @@ def test_gen_scatter_batch_compute(mocker, panel_scatter_batch):  # noqa F811
     mu, volume = panel_scatter_batch[0], panel_scatter_batch[1]
     hits = {
         "above": {
-            "reco_xy": Tensor([[[10.0, -2.0], [1, 0.3]]]),
-            "gen_xy": Tensor([[[0.0, 0.0], [0.1, 0.0]]]),
+            "reco_xyz": Tensor([[[10.0, -2.0, 1.0], [1, 0.3, 0.9]]]),
+            "gen_xyz": Tensor([[[0.0, 0.0, 1.0], [0.1, 0.0, 0.9]]]),
             "unc_xyz": Tensor([[[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]]),
             "eff": Tensor([[[1], [1]]]),
-            "z": Tensor(
-                [
-                    [[1.0], [0.9]],
-                ]
-            ),
         },
         "below": {
-            "reco_xy": Tensor(
+            "reco_xyz": Tensor(
                 [
-                    [[np.nan, 0.1], [10.0, -20.0]],
+                    [[np.nan, 0.1, 0.1], [10.0, -20.0, 0.0]],
                 ]
             ),
-            "gen_xy": Tensor(
+            "gen_xyz": Tensor(
                 [
-                    [[0.1, 0.0], [0.0, 0.0]],
+                    [[0.1, 0.0, 0.1], [0.0, 0.0, 0.0]],
                 ]
             ),
             "unc_xyz": Tensor([[[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]]),
             "eff": Tensor([[[1], [1]]]),
-            "z": Tensor(
-                [
-                    [[0.1], [0.0]],
-                ]
-            ),
         },
     }
     mocker.patch.object(mu, "get_hits", return_value=hits)
@@ -523,22 +502,24 @@ def test_x0_inferrer_scatter_inversion_via_scatter_batch():
     layer = PassiveLayer(lw=Tensor([1, 1]), z=1, size=0.1)
     pdg_scattering = layer._pdg_scatter(x0=x0, deltaz=0.01, theta=muons.theta, theta_x=muons.theta_x, theta_y=muons.theta_y, mom=muons.mom, log_term=False)
 
+    xyz = F.pad(muons.xy.detach().clone(), (0, 1))
+    xyz[:, 2] = muons.z.detach().clone()
     muons.append_hits(
         {
-            "reco_xy": muons.xy.detach().clone(),
-            "gen_xy": muons.xy.detach().clone(),
-            "z": muons.z.expand_as(muons.x)[:, None],
+            "reco_xyz": xyz,
+            "gen_xyz": xyz,
             "unc_xyz": torch.zeros(len(muons), 3),
             "eff": torch.ones(len(muons), 1),
         },
         pos="above",
     )
     muons.propagate(0.1)
+    xyz = F.pad(muons.xy.detach().clone(), (0, 1))
+    xyz[:, 2] = muons.z.detach().clone()
     muons.append_hits(
         {
-            "reco_xy": muons.xy.detach().clone(),
-            "gen_xy": muons.xy.detach().clone(),
-            "z": muons.z.expand_as(muons.x)[:, None],
+            "reco_xyz": xyz,
+            "gen_xyz": xyz,
             "unc_xyz": torch.zeros(len(muons), 3),
             "eff": torch.ones(len(muons), 1),
         },
@@ -546,22 +527,24 @@ def test_x0_inferrer_scatter_inversion_via_scatter_batch():
     )
     muons.propagate(0.01)
     muons.scatter_dtheta_dphi(dtheta_vol=pdg_scattering["dtheta_vol"], dphi_vol=pdg_scattering["dphi_vol"])
+    xyz = F.pad(muons.xy.detach().clone(), (0, 1))
+    xyz[:, 2] = muons.z.detach().clone()
     muons.append_hits(
         {
-            "reco_xy": muons.xy.detach().clone(),
-            "gen_xy": muons.xy.detach().clone(),
-            "z": muons.z.expand_as(muons.x)[:, None],
+            "reco_xyz": xyz,
+            "gen_xyz": xyz,
             "unc_xyz": torch.zeros(len(muons), 3),
             "eff": torch.ones(len(muons), 1),
         },
         pos="below",
     )
     muons.propagate(0.1)
+    xyz = F.pad(muons.xy.detach().clone(), (0, 1))
+    xyz[:, 2] = muons.z.detach().clone()
     muons.append_hits(
         {
-            "reco_xy": muons.xy.detach().clone(),
-            "gen_xy": muons.xy.detach().clone(),
-            "z": muons.z.expand_as(muons.x)[:, None],
+            "reco_xyz": xyz,
+            "gen_xyz": xyz,
             "unc_xyz": torch.zeros(len(muons), 3),
             "eff": torch.ones(len(muons), 1),
         },
