@@ -1159,7 +1159,7 @@ class PanelScatterBatch(AbsScatterBatch):
         uncs: List[Tensor] = []
         for l, h in zip(zordered_panels, hits.unbind(1)):
             xy = h[:, :2]
-            r = 1 / (l.get_resolution(xy))
+            r = 1 / l.get_resolution(xy)
             uncs.append(torch.cat([r, torch.zeros((len(r), 1), device=r.device)], dim=-1))
         return torch.stack(uncs, dim=1)  # muons, panels, unc xyz
 
