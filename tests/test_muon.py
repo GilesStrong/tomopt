@@ -145,8 +145,8 @@ def test_muon_batch_properties():
 
 
 def test_muon_batch_methods():
+    # copy & propagate_dz
     batch = MuonBatch(Tensor([[1, 0, 0, 1, 6], [1, 0, 0, 1, 6], [1, 0, 0, 1, 6]]), init_z=1)
-    # copy & propagate
     start = batch.copy()
     batch.propagate_dz(0.1)
     assert (batch.z == Tensor([0.9])).all()
@@ -155,10 +155,43 @@ def test_muon_batch_methods():
     assert torch.all(batch.x >= start.x)
     assert torch.all(batch.y <= start.y)
 
+    batch = MuonBatch(Tensor([[0, 0, 0, np.pi / 4, 3 * np.pi / 4]]), init_z=0)
+    batch.propagate_dz(1)
+    assert ((batch.xyz - Tensor([-np.sqrt(2) / 2, np.sqrt(2) / 2, -1])).abs() < 1e-5).all()
+
+    # copy & propagate_d
+    batch = MuonBatch(Tensor([[1, 0, 0, 1, 6], [1, 0, 0, 1, 6], [1, 0, 0, 1, 6]]), init_z=1)
+    start = batch.copy()
+    batch.propagate_d(0.1)
+    assert (batch.z < start.z).all()
+    assert torch.all(start.xy != batch.xy)
+    assert torch.all(batch.x >= start.x)
+    assert torch.all(batch.y <= start.y)
+
+    batch = MuonBatch(Tensor([[0, 0, 0, np.arccos(1 / np.sqrt(3)), 3 * np.pi / 4]]), init_z=0)
+    d = np.sqrt(3)
+    batch.propagate_d(d)
+    assert (batch.xyz.square().sum().sqrt() - d).abs() < 1e-5
+    assert ((batch.xyz - Tensor([[-1, 1, -1]])).abs() < 1e-5).all()
+
+    # propagation consistency
+    batch = MuonBatch(Tensor([[1, 0, 0, 0, 6], [1, 0, 0, 0, 6], [1, 0, 0, 0, 6]]), init_z=1)
+    batch2 = batch.copy()
+    batch.propagate_d(0.1)
+    batch2.propagate_dz(0.1)
+    assert torch.all((batch.xyz - batch2.xyz).abs() < 1e-5)
+
+    # copy & propagate_d
+    batch = start.copy()
+    batch.propagate_d(0.1)
+    assert (batch.z < start.z).all()
+    assert torch.all(start.xy != batch.xy)
+
+    batch = MuonBatch(Tensor([[1, 0, 0, 1, 6], [1, 0, 0, 1, 6], [1, 0, 0, 1, 6]]), init_z=1)
     # snapshot
     batch.snapshot_xyz()
     assert len(batch.xyz_hist) == 1
-    assert np.all(batch.xyz_hist[0] == batch.xy.detach().cpu().clone().numpy())
+    assert np.all(batch.xyz_hist[0] == batch.xyz.detach().cpu().clone().numpy())
 
     # mask
     lw = Tensor([1, 1])

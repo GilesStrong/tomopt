@@ -273,7 +273,7 @@ class MuonBatch:
         rst = d * self._theta.sin()
         self._x = self._x + (rst * self._phi.cos())
         self._y = self._y + (rst * self._phi.sin())
-        self._z = self._z - d * self._theta.cos()
+        self._z = self._z - (d * self._theta.cos())
 
     def get_xy_mask(self, xy_low: Optional[Union[Tuple[float, float], Tensor]], xy_high: Optional[Union[Tuple[float, float], Tensor]]) -> Tensor:
         r"""
@@ -491,11 +491,11 @@ class MuonBatch:
 
     @property
     def _xyz(self) -> Tensor:
-        return self._muons[:, : self.y_dim + 1]
+        return self._muons[:, : self.z_dim + 1]
 
     @_xyz.setter
     def _xyz(self, xyz: Tensor) -> None:
-        self._muons[:, : self.y_dim + 1] = xyz
+        self._muons[:, : self.z_dim + 1] = xyz
 
     @property
     def mom(self) -> Tensor:
