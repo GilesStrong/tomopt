@@ -108,7 +108,7 @@ def test_muon_batch_properties():
     batch = MuonBatch(Tensor([range(5) for _ in range(N)]), init_z=1)
     # shape
     assert len(batch) == N
-    assert batch.muons.shape == torch.Size([N, 5])
+    assert batch.muons.shape == torch.Size([N, 6])
 
     # Getters
     assert batch.x[0] == Tensor([0])
@@ -118,7 +118,7 @@ def test_muon_batch_properties():
     assert batch.reco_mom[0] == Tensor([2])
     assert batch.theta[0] == Tensor([3])
     assert batch.phi[0] == Tensor([4])
-    assert batch.z == Tensor([1])
+    assert batch.z[0] == Tensor([1])
 
     # Setters
     new_coords = Tensor([range(5, 10) for _ in range(N)])
@@ -149,16 +149,16 @@ def test_muon_batch_methods():
     # copy & propagate
     start = batch.copy()
     batch.propagate_dz(0.1)
-    assert batch.z == Tensor([0.9])
-    assert start.z == Tensor([1.0])
+    assert (batch.z == Tensor([0.9])).all()
+    assert (start.z == Tensor([1.0])).all()
     assert torch.all(start.xy != batch.xy)
     assert torch.all(batch.x >= start.x)
     assert torch.all(batch.y <= start.y)
 
     # snapshot
     batch.snapshot_xyz()
-    assert len(batch.xy_hist) == 1
-    assert np.all(batch.xy_hist[list(batch.xy_hist.keys())[0]] == batch.xy.detach().cpu().clone().numpy())
+    assert len(batch.xyz_hist) == 1
+    assert np.all(batch.xyz_hist[0] == batch.xy.detach().cpu().clone().numpy())
 
     # mask
     lw = Tensor([1, 1])

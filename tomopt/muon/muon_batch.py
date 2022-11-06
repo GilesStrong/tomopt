@@ -41,7 +41,7 @@ class MuonBatch:
         However currently the `reco_mom` property will return the TRUE momentum of the muons, with no simulation of measurement precision.
 
     By default, the `MuonBatch` class only contains the current position of the muons,
-    however the `.snapshot_xyz` method can be used to store the xy positions of the muons at any time, to a dictionary with float z-position keys, `xy_hist`.
+    however the `.snapshot_xyz` method can be used to store the xy positions of the muons at any time, to a dictionary with float z-position keys, `xyz_hist`.
 
     In addition to storing the properties of the muons, the `MuonBatch` class is also used to store the detector hits associated with each muon.
     Hits may be added via the `.append_hits` method, and stored in the `_hits` attribute.
@@ -79,7 +79,7 @@ class MuonBatch:
 
         self._removed_muons: Optional[Tensor] = None
         self._hits: Dict[str, Dict[str, List[Tensor]]] = defaultdict(lambda: defaultdict(list))
-        self._xyz_hist: List[Tensor]
+        self._xyz_hist: List[Tensor] = []
 
     def __repr__(self) -> str:
         return f"Batch of {len(self)} muons"
@@ -295,10 +295,10 @@ class MuonBatch:
 
     def snapshot_xyz(self) -> None:
         r"""
-        Store the current xy positions of the muons in `.xy_hist`, indexed by the current z position.
+        Store the current xy positions of the muons in `.xyz_hist`, indexed by the current z position.
         """
 
-        self.xyz_hist.append(self.xyz.detach().cpu().clone().numpy())
+        self._xyz_hist.append(self.xyz.detach().cpu().clone().numpy())
 
     def append_hits(self, hits: Dict[str, Tensor], pos: str) -> None:
         r"""
@@ -387,7 +387,9 @@ class MuonBatch:
             New `MuonBatch` with xyz, and theta,phi equal to those of the current `MuonBatch`.
         """
 
-        return MuonBatch(self._muons.detach().clone(), init_z=self.z.detach().clone(), device=self.device)
+        return MuonBatch(
+            self._muons[:, [self.x_dim, self.y_dim, self.p_dim, self.th_dim, self.ph_dim]].detach().clone(), init_z=self.z.detach().clone(), device=self.device
+        )
 
     @property
     def muons(self) -> Tensor:
