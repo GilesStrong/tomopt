@@ -85,7 +85,7 @@ def test_muon_generator_from_volume(generator):
 
     n = 10000
     mu = MuonBatch(mg(n), volume.h)
-    mu.propagate(volume.h - volume.get_passive_z_range()[1])
+    mu.propagate_dz(volume.h - volume.get_passive_z_range()[1])
     m1 = mu.get_xy_mask(
         (
             0,
@@ -93,7 +93,7 @@ def test_muon_generator_from_volume(generator):
         ),
         LW.numpy().tolist(),
     )
-    mu.propagate(volume.get_passive_z_range()[1] - volume.get_passive_z_range()[0])
+    mu.propagate_dz(volume.get_passive_z_range()[1] - volume.get_passive_z_range()[0])
     m2 = mu.get_xy_mask(
         (
             0,
@@ -148,7 +148,7 @@ def test_muon_batch_methods():
     batch = MuonBatch(Tensor([[1, 0, 0, 1, 6], [1, 0, 0, 1, 6], [1, 0, 0, 1, 6]]), init_z=1)
     # copy & propagate
     start = batch.copy()
-    batch.propagate(0.1)
+    batch.propagate_dz(0.1)
     assert batch.z == Tensor([0.9])
     assert start.z == Tensor([1.0])
     assert torch.all(start.xy != batch.xy)

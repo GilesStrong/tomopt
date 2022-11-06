@@ -111,10 +111,10 @@ def test_passive_layer_pgeant_scattering(mocker, batch, sz):  # noqa: F811
     pl(batch)
     dz = 0.01
     n = int(sz / dz)
-    assert batch.propagate.call_count == n + 1
+    assert batch.propagate_dz.call_count == n + 1
     assert batch.scatter_dxy.call_count == n
     assert batch.scatter_dtheta_dphi.call_count == n
-    assert batch.propagate.called_with(SZ / n)
+    assert batch.propagate_dz.called_with(SZ / n)
     assert batch.get_xy_mask.call_count == n
 
 
@@ -125,10 +125,10 @@ def test_passive_layer_pdg_scattering(mocker, batch, n):  # noqa: F811
 
     pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, size=SZ, z=Z, scatter_model="pdg", dz_step=SZ / n)
     pl(batch)
-    assert batch.propagate.call_count == n + 1
+    assert batch.propagate_dz.call_count == n + 1
     assert batch.scatter_dxy.call_count == n
     assert batch.scatter_dtheta_dphi.call_count == n
-    assert batch.propagate.called_with(SZ / n)
+    assert batch.propagate_dz.called_with(SZ / n)
     assert batch.get_xy_mask.call_count == n
 
 

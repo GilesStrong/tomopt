@@ -513,7 +513,7 @@ def test_x0_inferrer_scatter_inversion_via_scatter_batch():
         },
         pos="above",
     )
-    muons.propagate(0.1)
+    muons.propagate_dz(0.1)
     xyz = F.pad(muons.xy.detach().clone(), (0, 1))
     xyz[:, 2] = muons.z.detach().clone()
     muons.append_hits(
@@ -525,7 +525,7 @@ def test_x0_inferrer_scatter_inversion_via_scatter_batch():
         },
         pos="above",
     )
-    muons.propagate(0.01)
+    muons.propagate_dz(0.01)
     muons.scatter_dtheta_dphi(dtheta_vol=pdg_scattering["dtheta_vol"], dphi_vol=pdg_scattering["dphi_vol"])
     xyz = F.pad(muons.xy.detach().clone(), (0, 1))
     xyz[:, 2] = muons.z.detach().clone()
@@ -538,7 +538,7 @@ def test_x0_inferrer_scatter_inversion_via_scatter_batch():
         },
         pos="below",
     )
-    muons.propagate(0.1)
+    muons.propagate_dz(0.1)
     xyz = F.pad(muons.xy.detach().clone(), (0, 1))
     xyz[:, 2] = muons.z.detach().clone()
     muons.append_hits(

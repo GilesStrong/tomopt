@@ -89,10 +89,10 @@ class AbsLayer(nn.Module, metaclass=ABCMeta):
 
             # Update to position at scattering.
             mu.scatter_dxy(dx_vol=scatterings["dx_vol"], dy_vol=scatterings["dy_vol"], mask=mask)
-            mu.propagate(deltaz)
+            mu.propagate_dz(deltaz)
             mu.scatter_dtheta_dphi(dtheta_vol=scatterings["dtheta_vol"], dphi_vol=scatterings["dphi_vol"], mask=mask)
         else:
-            mu.propagate(deltaz)
+            mu.propagate_dz(deltaz)
 
     def mu_abs2idx(self, mu: MuonBatch, mask: Optional[Tensor] = None) -> Tensor:
         r"""
@@ -312,7 +312,7 @@ class PassiveLayer(AbsLayer):
 
         for _ in range(n):
             self.scatter_and_propagate(mu, deltaz=dz)
-        mu.propagate(mu.z - (self.z - self.size))  # In case of floating point-precision, ensure muons are at the bottom of the layer
+        mu.propagate_dz(mu.z - (self.z - self.size))  # In case of floating point-precision, ensure muons are at the bottom of the layer
 
 
 class AbsDetectorLayer(AbsLayer, metaclass=ABCMeta):

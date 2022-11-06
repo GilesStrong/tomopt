@@ -35,7 +35,7 @@ class MuonResampler(Callback):
         mu = mu.copy()
         ok_mask = torch.zeros(len(mu)).bool()
         for l in volume.get_passives():
-            mu.propagate(mu.z - l.z)
+            mu.propagate_dz(mu.z - l.z)
             ok_mask += mu.get_xy_mask((0, 0), volume.lw)
         return ok_mask
 
