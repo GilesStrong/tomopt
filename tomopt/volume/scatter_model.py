@@ -3,6 +3,7 @@ import h5py
 import os
 from fastcore.all import Path
 import json
+from warnings import warn
 
 import torch
 from torch import Tensor
@@ -40,7 +41,7 @@ class PGeantScatterModel:
 
     dtheta_params: Tensor  # (8, 35, 10000), (x0, mom, rnd)
     dxy_params: Tensor  # (8, 35, 10000), (x0, mom, rnd)
-    deltaz: float
+    step_sz: float
     x02id: Dict[float, int]
     mom_lookup: Tensor
     exp_disp_model: float
@@ -67,7 +68,7 @@ class PGeantScatterModel:
         self.file = h5py.File(PKG_DIR / filename, "r")
         self.dtheta_params = Tensor(self.file["model/dtheta"][()])
         self.dxy_params = Tensor(self.file["model/dxy"][()])
-        self.deltaz = self.file["meta_data/deltaz"][()]
+        self.step_sz = self.file["meta_data/deltaz"][()]
         self.x02id = {float(k): v for k, v in json.loads(self.file["meta_data/x02id"][()]).items()}
         self.mom_lookup = Tensor(self.file["meta_data/mom_bins"][1:-1])  # Exclude starting and end edges
         self.exp_disp_model = self.file["meta_data/exp_disp_model"][()]
@@ -104,13 +105,13 @@ class PGeantScatterModel:
 
         return dxy_mu * (inv_costheta**self.exp_disp_model)
 
-    def compute_scattering(self, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor) -> Dict[str, Tensor]:
+    def compute_scattering(self, x0: Tensor, step_sz: Union[Tensor, float], theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor) -> Dict[str, Tensor]:
         r"""
         Computes the scattering of the muons using the parameterised GEANT 4 model.
 
         Arguments:
             x0: (N,) tensor of the X0 of the voxel each muon is traversing
-            deltaz: The amount of distance the muons will travel in the z direction in metres
+            step_sz: The step size in metres over which to compute muon scattering.
             theta: (N,) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons
             theta_x: (N,) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons' frame to the volume's
             theta_y: (N,) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons' frame to the volume's
@@ -120,8 +121,10 @@ class PGeantScatterModel:
             A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, & dy_vol
         """
 
-        if deltaz != self.deltaz:
-            raise ValueError(f"Model only works for a fixed delta z step of {self.deltaz}.")
+        warn("PGeant is not recommended as it needs to be updated for the new muon scattering treatment")
+
+        if not self.initialised:
+            self.load_data()  # Delay loading until required
         if self._device is None:
             self.device = theta.device
 

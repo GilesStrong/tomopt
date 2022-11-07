@@ -248,32 +248,44 @@ class MuonBatch:
                     for det, xy_pos in enumerate(self._hits[pos][var]):
                         self._hits[pos][var][det] = xy_pos[keep_mask]
 
-    def propagate_dz(self, dz: Union[Tensor, float]) -> None:
+    def propagate_dz(self, dz: Union[Tensor, float], mask: Optional[Tensor] = None) -> None:
         r"""
         Propagates all muons in their direction of flight such that afterwards they will all have moved a specified distance in the negative z direction.
 
         Arguments:
             dz: distance in metres to move in the negative z direction, i.e. a positive dz results in the muons travelling downwards.
+            mask: (N,) Boolean tensor. If not None, only muons with True mask elements are altered.
         """
 
-        r = dz / self._theta.cos()
-        rst = r * self._theta.sin()
-        self._x = self._x + (rst * self._phi.cos())
-        self._y = self._y + (rst * self._phi.sin())
-        self._z = self._z - dz
+        if mask is None:
+            mask = torch.ones(len(self._muons), device=self.device).bool()
+        theta = self._theta[mask]
+        phi = self._phi[mask]
 
-    def propagate_d(self, d: Tensor) -> None:
+        r = dz / theta.cos()
+        rst = r * theta.sin()
+        self._x[mask] = self._x[mask] + (rst * phi.cos())
+        self._y[mask] = self._y[mask] + (rst * phi.sin())
+        self._z[mask] = self._z[mask] - dz
+
+    def propagate_d(self, d: Union[Tensor, float], mask: Optional[Tensor] = None) -> None:
         r"""
         Propagates all muons in their direction of flight by the specified distances.
 
         Arguments:
             d: (1,) or (N,) distance(s) in metres to move.
+            mask: (N,) Boolean tensor. If not None, only muons with True mask elements are altered.
         """
 
-        rst = d * self._theta.sin()
-        self._x = self._x + (rst * self._phi.cos())
-        self._y = self._y + (rst * self._phi.sin())
-        self._z = self._z - (d * self._theta.cos())
+        if mask is None:
+            mask = torch.ones(len(self._muons), device=self.device).bool()
+        theta = self._theta[mask]
+        phi = self._phi[mask]
+
+        rst = d * theta.sin()
+        self._x[mask] = self._x[mask] + (rst * phi.cos())
+        self._y[mask] = self._y[mask] + (rst * phi.sin())
+        self._z[mask] = self._z[mask] - (d * theta.cos())
 
     def get_xy_mask(self, xy_low: Optional[Union[Tuple[float, float], Tensor]], xy_high: Optional[Union[Tuple[float, float], Tensor]]) -> Tensor:
         r"""
@@ -388,7 +400,9 @@ class MuonBatch:
         """
 
         return MuonBatch(
-            self._muons[:, [self.x_dim, self.y_dim, self.p_dim, self.th_dim, self.ph_dim]].detach().clone(), init_z=self.z.detach().clone(), device=self.device
+            self._muons[:, sorted([self.x_dim, self.y_dim, self.p_dim, self.th_dim, self.ph_dim])].detach().clone(),
+            init_z=self.z.detach().clone(),
+            device=self.device,
         )
 
     @property

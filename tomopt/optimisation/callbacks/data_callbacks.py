@@ -53,6 +53,9 @@ class MuonResampler(Callback):
             xy_p_theta_phi tensor designed to initialise a :class:`~tomopt.muon.muon_batch.MuonBatch`
         """
 
+        if mus.size(1) == 6:
+            mus = mus[:, sorted([MuonBatch.x_dim, MuonBatch.y_dim, MuonBatch.p_dim, MuonBatch.th_dim, MuonBatch.ph_dim])]
+
         n = len(mus)
         ok_mask = torch.zeros(len(mus)).bool()
         while ok_mask.sum() < n:
@@ -76,4 +79,6 @@ class MuonResampler(Callback):
         # TODO Add check for realistic validation
         """
 
-        self.wrapper.fit_params.mu.muons = self.resample(self.wrapper.fit_params.mu.muons, volume=self.wrapper.volume, gen=self.wrapper.mu_generator)
+        self.wrapper.fit_params.mu.muons[:, sorted([MuonBatch.x_dim, MuonBatch.y_dim, MuonBatch.p_dim, MuonBatch.th_dim, MuonBatch.ph_dim])] = self.resample(
+            self.wrapper.fit_params.mu.muons, volume=self.wrapper.volume, gen=self.wrapper.mu_generator
+        )
