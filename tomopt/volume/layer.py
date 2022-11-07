@@ -29,25 +29,19 @@ class AbsLayer(nn.Module, metaclass=ABCMeta):
     .. important::
         Users must ensure that both the length and width of the layer are divisible by size
 
-    If the layer is set to scatter muons (`rad_length` is not None), then two scattering models are available:
-        - 'pdg': The default and currently recommended model based on the Gaussian scattering model described in https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf
-        - 'pgeant': An under-development model based on a parameterised fit to data sampled from GEANT 4
-
     Arguments:
         lw: the length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0).
         z: the z position of the top of layer in metres. The bottom of the layer will be located at z-size
         size: the voxel size in metres. Must be such that lw is divisible by the specified size.
-        scatter_model: String selection for the scattering model to use. Currently either 'pdg' or 'pgeant'.
         device: device on which to place tensors
     """
 
-    def __init__(self, lw: Tensor, z: float, size: float, scatter_model: str = "pdg", device: torch.device = DEVICE):
+    def __init__(self, lw: Tensor, z: float, size: float, device: torch.device = DEVICE):
         super().__init__()
-        self.lw, self.z, self.size, self.scatter_model, self.device = (
+        self.lw, self.z, self.size, self.device = (
             lw.to(device),
             torch.tensor([z], dtype=torch.float32, device=device),
             size,
-            scatter_model,
             device,
         )
         self.rad_length: Optional[Tensor] = None
@@ -63,36 +57,121 @@ class AbsLayer(nn.Module, metaclass=ABCMeta):
 
         pass
 
-    def scatter_and_propagate(self, mu: MuonBatch, deltaz: Union[Tensor, float]) -> None:
+
+class PassiveLayer(AbsLayer):
+    r"""
+    Default layer of containing passive material that scatters the muons.
+    The length and width (`lw`) is the spans of the layer in metres in x and y, and the layer begins at x=0, y=0.
+    z indicates the position of the top of the layer, in meters, and size is the distance from the top of the layer to the bottom.
+    size is also used to set the length, width, and height of the voxels that make up the layer.
+
+    .. important::
+        Users must ensure that both the length and width of the layer are divisible by size
+
+    If the layer is set to scatter muons (`rad_length` is not None), then two scattering models are available:
+        - 'pdg': The default and currently recommended model based on the Gaussian scattering model described in https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf
+        - 'pgeant': An under-development model based on a parameterised fit to data sampled from GEANT 4
+
+    The X0 values of each voxel is defined via a "radiation-length function", which should return an (n_x,n_y) tensor of voxel X0 values,
+    when called with the `z`, `lw`, and `size` of the layer. For example:
+
+    .. code-block:: python
+
+        def arb_rad_length(*, z: float, lw: Tensor, size: float) -> float:
+            rad_length = torch.ones(list((lw / size).long())) * X0["lead"]
+            if z < 0.5:
+                rad_length[...] = X0["beryllium"]
+            return rad_length
+
+    This function can either be supplied during initialisation, or later via the `load_rad_length` method.
+
+    Arguments:
+        lw: the length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0).
+        z: the z position of the top of layer in metres. The bottom of the layer will be located at z-size
+        size: the voxel size in metres. Must be such that lw is divisible by the specified size.
+        rad_length_func: lookup function that returns an (n_x,n_y) tensor of voxel X0 values for the layer.
+            After initialisation, the `load_rad_length` method may be used to load X0 layouts.
+        step_sz: The step size in metres over which to compute muon propagation and scattering.
+        scatter_model: String selection for the scattering model to use. Currently either 'pdg' or 'pgeant'.
+        device: device on which to place tensors
+    """
+
+    def __init__(
+        self,
+        lw: Tensor,
+        z: float,
+        size: float,
+        rad_length_func: Optional[RadLengthFunc] = None,
+        step_sz: float = 0.01,
+        scatter_model: str = "pdg",
+        device: torch.device = DEVICE,
+    ):
+        super().__init__(lw=lw, z=z, size=size, device=device)
+        self.step_sz = step_sz
+        self.scatter_model = scatter_model
+        if rad_length_func is not None:
+            self.load_rad_length(rad_length_func)
+
+    def __repr__(self) -> str:
+        return f"""PassiveLayer located at z={self.z}"""
+
+    def load_rad_length(self, rad_length_func: RadLengthFunc) -> None:
         r"""
-        Propagates the muons through (part of) the layer, such that afterwards all the muons are deltaz lower than their starting position.
+        Loads a new X0 layout into the layer voxels.
+
+        Arguments:
+            rad_length_func: lookup function that returns an (n_x,n_y) tensor of voxel X0 values for the layer.
+        """
+
+        self.rad_length = rad_length_func(z=self.z, lw=self.lw, size=self.size).to(self.device)
+
+    def forward(self, mu: MuonBatch) -> None:
+        r"""
+        Propagates the muons through the layer to the bottom in a series of scattering steps.
+        If the 'pdg' model is used, then the step size is the `step_sz` of the layer, as supplied during initialisation.
+        If the 'pgeant' model is used, the the step size specified as part of the fitting of the scattering model.
+
+        Arguments:
+            mu: the incoming batch of muons
+        """
+
+        mu.propagate_dz(mu.z - self.z)  # Move muons to the top of the layer
+        mask = torch.ones(len(mu), device=self.device).bool()
+        while mask.any():
+            self.scatter_and_propagate(mu, mask=mask)
+            mask = (mu.z > (self.z - self.size)) & (mu.z <= self.z)  # Only scatter/propagate muons inside the layer
+        mu.propagate_dz(mu.z - (self.z - self.size))  # Ensure muons are at the bottom of the layer
+
+    def scatter_and_propagate(self, mu: MuonBatch, mask: Optional[Tensor] = None) -> None:
+        r"""
+        Propagates the muons through (part of) the layer by the prespecified `step_sz`.
         If the layer is set to scatter muons (`rad_length` is not None),
         then the muons will also undergo scattering (changes in their trajectories and positions) according to the scatter model of the layer.
 
         .. warning::
             When computing scatterings, the X0 used for each muon is that of the starting voxel:
-            If a muon moves into a neighbouring voxel of differing X0, then this will only be accounted for in the next deltaz step.
+            If a muon moves into a neighbouring voxel of differing X0, then this will only be accounted for in the next step.
 
         Arguments:
             mu: muons to propagate
-            deltaz: amount of distance in metres in the negative z direction that the muons should travel (positive number lowers the muon position)
+            mask: Optional (N,) Boolean mask. Only muons with True values will be scattered and propagated
         """
 
         if self.rad_length is not None:
-            mask = mu.get_xy_mask((0, 0), self.lw)  # Only scatter muons inside volume
-            xy_idx = self.mu_abs2idx(mu, mask)
+            scatter_mask = mu.get_xy_mask((0, 0), self.lw) & mask  # Only scatter muons inside volume
+            xy_idx = self.mu_abs2idx(mu, scatter_mask)
 
             x0 = self.rad_length[xy_idx[:, 0], xy_idx[:, 1]]
             scatterings = self._compute_scattering(
-                x0=x0, deltaz=deltaz, theta=mu.theta[mask], theta_x=mu.theta_x[mask], theta_y=mu.theta_y[mask], mom=mu.mom[mask]
+                x0=x0, theta=mu.theta[scatter_mask], theta_x=mu.theta_x[scatter_mask], theta_y=mu.theta_y[scatter_mask], mom=mu.mom[scatter_mask]
             )
 
             # Update to position at scattering.
-            mu.scatter_dxy(dx_vol=scatterings["dx_vol"], dy_vol=scatterings["dy_vol"], mask=mask)
-            mu.propagate(deltaz)
-            mu.scatter_dtheta_dphi(dtheta_vol=scatterings["dtheta_vol"], dphi_vol=scatterings["dphi_vol"], mask=mask)
+            mu.scatter_dxy(dx_vol=scatterings["dx_vol"], dy_vol=scatterings["dy_vol"], mask=scatter_mask)
+            mu.propagate_d(self.step_sz, mask)  # Still propagate muons that weren't scattered
+            mu.scatter_dtheta_dphi(dtheta_vol=scatterings["dtheta_vol"], dphi_vol=scatterings["dphi_vol"], mask=scatter_mask)
         else:
-            mu.propagate(deltaz)
+            mu.propagate_d(self.step_sz, mask)
 
     def mu_abs2idx(self, mu: MuonBatch, mask: Optional[Tensor] = None) -> Tensor:
         r"""
@@ -132,13 +211,12 @@ class AbsLayer(nn.Module, metaclass=ABCMeta):
 
         return torch.floor(xy / self.size).long()
 
-    def _pgeant_scatter(self, *, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor) -> Dict[str, Tensor]:
+    def _pgeant_scatter(self, *, x0: Tensor, theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor) -> Dict[str, Tensor]:
         r"""
         Computes the scattering of the muons using the parameterised GEANT 4 model.
 
         Arguments:
             x0: (N,) tensor of the X0 of the voxel each muon is traversing
-            deltaz: The amount of distance the muons will travel in the z direction in metres
             theta: (N,) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons
             theta_x: (N,) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons' frame to the volume's
             theta_y: (N,) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons' frame to the volume's
@@ -148,17 +226,14 @@ class AbsLayer(nn.Module, metaclass=ABCMeta):
             A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, & dy_vol
         """
 
-        return PGEANT_SCATTER_MODEL.compute_scattering(x0=x0, deltaz=deltaz, theta=theta, theta_x=theta_x, theta_y=theta_y, mom=mom)
+        return PGEANT_SCATTER_MODEL.compute_scattering(x0=x0, step_sz=self.step_sz, theta=theta, theta_x=theta_x, theta_y=theta_y, mom=mom)
 
-    def _pdg_scatter(
-        self, *, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor, log_term: bool = True
-    ) -> Dict[str, Tensor]:
+    def _pdg_scatter(self, *, x0: Tensor, theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor, log_term: bool = True) -> Dict[str, Tensor]:
         r"""
         Computes the scattering of the muons using the PDG model https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf
 
         Arguments:
             x0: (N,) tensor of the X0 of the voxel each muon is traversing
-            deltaz: The amount of distance the muons will travel in the z direction in metres
             theta: (N,) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons
             theta_x: (N,) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons' frames to the volume's
             theta_y: (N,) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons' frames to the volume's
@@ -168,8 +243,7 @@ class AbsLayer(nn.Module, metaclass=ABCMeta):
             A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, & dy_vol
         """
 
-        flight = deltaz / torch.cos(theta)
-        n_x0 = flight / x0
+        n_x0 = self.step_sz / x0
 
         n = len(n_x0)
         z1 = torch.randn((2, n), device=self.device)
@@ -179,7 +253,7 @@ class AbsLayer(nn.Module, metaclass=ABCMeta):
             theta0 = theta0 * (1 + (SCATTER_COEF_B * torch.log(n_x0)))
         # These are in the muons' reference frames NOT the volume's!!!
         dtheta_xy_mu = z1 * theta0
-        dxy_mu = flight * torch.sin(theta0) * ((z1 / math.sqrt(12)) + (z2 / 2))
+        dxy_mu = self.step_sz * torch.sin(theta0) * ((z1 / math.sqrt(12)) + (z2 / 2))
 
         # We compute dtheta_xy in muon ref frame, but we're free to rotate the muon,
         # since dtheta_xy doesn't depend on muon position
@@ -196,15 +270,12 @@ class AbsLayer(nn.Module, metaclass=ABCMeta):
         dy_vol = dxy_mu[1] * torch.cos(theta_y)
         return {"dtheta_vol": dtheta_vol, "dphi_vol": dphi_vol, "dx_vol": dx_vol, "dy_vol": dy_vol}
 
-    def _compute_scattering(
-        self, *, x0: Tensor, deltaz: Union[Tensor, float], theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor
-    ) -> Dict[str, Tensor]:
+    def _compute_scattering(self, *, x0: Tensor, theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor) -> Dict[str, Tensor]:
         r"""
         Computes the scattering of the muons using the chosen model
 
         Arguments:
             x0: (N,) tensor of the X0 of the voxel each muon is traversing
-            deltaz: The amount of distance the muons will travel in the z direction in metres
             theta: (N,) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons
             theta_x: (N,) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons' frames to the volume's
             theta_y: (N,) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons' frames to the volume's
@@ -214,105 +285,11 @@ class AbsLayer(nn.Module, metaclass=ABCMeta):
             A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, & dy_vol
         """
         if self.scatter_model == "pdg":
-            return self._pdg_scatter(x0=x0, deltaz=deltaz, theta=theta, theta_x=theta_x, theta_y=theta_y, mom=mom)
+            return self._pdg_scatter(x0=x0, theta=theta, theta_x=theta_x, theta_y=theta_y, mom=mom)
         elif self.scatter_model == "pgeant":
-            return self._pgeant_scatter(x0=x0, deltaz=deltaz, theta=theta, theta_x=theta_x, theta_y=theta_y, mom=mom)
+            return self._pgeant_scatter(x0=x0, theta=theta, theta_x=theta_x, theta_y=theta_y, mom=mom)
         else:
             raise ValueError(f"Scatter model {self.scatter_model} is not currently supported.")
-
-
-class PassiveLayer(AbsLayer):
-    r"""
-    Default layer of containing passive material that scatters the muons.
-    The length and width (`lw`) is the spans of the layer in metres in x and y, and the layer begins at x=0, y=0.
-    z indicates the position of the top of the layer, in meters, and size is the distance from the top of the layer to the bottom.
-    size is also used to set the length, width, and height of the voxels that make up the layer.
-
-    .. important::
-        Users must ensure that both the length and width of the layer are divisible by size
-
-    If the layer is set to scatter muons (`rad_length` is not None), then two scattering models are available:
-        - 'pdg': The default and currently recommended model based on the Gaussian scattering model described in https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf
-        - 'pgeant': An under-development model based on a parameterised fit to data sampled from GEANT 4
-
-    The X0 values of each voxel is defined via a "radiation-length function", which should return an (n_x,n_y) tensor of voxel X0 values,
-    when called with the `z`, `lw`, and `size` of the layer. For example:
-
-    .. code-block:: python
-
-        def arb_rad_length(*, z: float, lw: Tensor, size: float) -> float:
-            rad_length = torch.ones(list((lw / size).long())) * X0["lead"]
-            if z < 0.5:
-                rad_length[...] = X0["beryllium"]
-            return rad_length
-
-    This function can either be supplied during initialisation, or later via the `load_rad_length` method.
-
-    Arguments:
-        lw: the length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0).
-        z: the z position of the top of layer in metres. The bottom of the layer will be located at z-size
-        size: the voxel size in metres. Must be such that lw is divisible by the specified size.
-        rad_length_func: lookup function that returns an (n_x,n_y) tensor of voxel X0 values for the layer.
-            After initialisation, the `load_rad_length` method may be used to load X0 layouts.
-        dz_step: The step size in metres over which to compute muon propagation and scattering.
-            Should be such that the `size` of the layer is divisible by `dz_step`.
-        scatter_model: String selection for the scattering model to use. Currently either 'pdg' or 'pgeant'.
-        device: device on which to place tensors
-    """
-
-    def __init__(
-        self,
-        lw: Tensor,
-        z: float,
-        size: float,
-        rad_length_func: Optional[RadLengthFunc] = None,
-        dz_step: float = 0.05,
-        scatter_model: str = "pdg",
-        device: torch.device = DEVICE,
-    ):
-        super().__init__(lw=lw, z=z, size=size, device=device)
-        self.dz_step = dz_step
-        self.n_steps = int(np.round(self.size / self.dz_step))
-        self.scatter_model = scatter_model
-        if rad_length_func is not None:
-            self.load_rad_length(rad_length_func)
-
-    def __repr__(self) -> str:
-        return f"""PassiveLayer located at z={self.z}"""
-
-    def load_rad_length(self, rad_length_func: RadLengthFunc) -> None:
-        r"""
-        Loads a new X0 layout into the layer voxels.
-
-        Arguments:
-            rad_length_func: lookup function that returns an (n_x,n_y) tensor of voxel X0 values for the layer.
-        """
-
-        self.rad_length = rad_length_func(z=self.z, lw=self.lw, size=self.size).to(self.device)
-
-    def forward(self, mu: MuonBatch) -> None:
-        r"""
-        Propagates the muons through the layer to the bottom in a series of scattering steps.
-        If the 'pdg' model is used, then the step size is the `dz_step` of the layer, as supplied during initialisation.
-        If the 'pgeant' model is used, the the step size specified as part of the fitting of the scattering model.
-
-        Arguments:
-            mu: the incoming batch of muons
-        """
-
-        if self.scatter_model == "pgeant":
-            if not PGEANT_SCATTER_MODEL.initialised:
-                PGEANT_SCATTER_MODEL.load_data()  # Delay loading until required
-            n = int(self.size / PGEANT_SCATTER_MODEL.deltaz)
-            dz = PGEANT_SCATTER_MODEL.deltaz
-        elif self.scatter_model == "pdg":
-            dz, n = self.dz_step, self.n_steps
-        else:
-            raise ValueError(f"Scatter model {self.scatter_model} is not currently supported.")
-
-        for _ in range(n):
-            self.scatter_and_propagate(mu, deltaz=dz)
-        mu.propagate(mu.z - (self.z - self.size))  # In case of floating point-precision, ensure muons are at the bottom of the layer
 
 
 class AbsDetectorLayer(AbsLayer, metaclass=ABCMeta):
@@ -521,10 +498,10 @@ class PanelDetectorLayer(AbsDetectorLayer):
         """
 
         for i, p in self.yield_zordered_panels():
-            self.scatter_and_propagate(mu, mu.z - p.z.detach())  # Move to panel
+            mu.propagate_dz(mu.z - p.z.detach())  # Move to panel
             hits = p.get_hits(mu)
             mu.append_hits(hits, self.pos)
-        self.scatter_and_propagate(mu, mu.z - (self.z - self.size))  # Move to bottom of layer
+        mu.propagate_dz(mu.z - (self.z - self.size))  # Move to bottom of layer
 
     def get_cost(self) -> Tensor:
         r"""

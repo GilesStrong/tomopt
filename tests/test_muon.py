@@ -85,7 +85,7 @@ def test_muon_generator_from_volume(generator):
 
     n = 10000
     mu = MuonBatch(mg(n), volume.h)
-    mu.propagate(volume.h - volume.get_passive_z_range()[1])
+    mu.propagate_dz(volume.h - volume.get_passive_z_range()[1])
     m1 = mu.get_xy_mask(
         (
             0,
@@ -93,7 +93,7 @@ def test_muon_generator_from_volume(generator):
         ),
         LW.numpy().tolist(),
     )
-    mu.propagate(volume.get_passive_z_range()[1] - volume.get_passive_z_range()[0])
+    mu.propagate_dz(volume.get_passive_z_range()[1] - volume.get_passive_z_range()[0])
     m2 = mu.get_xy_mask(
         (
             0,
@@ -108,7 +108,7 @@ def test_muon_batch_properties():
     batch = MuonBatch(Tensor([range(5) for _ in range(N)]), init_z=1)
     # shape
     assert len(batch) == N
-    assert batch.muons.shape == torch.Size([N, 5])
+    assert batch.muons.shape == torch.Size([N, 6])
 
     # Getters
     assert batch.x[0] == Tensor([0])
@@ -118,7 +118,7 @@ def test_muon_batch_properties():
     assert batch.reco_mom[0] == Tensor([2])
     assert batch.theta[0] == Tensor([3])
     assert batch.phi[0] == Tensor([4])
-    assert batch.z == Tensor([1])
+    assert batch.z[0] == Tensor([1])
 
     # Setters
     new_coords = Tensor([range(5, 10) for _ in range(N)])
@@ -145,20 +145,53 @@ def test_muon_batch_properties():
 
 
 def test_muon_batch_methods():
+    # copy & propagate_dz
     batch = MuonBatch(Tensor([[1, 0, 0, 1, 6], [1, 0, 0, 1, 6], [1, 0, 0, 1, 6]]), init_z=1)
-    # copy & propagate
     start = batch.copy()
-    batch.propagate(0.1)
-    assert batch.z == Tensor([0.9])
-    assert start.z == Tensor([1.0])
+    batch.propagate_dz(0.1)
+    assert (batch.z == Tensor([0.9])).all()
+    assert (start.z == Tensor([1.0])).all()
     assert torch.all(start.xy != batch.xy)
     assert torch.all(batch.x >= start.x)
     assert torch.all(batch.y <= start.y)
 
+    batch = MuonBatch(Tensor([[0, 0, 0, np.pi / 4, 3 * np.pi / 4]]), init_z=0)
+    batch.propagate_dz(1)
+    assert ((batch.xyz - Tensor([-np.sqrt(2) / 2, np.sqrt(2) / 2, -1])).abs() < 1e-5).all()
+
+    # copy & propagate_d
+    batch = MuonBatch(Tensor([[1, 0, 0, 1, 6], [1, 0, 0, 1, 6], [1, 0, 0, 1, 6]]), init_z=1)
+    start = batch.copy()
+    batch.propagate_d(0.1)
+    assert (batch.z < start.z).all()
+    assert torch.all(start.xy != batch.xy)
+    assert torch.all(batch.x >= start.x)
+    assert torch.all(batch.y <= start.y)
+
+    batch = MuonBatch(Tensor([[0, 0, 0, np.arccos(1 / np.sqrt(3)), 3 * np.pi / 4]]), init_z=0)
+    d = np.sqrt(3)
+    batch.propagate_d(d)
+    assert (batch.xyz.square().sum().sqrt() - d).abs() < 1e-5
+    assert ((batch.xyz - Tensor([[-1, 1, -1]])).abs() < 1e-5).all()
+
+    # propagation consistency
+    batch = MuonBatch(Tensor([[1, 0, 0, 0, 6], [1, 0, 0, 0, 6], [1, 0, 0, 0, 6]]), init_z=1)
+    batch2 = batch.copy()
+    batch.propagate_d(0.1)
+    batch2.propagate_dz(0.1)
+    assert torch.all((batch.xyz - batch2.xyz).abs() < 1e-5)
+
+    # copy & propagate_d
+    batch = start.copy()
+    batch.propagate_d(0.1)
+    assert (batch.z < start.z).all()
+    assert torch.all(start.xy != batch.xy)
+
+    batch = MuonBatch(Tensor([[1, 0, 0, 1, 6], [1, 0, 0, 1, 6], [1, 0, 0, 1, 6]]), init_z=1)
     # snapshot
     batch.snapshot_xyz()
-    assert len(batch.xy_hist) == 1
-    assert np.all(batch.xy_hist[list(batch.xy_hist.keys())[0]] == batch.xy.detach().cpu().clone().numpy())
+    assert len(batch.xyz_hist) == 1
+    assert np.all(batch.xyz_hist[0] == batch.xyz.detach().cpu().clone().numpy())
 
     # mask
     lw = Tensor([1, 1])

@@ -35,7 +35,7 @@ class MuonResampler(Callback):
         mu = mu.copy()
         ok_mask = torch.zeros(len(mu)).bool()
         for l in volume.get_passives():
-            mu.propagate(mu.z - l.z)
+            mu.propagate_dz(mu.z - l.z)
             ok_mask += mu.get_xy_mask((0, 0), volume.lw)
         return ok_mask
 
@@ -52,6 +52,9 @@ class MuonResampler(Callback):
         Returns:
             xy_p_theta_phi tensor designed to initialise a :class:`~tomopt.muon.muon_batch.MuonBatch`
         """
+
+        if mus.size(1) == 6:
+            mus = mus[:, sorted([MuonBatch.x_dim, MuonBatch.y_dim, MuonBatch.p_dim, MuonBatch.th_dim, MuonBatch.ph_dim])]
 
         n = len(mus)
         ok_mask = torch.zeros(len(mus)).bool()
@@ -76,4 +79,6 @@ class MuonResampler(Callback):
         # TODO Add check for realistic validation
         """
 
-        self.wrapper.fit_params.mu.muons = self.resample(self.wrapper.fit_params.mu.muons, volume=self.wrapper.volume, gen=self.wrapper.mu_generator)
+        self.wrapper.fit_params.mu.muons[:, sorted([MuonBatch.x_dim, MuonBatch.y_dim, MuonBatch.p_dim, MuonBatch.th_dim, MuonBatch.ph_dim])] = self.resample(
+            self.wrapper.fit_params.mu.muons, volume=self.wrapper.volume, gen=self.wrapper.mu_generator
+        )

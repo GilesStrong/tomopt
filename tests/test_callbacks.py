@@ -559,7 +559,7 @@ def test_muon_resampler_callback():
     mus = MuonResampler.resample(mus, volume=volume, gen=gen)
     mu = MuonBatch(mus, volume.h)
     assert MuonResampler.check_mu_batch(mu, volume).sum() == 1000
-    assert mu.z == volume.h
+    assert (mu.z == volume.h).all()
 
     # Check callback
     volume.parameters = []
@@ -577,12 +577,13 @@ def test_muon_resampler_callback():
     while MuonResampler.check_mu_batch(MuonBatch(mus, volume.h), volume).sum() == 1000:
         mus = gen(1000)
     vw.fit_params = FitParams(mu=MuonBatch(mus, volume.h))
+    assert (vw.fit_params.mu.z == volume.h).all()
     vw.mu_generator = gen
 
     mr = MuonResampler()
     mr.set_wrapper(vw)
     mr.on_mu_batch_begin()
-    assert vw.fit_params.mu.z == volume.h
+    assert (vw.fit_params.mu.z == volume.h).all()
     assert mr.check_mu_batch(vw.fit_params.mu, volume).sum() == 1000
 
 

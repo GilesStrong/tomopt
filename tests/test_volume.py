@@ -80,56 +80,47 @@ def test_passive_layer_methods():
 
 def test_passive_layer_forwards(batch):
     # Normal scattering
-    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=Z, size=SZ, dz_step=SZ)
+    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=Z, size=SZ, step_sz=SZ / 10)
     start = batch.copy()
     pl(batch)
-    assert torch.abs(batch.z - Tensor([Z - SZ])) < 1e-5
+    assert (torch.abs(batch.z - Tensor([Z - SZ])) < 1e-5).all()
     assert torch.all(batch.dtheta(start.theta[batch._keep_mask]) > 0)
     assert torch.all(batch.xy != start.xy[batch._keep_mask])
 
     # X0 affects scattering
-    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=0, size=SZ, dz_step=SZ)
+    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=0, size=SZ, step_sz=SZ / 10)
     batch2 = start.copy()
     pl(batch2)
     assert batch2.dtheta(start.theta[batch._keep_mask]).mean() < batch.dtheta(start.theta[batch._keep_mask]).mean()
 
     # Small scattering
-    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=Z, size=1e-4, dz_step=SZ)
+    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=Z, size=1e-4, step_sz=SZ / 10)
     batch = start.copy()
     pl(batch)
-    assert torch.abs(batch.z - Tensor([Z - 1e-4])) <= 1e-3
+    assert (torch.abs(batch.z - Tensor([Z - 1e-4])) <= 1e-3).all()
     assert (batch.dtheta(start.theta[batch._keep_mask]) < 1e-2).sum() / len(batch) > 0.9
     assert (torch.abs(batch.xy - start.xy[batch._keep_mask]) < 1e-3).sum() / len(batch) > 0.9
 
 
-@pytest.mark.parametrize("sz", [(0.01), (0.1), (0.2), (0.205)])
-def test_passive_layer_pgeant_scattering(mocker, batch, sz):  # noqa: F811
-    for m in ["propagate", "get_xy_mask", "scatter_dxy", "scatter_dtheta_dphi"]:
-        mocker.patch.object(MuonBatch, m)
+@pytest.mark.flaky(max_runs=3, min_passes=1)
+def test_passive_layer_scatter_and_propagate(mocker):  # noqa: F811
+    mg = MuonGenerator2016(x_range=(0, LW[0].item()), y_range=(0, LW[1].item()))
 
-    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, size=sz, z=Z, scatter_model="pgeant")
-    pl(batch)
-    dz = 0.01
-    n = int(sz / dz)
-    assert batch.propagate.call_count == n + 1
-    assert batch.scatter_dxy.call_count == n
-    assert batch.scatter_dtheta_dphi.call_count == n
-    assert batch.propagate.called_with(SZ / n)
-    assert batch.get_xy_mask.call_count == n
+    prev_count = 0
+    for n in (1, 2, 5):
+        batch = MuonBatch(mg(N), init_z=Z)
+        for m in ["propagate_dz", "propagate_d", "get_xy_mask", "scatter_dxy", "scatter_dtheta_dphi"]:
+            mocker.spy(batch, m)
 
-
-@pytest.mark.parametrize("n", [(1), (2), (5)])
-def test_passive_layer_pdg_scattering(mocker, batch, n):  # noqa: F811
-    for m in ["propagate", "get_xy_mask", "scatter_dxy", "scatter_dtheta_dphi"]:
-        mocker.patch.object(MuonBatch, m)
-
-    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, size=SZ, z=Z, scatter_model="pdg", dz_step=SZ / n)
-    pl(batch)
-    assert batch.propagate.call_count == n + 1
-    assert batch.scatter_dxy.call_count == n
-    assert batch.scatter_dtheta_dphi.call_count == n
-    assert batch.propagate.called_with(SZ / n)
-    assert batch.get_xy_mask.call_count == n
+        pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, size=SZ, z=Z, scatter_model="pdg", step_sz=SZ / n)
+        pl(batch)
+        curr_count = batch.propagate_d.call_count
+        assert curr_count > prev_count
+        assert batch.propagate_dz.call_count == 2
+        assert batch.scatter_dxy.call_count == curr_count
+        assert batch.scatter_dtheta_dphi.call_count == curr_count
+        assert batch.get_xy_mask.call_count == curr_count
+        prev_count = curr_count
 
 
 def eff_cost(x: Tensor) -> Tensor:
@@ -156,7 +147,7 @@ def test_panel_detector_layer(mocker, batch):  # noqa F811
 
     start = batch.copy()
     dl(batch)
-    assert torch.abs(batch.z - Tensor([Z - (2 * SZ)])) < 1e-5
+    assert (torch.abs(batch.z - Tensor([Z - (2 * SZ)]))).all() < 1e-5
     assert torch.all(batch.dtheta(start.theta) == 0)  # Detector layers don't scatter
     assert torch.all(batch.xy != start.xy)
 
@@ -334,7 +325,7 @@ def test_volume_forward_panel():
     start = batch.copy()
     volume(batch)
 
-    assert torch.abs(batch.z) <= 1e-5  # Muons traverse whole volume
+    assert (torch.abs(batch.z) <= 1e-5).all()  # Muons traverse whole volume
     mask = batch.get_xy_mask((0, 0), LW)
     assert torch.all(batch.dtheta(start.theta)[mask] > 0)  # All masked muons scatter
 

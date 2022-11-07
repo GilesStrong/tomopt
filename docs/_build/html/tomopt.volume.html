@@ -480,7 +480,7 @@ and record muon positions (hits) according to the detector model.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="tomopt.volume.layer.AbsLayer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.volume.layer.</span></span><span class="sig-name descname"><span class="pre">AbsLayer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scatter_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pdg'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">device(type='cpu')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/layer.html#AbsLayer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.layer.AbsLayer" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.volume.layer.</span></span><span class="sig-name descname"><span class="pre">AbsLayer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">device(type='cpu')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/layer.html#AbsLayer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.layer.AbsLayer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
 <p>Abstract base class for volume layers.
 The length and width (<cite>lw</cite>) is the spans of the layer in metres in x and y, and the layer begins at x=0, y=0.
@@ -490,20 +490,12 @@ size is also used to set the length, width, and height of the voxels that make u
 <p class="admonition-title">Important</p>
 <p>Users must ensure that both the length and width of the layer are divisible by size</p>
 </div>
-<dl class="simple">
-<dt>If the layer is set to scatter muons (<cite>rad_length</cite> is not None), then two scattering models are available:</dt><dd><ul class="simple">
-<li><p>‘pdg’: The default and currently recommended model based on the Gaussian scattering model described in <a class="reference external" href="https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf">https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf</a></p></li>
-<li><p>‘pgeant’: An under-development model based on a parameterised fit to data sampled from GEANT 4</p></li>
-</ul>
-</dd>
-</dl>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>lw</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – the length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0).</p></li>
 <li><p><strong>z</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – the z position of the top of layer in metres. The bottom of the layer will be located at z-size</p></li>
 <li><p><strong>size</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – the voxel size in metres. Must be such that lw is divisible by the specified size.</p></li>
-<li><p><strong>scatter_model</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – String selection for the scattering model to use. Currently either ‘pdg’ or ‘pgeant’.</p></li>
 <li><p><strong>device</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">device</span></code>) – device on which to place tensors</p></li>
 </ul>
 </dd>
@@ -513,104 +505,10 @@ size is also used to set the length, width, and height of the voxels that make u
 <span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#tomopt.volume.layer.AbsLayer._abc_impl" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.volume.layer.AbsLayer._compute_scattering">
-<span class="sig-name descname"><span class="pre">_compute_scattering</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deltaz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/layer.html#AbsLayer._compute_scattering"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.layer.AbsLayer._compute_scattering" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes the scattering of the muons using the chosen model</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x0</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the X0 of the voxel each muon is traversing</p></li>
-<li><p><strong>deltaz</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – The amount of distance the muons will travel in the z direction in metres</p></li>
-<li><p><strong>theta</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons</p></li>
-<li><p><strong>theta_x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons’ frames to the volume’s</p></li>
-<li><p><strong>theta_y</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons’ frames to the volume’s</p></li>
-<li><p><strong>mom</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the absolute value of the momentum of each muon</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>dtheta_vol, dphi_vol, dx_vol, &amp; dy_vol</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A dictionary of muon scattering variables in the volume reference frame</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py attribute">
 <dt class="sig sig-object py" id="tomopt.volume.layer.AbsLayer._is_full_backward_hook">
 <span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.AbsLayer._is_full_backward_hook" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.volume.layer.AbsLayer._pdg_scatter">
-<span class="sig-name descname"><span class="pre">_pdg_scatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deltaz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_term</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/layer.html#AbsLayer._pdg_scatter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.layer.AbsLayer._pdg_scatter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes the scattering of the muons using the PDG model <a class="reference external" href="https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf">https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf</a></p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x0</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the X0 of the voxel each muon is traversing</p></li>
-<li><p><strong>deltaz</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – The amount of distance the muons will travel in the z direction in metres</p></li>
-<li><p><strong>theta</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons</p></li>
-<li><p><strong>theta_x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons’ frames to the volume’s</p></li>
-<li><p><strong>theta_y</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons’ frames to the volume’s</p></li>
-<li><p><strong>mom</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the absolute value of the momentum of each muon</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>dtheta_vol, dphi_vol, dx_vol, &amp; dy_vol</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A dictionary of muon scattering variables in the volume reference frame</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.volume.layer.AbsLayer._pgeant_scatter">
-<span class="sig-name descname"><span class="pre">_pgeant_scatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deltaz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/layer.html#AbsLayer._pgeant_scatter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.layer.AbsLayer._pgeant_scatter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes the scattering of the muons using the parameterised GEANT 4 model.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x0</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the X0 of the voxel each muon is traversing</p></li>
-<li><p><strong>deltaz</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – The amount of distance the muons will travel in the z direction in metres</p></li>
-<li><p><strong>theta</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons</p></li>
-<li><p><strong>theta_x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons’ frame to the volume’s</p></li>
-<li><p><strong>theta_y</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons’ frame to the volume’s</p></li>
-<li><p><strong>mom</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the absolute value of the momentum of each muon</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>dtheta_vol, dphi_vol, dx_vol, &amp; dy_vol</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A dictionary of muon scattering variables in the volume reference frame</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.volume.layer.AbsLayer.abs2idx">
-<span class="sig-name descname"><span class="pre">abs2idx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xy</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/layer.html#AbsLayer.abs2idx"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.layer.AbsLayer.abs2idx" title="Permalink to this definition">¶</a></dt>
-<dd><p>Helper method to return the voxel indices in the layer of the supplied tensor of xy positions.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This method does NOT account for the possibility of positions may be outside the layer.
-Please ensure that positions are inside the layer.</p>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>xy</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,xy) tensor of absolute xy positions in metres in the volume frame</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>(N,xy) tensor of voxel indices in x,y</p>
-</dd>
-</dl>
-</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.volume.layer.AbsLayer.forward">
@@ -619,55 +517,6 @@ Please ensure that positions are inside the layer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>mu</strong> (<a class="reference internal" href="tomopt.muon.html#tomopt.muon.muon_batch.MuonBatch" title="tomopt.muon.muon_batch.MuonBatch"><code class="xref py py-class docutils literal notranslate"><span class="pre">MuonBatch</span></code></a>) – the incoming batch of muons</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.volume.layer.AbsLayer.mu_abs2idx">
-<span class="sig-name descname"><span class="pre">mu_abs2idx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/layer.html#AbsLayer.mu_abs2idx"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.layer.AbsLayer.mu_abs2idx" title="Permalink to this definition">¶</a></dt>
-<dd><p>Helper method to return the voxel indices in the layer that muons currently occupy.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This method does NOT account for the possibility of muons being outside the layer.
-Please also supply a mask, to only select muons inside the layer.</p>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>mu</strong> (<a class="reference internal" href="tomopt.muon.html#tomopt.muon.muon_batch.MuonBatch" title="tomopt.muon.muon_batch.MuonBatch"><code class="xref py py-class docutils literal notranslate"><span class="pre">MuonBatch</span></code></a>) – muons to look up</p></li>
-<li><p><strong>mask</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]) – Optional (muons) Boolean tensor where True indicates that the muon position should be checked</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>(muons,2) tensor of voxel indices in x,y</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.volume.layer.AbsLayer.scatter_and_propagate">
-<span class="sig-name descname"><span class="pre">scatter_and_propagate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deltaz</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/layer.html#AbsLayer.scatter_and_propagate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.layer.AbsLayer.scatter_and_propagate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Propagates the muons through (part of) the layer, such that afterwards all the muons are deltaz lower than their starting position.
-If the layer is set to scatter muons (<cite>rad_length</cite> is not None),
-then the muons will also undergo scattering (changes in their trajectories and positions) according to the scatter model of the layer.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>When computing scatterings, the X0 used for each muon is that of the starting voxel:
-If a muon moves into a neighbouring voxel of differing X0, then this will only be accounted for in the next deltaz step.</p>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>mu</strong> (<a class="reference internal" href="tomopt.muon.html#tomopt.muon.muon_batch.MuonBatch" title="tomopt.muon.muon_batch.MuonBatch"><code class="xref py py-class docutils literal notranslate"><span class="pre">MuonBatch</span></code></a>) – muons to propagate</p></li>
-<li><p><strong>deltaz</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – amount of distance in metres in the negative z direction that the muons should travel (positive number lowers the muon position)</p></li>
-</ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
@@ -886,7 +735,7 @@ If not all the panels are on the same device, then an exception will be raised.<
 
 <dl class="py class">
 <dt class="sig sig-object py" id="tomopt.volume.layer.PassiveLayer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.volume.layer.</span></span><span class="sig-name descname"><span class="pre">PassiveLayer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rad_length_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dz_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scatter_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pdg'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">device(type='cpu')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/layer.html#PassiveLayer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.layer.PassiveLayer" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.volume.layer.</span></span><span class="sig-name descname"><span class="pre">PassiveLayer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rad_length_func</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_sz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scatter_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pdg'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">device(type='cpu')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/layer.html#PassiveLayer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.layer.PassiveLayer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tomopt.volume.layer.AbsLayer" title="tomopt.volume.layer.AbsLayer"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsLayer</span></code></a></p>
 <p>Default layer of containing passive material that scatters the muons.
 The length and width (<cite>lw</cite>) is the spans of the layer in metres in x and y, and the layer begins at x=0, y=0.
@@ -921,8 +770,7 @@ when called with the <cite>z</cite>, <cite>lw</cite>, and <cite>size</cite> of t
 <li><p><strong>size</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – the voxel size in metres. Must be such that lw is divisible by the specified size.</p></li>
 <li><p><strong>rad_length_func</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]]) – lookup function that returns an (n_x,n_y) tensor of voxel X0 values for the layer.
 After initialisation, the <cite>load_rad_length</cite> method may be used to load X0 layouts.</p></li>
-<li><p><strong>dz_step</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – The step size in metres over which to compute muon propagation and scattering.
-Should be such that the <cite>size</cite> of the layer is divisible by <cite>dz_step</cite>.</p></li>
+<li><p><strong>step_sz</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – The step size in metres over which to compute muon propagation and scattering.</p></li>
 <li><p><strong>scatter_model</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – String selection for the scattering model to use. Currently either ‘pdg’ or ‘pgeant’.</p></li>
 <li><p><strong>device</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">device</span></code>) – device on which to place tensors</p></li>
 </ul>
@@ -942,6 +790,29 @@ Should be such that the <cite>size</cite> of the layer is divisible by <cite>dz_
 <dt class="sig sig-object py" id="tomopt.volume.layer.PassiveLayer._buffers">
 <span class="sig-name descname"><span class="pre">_buffers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.PassiveLayer._buffers" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.volume.layer.PassiveLayer._compute_scattering">
+<span class="sig-name descname"><span class="pre">_compute_scattering</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/layer.html#PassiveLayer._compute_scattering"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.layer.PassiveLayer._compute_scattering" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the scattering of the muons using the chosen model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x0</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the X0 of the voxel each muon is traversing</p></li>
+<li><p><strong>theta</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons</p></li>
+<li><p><strong>theta_x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons’ frames to the volume’s</p></li>
+<li><p><strong>theta_y</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons’ frames to the volume’s</p></li>
+<li><p><strong>mom</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the absolute value of the momentum of each muon</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>dtheta_vol, dphi_vol, dx_vol, &amp; dy_vol</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A dictionary of muon scattering variables in the volume reference frame</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="tomopt.volume.layer.PassiveLayer._forward_hooks">
@@ -978,16 +849,84 @@ Should be such that the <cite>size</cite> of the layer is divisible by <cite>dz_
 <span class="sig-name descname"><span class="pre">_parameters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Parameter</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.PassiveLayer._parameters" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.volume.layer.PassiveLayer._pdg_scatter">
+<span class="sig-name descname"><span class="pre">_pdg_scatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_term</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/layer.html#PassiveLayer._pdg_scatter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.layer.PassiveLayer._pdg_scatter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the scattering of the muons using the PDG model <a class="reference external" href="https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf">https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x0</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the X0 of the voxel each muon is traversing</p></li>
+<li><p><strong>theta</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons</p></li>
+<li><p><strong>theta_x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons’ frames to the volume’s</p></li>
+<li><p><strong>theta_y</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons’ frames to the volume’s</p></li>
+<li><p><strong>mom</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the absolute value of the momentum of each muon</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>dtheta_vol, dphi_vol, dx_vol, &amp; dy_vol</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A dictionary of muon scattering variables in the volume reference frame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.volume.layer.PassiveLayer._pgeant_scatter">
+<span class="sig-name descname"><span class="pre">_pgeant_scatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/layer.html#PassiveLayer._pgeant_scatter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.layer.PassiveLayer._pgeant_scatter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the scattering of the muons using the parameterised GEANT 4 model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x0</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the X0 of the voxel each muon is traversing</p></li>
+<li><p><strong>theta</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons</p></li>
+<li><p><strong>theta_x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons’ frame to the volume’s</p></li>
+<li><p><strong>theta_y</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons’ frame to the volume’s</p></li>
+<li><p><strong>mom</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the absolute value of the momentum of each muon</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>dtheta_vol, dphi_vol, dx_vol, &amp; dy_vol</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A dictionary of muon scattering variables in the volume reference frame</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="tomopt.volume.layer.PassiveLayer._state_dict_hooks">
 <span class="sig-name descname"><span class="pre">_state_dict_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.PassiveLayer._state_dict_hooks" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="tomopt.volume.layer.PassiveLayer.abs2idx">
+<span class="sig-name descname"><span class="pre">abs2idx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xy</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/layer.html#PassiveLayer.abs2idx"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.layer.PassiveLayer.abs2idx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper method to return the voxel indices in the layer of the supplied tensor of xy positions.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This method does NOT account for the possibility of positions may be outside the layer.
+Please ensure that positions are inside the layer.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>xy</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,xy) tensor of absolute xy positions in metres in the volume frame</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(N,xy) tensor of voxel indices in x,y</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="tomopt.volume.layer.PassiveLayer.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/layer.html#PassiveLayer.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.layer.PassiveLayer.forward" title="Permalink to this definition">¶</a></dt>
 <dd><p>Propagates the muons through the layer to the bottom in a series of scattering steps.
-If the ‘pdg’ model is used, then the step size is the <cite>dz_step</cite> of the layer, as supplied during initialisation.
+If the ‘pdg’ model is used, then the step size is the <cite>step_sz</cite> of the layer, as supplied during initialisation.
 If the ‘pgeant’ model is used, the the step size specified as part of the fitting of the scattering model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1013,10 +952,59 @@ If the ‘pgeant’ model is used, the the step size specified as part of the fi
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.volume.layer.PassiveLayer.mu_abs2idx">
+<span class="sig-name descname"><span class="pre">mu_abs2idx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/layer.html#PassiveLayer.mu_abs2idx"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.layer.PassiveLayer.mu_abs2idx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper method to return the voxel indices in the layer that muons currently occupy.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This method does NOT account for the possibility of muons being outside the layer.
+Please also supply a mask, to only select muons inside the layer.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mu</strong> (<a class="reference internal" href="tomopt.muon.html#tomopt.muon.muon_batch.MuonBatch" title="tomopt.muon.muon_batch.MuonBatch"><code class="xref py py-class docutils literal notranslate"><span class="pre">MuonBatch</span></code></a>) – muons to look up</p></li>
+<li><p><strong>mask</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]) – Optional (muons) Boolean tensor where True indicates that the muon position should be checked</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(muons,2) tensor of voxel indices in x,y</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="tomopt.volume.layer.PassiveLayer.rad_length">
 <span class="sig-name descname"><span class="pre">rad_length</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.PassiveLayer.rad_length" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.volume.layer.PassiveLayer.scatter_and_propagate">
+<span class="sig-name descname"><span class="pre">scatter_and_propagate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/layer.html#PassiveLayer.scatter_and_propagate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.layer.PassiveLayer.scatter_and_propagate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Propagates the muons through (part of) the layer by the prespecified <cite>step_sz</cite>.
+If the layer is set to scatter muons (<cite>rad_length</cite> is not None),
+then the muons will also undergo scattering (changes in their trajectories and positions) according to the scatter model of the layer.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>When computing scatterings, the X0 used for each muon is that of the starting voxel:
+If a muon moves into a neighbouring voxel of differing X0, then this will only be accounted for in the next step.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mu</strong> (<a class="reference internal" href="tomopt.muon.html#tomopt.muon.muon_batch.MuonBatch" title="tomopt.muon.muon_batch.MuonBatch"><code class="xref py py-class docutils literal notranslate"><span class="pre">MuonBatch</span></code></a>) – muons to propagate</p></li>
+<li><p><strong>mask</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]) – Optional (N,) Boolean mask. Only muons with True values will be scattered and propagated</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="tomopt.volume.layer.PassiveLayer.training">
@@ -1675,14 +1663,8 @@ The target can be set as part of the call to <a class="reference internal" href=
 </li>
 <li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer"><code class="docutils literal notranslate"><span class="pre">AbsLayer</span></code></a><ul>
 <li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer._abc_impl"><code class="docutils literal notranslate"><span class="pre">AbsLayer._abc_impl</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer._compute_scattering"><code class="docutils literal notranslate"><span class="pre">AbsLayer._compute_scattering()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">AbsLayer._is_full_backward_hook</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer._pdg_scatter"><code class="docutils literal notranslate"><span class="pre">AbsLayer._pdg_scatter()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer._pgeant_scatter"><code class="docutils literal notranslate"><span class="pre">AbsLayer._pgeant_scatter()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer.abs2idx"><code class="docutils literal notranslate"><span class="pre">AbsLayer.abs2idx()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer.forward"><code class="docutils literal notranslate"><span class="pre">AbsLayer.forward()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer.mu_abs2idx"><code class="docutils literal notranslate"><span class="pre">AbsLayer.mu_abs2idx()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer.scatter_and_propagate"><code class="docutils literal notranslate"><span class="pre">AbsLayer.scatter_and_propagate()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer.training"><code class="docutils literal notranslate"><span class="pre">AbsLayer.training</span></code></a></li>
 </ul>
 </li>
@@ -1713,6 +1695,7 @@ The target can be set as part of the call to <a class="reference internal" href=
 <li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer._abc_impl"><code class="docutils literal notranslate"><span class="pre">PassiveLayer._abc_impl</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer._backward_hooks"><code class="docutils literal notranslate"><span class="pre">PassiveLayer._backward_hooks</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer._buffers"><code class="docutils literal notranslate"><span class="pre">PassiveLayer._buffers</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer._compute_scattering"><code class="docutils literal notranslate"><span class="pre">PassiveLayer._compute_scattering()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer._forward_hooks"><code class="docutils literal notranslate"><span class="pre">PassiveLayer._forward_hooks</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer._forward_pre_hooks"><code class="docutils literal notranslate"><span class="pre">PassiveLayer._forward_pre_hooks</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">PassiveLayer._is_full_backward_hook</span></code></a></li>
@@ -1720,10 +1703,15 @@ The target can be set as part of the call to <a class="reference internal" href=
 <li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer._modules"><code class="docutils literal notranslate"><span class="pre">PassiveLayer._modules</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer._non_persistent_buffers_set"><code class="docutils literal notranslate"><span class="pre">PassiveLayer._non_persistent_buffers_set</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer._parameters"><code class="docutils literal notranslate"><span class="pre">PassiveLayer._parameters</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer._pdg_scatter"><code class="docutils literal notranslate"><span class="pre">PassiveLayer._pdg_scatter()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer._pgeant_scatter"><code class="docutils literal notranslate"><span class="pre">PassiveLayer._pgeant_scatter()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer._state_dict_hooks"><code class="docutils literal notranslate"><span class="pre">PassiveLayer._state_dict_hooks</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer.abs2idx"><code class="docutils literal notranslate"><span class="pre">PassiveLayer.abs2idx()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer.forward"><code class="docutils literal notranslate"><span class="pre">PassiveLayer.forward()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer.load_rad_length"><code class="docutils literal notranslate"><span class="pre">PassiveLayer.load_rad_length()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer.mu_abs2idx"><code class="docutils literal notranslate"><span class="pre">PassiveLayer.mu_abs2idx()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer.rad_length"><code class="docutils literal notranslate"><span class="pre">PassiveLayer.rad_length</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer.scatter_and_propagate"><code class="docutils literal notranslate"><span class="pre">PassiveLayer.scatter_and_propagate()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer.training"><code class="docutils literal notranslate"><span class="pre">PassiveLayer.training</span></code></a></li>
 </ul>
 </li>

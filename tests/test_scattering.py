@@ -27,10 +27,6 @@ def get_scatters(grp: h5py.Group, plots: bool, verbose: bool) -> Dict[str, Any]:
     file example Fe_1cm_5GeV_normal.txt
     """
 
-    # Init layer
-    layer = PassiveLayer(lw=Tensor([1, 1]), z=1, size=0.1)
-    PGEANT_SCATTER_MODEL.load_data()
-
     # Get data & settings
     settings = json.loads(grp["settings"][()])
     df = pd.DataFrame(grp["data"][()], columns=settings["columns"])
@@ -46,6 +42,10 @@ def get_scatters(grp: h5py.Group, plots: bool, verbose: bool) -> Dict[str, Any]:
     if verbose:
         print(f"Making sims for {mat=}, {dz=}, {mom=}, {theta=}, {phi=}, {n_muons=}")
 
+    # Init layer
+    layer = PassiveLayer(lw=Tensor([1, 1]), z=1, size=0.1, step_sz=dz / np.cos(theta))
+    PGEANT_SCATTER_MODEL.load_data()
+
     # Get sims
     xy_m_t_p = torch.ones(n_muons, 5)
     xy_m_t_p[:, 2] = mom
@@ -55,12 +55,12 @@ def get_scatters(grp: h5py.Group, plots: bool, verbose: bool) -> Dict[str, Any]:
     x0 = torch.ones(len(muons)) * X0[mat]
 
     # New param model
-    pgeant_scattering = layer._pgeant_scatter(x0=x0, deltaz=0.01, theta=muons.theta, theta_x=muons.theta_x, theta_y=muons.theta_y, mom=muons.mom)
+    pgeant_scattering = layer._pgeant_scatter(x0=x0, theta=muons.theta, theta_x=muons.theta_x, theta_y=muons.theta_y, mom=muons.mom)
     pgeant_scattering["dangle_vol"] = np.sqrt((pgeant_scattering["dtheta_vol"] ** 2) + (pgeant_scattering["dphi_vol"] ** 2))
     pgeant_scattering["dspace_vol"] = np.sqrt((pgeant_scattering["dx_vol"] ** 2) + (pgeant_scattering["dy_vol"] ** 2))
 
     # New PDG model
-    pdg_scattering = layer._pdg_scatter(x0=x0, deltaz=0.01, theta=muons.theta, theta_x=muons.theta_x, theta_y=muons.theta_y, mom=muons.mom)
+    pdg_scattering = layer._pdg_scatter(x0=x0, theta=muons.theta, theta_x=muons.theta_x, theta_y=muons.theta_y, mom=muons.mom)
     pdg_scattering["dangle_vol"] = np.sqrt((pdg_scattering["dtheta_vol"] ** 2) + (pdg_scattering["dphi_vol"] ** 2))
     pdg_scattering["dspace_vol"] = np.sqrt((pdg_scattering["dx_vol"] ** 2) + (pdg_scattering["dy_vol"] ** 2))
 

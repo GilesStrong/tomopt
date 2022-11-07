@@ -233,7 +233,7 @@ def test_scatter_batch_compute(mocker, panel_scatter_batch):  # noqa F811
         },
     }
     mocker.patch.object(mu, "get_hits", return_value=hits)
-    mocker.patch("tomopt.volume.layer.AbsLayer.abs2idx", return_value=torch.zeros((1, 3), dtype=torch.long))
+    mocker.patch("tomopt.volume.layer.PassiveLayer.abs2idx", return_value=torch.zeros((1, 3), dtype=torch.long))
 
     def mock_jac(y: Tensor, x: Tensor, create_graph: bool = False, allow_unused: bool = True) -> Tensor:
         return torch.zeros(y.shape + x.shape)
@@ -286,7 +286,7 @@ def test_gen_scatter_batch_compute(mocker, panel_scatter_batch):  # noqa F811
         },
     }
     mocker.patch.object(mu, "get_hits", return_value=hits)
-    mocker.patch("tomopt.volume.layer.AbsLayer.abs2idx", return_value=torch.zeros((1, 3), dtype=torch.long))
+    mocker.patch("tomopt.volume.layer.PassiveLayer.abs2idx", return_value=torch.zeros((1, 3), dtype=torch.long))
 
     sb = GenScatterBatch(mu=mu, volume=volume)
 
@@ -472,13 +472,13 @@ def test_panel_x0_inferrer_efficiency(mocker, panel_scatter_batch):  # noqa F811
 
 @pytest.mark.flaky(max_runs=3, min_passes=1)
 def test_x0_inferrer_scatter_inversion(mocker, panel_scatter_batch):  # noqa F811
-    layer = PassiveLayer(LW, Z, SZ)
     mu, volume, sb = panel_scatter_batch
     inferrer = PanelX0Inferrer(volume=volume)
     inferrer.size = SZ
     x0 = X0["lead"]
     mocker.patch("tomopt.volume.layer.torch.randn", lambda n, device: torch.ones(n, device=device))  # remove randomness
-    scatters = layer._pdg_scatter(x0=x0, deltaz=SZ, theta=mu.theta, theta_x=mu.theta_x, theta_y=mu.theta_y, mom=mu.mom, log_term=False)
+    layer = PassiveLayer(LW, Z, SZ, step_sz=SZ / mu.theta.cos())
+    scatters = layer._pdg_scatter(x0=x0, theta=mu.theta, theta_x=mu.theta_x, theta_y=mu.theta_y, mom=mu.mom, log_term=False)
     dtheta, dphi = scatters["dtheta_vol"], scatters["dphi_vol"]
 
     mu_start = mu.copy()
@@ -499,8 +499,9 @@ def test_x0_inferrer_scatter_inversion_via_scatter_batch():
     gen = MuonGenerator2016((0, 1), (0, 1), fixed_mom=5)
     muons = MuonBatch(gen(10000), init_z=1)
     x0 = torch.ones(len(muons)) * X0["lead"]
-    layer = PassiveLayer(lw=Tensor([1, 1]), z=1, size=0.1)
-    pdg_scattering = layer._pdg_scatter(x0=x0, deltaz=0.01, theta=muons.theta, theta_x=muons.theta_x, theta_y=muons.theta_y, mom=muons.mom, log_term=False)
+    dz = 0.01
+    layer = PassiveLayer(lw=Tensor([1, 1]), z=1, size=0.1, step_sz=dz / muons.theta.cos())
+    pdg_scattering = layer._pdg_scatter(x0=x0, theta=muons.theta, theta_x=muons.theta_x, theta_y=muons.theta_y, mom=muons.mom, log_term=False)
 
     xyz = F.pad(muons.xy.detach().clone(), (0, 1))
     xyz[:, 2] = muons.z.detach().clone()
@@ -513,7 +514,7 @@ def test_x0_inferrer_scatter_inversion_via_scatter_batch():
         },
         pos="above",
     )
-    muons.propagate(0.1)
+    muons.propagate_dz(0.1)
     xyz = F.pad(muons.xy.detach().clone(), (0, 1))
     xyz[:, 2] = muons.z.detach().clone()
     muons.append_hits(
@@ -525,7 +526,7 @@ def test_x0_inferrer_scatter_inversion_via_scatter_batch():
         },
         pos="above",
     )
-    muons.propagate(0.01)
+    muons.propagate_dz(dz)
     muons.scatter_dtheta_dphi(dtheta_vol=pdg_scattering["dtheta_vol"], dphi_vol=pdg_scattering["dphi_vol"])
     xyz = F.pad(muons.xy.detach().clone(), (0, 1))
     xyz[:, 2] = muons.z.detach().clone()
@@ -538,7 +539,7 @@ def test_x0_inferrer_scatter_inversion_via_scatter_batch():
         },
         pos="below",
     )
-    muons.propagate(0.1)
+    muons.propagate_dz(0.1)
     xyz = F.pad(muons.xy.detach().clone(), (0, 1))
     xyz[:, 2] = muons.z.detach().clone()
     muons.append_hits(
@@ -553,7 +554,7 @@ def test_x0_inferrer_scatter_inversion_via_scatter_batch():
 
     class MockVolume:
         lw = Tensor([10, 10])
-        passive_size = 0.01
+        passive_size = dz
         device = torch.device("cpu")
 
         def get_passive_z_range(self):
@@ -567,7 +568,7 @@ def test_x0_inferrer_scatter_inversion_via_scatter_batch():
     inferrer = PanelX0Inferrer(volume=volume)
 
     pred = inferrer.x0_from_scatters(
-        deltaz=0.01,
+        deltaz=dz,
         total_scatter=(sb.total_scatter).square().mean().sqrt() / math.sqrt(2),
         theta_in=sb.theta_in.square().mean().sqrt(),
         theta_out=sb.theta_out.square().mean().sqrt(),

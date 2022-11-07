@@ -503,17 +503,15 @@ Uses model defined in Shukla and Sanskrith 2018 arXiv:1606.06907</p>
 <p>Container class for a batch of many muons, defined by their position and kinematics.</p>
 <dl class="simple">
 <dt>Each muon has its own:</dt><dd><ul class="simple">
-<li><p>x and y position in metres, which are absolute coordinates in the volume frame.</p></li>
+<li><p>x, y, and z position in metres, which are absolute coordinates in the volume frame.</p></li>
 <li><p>theta, the angle in radians [0,pi) between the muon trajectory and the negative z-axis in the volume frame muons with a theta &gt; pi/2 (i.e. travel upwards) may be removed automatically</p></li>
 <li><p>phi, the anticlockwise angle in radians [0,2pi) between the muon trajectory and the positive x-axis, in the x-y plane of the volume frame.</p></li>
 <li><p>momentum (mom), the absolute value of the muon momentum in GeV</p></li>
 </ul>
 </dd>
-</dl>
-<p>All the muons in the batch share the same z-position in metres, which is an absolute coordinate in the volume frame.</p>
-<dl class="simple">
 <dt>Muon properties should not be updated manually.  Instead, call:</dt><dd><ul class="simple">
-<li><p><cite>.propagate(dz)</cite> to update the x,y,z positions of the muons for a given propagation dz in the z-axis.</p></li>
+<li><p><cite>.propagate_dz_dz(dz)</cite> to update the x,y,z positions of the muons for a given propagation dz in the z-axis.</p></li>
+<li><p><cite>.propagate_dz_d(d)</cite> to update the x,y,z positions of the muons for a given propagation d in the muons’ trajectories.</p></li>
 <li><p><cite>.scatter_dxy(dx_vol, dy_vol, mask)</cite> to shift the x,y positions of the muons, for which the values of the optional Boolean mask is true, by the specified amount.</p></li>
 <li><p><cite>.scatter_dtheta_dphi(dtheta_vol, dphi_vol, mask)</cite> to alter the theta,phi angles of the muons, for which the values of the optional Boolean mask is true, by the specified amount.</p></li>
 </ul>
@@ -529,7 +527,7 @@ Uses model defined in Shukla and Sanskrith 2018 arXiv:1606.06907</p>
 However currently the <cite>reco_mom</cite> property will return the TRUE momentum of the muons, with no simulation of measurement precision.</p>
 </div>
 <p>By default, the <cite>MuonBatch</cite> class only contains the current position of the muons,
-however the <cite>.snapshot_xyz</cite> method can be used to store the xy positions of the muons at any time, to a dictionary with float z-position keys, <cite>xy_hist</cite>.</p>
+however the <cite>.snapshot_xyz</cite> method can be used to store the xy positions of the muons at any time, to a dictionary with float z-position keys, <cite>xyz_hist</cite>.</p>
 <p>In addition to storing the properties of the muons, the <cite>MuonBatch</cite> class is also used to store the detector hits associated with each muon.
 Hits may be added via the <cite>.append_hits</cite> method, and stored in the <cite>_hits</cite> attribute.
 Hits can then be retrieved by the <cite>.get_hits</cite> method.</p>
@@ -599,8 +597,28 @@ with xy [m], p [GeV], theta [r] (0, pi/2) defined w.r.t z axis, phi [r] (0, 2pi)
 </dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch._xyz">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_xyz</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch._xyz" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch._y">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_y</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch._y" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch._z">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_z</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch._z" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
@@ -773,12 +791,12 @@ a dictionary mapping detector-array position to a dictionary mapping hit variabl
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.p_dim">
-<span class="sig-name descname"><span class="pre">p_dim</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.p_dim" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">p_dim</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.p_dim" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.ph_dim">
-<span class="sig-name descname"><span class="pre">ph_dim</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.ph_dim" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">ph_dim</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.ph_dim" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -816,12 +834,32 @@ a dictionary mapping detector-array position to a dictionary mapping hit variabl
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.propagate">
-<span class="sig-name descname"><span class="pre">propagate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dz</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/muon/muon_batch.html#MuonBatch.propagate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.propagate" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.propagate_d">
+<span class="sig-name descname"><span class="pre">propagate_d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/muon/muon_batch.html#MuonBatch.propagate_d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.propagate_d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Propagates all muons in their direction of flight by the specified distances.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>d</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – (1,) or (N,) distance(s) in metres to move.</p></li>
+<li><p><strong>mask</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]) – (N,) Boolean tensor. If not None, only muons with True mask elements are altered.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.propagate_dz">
+<span class="sig-name descname"><span class="pre">propagate_dz</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/muon/muon_batch.html#MuonBatch.propagate_dz"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.propagate_dz" title="Permalink to this definition">¶</a></dt>
 <dd><p>Propagates all muons in their direction of flight such that afterwards they will all have moved a specified distance in the negative z direction.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>dz</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – distance in metres to move in the negative z direction, i.e. a positive dz results in the muons travelling downwards.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dz</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – distance in metres to move in the negative z direction, i.e. a positive dz results in the muons travelling downwards.</p></li>
+<li><p><strong>mask</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]) – (N,) Boolean tensor. If not None, only muons with True mask elements are altered.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
@@ -892,7 +930,7 @@ If a mask is supplied, then only muons with True mask elements are displaced.</p
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.snapshot_xyz">
 <span class="sig-name descname"><span class="pre">snapshot_xyz</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/muon/muon_batch.html#MuonBatch.snapshot_xyz"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.snapshot_xyz" title="Permalink to this definition">¶</a></dt>
-<dd><p>Store the current xy positions of the muons in <cite>.xy_hist</cite>, indexed by the current z position.</p>
+<dd><p>Store the current xy positions of the muons in <cite>.xyz_hist</cite>, indexed by the current z position.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
@@ -902,7 +940,7 @@ If a mask is supplied, then only muons with True mask elements are displaced.</p
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.th_dim">
-<span class="sig-name descname"><span class="pre">th_dim</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.th_dim" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">th_dim</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.th_dim" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -1053,11 +1091,21 @@ If a mask is supplied, then only muons with True mask elements are displaced.</p
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.xy_hist">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">xy_hist</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.xy_hist" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.xyz">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">xyz</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.xyz" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]</p>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.xyz_hist">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">xyz_hist</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.xyz_hist" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1086,6 +1134,11 @@ If a mask is supplied, then only muons with True mask elements are displaced.</p
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.muon.muon_batch.MuonBatch.z_dim">
+<span class="sig-name descname"><span class="pre">z_dim</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#tomopt.muon.muon_batch.MuonBatch.z_dim" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -1173,7 +1226,9 @@ If a mask is supplied, then only muons with True mask elements are displaced.</p
 <li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch._theta"><code class="docutils literal notranslate"><span class="pre">MuonBatch._theta</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch._x"><code class="docutils literal notranslate"><span class="pre">MuonBatch._x</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch._xy"><code class="docutils literal notranslate"><span class="pre">MuonBatch._xy</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch._xyz"><code class="docutils literal notranslate"><span class="pre">MuonBatch._xyz</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch._y"><code class="docutils literal notranslate"><span class="pre">MuonBatch._y</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch._z"><code class="docutils literal notranslate"><span class="pre">MuonBatch._z</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.append_hits"><code class="docutils literal notranslate"><span class="pre">MuonBatch.append_hits()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.copy"><code class="docutils literal notranslate"><span class="pre">MuonBatch.copy()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.dtheta"><code class="docutils literal notranslate"><span class="pre">MuonBatch.dtheta()</span></code></a></li>
@@ -1188,7 +1243,8 @@ If a mask is supplied, then only muons with True mask elements are displaced.</p
 <li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.ph_dim"><code class="docutils literal notranslate"><span class="pre">MuonBatch.ph_dim</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.phi"><code class="docutils literal notranslate"><span class="pre">MuonBatch.phi</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.phi_from_theta_xy"><code class="docutils literal notranslate"><span class="pre">MuonBatch.phi_from_theta_xy()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.propagate"><code class="docutils literal notranslate"><span class="pre">MuonBatch.propagate()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.propagate_d"><code class="docutils literal notranslate"><span class="pre">MuonBatch.propagate_d()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.propagate_dz"><code class="docutils literal notranslate"><span class="pre">MuonBatch.propagate_dz()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.reco_mom"><code class="docutils literal notranslate"><span class="pre">MuonBatch.reco_mom</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.remove_upwards_muons"><code class="docutils literal notranslate"><span class="pre">MuonBatch.remove_upwards_muons()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.scatter_dtheta_dphi"><code class="docutils literal notranslate"><span class="pre">MuonBatch.scatter_dtheta_dphi()</span></code></a></li>
@@ -1206,10 +1262,12 @@ If a mask is supplied, then only muons with True mask elements are displaced.</p
 <li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.x"><code class="docutils literal notranslate"><span class="pre">MuonBatch.x</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.x_dim"><code class="docutils literal notranslate"><span class="pre">MuonBatch.x_dim</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.xy"><code class="docutils literal notranslate"><span class="pre">MuonBatch.xy</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.xy_hist"><code class="docutils literal notranslate"><span class="pre">MuonBatch.xy_hist</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.xyz"><code class="docutils literal notranslate"><span class="pre">MuonBatch.xyz</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.xyz_hist"><code class="docutils literal notranslate"><span class="pre">MuonBatch.xyz_hist</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.y"><code class="docutils literal notranslate"><span class="pre">MuonBatch.y</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.y_dim"><code class="docutils literal notranslate"><span class="pre">MuonBatch.y_dim</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.z"><code class="docutils literal notranslate"><span class="pre">MuonBatch.z</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.muon.muon_batch.MuonBatch.z_dim"><code class="docutils literal notranslate"><span class="pre">MuonBatch.z_dim</span></code></a></li>
 </ul>
 </li>
 </ul>

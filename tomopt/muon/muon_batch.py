@@ -1,11 +1,12 @@
 from __future__ import annotations
 from typing import Dict, List, Union, Tuple, Optional
 import math
-from collections import defaultdict, OrderedDict
+from collections import defaultdict
 import numpy as np
 
 import torch
 from torch import Tensor
+import torch.nn.functional as F
 
 from ..core import DEVICE
 
@@ -21,14 +22,14 @@ class MuonBatch:
     Container class for a batch of many muons, defined by their position and kinematics.
 
     Each muon has its own:
-        - x and y position in metres, which are absolute coordinates in the volume frame.
+        - x, y, and z position in metres, which are absolute coordinates in the volume frame.
         - theta, the angle in radians [0,pi) between the muon trajectory and the negative z-axis in the volume frame muons with a theta > pi/2 (i.e. travel upwards) may be removed automatically
         - phi, the anticlockwise angle in radians [0,2pi) between the muon trajectory and the positive x-axis, in the x-y plane of the volume frame.
         - momentum (mom), the absolute value of the muon momentum in GeV
-    All the muons in the batch share the same z-position in metres, which is an absolute coordinate in the volume frame.
 
     Muon properties should not be updated manually.  Instead, call:
-        - `.propagate(dz)` to update the x,y,z positions of the muons for a given propagation dz in the z-axis.
+        - `.propagate_dz_dz(dz)` to update the x,y,z positions of the muons for a given propagation dz in the z-axis.
+        - `.propagate_dz_d(d)` to update the x,y,z positions of the muons for a given propagation d in the muons' trajectories.
         - `.scatter_dxy(dx_vol, dy_vol, mask)` to shift the x,y positions of the muons, for which the values of the optional Boolean mask is true, by the specified amount.
         - `.scatter_dtheta_dphi(dtheta_vol, dphi_vol, mask)` to alter the theta,phi angles of the muons, for which the values of the optional Boolean mask is true, by the specified amount.
 
@@ -40,7 +41,7 @@ class MuonBatch:
         However currently the `reco_mom` property will return the TRUE momentum of the muons, with no simulation of measurement precision.
 
     By default, the `MuonBatch` class only contains the current position of the muons,
-    however the `.snapshot_xyz` method can be used to store the xy positions of the muons at any time, to a dictionary with float z-position keys, `xy_hist`.
+    however the `.snapshot_xyz` method can be used to store the xy positions of the muons at any time, to a dictionary with float z-position keys, `xyz_hist`.
 
     In addition to storing the properties of the muons, the `MuonBatch` class is also used to store the detector hits associated with each muon.
     Hits may be added via the `.append_hits` method, and stored in the `_hits` attribute.
@@ -55,9 +56,10 @@ class MuonBatch:
 
     x_dim = 0
     y_dim = 1
-    p_dim = 2
-    th_dim = 3
-    ph_dim = 4
+    z_dim = 2
+    p_dim = 3
+    th_dim = 4
+    ph_dim = 5
     _keep_mask: Optional[Tensor] = None  # After a scattering, this will be a Boolean mask of muons kept, to help with testing
 
     def __init__(self, xy_p_theta_phi: Tensor, init_z: Union[Tensor, float], device: torch.device = DEVICE):
@@ -68,12 +70,16 @@ class MuonBatch:
 
         self.device = device
         self._muons = xy_p_theta_phi.to(self.device)
+
+        # Insert z position in tensor
+        self._muons = F.pad(self._muons, (1, 0))
+        self._muons[:, 0] = self._muons[:, 1]
+        self._muons[:, 1] = self._muons[:, 2]
+        self._muons[:, 2] = init_z
+
         self._removed_muons: Optional[Tensor] = None
-        if not isinstance(init_z, Tensor):
-            init_z = Tensor([init_z])
-        self._z = init_z.to(self.device)
         self._hits: Dict[str, Dict[str, List[Tensor]]] = defaultdict(lambda: defaultdict(list))
-        self._xy_hist: Dict[Tensor, Tensor] = OrderedDict({})
+        self._xyz_hist: List[Tensor] = []
 
     def __repr__(self) -> str:
         return f"Batch of {len(self)} muons"
@@ -242,19 +248,44 @@ class MuonBatch:
                     for det, xy_pos in enumerate(self._hits[pos][var]):
                         self._hits[pos][var][det] = xy_pos[keep_mask]
 
-    def propagate(self, dz: Union[Tensor, float]) -> None:
+    def propagate_dz(self, dz: Union[Tensor, float], mask: Optional[Tensor] = None) -> None:
         r"""
         Propagates all muons in their direction of flight such that afterwards they will all have moved a specified distance in the negative z direction.
 
         Arguments:
             dz: distance in metres to move in the negative z direction, i.e. a positive dz results in the muons travelling downwards.
+            mask: (N,) Boolean tensor. If not None, only muons with True mask elements are altered.
         """
 
-        r = dz / self._theta.cos()
-        rst = r * self._theta.sin()
-        self._x = self._x + (rst * self._phi.cos())
-        self._y = self._y + (rst * self._phi.sin())
-        self._z = self._z - dz
+        if mask is None:
+            mask = torch.ones(len(self._muons), device=self.device).bool()
+        theta = self._theta[mask]
+        phi = self._phi[mask]
+
+        r = dz / theta.cos()
+        rst = r * theta.sin()
+        self._x[mask] = self._x[mask] + (rst * phi.cos())
+        self._y[mask] = self._y[mask] + (rst * phi.sin())
+        self._z[mask] = self._z[mask] - dz
+
+    def propagate_d(self, d: Union[Tensor, float], mask: Optional[Tensor] = None) -> None:
+        r"""
+        Propagates all muons in their direction of flight by the specified distances.
+
+        Arguments:
+            d: (1,) or (N,) distance(s) in metres to move.
+            mask: (N,) Boolean tensor. If not None, only muons with True mask elements are altered.
+        """
+
+        if mask is None:
+            mask = torch.ones(len(self._muons), device=self.device).bool()
+        theta = self._theta[mask]
+        phi = self._phi[mask]
+
+        rst = d * theta.sin()
+        self._x[mask] = self._x[mask] + (rst * phi.cos())
+        self._y[mask] = self._y[mask] + (rst * phi.sin())
+        self._z[mask] = self._z[mask] - (d * theta.cos())
 
     def get_xy_mask(self, xy_low: Optional[Union[Tuple[float, float], Tensor]], xy_high: Optional[Union[Tuple[float, float], Tensor]]) -> Tensor:
         r"""
@@ -276,10 +307,10 @@ class MuonBatch:
 
     def snapshot_xyz(self) -> None:
         r"""
-        Store the current xy positions of the muons in `.xy_hist`, indexed by the current z position.
+        Store the current xy positions of the muons in `.xyz_hist`, indexed by the current z position.
         """
 
-        self.xy_hist[self.z.detach().cpu().clone().numpy()[0]] = self.xy.detach().cpu().clone().numpy()
+        self._xyz_hist.append(self.xyz.detach().cpu().clone().numpy())
 
     def append_hits(self, hits: Dict[str, Tensor], pos: str) -> None:
         r"""
@@ -368,7 +399,11 @@ class MuonBatch:
             New `MuonBatch` with xyz, and theta,phi equal to those of the current `MuonBatch`.
         """
 
-        return MuonBatch(self._muons.detach().clone(), init_z=self.z.detach().clone(), device=self.device)
+        return MuonBatch(
+            self._muons[:, sorted([self.x_dim, self.y_dim, self.p_dim, self.th_dim, self.ph_dim])].detach().clone(),
+            init_z=self.z.detach().clone(),
+            device=self.device,
+        )
 
     @property
     def muons(self) -> Tensor:
@@ -383,8 +418,8 @@ class MuonBatch:
         return self._removed_muons
 
     @property
-    def xy_hist(self) -> Dict[Tensor, Tensor]:
-        return self._xy_hist
+    def xyz_hist(self) -> List[Tensor]:
+        return self._xyz_hist
 
     @property
     def x(self) -> Tensor:
@@ -423,6 +458,24 @@ class MuonBatch:
         self._muons[:, self.y_dim] = y
 
     @property
+    def z(self) -> Tensor:
+        return self._z
+
+    @z.setter
+    def z(self, z: Tensor) -> None:
+        raise AttributeError(
+            "Please use the propagate_dz or propagate_d function to modify the x,y position of muons. Or modify the _muons attribute if you know what you're doing"
+        )
+
+    @property
+    def _z(self) -> Tensor:
+        return self._muons[:, self.z_dim]
+
+    @_z.setter
+    def _z(self, z: Tensor) -> None:
+        self._muons[:, self.z_dim] = z
+
+    @property
     def xy(self) -> Tensor:
         return self._xy
 
@@ -441,12 +494,22 @@ class MuonBatch:
         self._muons[:, : self.y_dim + 1] = xy
 
     @property
-    def z(self) -> Tensor:
-        return self._z
+    def xyz(self) -> Tensor:
+        return self._xyz
 
-    @z.setter
-    def z(self, z: Tensor) -> None:
-        raise AttributeError("Please use the propagate method to modify z. Or modify the _muons attribute if you know what you're doing")
+    @xyz.setter
+    def xyz(self, xyz: Tensor) -> None:
+        raise AttributeError(
+            "Please use the scatter_dxy or propagate methods to modify the x,y position of muons. Or modify the _muons attribute if you know what you're doing"
+        )
+
+    @property
+    def _xyz(self) -> Tensor:
+        return self._muons[:, : self.z_dim + 1]
+
+    @_xyz.setter
+    def _xyz(self, xyz: Tensor) -> None:
+        self._muons[:, : self.z_dim + 1] = xyz
 
     @property
     def mom(self) -> Tensor:
