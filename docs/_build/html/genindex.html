@@ -387,7 +387,7 @@
 </li>
       <li><a href="tomopt.inference.html#tomopt.inference.scattering.ScatterBatch._compute_phi">_compute_phi() (tomopt.inference.scattering.ScatterBatch static method)</a>
 </li>
-      <li><a href="tomopt.volume.html#tomopt.volume.layer.AbsLayer._compute_scattering">_compute_scattering() (tomopt.volume.layer.AbsLayer method)</a>
+      <li><a href="tomopt.volume.html#tomopt.volume.layer.PassiveLayer._compute_scattering">_compute_scattering() (tomopt.volume.layer.PassiveLayer method)</a>
 </li>
       <li><a href="tomopt.inference.html#tomopt.inference.scattering.ScatterBatch._compute_scatters">_compute_scatters() (tomopt.inference.scattering.ScatterBatch method)</a>
 </li>
@@ -651,9 +651,9 @@
         <li><a href="tomopt.volume.html#tomopt.volume.layer.PassiveLayer._parameters">(tomopt.volume.layer.PassiveLayer attribute)</a>
 </li>
       </ul></li>
-      <li><a href="tomopt.volume.html#tomopt.volume.layer.AbsLayer._pdg_scatter">_pdg_scatter() (tomopt.volume.layer.AbsLayer method)</a>
+      <li><a href="tomopt.volume.html#tomopt.volume.layer.PassiveLayer._pdg_scatter">_pdg_scatter() (tomopt.volume.layer.PassiveLayer method)</a>
 </li>
-      <li><a href="tomopt.volume.html#tomopt.volume.layer.AbsLayer._pgeant_scatter">_pgeant_scatter() (tomopt.volume.layer.AbsLayer method)</a>
+      <li><a href="tomopt.volume.html#tomopt.volume.layer.PassiveLayer._pgeant_scatter">_pgeant_scatter() (tomopt.volume.layer.PassiveLayer method)</a>
 </li>
       <li><a href="tomopt.muon.html#tomopt.muon.muon_batch.MuonBatch._phi">_phi (tomopt.muon.muon_batch.MuonBatch property)</a>
 </li>
@@ -793,6 +793,8 @@
 </li>
       <li><a href="tomopt.muon.html#tomopt.muon.muon_batch.MuonBatch._xy">_xy (tomopt.muon.muon_batch.MuonBatch property)</a>
 </li>
+      <li><a href="tomopt.muon.html#tomopt.muon.muon_batch.MuonBatch._xyz">_xyz (tomopt.muon.muon_batch.MuonBatch property)</a>
+</li>
       <li><a href="tomopt.inference.html#tomopt.inference.scattering.ScatterBatch._xyz_in">_xyz_in (tomopt.inference.scattering.ScatterBatch attribute)</a>
 </li>
       <li><a href="tomopt.inference.html#tomopt.inference.scattering.ScatterBatch._xyz_in_unc">_xyz_in_unc (tomopt.inference.scattering.ScatterBatch attribute)</a>
@@ -802,6 +804,8 @@
       <li><a href="tomopt.inference.html#tomopt.inference.scattering.ScatterBatch._xyz_out_unc">_xyz_out_unc (tomopt.inference.scattering.ScatterBatch attribute)</a>
 </li>
       <li><a href="tomopt.muon.html#tomopt.muon.muon_batch.MuonBatch._y">_y (tomopt.muon.muon_batch.MuonBatch property)</a>
+</li>
+      <li><a href="tomopt.muon.html#tomopt.muon.muon_batch.MuonBatch._z">_z (tomopt.muon.muon_batch.MuonBatch property)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -817,7 +821,7 @@
 </li>
       <li><a href="tomopt.inference.html#tomopt.inference.scattering.ScatterBatch.above_hits">above_hits (tomopt.inference.scattering.ScatterBatch property)</a>
 </li>
-      <li><a href="tomopt.volume.html#tomopt.volume.layer.AbsLayer.abs2idx">abs2idx() (tomopt.volume.layer.AbsLayer method)</a>
+      <li><a href="tomopt.volume.html#tomopt.volume.layer.PassiveLayer.abs2idx">abs2idx() (tomopt.volume.layer.PassiveLayer method)</a>
 </li>
       <li><a href="tomopt.optimisation.data.html#tomopt.optimisation.data.passives.AbsBlockPassiveGenerator">AbsBlockPassiveGenerator (class in tomopt.optimisation.data.passives)</a>
 </li>
@@ -1372,7 +1376,7 @@
 </li>
       <li><a href="tomopt.optimisation.wrapper.html#tomopt.optimisation.wrapper.volume_wrapper.FitParams.mu">mu (tomopt.optimisation.wrapper.volume_wrapper.FitParams attribute)</a>
 </li>
-      <li><a href="tomopt.volume.html#tomopt.volume.layer.AbsLayer.mu_abs2idx">mu_abs2idx() (tomopt.volume.layer.AbsLayer method)</a>
+      <li><a href="tomopt.volume.html#tomopt.volume.layer.PassiveLayer.mu_abs2idx">mu_abs2idx() (tomopt.volume.layer.PassiveLayer method)</a>
 </li>
       <li><a href="tomopt.optimisation.wrapper.html#tomopt.optimisation.wrapper.volume_wrapper.FitParams.mu_bs">mu_bs (tomopt.optimisation.wrapper.volume_wrapper.FitParams attribute)</a>
 </li>
@@ -1608,10 +1612,10 @@
 </li>
       <li><a href="tomopt.muon.html#tomopt.muon.muon_batch.MuonBatch.phi_from_theta_xy">phi_from_theta_xy() (tomopt.muon.muon_batch.MuonBatch static method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="tomopt.inference.html#tomopt.inference.scattering.ScatterBatch.phi_in">phi_in (tomopt.inference.scattering.ScatterBatch property)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="tomopt.inference.html#tomopt.inference.scattering.ScatterBatch.phi_in_unc">phi_in_unc (tomopt.inference.scattering.ScatterBatch property)</a>
 </li>
       <li><a href="tomopt.inference.html#tomopt.inference.scattering.ScatterBatch.phi_out">phi_out (tomopt.inference.scattering.ScatterBatch property)</a>
@@ -1650,7 +1654,9 @@
 </li>
       <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.monitors.MetricLogger.print_losses">print_losses() (tomopt.optimisation.callbacks.monitors.MetricLogger method)</a>
 </li>
-      <li><a href="tomopt.muon.html#tomopt.muon.muon_batch.MuonBatch.propagate">propagate() (tomopt.muon.muon_batch.MuonBatch method)</a>
+      <li><a href="tomopt.muon.html#tomopt.muon.muon_batch.MuonBatch.propagate_d">propagate_d() (tomopt.muon.muon_batch.MuonBatch method)</a>
+</li>
+      <li><a href="tomopt.muon.html#tomopt.muon.muon_batch.MuonBatch.propagate_dz">propagate_dz() (tomopt.muon.muon_batch.MuonBatch method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -1700,7 +1706,7 @@
 </li>
       <li><a href="tomopt.optimisation.wrapper.html#tomopt.optimisation.wrapper.volume_wrapper.FitParams.sb">sb (tomopt.optimisation.wrapper.volume_wrapper.FitParams attribute)</a>
 </li>
-      <li><a href="tomopt.volume.html#tomopt.volume.layer.AbsLayer.scatter_and_propagate">scatter_and_propagate() (tomopt.volume.layer.AbsLayer method)</a>
+      <li><a href="tomopt.volume.html#tomopt.volume.layer.PassiveLayer.scatter_and_propagate">scatter_and_propagate() (tomopt.volume.layer.PassiveLayer method)</a>
 </li>
       <li><a href="tomopt.inference.html#tomopt.inference.volume.DenseBlockClassifierFromX0s.scatter_batches">scatter_batches (tomopt.inference.volume.DenseBlockClassifierFromX0s attribute)</a>
 
@@ -2195,15 +2201,17 @@
 </li>
       <li><a href="tomopt.inference.html#tomopt.inference.volume.AbsX0Inferrer.x0_from_scatters">x0_from_scatters() (tomopt.inference.volume.AbsX0Inferrer static method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="tomopt.html#tomopt.utils.x0targs_to_classtargs">x0targs_to_classtargs() (in module tomopt.utils)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="tomopt.muon.html#tomopt.muon.muon_batch.MuonBatch.x_dim">x_dim (tomopt.muon.muon_batch.MuonBatch attribute)</a>
 </li>
       <li><a href="tomopt.muon.html#tomopt.muon.muon_batch.MuonBatch.xy">xy (tomopt.muon.muon_batch.MuonBatch property)</a>
 </li>
-      <li><a href="tomopt.muon.html#tomopt.muon.muon_batch.MuonBatch.xy_hist">xy_hist (tomopt.muon.muon_batch.MuonBatch property)</a>
+      <li><a href="tomopt.muon.html#tomopt.muon.muon_batch.MuonBatch.xyz">xyz (tomopt.muon.muon_batch.MuonBatch property)</a>
+</li>
+      <li><a href="tomopt.muon.html#tomopt.muon.muon_batch.MuonBatch.xyz_hist">xyz_hist (tomopt.muon.muon_batch.MuonBatch property)</a>
 </li>
       <li><a href="tomopt.inference.html#tomopt.inference.scattering.ScatterBatch.xyz_in">xyz_in (tomopt.inference.scattering.ScatterBatch property)</a>
 </li>
@@ -2240,6 +2248,10 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="tomopt.muon.html#tomopt.muon.muon_batch.MuonBatch.z">z (tomopt.muon.muon_batch.MuonBatch property)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="tomopt.muon.html#tomopt.muon.muon_batch.MuonBatch.z_dim">z_dim (tomopt.muon.muon_batch.MuonBatch attribute)</a>
 </li>
   </ul></td>
 </tr></table>

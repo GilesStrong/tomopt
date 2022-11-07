@@ -239,11 +239,12 @@
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Optional</span>
 <span class="kn">import</span> <span class="nn">math</span>
-<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span><span class="p">,</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
 
 <span class="kn">from</span> <span class="nn">..core</span> <span class="kn">import</span> <span class="n">DEVICE</span>
 
@@ -259,14 +260,14 @@
 <span class="sd">    Container class for a batch of many muons, defined by their position and kinematics.</span>
 
 <span class="sd">    Each muon has its own:</span>
-<span class="sd">        - x and y position in metres, which are absolute coordinates in the volume frame.</span>
+<span class="sd">        - x, y, and z position in metres, which are absolute coordinates in the volume frame.</span>
 <span class="sd">        - theta, the angle in radians [0,pi) between the muon trajectory and the negative z-axis in the volume frame muons with a theta &gt; pi/2 (i.e. travel upwards) may be removed automatically</span>
 <span class="sd">        - phi, the anticlockwise angle in radians [0,2pi) between the muon trajectory and the positive x-axis, in the x-y plane of the volume frame.</span>
 <span class="sd">        - momentum (mom), the absolute value of the muon momentum in GeV</span>
-<span class="sd">    All the muons in the batch share the same z-position in metres, which is an absolute coordinate in the volume frame.</span>
 
 <span class="sd">    Muon properties should not be updated manually.  Instead, call:</span>
-<span class="sd">        - `.propagate(dz)` to update the x,y,z positions of the muons for a given propagation dz in the z-axis.</span>
+<span class="sd">        - `.propagate_dz_dz(dz)` to update the x,y,z positions of the muons for a given propagation dz in the z-axis.</span>
+<span class="sd">        - `.propagate_dz_d(d)` to update the x,y,z positions of the muons for a given propagation d in the muons&#39; trajectories.</span>
 <span class="sd">        - `.scatter_dxy(dx_vol, dy_vol, mask)` to shift the x,y positions of the muons, for which the values of the optional Boolean mask is true, by the specified amount.</span>
 <span class="sd">        - `.scatter_dtheta_dphi(dtheta_vol, dphi_vol, mask)` to alter the theta,phi angles of the muons, for which the values of the optional Boolean mask is true, by the specified amount.</span>
 
@@ -278,7 +279,7 @@
 <span class="sd">        However currently the `reco_mom` property will return the TRUE momentum of the muons, with no simulation of measurement precision.</span>
 
 <span class="sd">    By default, the `MuonBatch` class only contains the current position of the muons,</span>
-<span class="sd">    however the `.snapshot_xyz` method can be used to store the xy positions of the muons at any time, to a dictionary with float z-position keys, `xy_hist`.</span>
+<span class="sd">    however the `.snapshot_xyz` method can be used to store the xy positions of the muons at any time, to a dictionary with float z-position keys, `xyz_hist`.</span>
 
 <span class="sd">    In addition to storing the properties of the muons, the `MuonBatch` class is also used to store the detector hits associated with each muon.</span>
 <span class="sd">    Hits may be added via the `.append_hits` method, and stored in the `_hits` attribute.</span>
@@ -293,9 +294,10 @@
 
     <span class="n">x_dim</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">y_dim</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">p_dim</span> <span class="o">=</span> <span class="mi">2</span>
-    <span class="n">th_dim</span> <span class="o">=</span> <span class="mi">3</span>
-    <span class="n">ph_dim</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">z_dim</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">p_dim</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">th_dim</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">ph_dim</span> <span class="o">=</span> <span class="mi">5</span>
     <span class="n">_keep_mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># After a scattering, this will be a Boolean mask of muons kept, to help with testing</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xy_p_theta_phi</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">init_z</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">DEVICE</span><span class="p">):</span>
@@ -306,12 +308,16 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">device</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_muons</span> <span class="o">=</span> <span class="n">xy_p_theta_phi</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="c1"># Insert z position in tensor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_muons</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_muons</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_muons</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muons</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_muons</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muons</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_muons</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">init_z</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">_removed_muons</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">init_z</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">):</span>
-            <span class="n">init_z</span> <span class="o">=</span> <span class="n">Tensor</span><span class="p">([</span><span class="n">init_z</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_z</span> <span class="o">=</span> <span class="n">init_z</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_hits</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]]]</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_xy_hist</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">({})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xyz_hist</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;Batch of </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">}</span><span class="s2"> muons&quot;</span>
@@ -480,19 +486,44 @@
                     <span class="k">for</span> <span class="n">det</span><span class="p">,</span> <span class="n">xy_pos</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_hits</span><span class="p">[</span><span class="n">pos</span><span class="p">][</span><span class="n">var</span><span class="p">]):</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_hits</span><span class="p">[</span><span class="n">pos</span><span class="p">][</span><span class="n">var</span><span class="p">][</span><span class="n">det</span><span class="p">]</span> <span class="o">=</span> <span class="n">xy_pos</span><span class="p">[</span><span class="n">keep_mask</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="MuonBatch.propagate"><a class="viewcode-back" href="../../../tomopt.muon.html#tomopt.muon.muon_batch.MuonBatch.propagate">[docs]</a>    <span class="k">def</span> <span class="nf">propagate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dz</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="MuonBatch.propagate_dz"><a class="viewcode-back" href="../../../tomopt.muon.html#tomopt.muon.muon_batch.MuonBatch.propagate_dz">[docs]</a>    <span class="k">def</span> <span class="nf">propagate_dz</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dz</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Propagates all muons in their direction of flight such that afterwards they will all have moved a specified distance in the negative z direction.</span>
 
 <span class="sd">        Arguments:</span>
 <span class="sd">            dz: distance in metres to move in the negative z direction, i.e. a positive dz results in the muons travelling downwards.</span>
+<span class="sd">            mask: (N,) Boolean tensor. If not None, only muons with True mask elements are altered.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">r</span> <span class="o">=</span> <span class="n">dz</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_theta</span><span class="o">.</span><span class="n">cos</span><span class="p">()</span>
-        <span class="n">rst</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_theta</span><span class="o">.</span><span class="n">sin</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_x</span> <span class="o">+</span> <span class="p">(</span><span class="n">rst</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phi</span><span class="o">.</span><span class="n">cos</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y</span> <span class="o">+</span> <span class="p">(</span><span class="n">rst</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phi</span><span class="o">.</span><span class="n">sin</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_z</span> <span class="o">-</span> <span class="n">dz</span></div>
+        <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_muons</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">bool</span><span class="p">()</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_theta</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+        <span class="n">phi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phi</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+
+        <span class="n">r</span> <span class="o">=</span> <span class="n">dz</span> <span class="o">/</span> <span class="n">theta</span><span class="o">.</span><span class="n">cos</span><span class="p">()</span>
+        <span class="n">rst</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="n">theta</span><span class="o">.</span><span class="n">sin</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_x</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_x</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">rst</span> <span class="o">*</span> <span class="n">phi</span><span class="o">.</span><span class="n">cos</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_y</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">rst</span> <span class="o">*</span> <span class="n">phi</span><span class="o">.</span><span class="n">sin</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_z</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_z</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">-</span> <span class="n">dz</span></div>
+
+<div class="viewcode-block" id="MuonBatch.propagate_d"><a class="viewcode-back" href="../../../tomopt.muon.html#tomopt.muon.muon_batch.MuonBatch.propagate_d">[docs]</a>    <span class="k">def</span> <span class="nf">propagate_d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Propagates all muons in their direction of flight by the specified distances.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            d: (1,) or (N,) distance(s) in metres to move.</span>
+<span class="sd">            mask: (N,) Boolean tensor. If not None, only muons with True mask elements are altered.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_muons</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">bool</span><span class="p">()</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_theta</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+        <span class="n">phi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phi</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+
+        <span class="n">rst</span> <span class="o">=</span> <span class="n">d</span> <span class="o">*</span> <span class="n">theta</span><span class="o">.</span><span class="n">sin</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_x</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_x</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">rst</span> <span class="o">*</span> <span class="n">phi</span><span class="o">.</span><span class="n">cos</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_y</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">rst</span> <span class="o">*</span> <span class="n">phi</span><span class="o">.</span><span class="n">sin</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_z</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_z</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">d</span> <span class="o">*</span> <span class="n">theta</span><span class="o">.</span><span class="n">cos</span><span class="p">())</span></div>
 
 <div class="viewcode-block" id="MuonBatch.get_xy_mask"><a class="viewcode-back" href="../../../tomopt.muon.html#tomopt.muon.muon_batch.MuonBatch.get_xy_mask">[docs]</a>    <span class="k">def</span> <span class="nf">get_xy_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xy_low</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">Tensor</span><span class="p">]],</span> <span class="n">xy_high</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">Tensor</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
@@ -514,10 +545,10 @@
 
 <div class="viewcode-block" id="MuonBatch.snapshot_xyz"><a class="viewcode-back" href="../../../tomopt.muon.html#tomopt.muon.muon_batch.MuonBatch.snapshot_xyz">[docs]</a>    <span class="k">def</span> <span class="nf">snapshot_xyz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Store the current xy positions of the muons in `.xy_hist`, indexed by the current z position.</span>
+<span class="sd">        Store the current xy positions of the muons in `.xyz_hist`, indexed by the current z position.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">xy_hist</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xy</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xyz_hist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xyz</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span></div>
 
 <div class="viewcode-block" id="MuonBatch.append_hits"><a class="viewcode-back" href="../../../tomopt.muon.html#tomopt.muon.muon_batch.MuonBatch.append_hits">[docs]</a>    <span class="k">def</span> <span class="nf">append_hits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hits</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">],</span> <span class="n">pos</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
@@ -606,7 +637,11 @@
 <span class="sd">            New `MuonBatch` with xyz, and theta,phi equal to those of the current `MuonBatch`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">return</span> <span class="n">MuonBatch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_muons</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span> <span class="n">init_z</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">MuonBatch</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_muons</span><span class="p">[:,</span> <span class="nb">sorted</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">x_dim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_dim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">p_dim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">th_dim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ph_dim</span><span class="p">])]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">init_z</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span>
+            <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+        <span class="p">)</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">muons</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
@@ -621,8 +656,8 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_removed_muons</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">xy_hist</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xy_hist</span>
+    <span class="k">def</span> <span class="nf">xyz_hist</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xyz_hist</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">x</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
@@ -661,6 +696,24 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_muons</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_dim</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span>
 
     <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">z</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_z</span>
+
+    <span class="nd">@z</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">z</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
+            <span class="s2">&quot;Please use the propagate_dz or propagate_d function to modify the x,y position of muons. Or modify the _muons attribute if you know what you&#39;re doing&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_z</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muons</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_dim</span><span class="p">]</span>
+
+    <span class="nd">@_z</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">_z</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_muons</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_dim</span><span class="p">]</span> <span class="o">=</span> <span class="n">z</span>
+
+    <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">xy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xy</span>
 
@@ -679,12 +732,22 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_muons</span><span class="p">[:,</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_dim</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">xy</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">z</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_z</span>
+    <span class="k">def</span> <span class="nf">xyz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xyz</span>
 
-    <span class="nd">@z</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">z</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Please use the propagate method to modify z. Or modify the _muons attribute if you know what you&#39;re doing&quot;</span><span class="p">)</span>
+    <span class="nd">@xyz</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">xyz</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xyz</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
+            <span class="s2">&quot;Please use the scatter_dxy or propagate methods to modify the x,y position of muons. Or modify the _muons attribute if you know what you&#39;re doing&quot;</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_xyz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_muons</span><span class="p">[:,</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_dim</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+
+    <span class="nd">@_xyz</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">_xyz</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xyz</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_muons</span><span class="p">[:,</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_dim</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">xyz</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">mom</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>

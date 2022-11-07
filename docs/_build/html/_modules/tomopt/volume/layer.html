@@ -267,25 +267,19 @@
 <span class="sd">    .. important::</span>
 <span class="sd">        Users must ensure that both the length and width of the layer are divisible by size</span>
 
-<span class="sd">    If the layer is set to scatter muons (`rad_length` is not None), then two scattering models are available:</span>
-<span class="sd">        - &#39;pdg&#39;: The default and currently recommended model based on the Gaussian scattering model described in https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf</span>
-<span class="sd">        - &#39;pgeant&#39;: An under-development model based on a parameterised fit to data sampled from GEANT 4</span>
-
 <span class="sd">    Arguments:</span>
 <span class="sd">        lw: the length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0).</span>
 <span class="sd">        z: the z position of the top of layer in metres. The bottom of the layer will be located at z-size</span>
 <span class="sd">        size: the voxel size in metres. Must be such that lw is divisible by the specified size.</span>
-<span class="sd">        scatter_model: String selection for the scattering model to use. Currently either &#39;pdg&#39; or &#39;pgeant&#39;.</span>
 <span class="sd">        device: device on which to place tensors</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lw</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">scatter_model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;pdg&quot;</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">DEVICE</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lw</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">DEVICE</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lw</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scatter_model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lw</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">lw</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span>
             <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">z</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">),</span>
             <span class="n">size</span><span class="p">,</span>
-            <span class="n">scatter_model</span><span class="p">,</span>
             <span class="n">device</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rad_length</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
@@ -299,164 +293,7 @@
 <span class="sd">            mu: the incoming batch of muons</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">pass</span></div>
-
-<div class="viewcode-block" id="AbsLayer.scatter_and_propagate"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.AbsLayer.scatter_and_propagate">[docs]</a>    <span class="k">def</span> <span class="nf">scatter_and_propagate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="n">MuonBatch</span><span class="p">,</span> <span class="n">deltaz</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Propagates the muons through (part of) the layer, such that afterwards all the muons are deltaz lower than their starting position.</span>
-<span class="sd">        If the layer is set to scatter muons (`rad_length` is not None),</span>
-<span class="sd">        then the muons will also undergo scattering (changes in their trajectories and positions) according to the scatter model of the layer.</span>
-
-<span class="sd">        .. warning::</span>
-<span class="sd">            When computing scatterings, the X0 used for each muon is that of the starting voxel:</span>
-<span class="sd">            If a muon moves into a neighbouring voxel of differing X0, then this will only be accounted for in the next deltaz step.</span>
-
-<span class="sd">        Arguments:</span>
-<span class="sd">            mu: muons to propagate</span>
-<span class="sd">            deltaz: amount of distance in metres in the negative z direction that the muons should travel (positive number lowers the muon position)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rad_length</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">mask</span> <span class="o">=</span> <span class="n">mu</span><span class="o">.</span><span class="n">get_xy_mask</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">lw</span><span class="p">)</span>  <span class="c1"># Only scatter muons inside volume</span>
-            <span class="n">xy_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu_abs2idx</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
-
-            <span class="n">x0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rad_length</span><span class="p">[</span><span class="n">xy_idx</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">xy_idx</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]]</span>
-            <span class="n">scatterings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_scattering</span><span class="p">(</span>
-                <span class="n">x0</span><span class="o">=</span><span class="n">x0</span><span class="p">,</span> <span class="n">deltaz</span><span class="o">=</span><span class="n">deltaz</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="n">mu</span><span class="o">.</span><span class="n">theta</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">theta_x</span><span class="o">=</span><span class="n">mu</span><span class="o">.</span><span class="n">theta_x</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">theta_y</span><span class="o">=</span><span class="n">mu</span><span class="o">.</span><span class="n">theta_y</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span> <span class="n">mom</span><span class="o">=</span><span class="n">mu</span><span class="o">.</span><span class="n">mom</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
-            <span class="p">)</span>
-
-            <span class="c1"># Update to position at scattering.</span>
-            <span class="n">mu</span><span class="o">.</span><span class="n">scatter_dxy</span><span class="p">(</span><span class="n">dx_vol</span><span class="o">=</span><span class="n">scatterings</span><span class="p">[</span><span class="s2">&quot;dx_vol&quot;</span><span class="p">],</span> <span class="n">dy_vol</span><span class="o">=</span><span class="n">scatterings</span><span class="p">[</span><span class="s2">&quot;dy_vol&quot;</span><span class="p">],</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)</span>
-            <span class="n">mu</span><span class="o">.</span><span class="n">propagate</span><span class="p">(</span><span class="n">deltaz</span><span class="p">)</span>
-            <span class="n">mu</span><span class="o">.</span><span class="n">scatter_dtheta_dphi</span><span class="p">(</span><span class="n">dtheta_vol</span><span class="o">=</span><span class="n">scatterings</span><span class="p">[</span><span class="s2">&quot;dtheta_vol&quot;</span><span class="p">],</span> <span class="n">dphi_vol</span><span class="o">=</span><span class="n">scatterings</span><span class="p">[</span><span class="s2">&quot;dphi_vol&quot;</span><span class="p">],</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">mu</span><span class="o">.</span><span class="n">propagate</span><span class="p">(</span><span class="n">deltaz</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="AbsLayer.mu_abs2idx"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.AbsLayer.mu_abs2idx">[docs]</a>    <span class="k">def</span> <span class="nf">mu_abs2idx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="n">MuonBatch</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Helper method to return the voxel indices in the layer that muons currently occupy.</span>
-
-<span class="sd">        .. warning::</span>
-<span class="sd">            This method does NOT account for the possibility of muons being outside the layer.</span>
-<span class="sd">            Please also supply a mask, to only select muons inside the layer.</span>
-
-<span class="sd">        Arguments:</span>
-<span class="sd">            mu: muons to look up</span>
-<span class="sd">            mask: Optional (muons) Boolean tensor where True indicates that the muon position should be checked</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            (muons,2) tensor of voxel indices in x,y</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">xy</span> <span class="o">=</span> <span class="n">mu</span><span class="o">.</span><span class="n">xy</span>
-        <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">xy</span> <span class="o">=</span> <span class="n">xy</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">abs2idx</span><span class="p">(</span><span class="n">xy</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="AbsLayer.abs2idx"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.AbsLayer.abs2idx">[docs]</a>    <span class="k">def</span> <span class="nf">abs2idx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xy</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Helper method to return the voxel indices in the layer of the supplied tensor of xy positions.</span>
-
-<span class="sd">        .. warning::</span>
-<span class="sd">            This method does NOT account for the possibility of positions may be outside the layer.</span>
-<span class="sd">            Please ensure that positions are inside the layer.</span>
-
-<span class="sd">        Arguments:</span>
-<span class="sd">            xy: (N,xy) tensor of absolute xy positions in metres in the volume frame</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            (N,xy) tensor of voxel indices in x,y</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">xy</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">()</span></div>
-
-<div class="viewcode-block" id="AbsLayer._pgeant_scatter"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.AbsLayer._pgeant_scatter">[docs]</a>    <span class="k">def</span> <span class="nf">_pgeant_scatter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">x0</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">deltaz</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">theta</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta_x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta_y</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">mom</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Computes the scattering of the muons using the parameterised GEANT 4 model.</span>
-
-<span class="sd">        Arguments:</span>
-<span class="sd">            x0: (N,) tensor of the X0 of the voxel each muon is traversing</span>
-<span class="sd">            deltaz: The amount of distance the muons will travel in the z direction in metres</span>
-<span class="sd">            theta: (N,) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons</span>
-<span class="sd">            theta_x: (N,) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons&#39; frame to the volume&#39;s</span>
-<span class="sd">            theta_y: (N,) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons&#39; frame to the volume&#39;s</span>
-<span class="sd">            mom: (N,) tensor of the absolute value of the momentum of each muon</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, &amp; dy_vol</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="k">return</span> <span class="n">PGEANT_SCATTER_MODEL</span><span class="o">.</span><span class="n">compute_scattering</span><span class="p">(</span><span class="n">x0</span><span class="o">=</span><span class="n">x0</span><span class="p">,</span> <span class="n">deltaz</span><span class="o">=</span><span class="n">deltaz</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">,</span> <span class="n">theta_x</span><span class="o">=</span><span class="n">theta_x</span><span class="p">,</span> <span class="n">theta_y</span><span class="o">=</span><span class="n">theta_y</span><span class="p">,</span> <span class="n">mom</span><span class="o">=</span><span class="n">mom</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="AbsLayer._pdg_scatter"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.AbsLayer._pdg_scatter">[docs]</a>    <span class="k">def</span> <span class="nf">_pdg_scatter</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">x0</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">deltaz</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">theta</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta_x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta_y</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">mom</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">log_term</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Computes the scattering of the muons using the PDG model https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf</span>
-
-<span class="sd">        Arguments:</span>
-<span class="sd">            x0: (N,) tensor of the X0 of the voxel each muon is traversing</span>
-<span class="sd">            deltaz: The amount of distance the muons will travel in the z direction in metres</span>
-<span class="sd">            theta: (N,) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons</span>
-<span class="sd">            theta_x: (N,) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons&#39; frames to the volume&#39;s</span>
-<span class="sd">            theta_y: (N,) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons&#39; frames to the volume&#39;s</span>
-<span class="sd">            mom: (N,) tensor of the absolute value of the momentum of each muon</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, &amp; dy_vol</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">flight</span> <span class="o">=</span> <span class="n">deltaz</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
-        <span class="n">n_x0</span> <span class="o">=</span> <span class="n">flight</span> <span class="o">/</span> <span class="n">x0</span>
-
-        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">n_x0</span><span class="p">)</span>
-        <span class="n">z1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-        <span class="n">z2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-        <span class="n">theta0</span> <span class="o">=</span> <span class="p">(</span><span class="n">SCATTER_COEF_A</span> <span class="o">/</span> <span class="n">mom</span><span class="p">)</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n_x0</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">log_term</span><span class="p">:</span>
-            <span class="n">theta0</span> <span class="o">=</span> <span class="n">theta0</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="n">SCATTER_COEF_B</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">n_x0</span><span class="p">)))</span>
-        <span class="c1"># These are in the muons&#39; reference frames NOT the volume&#39;s!!!</span>
-        <span class="n">dtheta_xy_mu</span> <span class="o">=</span> <span class="n">z1</span> <span class="o">*</span> <span class="n">theta0</span>
-        <span class="n">dxy_mu</span> <span class="o">=</span> <span class="n">flight</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta0</span><span class="p">)</span> <span class="o">*</span> <span class="p">((</span><span class="n">z1</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">12</span><span class="p">))</span> <span class="o">+</span> <span class="p">(</span><span class="n">z2</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span>
-
-        <span class="c1"># We compute dtheta_xy in muon ref frame, but we&#39;re free to rotate the muon,</span>
-        <span class="c1"># since dtheta_xy doesn&#39;t depend on muon position</span>
-        <span class="c1"># Therefore assign theta_x axis (muon ref) to be in the theta direction (vol ref),</span>
-        <span class="c1"># and theta_y axis (muon ref) to be in the phi direction (vol ref)</span>
-        <span class="n">dtheta_vol</span> <span class="o">=</span> <span class="n">dtheta_xy_mu</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># dtheta_x in muon ref</span>
-        <span class="n">dphi_vol</span> <span class="o">=</span> <span class="n">dtheta_xy_mu</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># dtheta_y in muon ref</span>
-
-        <span class="c1"># Note that if a track indices on a layer</span>
-        <span class="c1"># with angle theta_mu, the dx and dy displacements are relative to zero angle</span>
-        <span class="c1"># (generation of MSC formulas are oblivious of angle of incidence) so we need</span>
-        <span class="c1"># to rescale them by cos of theta_x and theta_y</span>
-        <span class="n">dx_vol</span> <span class="o">=</span> <span class="n">dxy_mu</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta_x</span><span class="p">)</span>
-        <span class="n">dy_vol</span> <span class="o">=</span> <span class="n">dxy_mu</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta_y</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;dtheta_vol&quot;</span><span class="p">:</span> <span class="n">dtheta_vol</span><span class="p">,</span> <span class="s2">&quot;dphi_vol&quot;</span><span class="p">:</span> <span class="n">dphi_vol</span><span class="p">,</span> <span class="s2">&quot;dx_vol&quot;</span><span class="p">:</span> <span class="n">dx_vol</span><span class="p">,</span> <span class="s2">&quot;dy_vol&quot;</span><span class="p">:</span> <span class="n">dy_vol</span><span class="p">}</span></div>
-
-<div class="viewcode-block" id="AbsLayer._compute_scattering"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.AbsLayer._compute_scattering">[docs]</a>    <span class="k">def</span> <span class="nf">_compute_scattering</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">x0</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">deltaz</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">theta</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta_x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta_y</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">mom</span><span class="p">:</span> <span class="n">Tensor</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Computes the scattering of the muons using the chosen model</span>
-
-<span class="sd">        Arguments:</span>
-<span class="sd">            x0: (N,) tensor of the X0 of the voxel each muon is traversing</span>
-<span class="sd">            deltaz: The amount of distance the muons will travel in the z direction in metres</span>
-<span class="sd">            theta: (N,) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons</span>
-<span class="sd">            theta_x: (N,) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons&#39; frames to the volume&#39;s</span>
-<span class="sd">            theta_y: (N,) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons&#39; frames to the volume&#39;s</span>
-<span class="sd">            mom: (N,) tensor of the absolute value of the momentum of each muon</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, &amp; dy_vol</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scatter_model</span> <span class="o">==</span> <span class="s2">&quot;pdg&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pdg_scatter</span><span class="p">(</span><span class="n">x0</span><span class="o">=</span><span class="n">x0</span><span class="p">,</span> <span class="n">deltaz</span><span class="o">=</span><span class="n">deltaz</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">,</span> <span class="n">theta_x</span><span class="o">=</span><span class="n">theta_x</span><span class="p">,</span> <span class="n">theta_y</span><span class="o">=</span><span class="n">theta_y</span><span class="p">,</span> <span class="n">mom</span><span class="o">=</span><span class="n">mom</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">scatter_model</span> <span class="o">==</span> <span class="s2">&quot;pgeant&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pgeant_scatter</span><span class="p">(</span><span class="n">x0</span><span class="o">=</span><span class="n">x0</span><span class="p">,</span> <span class="n">deltaz</span><span class="o">=</span><span class="n">deltaz</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">,</span> <span class="n">theta_x</span><span class="o">=</span><span class="n">theta_x</span><span class="p">,</span> <span class="n">theta_y</span><span class="o">=</span><span class="n">theta_y</span><span class="p">,</span> <span class="n">mom</span><span class="o">=</span><span class="n">mom</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Scatter model </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">scatter_model</span><span class="si">}</span><span class="s2"> is not currently supported.&quot;</span><span class="p">)</span></div></div>
+        <span class="k">pass</span></div></div>
 
 
 <div class="viewcode-block" id="PassiveLayer"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.PassiveLayer">[docs]</a><span class="k">class</span> <span class="nc">PassiveLayer</span><span class="p">(</span><span class="n">AbsLayer</span><span class="p">):</span>
@@ -492,8 +329,7 @@
 <span class="sd">        size: the voxel size in metres. Must be such that lw is divisible by the specified size.</span>
 <span class="sd">        rad_length_func: lookup function that returns an (n_x,n_y) tensor of voxel X0 values for the layer.</span>
 <span class="sd">            After initialisation, the `load_rad_length` method may be used to load X0 layouts.</span>
-<span class="sd">        dz_step: The step size in metres over which to compute muon propagation and scattering.</span>
-<span class="sd">            Should be such that the `size` of the layer is divisible by `dz_step`.</span>
+<span class="sd">        step_sz: The step size in metres over which to compute muon propagation and scattering.</span>
 <span class="sd">        scatter_model: String selection for the scattering model to use. Currently either &#39;pdg&#39; or &#39;pgeant&#39;.</span>
 <span class="sd">        device: device on which to place tensors</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -504,13 +340,12 @@
         <span class="n">z</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">size</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">rad_length_func</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RadLengthFunc</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">dz_step</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
+        <span class="n">step_sz</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span>
         <span class="n">scatter_model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;pdg&quot;</span><span class="p">,</span>
         <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">DEVICE</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">lw</span><span class="o">=</span><span class="n">lw</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="n">z</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">dz_step</span> <span class="o">=</span> <span class="n">dz_step</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">n_steps</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dz_step</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">step_sz</span> <span class="o">=</span> <span class="n">step_sz</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scatter_model</span> <span class="o">=</span> <span class="n">scatter_model</span>
         <span class="k">if</span> <span class="n">rad_length_func</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">load_rad_length</span><span class="p">(</span><span class="n">rad_length_func</span><span class="p">)</span>
@@ -531,26 +366,168 @@
 <div class="viewcode-block" id="PassiveLayer.forward"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.PassiveLayer.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="n">MuonBatch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Propagates the muons through the layer to the bottom in a series of scattering steps.</span>
-<span class="sd">        If the &#39;pdg&#39; model is used, then the step size is the `dz_step` of the layer, as supplied during initialisation.</span>
+<span class="sd">        If the &#39;pdg&#39; model is used, then the step size is the `step_sz` of the layer, as supplied during initialisation.</span>
 <span class="sd">        If the &#39;pgeant&#39; model is used, the the step size specified as part of the fitting of the scattering model.</span>
 
 <span class="sd">        Arguments:</span>
 <span class="sd">            mu: the incoming batch of muons</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scatter_model</span> <span class="o">==</span> <span class="s2">&quot;pgeant&quot;</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">PGEANT_SCATTER_MODEL</span><span class="o">.</span><span class="n">initialised</span><span class="p">:</span>
-                <span class="n">PGEANT_SCATTER_MODEL</span><span class="o">.</span><span class="n">load_data</span><span class="p">()</span>  <span class="c1"># Delay loading until required</span>
-            <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">/</span> <span class="n">PGEANT_SCATTER_MODEL</span><span class="o">.</span><span class="n">deltaz</span><span class="p">)</span>
-            <span class="n">dz</span> <span class="o">=</span> <span class="n">PGEANT_SCATTER_MODEL</span><span class="o">.</span><span class="n">deltaz</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">scatter_model</span> <span class="o">==</span> <span class="s2">&quot;pdg&quot;</span><span class="p">:</span>
-            <span class="n">dz</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dz_step</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_steps</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Scatter model </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">scatter_model</span><span class="si">}</span><span class="s2"> is not currently supported.&quot;</span><span class="p">)</span>
+        <span class="n">mu</span><span class="o">.</span><span class="n">propagate_dz</span><span class="p">(</span><span class="n">mu</span><span class="o">.</span><span class="n">z</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>  <span class="c1"># Move muons to the top of the layer</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mu</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">bool</span><span class="p">()</span>
+        <span class="k">while</span> <span class="n">mask</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scatter_and_propagate</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">mu</span><span class="o">.</span><span class="n">z</span> <span class="o">&gt;</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">))</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">mu</span><span class="o">.</span><span class="n">z</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>  <span class="c1"># Only scatter/propagate muons inside the layer</span>
+        <span class="n">mu</span><span class="o">.</span><span class="n">propagate_dz</span><span class="p">(</span><span class="n">mu</span><span class="o">.</span><span class="n">z</span> <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>  <span class="c1"># Ensure muons are at the bottom of the layer</span></div>
 
-        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">scatter_and_propagate</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">deltaz</span><span class="o">=</span><span class="n">dz</span><span class="p">)</span>
-        <span class="n">mu</span><span class="o">.</span><span class="n">propagate</span><span class="p">(</span><span class="n">mu</span><span class="o">.</span><span class="n">z</span> <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>  <span class="c1"># In case of floating point-precision, ensure muons are at the bottom of the layer</span></div></div>
+<div class="viewcode-block" id="PassiveLayer.scatter_and_propagate"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.PassiveLayer.scatter_and_propagate">[docs]</a>    <span class="k">def</span> <span class="nf">scatter_and_propagate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="n">MuonBatch</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Propagates the muons through (part of) the layer by the prespecified `step_sz`.</span>
+<span class="sd">        If the layer is set to scatter muons (`rad_length` is not None),</span>
+<span class="sd">        then the muons will also undergo scattering (changes in their trajectories and positions) according to the scatter model of the layer.</span>
+
+<span class="sd">        .. warning::</span>
+<span class="sd">            When computing scatterings, the X0 used for each muon is that of the starting voxel:</span>
+<span class="sd">            If a muon moves into a neighbouring voxel of differing X0, then this will only be accounted for in the next step.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            mu: muons to propagate</span>
+<span class="sd">            mask: Optional (N,) Boolean mask. Only muons with True values will be scattered and propagated</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rad_length</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">scatter_mask</span> <span class="o">=</span> <span class="n">mu</span><span class="o">.</span><span class="n">get_xy_mask</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">lw</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">mask</span>  <span class="c1"># Only scatter muons inside volume</span>
+            <span class="n">xy_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu_abs2idx</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">scatter_mask</span><span class="p">)</span>
+
+            <span class="n">x0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rad_length</span><span class="p">[</span><span class="n">xy_idx</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">xy_idx</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]]</span>
+            <span class="n">scatterings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_scattering</span><span class="p">(</span>
+                <span class="n">x0</span><span class="o">=</span><span class="n">x0</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="n">mu</span><span class="o">.</span><span class="n">theta</span><span class="p">[</span><span class="n">scatter_mask</span><span class="p">],</span> <span class="n">theta_x</span><span class="o">=</span><span class="n">mu</span><span class="o">.</span><span class="n">theta_x</span><span class="p">[</span><span class="n">scatter_mask</span><span class="p">],</span> <span class="n">theta_y</span><span class="o">=</span><span class="n">mu</span><span class="o">.</span><span class="n">theta_y</span><span class="p">[</span><span class="n">scatter_mask</span><span class="p">],</span> <span class="n">mom</span><span class="o">=</span><span class="n">mu</span><span class="o">.</span><span class="n">mom</span><span class="p">[</span><span class="n">scatter_mask</span><span class="p">]</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Update to position at scattering.</span>
+            <span class="n">mu</span><span class="o">.</span><span class="n">scatter_dxy</span><span class="p">(</span><span class="n">dx_vol</span><span class="o">=</span><span class="n">scatterings</span><span class="p">[</span><span class="s2">&quot;dx_vol&quot;</span><span class="p">],</span> <span class="n">dy_vol</span><span class="o">=</span><span class="n">scatterings</span><span class="p">[</span><span class="s2">&quot;dy_vol&quot;</span><span class="p">],</span> <span class="n">mask</span><span class="o">=</span><span class="n">scatter_mask</span><span class="p">)</span>
+            <span class="n">mu</span><span class="o">.</span><span class="n">propagate_d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">step_sz</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>  <span class="c1"># Still propagate muons that weren&#39;t scattered</span>
+            <span class="n">mu</span><span class="o">.</span><span class="n">scatter_dtheta_dphi</span><span class="p">(</span><span class="n">dtheta_vol</span><span class="o">=</span><span class="n">scatterings</span><span class="p">[</span><span class="s2">&quot;dtheta_vol&quot;</span><span class="p">],</span> <span class="n">dphi_vol</span><span class="o">=</span><span class="n">scatterings</span><span class="p">[</span><span class="s2">&quot;dphi_vol&quot;</span><span class="p">],</span> <span class="n">mask</span><span class="o">=</span><span class="n">scatter_mask</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mu</span><span class="o">.</span><span class="n">propagate_d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">step_sz</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PassiveLayer.mu_abs2idx"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.PassiveLayer.mu_abs2idx">[docs]</a>    <span class="k">def</span> <span class="nf">mu_abs2idx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="n">MuonBatch</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Helper method to return the voxel indices in the layer that muons currently occupy.</span>
+
+<span class="sd">        .. warning::</span>
+<span class="sd">            This method does NOT account for the possibility of muons being outside the layer.</span>
+<span class="sd">            Please also supply a mask, to only select muons inside the layer.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            mu: muons to look up</span>
+<span class="sd">            mask: Optional (muons) Boolean tensor where True indicates that the muon position should be checked</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (muons,2) tensor of voxel indices in x,y</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">xy</span> <span class="o">=</span> <span class="n">mu</span><span class="o">.</span><span class="n">xy</span>
+        <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">xy</span> <span class="o">=</span> <span class="n">xy</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">abs2idx</span><span class="p">(</span><span class="n">xy</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PassiveLayer.abs2idx"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.PassiveLayer.abs2idx">[docs]</a>    <span class="k">def</span> <span class="nf">abs2idx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xy</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Helper method to return the voxel indices in the layer of the supplied tensor of xy positions.</span>
+
+<span class="sd">        .. warning::</span>
+<span class="sd">            This method does NOT account for the possibility of positions may be outside the layer.</span>
+<span class="sd">            Please ensure that positions are inside the layer.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            xy: (N,xy) tensor of absolute xy positions in metres in the volume frame</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (N,xy) tensor of voxel indices in x,y</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">xy</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="PassiveLayer._pgeant_scatter"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.PassiveLayer._pgeant_scatter">[docs]</a>    <span class="k">def</span> <span class="nf">_pgeant_scatter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">x0</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta_x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta_y</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">mom</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the scattering of the muons using the parameterised GEANT 4 model.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            x0: (N,) tensor of the X0 of the voxel each muon is traversing</span>
+<span class="sd">            theta: (N,) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons</span>
+<span class="sd">            theta_x: (N,) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons&#39; frame to the volume&#39;s</span>
+<span class="sd">            theta_y: (N,) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons&#39; frame to the volume&#39;s</span>
+<span class="sd">            mom: (N,) tensor of the absolute value of the momentum of each muon</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, &amp; dy_vol</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">PGEANT_SCATTER_MODEL</span><span class="o">.</span><span class="n">compute_scattering</span><span class="p">(</span><span class="n">x0</span><span class="o">=</span><span class="n">x0</span><span class="p">,</span> <span class="n">step_sz</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">step_sz</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">,</span> <span class="n">theta_x</span><span class="o">=</span><span class="n">theta_x</span><span class="p">,</span> <span class="n">theta_y</span><span class="o">=</span><span class="n">theta_y</span><span class="p">,</span> <span class="n">mom</span><span class="o">=</span><span class="n">mom</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PassiveLayer._pdg_scatter"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.PassiveLayer._pdg_scatter">[docs]</a>    <span class="k">def</span> <span class="nf">_pdg_scatter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">x0</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta_x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta_y</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">mom</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">log_term</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the scattering of the muons using the PDG model https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            x0: (N,) tensor of the X0 of the voxel each muon is traversing</span>
+<span class="sd">            theta: (N,) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons</span>
+<span class="sd">            theta_x: (N,) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons&#39; frames to the volume&#39;s</span>
+<span class="sd">            theta_y: (N,) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons&#39; frames to the volume&#39;s</span>
+<span class="sd">            mom: (N,) tensor of the absolute value of the momentum of each muon</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, &amp; dy_vol</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">n_x0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_sz</span> <span class="o">/</span> <span class="n">x0</span>
+
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">n_x0</span><span class="p">)</span>
+        <span class="n">z1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">z2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">theta0</span> <span class="o">=</span> <span class="p">(</span><span class="n">SCATTER_COEF_A</span> <span class="o">/</span> <span class="n">mom</span><span class="p">)</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n_x0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">log_term</span><span class="p">:</span>
+            <span class="n">theta0</span> <span class="o">=</span> <span class="n">theta0</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="n">SCATTER_COEF_B</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">n_x0</span><span class="p">)))</span>
+        <span class="c1"># These are in the muons&#39; reference frames NOT the volume&#39;s!!!</span>
+        <span class="n">dtheta_xy_mu</span> <span class="o">=</span> <span class="n">z1</span> <span class="o">*</span> <span class="n">theta0</span>
+        <span class="n">dxy_mu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_sz</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta0</span><span class="p">)</span> <span class="o">*</span> <span class="p">((</span><span class="n">z1</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">12</span><span class="p">))</span> <span class="o">+</span> <span class="p">(</span><span class="n">z2</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span>
+
+        <span class="c1"># We compute dtheta_xy in muon ref frame, but we&#39;re free to rotate the muon,</span>
+        <span class="c1"># since dtheta_xy doesn&#39;t depend on muon position</span>
+        <span class="c1"># Therefore assign theta_x axis (muon ref) to be in the theta direction (vol ref),</span>
+        <span class="c1"># and theta_y axis (muon ref) to be in the phi direction (vol ref)</span>
+        <span class="n">dtheta_vol</span> <span class="o">=</span> <span class="n">dtheta_xy_mu</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># dtheta_x in muon ref</span>
+        <span class="n">dphi_vol</span> <span class="o">=</span> <span class="n">dtheta_xy_mu</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># dtheta_y in muon ref</span>
+
+        <span class="c1"># Note that if a track indices on a layer</span>
+        <span class="c1"># with angle theta_mu, the dx and dy displacements are relative to zero angle</span>
+        <span class="c1"># (generation of MSC formulas are oblivious of angle of incidence) so we need</span>
+        <span class="c1"># to rescale them by cos of theta_x and theta_y</span>
+        <span class="n">dx_vol</span> <span class="o">=</span> <span class="n">dxy_mu</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta_x</span><span class="p">)</span>
+        <span class="n">dy_vol</span> <span class="o">=</span> <span class="n">dxy_mu</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta_y</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;dtheta_vol&quot;</span><span class="p">:</span> <span class="n">dtheta_vol</span><span class="p">,</span> <span class="s2">&quot;dphi_vol&quot;</span><span class="p">:</span> <span class="n">dphi_vol</span><span class="p">,</span> <span class="s2">&quot;dx_vol&quot;</span><span class="p">:</span> <span class="n">dx_vol</span><span class="p">,</span> <span class="s2">&quot;dy_vol&quot;</span><span class="p">:</span> <span class="n">dy_vol</span><span class="p">}</span></div>
+
+<div class="viewcode-block" id="PassiveLayer._compute_scattering"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.PassiveLayer._compute_scattering">[docs]</a>    <span class="k">def</span> <span class="nf">_compute_scattering</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">x0</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta_x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta_y</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">mom</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the scattering of the muons using the chosen model</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            x0: (N,) tensor of the X0 of the voxel each muon is traversing</span>
+<span class="sd">            theta: (N,) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons</span>
+<span class="sd">            theta_x: (N,) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons&#39; frames to the volume&#39;s</span>
+<span class="sd">            theta_y: (N,) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons&#39; frames to the volume&#39;s</span>
+<span class="sd">            mom: (N,) tensor of the absolute value of the momentum of each muon</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, &amp; dy_vol</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scatter_model</span> <span class="o">==</span> <span class="s2">&quot;pdg&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pdg_scatter</span><span class="p">(</span><span class="n">x0</span><span class="o">=</span><span class="n">x0</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">,</span> <span class="n">theta_x</span><span class="o">=</span><span class="n">theta_x</span><span class="p">,</span> <span class="n">theta_y</span><span class="o">=</span><span class="n">theta_y</span><span class="p">,</span> <span class="n">mom</span><span class="o">=</span><span class="n">mom</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">scatter_model</span> <span class="o">==</span> <span class="s2">&quot;pgeant&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pgeant_scatter</span><span class="p">(</span><span class="n">x0</span><span class="o">=</span><span class="n">x0</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">,</span> <span class="n">theta_x</span><span class="o">=</span><span class="n">theta_x</span><span class="p">,</span> <span class="n">theta_y</span><span class="o">=</span><span class="n">theta_y</span><span class="p">,</span> <span class="n">mom</span><span class="o">=</span><span class="n">mom</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Scatter model </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">scatter_model</span><span class="si">}</span><span class="s2"> is not currently supported.&quot;</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="AbsDetectorLayer"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.AbsDetectorLayer">[docs]</a><span class="k">class</span> <span class="nc">AbsDetectorLayer</span><span class="p">(</span><span class="n">AbsLayer</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
@@ -759,10 +736,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">yield_zordered_panels</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">scatter_and_propagate</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">mu</span><span class="o">.</span><span class="n">z</span> <span class="o">-</span> <span class="n">p</span><span class="o">.</span><span class="n">z</span><span class="o">.</span><span class="n">detach</span><span class="p">())</span>  <span class="c1"># Move to panel</span>
+            <span class="n">mu</span><span class="o">.</span><span class="n">propagate_dz</span><span class="p">(</span><span class="n">mu</span><span class="o">.</span><span class="n">z</span> <span class="o">-</span> <span class="n">p</span><span class="o">.</span><span class="n">z</span><span class="o">.</span><span class="n">detach</span><span class="p">())</span>  <span class="c1"># Move to panel</span>
             <span class="n">hits</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">get_hits</span><span class="p">(</span><span class="n">mu</span><span class="p">)</span>
             <span class="n">mu</span><span class="o">.</span><span class="n">append_hits</span><span class="p">(</span><span class="n">hits</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">scatter_and_propagate</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">mu</span><span class="o">.</span><span class="n">z</span> <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>  <span class="c1"># Move to bottom of layer</span></div>
+        <span class="n">mu</span><span class="o">.</span><span class="n">propagate_dz</span><span class="p">(</span><span class="n">mu</span><span class="o">.</span><span class="n">z</span> <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>  <span class="c1"># Move to bottom of layer</span></div>
 
 <div class="viewcode-block" id="PanelDetectorLayer.get_cost"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.PanelDetectorLayer.get_cost">[docs]</a>    <span class="k">def</span> <span class="nf">get_cost</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
