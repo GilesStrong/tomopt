@@ -167,7 +167,6 @@ class PassiveLayer(AbsLayer):
             )
 
             # Update to position at scattering.
-            print(mask.sum())
             mu.scatter_dxy(dx_vol=scatterings["dx_vol"], dy_vol=scatterings["dy_vol"], mask=scatter_mask)
             mu.propagate_d(self.step_sz, mask)  # Still propagate muons that weren't scattered
             mu.scatter_dtheta_dphi(dtheta_vol=scatterings["dtheta_vol"], dphi_vol=scatterings["dphi_vol"], mask=scatter_mask)

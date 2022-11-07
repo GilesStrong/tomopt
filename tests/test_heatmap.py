@@ -61,7 +61,7 @@ def test_heatmap_detector_layer(batch):
 
     start = batch.copy()
     dl(batch)
-    assert torch.abs(batch.z - Tensor([Z - (2 * SZ)])) < 1e-5
+    assert (torch.abs(batch.z - Tensor([Z - (2 * SZ)])) < 1e-5).all()
     assert torch.all(batch.dtheta(start.theta) == 0)  # Detector layers don't scatter
     assert torch.all(batch.xy != start.xy)
 
@@ -230,7 +230,7 @@ def test_volume_forward_panel():
     start = batch.copy()
     volume(batch)
 
-    assert torch.abs(batch.z) <= 1e-5  # Muons traverse whole volume
+    assert (torch.abs(batch.z) <= 1e-5).all()  # Muons traverse whole volume
     mask = batch.get_xy_mask((0, 0), LW)
     assert torch.all(batch.dtheta(start.theta)[mask] > 0)  # All masked muons scatter
 
