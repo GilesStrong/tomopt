@@ -167,9 +167,9 @@ class PassiveLayer(AbsLayer):
             )
 
             # Update to position at scattering.
-            mu.scatter_dxy(dx_vol=scatterings["dx_vol"], dy_vol=scatterings["dy_vol"], mask=scatter_mask)
+            mu.scatter_dxyz(dx_vol=scatterings["dx_vol"], dy_vol=scatterings["dy_vol"], dz_vol=scatterings["dz_vol"], mask=scatter_mask)
             mu.propagate_d(self.step_sz, mask)  # Still propagate muons that weren't scattered
-            mu.scatter_dtheta_dphi(dtheta_vol=scatterings["dtheta_vol"], dphi_vol=scatterings["dphi_vol"], mask=scatter_mask)
+            mu.scatter_dtheta_xy(dtheta_xy_vol=scatterings["dtheta_xy_vol"], mask=scatter_mask)
         else:
             mu.propagate_d(self.step_sz, mask)
 
@@ -255,20 +255,14 @@ class PassiveLayer(AbsLayer):
         dtheta_xy_mu = z1 * theta0
         dxy_mu = self.step_sz * torch.sin(theta0) * ((z1 / math.sqrt(12)) + (z2 / 2))
 
-        # We compute dtheta_xy in muon ref frame, but we're free to rotate the muon,
-        # since dtheta_xy doesn't depend on muon position
-        # Therefore assign theta_x axis (muon ref) to be in the theta direction (vol ref),
-        # and theta_y axis (muon ref) to be in the phi direction (vol ref)
-        dtheta_vol = dtheta_xy_mu[0]  # dtheta_x in muon ref
-        dphi_vol = dtheta_xy_mu[1]  # dtheta_y in muon ref
-
         # Note that if a track indices on a layer
         # with angle theta_mu, the dx and dy displacements are relative to zero angle
         # (generation of MSC formulas are oblivious of angle of incidence) so we need
         # to rescale them by cos of theta_x and theta_y
         dx_vol = dxy_mu[0] * torch.cos(theta_x)
         dy_vol = dxy_mu[1] * torch.cos(theta_y)
-        return {"dtheta_vol": dtheta_vol, "dphi_vol": dphi_vol, "dx_vol": dx_vol, "dy_vol": dy_vol}
+        # dz_vol = ?
+        return {"dtheta_xy_vol": dtheta_xy_mu, "dx_vol": dx_vol, "dy_vol": dy_vol, "dz_vol": dz_vol}
 
     def _compute_scattering(self, *, x0: Tensor, theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor) -> Dict[str, Tensor]:
         r"""

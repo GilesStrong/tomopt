@@ -172,14 +172,17 @@ class MuonBatch:
         ty[(theta >= torch.pi / 2)] = torch.nan
         return ty
 
-    def scatter_dxy(self, dx_vol: Optional[Tensor] = None, dy_vol: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
+    def scatter_dxyz(
+        self, dx_vol: Optional[Tensor] = None, dy_vol: Optional[Tensor] = None, dz_vol: Optional[Tensor] = None, mask: Optional[Tensor] = None
+    ) -> None:
         r"""
-        Displaces the muons in xy by the specified amounts, with no change in their z position.
+        Displaces the muons in xyz by the specified amounts.
         If a mask is supplied, then only muons with True mask elements are displaced.
 
         Arguments:
             dx_vol: (N,) tensor of displacements in x
             dy_vol: (N,) tensor of displacements in y
+            dz_vol: (N,) tensor of displacements in z
             mask: (N,) Boolean tensor. If not None, only muons with True mask elements are displaced.
         """
 
@@ -189,6 +192,8 @@ class MuonBatch:
             self._x[mask] = self._x[mask] + dx_vol
         if dy_vol is not None:
             self._y[mask] = self._y[mask] + dy_vol
+        if dz_vol is not None:
+            self._z[mask] = self._z[mask] + dz_vol
 
     def scatter_dtheta_dphi(self, dtheta_vol: Optional[Tensor] = None, dphi_vol: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
         r"""
@@ -214,6 +219,26 @@ class MuonBatch:
             theta[m] = (2 * torch.pi) - theta[m]  # theta (0,pi)
             self._phi[mask] = phi
             self._theta[mask] = theta
+
+    def scatter_dtheta_xy(self, dtheta_xy_vol: Tensor, mask: Optional[Tensor] = None) -> None:
+        r"""
+        Changes the trajectory of the muons in theta-phi by the specified amounts in dtheta_xy, with no change in their x,y,z positions.
+        If a mask is supplied, then only muons with True mask elements are altered.
+
+        Arguments:
+            dtheta_xy_vol: (2,N) tensor of angular changes
+            mask: (N,) Boolean tensor. If not None, only muons with True mask elements are altered.
+        """
+
+        if mask is None:
+            mask = torch.ones(len(self._muons), device=self.device).bool()
+
+        theta_x = self.theta_x_from_theta_phi(self.theta[mask], self.phi[mask])
+        theta_y = self.theta_y_from_theta_phi(self.theta[mask], self.phi[mask])
+        theta_x = theta_x + dtheta_xy_vol[0]
+        theta_y = theta_y + dtheta_xy_vol[1]
+        self.theta[mask] = self.theta_from_theta_xy(theta_x, theta_y)
+        self.phi[mask] = self.phi_from_theta_xy(theta_x, theta_y)
 
         self.remove_upwards_muons()
 
