@@ -169,7 +169,7 @@ class PassiveLayer(AbsLayer):
             # Update to position at scattering.
             mu.scatter_dxyz(dx_vol=scatterings["dx_vol"], dy_vol=scatterings["dy_vol"], dz_vol=scatterings["dz_vol"], mask=scatter_mask)
             mu.propagate_d(self.step_sz, mask)  # Still propagate muons that weren't scattered
-            mu.scatter_dtheta_xy(dtheta_xy_vol=scatterings["dtheta_xy_vol"], mask=scatter_mask)
+            mu.scatter_dtheta_xy(dtheta_x_vol=scatterings["dtheta_x_vol"], dtheta_y_vol=scatterings["dtheta_y_vol"], mask=scatter_mask)
         else:
             mu.propagate_d(self.step_sz, mask)
 
@@ -262,7 +262,7 @@ class PassiveLayer(AbsLayer):
         dx_vol = dxy_mu[0] * torch.cos(theta_x)
         dy_vol = dxy_mu[1] * torch.cos(theta_y)
         # dz_vol = ?
-        return {"dtheta_xy_vol": dtheta_xy_mu, "dx_vol": dx_vol, "dy_vol": dy_vol, "dz_vol": dz_vol}
+        return {"dtheta_x_vol": dtheta_xy_mu[0] ,"dtheta_y_vol": dtheta_xy_mu[1], "dx_vol": dx_vol, "dy_vol": dy_vol, "dz_vol": dz_vol}
 
     def _compute_scattering(self, *, x0: Tensor, theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor) -> Dict[str, Tensor]:
         r"""

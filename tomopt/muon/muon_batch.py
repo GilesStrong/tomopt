@@ -220,13 +220,14 @@ class MuonBatch:
             self._phi[mask] = phi
             self._theta[mask] = theta
 
-    def scatter_dtheta_xy(self, dtheta_xy_vol: Tensor, mask: Optional[Tensor] = None) -> None:
+    def scatter_dtheta_xy(self, dtheta_x_vol: Optional[Tensor] = None, dtheta_y_vol: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
         r"""
         Changes the trajectory of the muons in theta-phi by the specified amounts in dtheta_xy, with no change in their x,y,z positions.
         If a mask is supplied, then only muons with True mask elements are altered.
 
         Arguments:
-            dtheta_xy_vol: (2,N) tensor of angular changes
+            dtheta_x_vol: (N,) tensor of angular changes in theta_x
+            dtheta_y_vol: (N,) tensor of angular changes in theta_y
             mask: (N,) Boolean tensor. If not None, only muons with True mask elements are altered.
         """
 
@@ -235,8 +236,10 @@ class MuonBatch:
 
         theta_x = self.theta_x_from_theta_phi(self.theta[mask], self.phi[mask])
         theta_y = self.theta_y_from_theta_phi(self.theta[mask], self.phi[mask])
-        theta_x = theta_x + dtheta_xy_vol[0]
-        theta_y = theta_y + dtheta_xy_vol[1]
+        if dtheta_x_vol is not None:
+            theta_x = theta_x + dtheta_x_vol
+        if dtheta_y_vol is not None:
+            theta_y = theta_y + dtheta_y_vol
         self.theta[mask] = self.theta_from_theta_xy(theta_x, theta_y)
         self.phi[mask] = self.phi_from_theta_xy(theta_x, theta_y)
 
