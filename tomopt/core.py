@@ -11,7 +11,7 @@ Common global constants, custom variable types, etc.
 __all__ = ["DEVICE", "SCATTER_COEF_A", "SCATTER_COEF_B", "X0", "DENSITIES", "PartialOpt"]
 
 
-DEVICE = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+DEVICE = torch.device("cpu")  # Set to CPU even if CUDA available due to issue #53  torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
 # https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf
 SCATTER_COEF_A = 0.0136  # GeV
