@@ -163,7 +163,12 @@ class PassiveLayer(AbsLayer):
 
             x0 = self.rad_length[xy_idx[:, 0], xy_idx[:, 1]]
             scatterings = self._compute_scattering(
-                x0=x0, theta=mu.theta[scatter_mask], theta_x=mu.theta_x[scatter_mask], theta_y=mu.theta_y[scatter_mask], mom=mu.mom[scatter_mask]
+                x0=x0,
+                theta=mu.theta[scatter_mask],
+                phi=mu.phi[scatter_mask],
+                theta_x=mu.theta_x[scatter_mask],
+                theta_y=mu.theta_y[scatter_mask],
+                mom=mu.mom[scatter_mask],
             )
 
             # Update to position at scattering.
@@ -228,7 +233,9 @@ class PassiveLayer(AbsLayer):
 
         return PGEANT_SCATTER_MODEL.compute_scattering(x0=x0, step_sz=self.step_sz, theta=theta, theta_x=theta_x, theta_y=theta_y, mom=mom)
 
-    def _pdg_scatter(self, *, x0: Tensor, theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor, log_term: bool = True) -> Dict[str, Tensor]:
+    def _pdg_scatter(
+        self, *, x0: Tensor, theta: Tensor, phi: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor, log_term: bool = True
+    ) -> Dict[str, Tensor]:
         r"""
         Computes the scattering of the muons using the PDG model https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf
 
@@ -253,18 +260,19 @@ class PassiveLayer(AbsLayer):
             theta0 = theta0 * (1 + (SCATTER_COEF_B * torch.log(n_x0)))
         # These are in the muons' reference frames NOT the volume's!!!
         dtheta_xy_mu = z1 * theta0
-        dxy_mu = self.step_sz * torch.sin(theta0) * ((z1 / math.sqrt(12)) + (z2 / 2))
+        dxy_mu = self.step_sz * theta0 * ((z1 / math.sqrt(12)) + (z2 / 2))
 
-        # Note that if a track indices on a layer
-        # with angle theta_mu, the dx and dy displacements are relative to zero angle
+        # Note that if a track incides on a layer
+        # with angle theta_mu, the dx and dy displacements are relative to to the muon
         # (generation of MSC formulas are oblivious of angle of incidence) so we need
-        # to rescale them by cos of theta_x and theta_y
-        dx_vol = dxy_mu[0] * torch.cos(theta_x)
-        dy_vol = dxy_mu[1] * torch.cos(theta_y)
-        # dz_vol = ?
+        # to decompose them into displacements in x,y,z in the volume frame
+        phi_defined = theta != 0  # If theta is a zero, there is no phi defined
+        dx_vol = torch.where(phi_defined, (dxy_mu[1] * torch.cos(theta) * torch.cos(phi)) + (dxy_mu[0] * torch.sin(phi)), dxy_mu[0])
+        dy_vol = torch.where(phi_defined, (dxy_mu[1] * torch.cos(theta) * torch.sin(phi)) - (dxy_mu[0] * torch.cos(phi)), dxy_mu[1])
+        dz_vol = torch.where(phi_defined, dxy_mu[1] * torch.sin(theta), dxy_mu.new_zeros(1))
         return {"dtheta_x_vol": dtheta_xy_mu[0], "dtheta_y_vol": dtheta_xy_mu[1], "dx_vol": dx_vol, "dy_vol": dy_vol, "dz_vol": dz_vol}
 
-    def _compute_scattering(self, *, x0: Tensor, theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor) -> Dict[str, Tensor]:
+    def _compute_scattering(self, *, x0: Tensor, theta: Tensor, phi: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor) -> Dict[str, Tensor]:
         r"""
         Computes the scattering of the muons using the chosen model
 
@@ -279,7 +287,7 @@ class PassiveLayer(AbsLayer):
             A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, & dy_vol
         """
         if self.scatter_model == "pdg":
-            return self._pdg_scatter(x0=x0, theta=theta, theta_x=theta_x, theta_y=theta_y, mom=mom)
+            return self._pdg_scatter(x0=x0, theta=theta, phi=phi, theta_x=theta_x, theta_y=theta_y, mom=mom)
         elif self.scatter_model == "pgeant":
             return self._pgeant_scatter(x0=x0, theta=theta, theta_x=theta_x, theta_y=theta_y, mom=mom)
         else:
