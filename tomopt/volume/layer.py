@@ -159,9 +159,18 @@ class PassiveLayer(AbsLayer):
 
         if self.rad_length is not None:
             scatter_mask = mu.get_xy_mask((0, 0), self.lw) & mask  # Only scatter muons inside volume
-            xy_idx = self.mu_abs2idx(mu, scatter_mask)
 
+            xy_idx = self.mu_abs2idx(mu, scatter_mask)
             x0 = self.rad_length[xy_idx[:, 0], xy_idx[:, 1]]
+
+            # Ensure that scattering steps don't extend outside the layer
+            # TODO extend this to consider transverse voxel boundaries
+            step_sz = torch.ones_like(x0) * self.step_sz
+            dz = mu.z - (self.z - self.size)
+            r_out = dz[scatter_mask] / mu.theta[scatter_mask].cos()
+            m = r_out < step_sz
+            step_sz[m] = r_out[m]
+
             scatterings = self._compute_scattering(
                 x0=x0,
                 theta=mu.theta[scatter_mask],
@@ -169,11 +178,15 @@ class PassiveLayer(AbsLayer):
                 theta_x=mu.theta_x[scatter_mask],
                 theta_y=mu.theta_y[scatter_mask],
                 mom=mu.mom[scatter_mask],
+                step_sz=step_sz,
             )
 
             # Update to position at scattering.
             mu.scatter_dxyz(dx_vol=scatterings["dx_vol"], dy_vol=scatterings["dy_vol"], dz_vol=scatterings["dz_vol"], mask=scatter_mask)
             mu.propagate_d(self.step_sz, mask)  # Still propagate muons that weren't scattered
+            # Muons exiting the layer will be moved back to the bottom of the layer. Perform this here BEFORE their trajectories are updated.
+            exit_mask = (dz < 0) & mask
+            mu.propagate_dz(dz[exit_mask], mask=exit_mask)
             mu.scatter_dtheta_xy(dtheta_x_vol=scatterings["dtheta_x_vol"], dtheta_y_vol=scatterings["dtheta_y_vol"], mask=scatter_mask)
         else:
             mu.propagate_d(self.step_sz, mask)
@@ -234,7 +247,7 @@ class PassiveLayer(AbsLayer):
         return PGEANT_SCATTER_MODEL.compute_scattering(x0=x0, step_sz=self.step_sz, theta=theta, theta_x=theta_x, theta_y=theta_y, mom=mom)
 
     def _pdg_scatter(
-        self, *, x0: Tensor, theta: Tensor, phi: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor, log_term: bool = True
+        self, *, x0: Tensor, theta: Tensor, phi: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor, step_sz: Tensor, log_term: bool = True
     ) -> Dict[str, Tensor]:
         r"""
         Computes the scattering of the muons using the PDG model https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf
@@ -250,7 +263,7 @@ class PassiveLayer(AbsLayer):
             A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, & dy_vol
         """
 
-        n_x0 = self.step_sz / x0
+        n_x0 = step_sz / x0
 
         n = len(n_x0)
         z1 = torch.randn((2, n), device=self.device)
@@ -260,7 +273,7 @@ class PassiveLayer(AbsLayer):
             theta0 = theta0 * (1 + (SCATTER_COEF_B * torch.log(n_x0)))
         # These are in the muons' reference frames NOT the volume's!!!
         dtheta_xy_mu = z1 * theta0
-        dxy_mu = self.step_sz * theta0 * ((z1 / math.sqrt(12)) + (z2 / 2))
+        dxy_mu = step_sz * theta0 * ((z1 / math.sqrt(12)) + (z2 / 2))
 
         # Note that if a track incides on a layer
         # with angle theta_mu, the dx and dy displacements are relative to to the muon
@@ -272,7 +285,9 @@ class PassiveLayer(AbsLayer):
         dz_vol = torch.where(phi_defined, dxy_mu[1] * torch.sin(theta), dxy_mu.new_zeros(1))
         return {"dtheta_x_vol": dtheta_xy_mu[0], "dtheta_y_vol": dtheta_xy_mu[1], "dx_vol": dx_vol, "dy_vol": dy_vol, "dz_vol": dz_vol}
 
-    def _compute_scattering(self, *, x0: Tensor, theta: Tensor, phi: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor) -> Dict[str, Tensor]:
+    def _compute_scattering(
+        self, *, x0: Tensor, theta: Tensor, phi: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor, step_sz: Tensor
+    ) -> Dict[str, Tensor]:
         r"""
         Computes the scattering of the muons using the chosen model
 
@@ -287,7 +302,7 @@ class PassiveLayer(AbsLayer):
             A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, & dy_vol
         """
         if self.scatter_model == "pdg":
-            return self._pdg_scatter(x0=x0, theta=theta, phi=phi, theta_x=theta_x, theta_y=theta_y, mom=mom)
+            return self._pdg_scatter(x0=x0, theta=theta, phi=phi, theta_x=theta_x, theta_y=theta_y, mom=mom, step_sz=step_sz)
         elif self.scatter_model == "pgeant":
             return self._pgeant_scatter(x0=x0, theta=theta, theta_x=theta_x, theta_y=theta_y, mom=mom)
         else:
