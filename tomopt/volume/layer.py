@@ -283,7 +283,10 @@ class PassiveLayer(AbsLayer):
         dx_vol = torch.where(phi_defined, (dxy_mu[0] * torch.sin(phi)) + (dxy_mu[1] * torch.cos(theta) * torch.cos(phi)), dxy_mu[0])
         dy_vol = torch.where(phi_defined, (dxy_mu[0] * torch.cos(phi)) - (dxy_mu[1] * torch.cos(theta) * torch.sin(phi)), dxy_mu[1])
         dz_vol = torch.where(phi_defined, dxy_mu[1] * torch.sin(theta), torch.zeros_like(dxy_mu[1]))
-        return {"dtheta_x_vol": dtheta_xy_mu[0], "dtheta_y_vol": dtheta_xy_mu[1], "dx_vol": dx_vol, "dy_vol": dy_vol, "dz_vol": dz_vol}
+
+        dtheta_x_vol = dtheta_xy_mu[0]
+        dtheta_y_vol = dtheta_xy_mu[1]
+        return {"dtheta_x_vol": dtheta_x_vol, "dtheta_y_vol": dtheta_y_vol, "dx_vol": dx_vol, "dy_vol": dy_vol, "dz_vol": dz_vol}
 
     def _compute_scattering(
         self, *, x0: Tensor, theta: Tensor, phi: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor, step_sz: Tensor

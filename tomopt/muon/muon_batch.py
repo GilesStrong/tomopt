@@ -129,7 +129,7 @@ class MuonBatch:
         """
 
         theta = (theta_x.tan().square() + theta_y.tan().square()).sqrt().arctan()
-        # theta[(theta_x.abs() >= torch.pi / 2) + (theta_y.abs() >= torch.pi / 2)] = torch.nan
+        theta[(theta_x.abs() >= torch.pi / 2) + (theta_y.abs() >= torch.pi / 2)] = torch.nan
         return theta
 
     @staticmethod
@@ -208,8 +208,9 @@ class MuonBatch:
 
         if mask is None:
             mask = torch.ones(len(self._muons), device=self.device).bool()
+
         if dphi_vol is not None:
-            self._phi[mask] = (self._phi[mask] + dphi_vol) % (2 * torch.pi)
+            self._phi = (self._phi[mask] + dphi_vol) % (2 * torch.pi)
         if dtheta_vol is not None:
             theta = (self._theta[mask] + dtheta_vol) % (2 * torch.pi)
             # Correct theta, must avoid double Bool mask
@@ -217,8 +218,8 @@ class MuonBatch:
             m = theta > torch.pi
             phi[m] = (phi[m] + torch.pi) % (2 * torch.pi)  # rotate in phi
             theta[m] = (2 * torch.pi) - theta[m]  # theta (0,pi)
-            self._phi[mask] = phi
-            self._theta[mask] = theta
+            self._phi = phi
+            self._theta = theta
 
     def scatter_dtheta_xy(self, dtheta_x_vol: Optional[Tensor] = None, dtheta_y_vol: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
         r"""
@@ -251,7 +252,7 @@ class MuonBatch:
         Should be run after any changes to theta, but make sure that references (e.g. masks) to the complete set of muons are no longer required.
         """
 
-        self._keep_mask = self._theta < torch.pi / 2  # To keep
+        self._keep_mask = (self._theta < torch.pi / 2) & (~self._theta.isnan()) & (~self._phi.isnan())  # To keep
         self.filter_muons(self._keep_mask)
 
     def filter_muons(self, keep_mask: Tensor) -> None:
@@ -621,7 +622,7 @@ class MuonBatch:
 
     @property
     def theta_xy(self) -> Tensor:
-        return torch.stack((self.theta_x, self.theta_x), dim=-1)
+        return torch.stack((self.theta_x, self.theta_y), dim=-1)
 
     @theta_xy.setter
     def theta_xy(self, theta_xy: Tensor) -> None:
