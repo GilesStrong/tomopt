@@ -94,6 +94,7 @@ If there is an intermediate machine (e.g. a gateway) between the cluster and you
 jupyter notebook --no-browser --port=8889 # on the cluster
 ssh -N -f -L localhost:8888:localhost:8889 username@cluster_hostname # on the gateway. Makes the notebook running on the cluster port 8889 available on the local port 8888
 ssh -N -f -L localhost:8890:localhost:8888 username@gateway_hostname # on your local machine. Picks up the server available on 8888 of the gateway and makes it available on the local port 8890 (or any other number, e.g. 8888)
+```
 
 ## External repos
 
