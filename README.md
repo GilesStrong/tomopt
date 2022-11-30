@@ -71,6 +71,31 @@ to run all tests, or, e.g.:
 pytest tests/test_muon.py
 ```
 
+### Running notebooks in a remote cluster
+
+If you want to run notebooks on a remote cluster but access them on the browser of your local machine, you need to forward the notebook server from the cluster to your local machine.
+
+On the cluster, run:
+```
+jupyter notebook --no-browser --port=8889
+```
+
+On your local computer, you need to set up a forwarding that picks the flux of data from the cluster via a local port, and makes it available on another port as if the server was in the local machine:
+```
+ssh -N -f -L localhost:8888:localhost:8889 username@cluster_hostname
+```
+
+The layperson version of this command is: *take the flux of info from the port `8889` of `cluster_hostname`, logging in as `username`, get it inside the local machine via the port `8889`, and make it available on the port `8888` as if the jupyter notebook server was running locally on the port `8888`*
+
+You can now point your browser to [http://localhost:8888/tree](http://localhost:8888/tree) (you will be asked to copy the server authentication token, which is the number that is shown by jupyter when you run the notebook on the server)
+
+If there is an intermediate machine (e.g. a gateway) between the cluster and your local machine, you need to set up a similar port forwarding on the gateway machine. The crucial point is that the input port of each machine must be the output port of the machine before it in the chain. For instance:
+```
+jupyter notebook --no-browser --port=8889 # on the cluster
+ssh -N -f -L localhost:8888:localhost:8889 username@cluster_hostname # on the gateway. Makes the notebook running on the cluster port 8889 available on the local port 8888
+ssh -N -f -L localhost:8890:localhost:8888 username@gateway_hostname # on your local machine. Picks up the server available on 8888 of the gateway and makes it available on the local port 8890 (or any other number, e.g. 8888)
+```
+
 ## External repos
 
 - [tomo_deepinfer](https://github.com/GilesStrong/mode_muon_tomo_inference) (contact @GilesStrong for access) separately handles training and model definition of GNNs used for passive volume inference. Models are exported as JIT-traced scripts, and loaded here using the `DeepVolumeInferer` class. We still need to find a good way to host the trained models for easy download.
