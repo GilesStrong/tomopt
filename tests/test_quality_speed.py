@@ -72,7 +72,7 @@ def test_lead_beryllium(mock_show):
     tmr = default_timer()
     preds = wrapper.predict(PassiveYielder([arb_rad_length]), n_mu_per_volume=10000, mu_bs=100, cbs=[MuonResampler()])[0]
     time = default_timer() - tmr
-    assert time <= 40  # 2018 MacBook Pro: ~20s
+    assert time <= 60  # 2018 MacBook Pro: ~20s, but GitHub CI is slower
 
     plot_pred_true_x0(*preds, savename=PKG_DIR / "lead_beryllium.png")
 
