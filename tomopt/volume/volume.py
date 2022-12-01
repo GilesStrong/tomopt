@@ -229,7 +229,7 @@ class Volume(nn.Module):
         """
         x, y, z = np.indices((10,10,10))
         # grid inflated by a factor of 10 to allow drawing thickness for passive layers
-
+        # TODO: generalize to allow for different units in placement
         ax = plt.figure(figsize=(9, 9)).add_subplot(projection='3d')
         voxelarrays=[]
         activearrays=[]
