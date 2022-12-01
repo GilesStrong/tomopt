@@ -250,17 +250,17 @@ class Volume(nn.Module):
 
                 
         voxelarray=False
-        for stuff in voxelarrays:
-            voxelarray = voxelarray | stuff[0]
+        for voxelandcolour in voxelarrays:
+            voxelarray = voxelarray | voxelandcolour[0]
         colors = np.empty(voxelarray.shape, dtype=object)
-        for stuff in voxelarrays:
-            colors[stuff[0]] = stuff[1]
+        for voxelandcolour in voxelarrays:
+            colors[voxelandcolour[0]] = voxelandcolour[1]
 
-        for stuff in activearrays:
+        for voxelandcolour in activearrays:
             (xx, yy) = np.meshgrid(np.arange(0, 10, 0.1), np.arange(0, 10, 0.1))
             zz = np.ones(xx.shape)
-            zz=zz*10*stuff[2]
-            ax.plot_surface(xx, yy, zz, color=stuff[3], alpha=0.5, zorder=1)
+            zz = zz*10*voxelandcolour[2]
+            ax.plot_surface(xx, yy, zz, color=voxelandcolour[3], alpha=0.5, zorder=1)
 
         ax.voxels(voxelarray, facecolors=colors, edgecolor='k', zorder=20)
         plt.ylim((0,10))
