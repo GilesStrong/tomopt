@@ -222,15 +222,15 @@ class Volume(nn.Module):
             cost = torch.zeros((1), device=self.device)
         return cost
 
-    def draw(self, xlim: Tuple[float, float] = (-1, 2), ylim: Tuple[float, float] = (-1, 2), zlim: Tuple[float, float] = (0, 1.2)) -> None:
+    def draw(self, *, xlim: Tuple[float, float], ylim: Tuple[float, float], zlim: Tuple[float, float]) -> None:
         r"""
         Draws the layers/panels pertaining to the volume.
         When using this in a jupyter notebook, use "%matplotlib notebook" to have an interactive plot that you can rotate.
 
         Arguments:
-            xlim: the x axis range for the three-dimensional plot. Defaults are based on examples/panel_detectors/00_Hello_World.ipynb, user needs to tweak them as needed
-            ylim: the y axis range for the three-dimensional plot. Defaults are based on examples/panel_detectors/00_Hello_World.ipynb, user needs to tweak them as needed
-            zlim: the z axis range for the three-dimensional plot. Defaults are based on examples/panel_detectors/00_Hello_World.ipynb, user needs to tweak them as needed
+            xlim: the x axis range for the three-dimensional plot.
+            ylim: the y axis range for the three-dimensional plot.
+            zlim: the z axis range for the three-dimensional plot.
         """
         ax = plt.figure(figsize=(9, 9)).add_subplot(projection="3d")
         ax.computed_zorder = False
@@ -316,7 +316,7 @@ class Volume(nn.Module):
         ax.set_zlim(zlim)
         plt.title("Volume layers")
         red_patch = mpatches.Patch(color="red", label="Active Detector Layers")
-        pink_patch = mpatches.Patch(color="pink", label="Passive Layers")
+        pink_patch = mpatches.Patch(color="blue", label="Passive Layers")
         ax.legend(handles=[red_patch, pink_patch])
         plt.show()
 
