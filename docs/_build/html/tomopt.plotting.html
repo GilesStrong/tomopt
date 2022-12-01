@@ -6,7 +6,7 @@
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
@@ -14,8 +14,6 @@
   
 
   
-  
-    <link rel="shortcut icon" href="_static/tomopt_logo.png"/>
   
   
   
@@ -243,28 +241,28 @@
              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
               
   <section id="tomopt-plotting-package">
-<h1>tomopt.plotting package<a class="headerlink" href="#tomopt-plotting-package" title="Permalink to this heading">¶</a></h1>
+<h1>tomopt.plotting package<a class="headerlink" href="#tomopt-plotting-package" title="Permalink to this heading"></a></h1>
 <section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
 </section>
 <section id="module-tomopt.plotting.appearance">
-<span id="tomopt-plotting-appearance-module"></span><h2>tomopt.plotting.appearance module<a class="headerlink" href="#module-tomopt.plotting.appearance" title="Permalink to this heading">¶</a></h2>
+<span id="tomopt-plotting-appearance-module"></span><h2>tomopt.plotting.appearance module<a class="headerlink" href="#module-tomopt.plotting.appearance" title="Permalink to this heading"></a></h2>
 <p>Defines global constants for producing consistently styled plots</p>
 </section>
 <section id="module-tomopt.plotting.diagnostics">
-<span id="tomopt-plotting-diagnostics-module"></span><h2>tomopt.plotting.diagnostics module<a class="headerlink" href="#module-tomopt.plotting.diagnostics" title="Permalink to this heading">¶</a></h2>
+<span id="tomopt-plotting-diagnostics-module"></span><h2>tomopt.plotting.diagnostics module<a class="headerlink" href="#module-tomopt.plotting.diagnostics" title="Permalink to this heading"></a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="tomopt.plotting.diagnostics.plot_hit_density">
-<span class="sig-prename descclassname"><span class="pre">tomopt.plotting.diagnostics.</span></span><span class="sig-name descname"><span class="pre">plot_hit_density</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hit_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/plotting/diagnostics.html#plot_hit_density"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.plotting.diagnostics.plot_hit_density" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">tomopt.plotting.diagnostics.</span></span><span class="sig-name descname"><span class="pre">plot_hit_density</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hit_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/plotting/diagnostics.html#plot_hit_density"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.plotting.diagnostics.plot_hit_density" title="Permalink to this definition"></a></dt>
 <dd><p>Plots the position of muon hits in the detectors, as recorded using <a class="reference internal" href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.diagnostic_callbacks.HitRecord" title="tomopt.optimisation.callbacks.diagnostic_callbacks.HitRecord"><code class="xref py py-class docutils literal notranslate"><span class="pre">HitRecord</span></code></a>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>hit_df</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code>) – Dataframe of recorded hits, as returned by <code class="xref py py-meth docutils literal notranslate"><span class="pre">get_record()</span></code></p></li>
 <li><p><strong>savename</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]) – optional savename to save the plot</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dt class="field-even">Return type</dt>
 <dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
 </dd>
 </dl>
@@ -272,16 +270,16 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="tomopt.plotting.diagnostics.plot_scatter_density">
-<span class="sig-prename descclassname"><span class="pre">tomopt.plotting.diagnostics.</span></span><span class="sig-name descname"><span class="pre">plot_scatter_density</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scatter_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/plotting/diagnostics.html#plot_scatter_density"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.plotting.diagnostics.plot_scatter_density" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">tomopt.plotting.diagnostics.</span></span><span class="sig-name descname"><span class="pre">plot_scatter_density</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scatter_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/plotting/diagnostics.html#plot_scatter_density"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.plotting.diagnostics.plot_scatter_density" title="Permalink to this definition"></a></dt>
 <dd><p>Plots the position of PoCAs in the passive volume, as recorded using <a class="reference internal" href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.diagnostic_callbacks.ScatterRecord" title="tomopt.optimisation.callbacks.diagnostic_callbacks.ScatterRecord"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScatterRecord</span></code></a>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>scatter_df</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code>) – Dataframe of recorded PoCAs, as returned by <a class="reference internal" href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.diagnostic_callbacks.ScatterRecord.get_record" title="tomopt.optimisation.callbacks.diagnostic_callbacks.ScatterRecord.get_record"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_record()</span></code></a></p></li>
 <li><p><strong>savename</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]) – optional savename to save the plot</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dt class="field-even">Return type</dt>
 <dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
 </dd>
 </dl>
@@ -289,22 +287,22 @@
 
 </section>
 <section id="module-tomopt.plotting.predictions">
-<span id="tomopt-plotting-predictions-module"></span><h2>tomopt.plotting.predictions module<a class="headerlink" href="#module-tomopt.plotting.predictions" title="Permalink to this heading">¶</a></h2>
+<span id="tomopt-plotting-predictions-module"></span><h2>tomopt.plotting.predictions module<a class="headerlink" href="#module-tomopt.plotting.predictions" title="Permalink to this heading"></a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="tomopt.plotting.predictions.plot_pred_true_x0">
-<span class="sig-prename descclassname"><span class="pre">tomopt.plotting.predictions.</span></span><span class="sig-name descname"><span class="pre">plot_pred_true_x0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">true</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/plotting/predictions.html#plot_pred_true_x0"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.plotting.predictions.plot_pred_true_x0" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">tomopt.plotting.predictions.</span></span><span class="sig-name descname"><span class="pre">plot_pred_true_x0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">true</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">savename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/plotting/predictions.html#plot_pred_true_x0"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.plotting.predictions.plot_pred_true_x0" title="Permalink to this definition"></a></dt>
 <dd><p>Plots the predicted voxelwise X0s compared to the true values of the X0s.
 2D plots are produced in xy for layers in z in order of increasing z, i.e. the bottom most layer is the first to be plotted.
 TODO: revise this ordering to make it more intuitive</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pred</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – (z,x,y) array of predicted X0s</p></li>
 <li><p><strong>true</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – (z,x,y) array of true X0s</p></li>
 <li><p><strong>savename</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]) – optional savename for saving the plot</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dt class="field-even">Return type</dt>
 <dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
 </dd>
 </dl>
