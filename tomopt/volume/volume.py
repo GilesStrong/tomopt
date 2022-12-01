@@ -293,7 +293,6 @@ class Volume(nn.Module):
 
         # fmt: off
         for voxelandcolour in allarrays:
-            print(voxelandcolour[2])
             ax.add_collection3d(Poly3DCollection(voxelandcolour[0], facecolors=voxelandcolour[1], linewidths=1, edgecolors=voxelandcolour[1], alpha=voxelandcolour[3],
                                                  zorder=voxelandcolour[2], sort_zpos=voxelandcolour[2]))
         # fmt: on
