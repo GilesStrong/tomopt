@@ -250,7 +250,7 @@ def test_volume_draw(mocker):  # noqa F811
     mocker.patch("matplotlib.pyplot.show")
     mocker.spy(plt, "title")
     mocker.spy(plt, "figure")
-    volume.draw()
+    volume.draw(xlim=(-1, 2), ylim=(-1, 2), zlim=(0, 1.2))
 
     # Assert plt.title has been called with expected arg
     plt.title.assert_called_once_with("Volume layers")
