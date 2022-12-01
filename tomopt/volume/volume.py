@@ -9,8 +9,9 @@ import torch
 from torch import nn, Tensor
 import torch.nn.functional as F
 
-from .layer import AbsDetectorLayer, AbsLayer, PassiveLayer
+from .layer import AbsDetectorLayer, AbsLayer, PassiveLayer, PanelDetectorLayer
 from .panel import DetectorPanel
+from .heatmap import DetectorHeatMap
 from ..muon import MuonBatch
 from ..core import RadLengthFunc
 
@@ -276,17 +277,25 @@ class Volume(nn.Module):
                 passivearrays.append([rect, col, roundedz, 1])
                 continue
             # if not passive layer...
-            for i, p in layer.yield_zordered_panels():
-                col = "red" if isinstance(p, DetectorPanel) else ("blue" if isinstance(p, PassiveLayer) else "black")
+            if isinstance(layer, PanelDetectorLayer):
+                for i, p in layer.yield_zordered_panels():
+                    if isinstance(p, DetectorHeatMap):
+                        raise TypeError("Drawing not supported yet for DetectorHeatMap panels")
+                    col = "red" if isinstance(p, DetectorPanel) else ("blue" if isinstance(p, PassiveLayer) else "black")
+                    if not isinstance(p.xy, Tensor):
+                        raise ValueError("Panel xy is not a tensor, for some reason")
+                    if not isinstance(p.z, Tensor):
+                        raise ValueError("Panel z is not a tensor, for some reason")
+                    rect = [[
+                        (p.xy.data[0].item() - p.get_scaled_xy_span().data[0] / 2.0, p.xy.data[1].item() - p.get_scaled_xy_span().data[1] / 2.0, p.z.data[0].item()),
+                        (p.xy.data[0].item() + p.get_scaled_xy_span().data[0] / 2.0, p.xy.data[1].item() - p.get_scaled_xy_span().data[1] / 2.0, p.z.data[0].item()),
+                        (p.xy.data[0].item() + p.get_scaled_xy_span().data[0] / 2.0, p.xy.data[1].item() + p.get_scaled_xy_span().data[1] / 2.0, p.z.data[0].item()),
+                        (p.xy.data[0].item() - p.get_scaled_xy_span().data[0] / 2.0, p.xy.data[1].item() + p.get_scaled_xy_span().data[1] / 2.0, p.z.data[0].item())
+                    ]]
 
-                rect = [[
-                    (p.xy.data[0].item() - p.get_scaled_xy_span().data[0] / 2.0, p.xy.data[1].item() - p.get_scaled_xy_span().data[1] / 2.0, p.z.data[0].item()),
-                    (p.xy.data[0].item() + p.get_scaled_xy_span().data[0] / 2.0, p.xy.data[1].item() - p.get_scaled_xy_span().data[1] / 2.0, p.z.data[0].item()),
-                    (p.xy.data[0].item() + p.get_scaled_xy_span().data[0] / 2.0, p.xy.data[1].item() + p.get_scaled_xy_span().data[1] / 2.0, p.z.data[0].item()),
-                    (p.xy.data[0].item() - p.get_scaled_xy_span().data[0] / 2.0, p.xy.data[1].item() + p.get_scaled_xy_span().data[1] / 2.0, p.z.data[0].item())
-                ]]
-
-                activearrays.append([rect, col, p.z.data[0].item(), 0.2])
+                    activearrays.append([rect, col, p.z.data[0].item(), 0.2])
+            else:
+                raise TypeError("Volume.draw does not yet support layers of type", type(layer))
             # fmt: on
 
         allarrays = activearrays + passivearrays
