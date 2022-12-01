@@ -226,6 +226,10 @@ class Volume(nn.Module):
         r"""
         Draws the layers/panels pertaining to the volume.
         When using this in a jupyter notebook, use "%matplotlib notebook" to have an interactive plot that you can rotate.
+
+        Arguments:
+            The axis range in x, y, and z for the three-dimensional plot.
+                Defaults are based on examples/panel_detectors/00_Hello_World.ipynb, user needs to tweak them as needed
         """
         ax = plt.figure(figsize=(9, 9)).add_subplot(projection="3d")
         ax.computed_zorder = False
