@@ -224,6 +224,7 @@ class Volume(nn.Module):
     def draw(self, xlim: Tuple[float, float] = (-1, 2), ylim: Tuple[float, float] = (-1, 2), zlim: Tuple[float, float] = (0, 1.2)) -> None:
         r"""
         Draws the layers/panels pertaining to the volume.
+        When using this in a jupyter notebook, use "%matplotlib notebook" to have an interactive plot that you can rotate.
         """
         ax = plt.figure(figsize=(9, 9)).add_subplot(projection="3d")
         ax.computed_zorder = False
