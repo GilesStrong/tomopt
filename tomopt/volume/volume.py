@@ -1,18 +1,16 @@
-from tomopt.volume.layer import AbsLayer, PassiveLayer
-from tomopt.volume.panel import DetectorPanel
-from typing import Tuple, List, Optional
+from typing import Tuple, List, Optional, Any
 import numpy as np
 
 from matplotlib import pyplot as plt
 import matplotlib.patches as mpatches
-from mpl_toolkits.mplot3d import Axes3D
-import matplotlib.axes as mlibaxes
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 import torch
 from torch import nn, Tensor
 import torch.nn.functional as F
 
-from .layer import AbsDetectorLayer, PassiveLayer
+from .layer import AbsDetectorLayer, AbsLayer, PassiveLayer
+from .panel import DetectorPanel
 from ..muon import MuonBatch
 from ..core import RadLengthFunc
 
@@ -223,59 +221,91 @@ class Volume(nn.Module):
             cost = torch.zeros((1), device=self.device)
         return cost
 
-    def draw(self) -> None:
+    def draw(self, xlim: Tuple[float, float] = (-1, 2), ylim: Tuple[float, float] = (-1, 2), zlim: Tuple[float, float] = (0, 1.2)) -> None:
         r"""
         Draws the layers/panels pertaining to the volume.
         """
-        x, y, z = np.indices((10,10,10))
-        # grid inflated by a factor of 10 to allow drawing thickness for passive layers
-        # TODO: generalize to allow for different units in placement
-        ax = plt.figure(figsize=(9, 9)).add_subplot(projection='3d')
-        voxelarrays=[]
-        activearrays=[]
-        
+        ax = plt.figure(figsize=(9, 9)).add_subplot(projection="3d")
+        ax.computed_zorder = False
+        # TODO: find a way to fix transparency overlap in order to have passive layers in front of bottom active layers.
+        passivearrays: List[Any] = []
+        activearrays: List[Any] = []
+
         for layer in self.layers:
+            # fmt: off
             if isinstance(layer, PassiveLayer):
                 lw, thez, size = layer.get_lw_z_size()
-                roundedz=np.round(thez.item(),2)
-                layercube = (x < 10*lw[0].item()) & (y < 10*lw[1].item()) & (z < 10*roundedz) & (z > 10*(roundedz-size-0.001))
-                col = 'red' if isinstance(layer, DetectorPanel) else( 'pink' if isinstance(layer, PassiveLayer) else 'black')
-                voxelarrays.append([layercube, col, thez.item()])
-                continue
+                roundedz = np.round(thez.item(), 2)
+                # TODO: split these to allow for different alpha values (want: more transparent in front, more opaque in the back)
+                rect = [
+                    [
+                        (0, 0, roundedz - size),
+                        (0 + lw[0].item(), 0, roundedz - size),
+                        (0 + lw[0].item(), 0 + lw[1].item(), roundedz - size),
+                        (0, 0 + lw[1].item(), roundedz - size)
+                    ],
+                    [
+                        (0, 0, roundedz - size),
+                        (0 + lw[0].item(), 0, roundedz - size),
+                        (0 + lw[0].item(), 0, roundedz),
+                        (0, 0, roundedz)
+                    ],
+                    [
+                        (0, 0 + lw[1].item(), roundedz - size),
+                        (0 + lw[0].item(), 0 + lw[1].item(), roundedz - size),
+                        (0 + lw[0].item(), 0 + lw[1].item(), roundedz),
+                        (0, 0 + lw[1].item(), roundedz)
+                    ],
+                    [
+                        (0, 0, roundedz - size),
+                        (0, 0 + lw[1].item(), roundedz - size),
+                        (0, 0 + lw[1].item(), roundedz),
+                        (0, 0, roundedz)
+                    ],
+                    [
+                        (0 + lw[0].item(), 0, roundedz - size),
+                        (0 + lw[0].item(), 0 + lw[1].item(), roundedz - size),
+                        (0 + lw[0].item(), 0 + lw[1].item(), roundedz),
+                        (0 + lw[0].item(), 0, roundedz)
+                    ],
+                ]
 
+                col = "red" if isinstance(layer, DetectorPanel) else ("blue" if isinstance(layer, PassiveLayer) else "black")
+
+                passivearrays.append([rect, col, roundedz, 1])
+                continue
             # if not passive layer...
             for i, p in layer.yield_zordered_panels():
-                col = 'red' if isinstance(p, DetectorPanel) else( 'blue' if isinstance(p, PassiveLayer) else 'black')
-                activearrays.append([p.xy.data[0].item(), p.xy.data[1].item(), p.z.data[0].item(), col])
+                col = "red" if isinstance(p, DetectorPanel) else ("blue" if isinstance(p, PassiveLayer) else "black")
 
-                
-        voxelarray=False
-        for voxelandcolour in voxelarrays:
-            voxelarray = voxelarray | voxelandcolour[0]
-        colors = np.empty(voxelarray.shape, dtype=object)
-        for voxelandcolour in voxelarrays:
-            colors[voxelandcolour[0]] = voxelandcolour[1]
+                rect = [[
+                    (p.xy.data[0].item() - p.get_scaled_xy_span().data[0] / 2.0, p.xy.data[1].item() - p.get_scaled_xy_span().data[1] / 2.0, p.z.data[0].item()),
+                    (p.xy.data[0].item() + p.get_scaled_xy_span().data[0] / 2.0, p.xy.data[1].item() - p.get_scaled_xy_span().data[1] / 2.0, p.z.data[0].item()),
+                    (p.xy.data[0].item() + p.get_scaled_xy_span().data[0] / 2.0, p.xy.data[1].item() + p.get_scaled_xy_span().data[1] / 2.0, p.z.data[0].item()),
+                    (p.xy.data[0].item() - p.get_scaled_xy_span().data[0] / 2.0, p.xy.data[1].item() + p.get_scaled_xy_span().data[1] / 2.0, p.z.data[0].item())
+                ]]
 
-        for voxelandcolour in activearrays:
-            (xx, yy) = np.meshgrid(np.arange(0, 10, 0.1), np.arange(0, 10, 0.1))
-            zz = np.ones(xx.shape)
-            zz = zz*10*voxelandcolour[2]
-            ax.plot_surface(xx, yy, zz, color=voxelandcolour[3], alpha=0.5, zorder=1)
+                activearrays.append([rect, col, p.z.data[0].item(), 0.2])
+            # fmt: on
 
-        ax.voxels(voxelarray, facecolors=colors, edgecolor='k', zorder=20)
-        plt.ylim((0,10))
-        plt.xlim((0,10))
-        ax.set_zlim(0,10)
-        plt.xticks(np.arange(0,10,1),np.round(np.arange(0, 1, 0.1),1))
-        plt.yticks(np.arange(0,10,1),np.round(np.arange(0, 1, 0.1),1))
-        ax.set_zticks(np.arange(0, 10, 1)) # this and next line: equivalent to the non-existing zticks()
-        ax.set_zticklabels(np.round(np.arange(0, 1, 0.1),1))
+        allarrays = activearrays + passivearrays
+        allarrays.sort(key=lambda x: x[2])
+
+        # fmt: off
+        for voxelandcolour in allarrays:
+            print(voxelandcolour[2])
+            ax.add_collection3d(Poly3DCollection(voxelandcolour[0], facecolors=voxelandcolour[1], linewidths=1, edgecolors=voxelandcolour[1], alpha=voxelandcolour[3],
+                                                 zorder=voxelandcolour[2], sort_zpos=voxelandcolour[2]))
+        # fmt: on
+        plt.ylim(xlim)
+        plt.xlim(ylim)
+        ax.set_zlim(zlim)
         plt.title("Volume layers")
-        red_patch = mpatches.Patch(color='red', label='Active Detector Layers')
-        pink_patch = mpatches.Patch(color='pink', label='Passive Layers')
-        ax.legend(handles=[red_patch,pink_patch])
+        red_patch = mpatches.Patch(color="red", label="Active Detector Layers")
+        pink_patch = mpatches.Patch(color="pink", label="Passive Layers")
+        ax.legend(handles=[red_patch, pink_patch])
         plt.show()
-        
+
     def _configure_budget(self) -> None:
         r"""
         Creates a list of learnable parameters, which acts as the fractional assignment of the total budget to various parts of the detectors.
