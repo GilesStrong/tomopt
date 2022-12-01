@@ -6,7 +6,7 @@
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
@@ -14,8 +14,6 @@
   
 
   
-  
-    <link rel="shortcut icon" href="_static/tomopt_logo.png"/>
   
   
   
@@ -245,15 +243,15 @@
              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
               
   <section id="tomopt-optimisation-data-package">
-<h1>tomopt.optimisation.data package<a class="headerlink" href="#tomopt-optimisation-data-package" title="Permalink to this heading">¶</a></h1>
+<h1>tomopt.optimisation.data package<a class="headerlink" href="#tomopt-optimisation-data-package" title="Permalink to this heading"></a></h1>
 <section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
 </section>
 <section id="module-tomopt.optimisation.data.passives">
-<span id="tomopt-optimisation-data-passives-module"></span><h2>tomopt.optimisation.data.passives module<a class="headerlink" href="#module-tomopt.optimisation.data.passives" title="Permalink to this heading">¶</a></h2>
+<span id="tomopt-optimisation-data-passives-module"></span><h2>tomopt.optimisation.data.passives module<a class="headerlink" href="#module-tomopt.optimisation.data.passives" title="Permalink to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="tomopt.optimisation.data.passives.AbsBlockPassiveGenerator">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.data.passives.</span></span><span class="sig-name descname"><span class="pre">AbsBlockPassiveGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_size_max_half</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">materials</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/data/passives.html#AbsBlockPassiveGenerator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.data.passives.AbsBlockPassiveGenerator" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.data.passives.</span></span><span class="sig-name descname"><span class="pre">AbsBlockPassiveGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_size_max_half</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">materials</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/data/passives.html#AbsBlockPassiveGenerator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.data.passives.AbsBlockPassiveGenerator" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tomopt.optimisation.data.passives.AbsPassiveGenerator" title="tomopt.optimisation.data.passives.AbsPassiveGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsPassiveGenerator</span></code></a></p>
 <p>Abstract base class for classes that generate new passive layouts which contain a single cuboid of material (block).</p>
 <dl class="simple">
@@ -267,7 +265,7 @@
 The <a class="reference internal" href="#tomopt.optimisation.data.passives.AbsPassiveGenerator.get_data" title="tomopt.optimisation.data.passives.AbsPassiveGenerator.get_data"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_data()</span></code></a> method will return both the layout function and the target</p>
 <p>The block will be centred randomly in the volume, and can either be of fixed or random size.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>volume</strong> (<a class="reference internal" href="tomopt.volume.html#tomopt.volume.volume.Volume" title="tomopt.volume.volume.Volume"><code class="xref py py-class docutils literal notranslate"><span class="pre">Volume</span></code></a>) – Volume that the passive layout will be loaded into</p></li>
 <li><p><strong>block_size</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]]) – if set, will generate blocks of the specified size and random orientation, otherwise will randomly set the size of the blocks</p></li>
@@ -278,14 +276,14 @@ The <a class="reference internal" href="#tomopt.optimisation.data.passives.AbsPa
 </dl>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="tomopt.optimisation.data.passives.AbsBlockPassiveGenerator._abc_impl">
-<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#tomopt.optimisation.data.passives.AbsBlockPassiveGenerator._abc_impl" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc._abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#tomopt.optimisation.data.passives.AbsBlockPassiveGenerator._abc_impl" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.optimisation.data.passives.AbsBlockPassiveGenerator._get_block_coords">
-<span class="sig-name descname"><span class="pre">_get_block_coords</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/data/passives.html#AbsBlockPassiveGenerator._get_block_coords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.data.passives.AbsBlockPassiveGenerator._get_block_coords" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">_get_block_coords</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/data/passives.html#AbsBlockPassiveGenerator._get_block_coords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.data.passives.AbsBlockPassiveGenerator._get_block_coords" title="Permalink to this definition"></a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]</p>
 </dd>
 </dl>
@@ -295,7 +293,7 @@ The <a class="reference internal" href="#tomopt.optimisation.data.passives.AbsPa
 
 <dl class="py class">
 <dt class="sig sig-object py" id="tomopt.optimisation.data.passives.AbsPassiveGenerator">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.data.passives.</span></span><span class="sig-name descname"><span class="pre">AbsPassiveGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">materials</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/data/passives.html#AbsPassiveGenerator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.data.passives.AbsPassiveGenerator" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.data.passives.</span></span><span class="sig-name descname"><span class="pre">AbsPassiveGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">materials</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/data/passives.html#AbsPassiveGenerator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.data.passives.AbsPassiveGenerator" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Abstract base class for classes that generate new passive layouts.</p>
 <dl class="simple">
@@ -308,7 +306,7 @@ The <a class="reference internal" href="#tomopt.optimisation.data.passives.AbsPa
 <p>The <a class="reference internal" href="#tomopt.optimisation.data.passives.AbsPassiveGenerator.generate" title="tomopt.optimisation.data.passives.AbsPassiveGenerator.generate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">generate()</span></code></a> method will return only the layout function and no target
 The <a class="reference internal" href="#tomopt.optimisation.data.passives.AbsPassiveGenerator.get_data" title="tomopt.optimisation.data.passives.AbsPassiveGenerator.get_data"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_data()</span></code></a> method will return both the layout function and the target</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>volume</strong> (<a class="reference internal" href="tomopt.volume.html#tomopt.volume.volume.Volume" title="tomopt.volume.volume.Volume"><code class="xref py py-class docutils literal notranslate"><span class="pre">Volume</span></code></a>) – Volume that the passive layout will be loaded into</p></li>
 <li><p><strong>materials</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]]) – list of material names that can be used in the volume, None -&gt; all materials known to TomOpt</p></li>
@@ -317,19 +315,19 @@ The <a class="reference internal" href="#tomopt.optimisation.data.passives.AbsPa
 </dl>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="tomopt.optimisation.data.passives.AbsPassiveGenerator._abc_impl">
-<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#tomopt.optimisation.data.passives.AbsPassiveGenerator._abc_impl" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc._abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#tomopt.optimisation.data.passives.AbsPassiveGenerator._abc_impl" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.optimisation.data.passives.AbsPassiveGenerator._generate">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_generate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/data/passives.html#AbsPassiveGenerator._generate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.data.passives.AbsPassiveGenerator._generate" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_generate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/data/passives.html#AbsPassiveGenerator._generate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.data.passives.AbsPassiveGenerator._generate" title="Permalink to this definition"></a></dt>
 <dd><p>Inheriting classes should override this.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>A function that provides an xy tensor for a given layer when called with its z position, length and width, and size.
 Target: An optional “target” value for the layout</p>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dt class="field-even">Return type</dt>
 <dd class="field-even"><p>RadLengthFunc</p>
 </dd>
 </dl>
@@ -337,12 +335,12 @@ Target: An optional “target” value for the layout</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.optimisation.data.passives.AbsPassiveGenerator.generate">
-<span class="sig-name descname"><span class="pre">generate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/data/passives.html#AbsPassiveGenerator.generate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.data.passives.AbsPassiveGenerator.generate" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">generate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/data/passives.html#AbsPassiveGenerator.generate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.data.passives.AbsPassiveGenerator.generate" title="Permalink to this definition"></a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dt class="field-even">Returns</dt>
 <dd class="field-even"><p>The layout function and no target</p>
 </dd>
 </dl>
@@ -350,13 +348,13 @@ Target: An optional “target” value for the layout</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.optimisation.data.passives.AbsPassiveGenerator.get_data">
-<span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/data/passives.html#AbsPassiveGenerator.get_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.data.passives.AbsPassiveGenerator.get_data" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/data/passives.html#AbsPassiveGenerator.get_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.data.passives.AbsPassiveGenerator.get_data" title="Permalink to this definition"></a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>A function that provides an xy tensor for a given layer when called with its z position, length and width, and size.
 Target: An optional “target” value for the layout</p>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dt class="field-even">Return type</dt>
 <dd class="field-even"><p>RadLengthFunc</p>
 </dd>
 </dl>
@@ -366,7 +364,7 @@ Target: An optional “target” value for the layout</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="tomopt.optimisation.data.passives.BlockPresentPassiveGenerator">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.data.passives.</span></span><span class="sig-name descname"><span class="pre">BlockPresentPassiveGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_size_max_half</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">materials</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/data/passives.html#BlockPresentPassiveGenerator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.data.passives.BlockPresentPassiveGenerator" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.data.passives.</span></span><span class="sig-name descname"><span class="pre">BlockPresentPassiveGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_size_max_half</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">materials</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/data/passives.html#BlockPresentPassiveGenerator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.data.passives.BlockPresentPassiveGenerator" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tomopt.optimisation.data.passives.AbsBlockPassiveGenerator" title="tomopt.optimisation.data.passives.AbsBlockPassiveGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsBlockPassiveGenerator</span></code></a></p>
 <p>Generates new passive layouts which contain a single cuboid of material (block) of random material against a fixed background material.
 Blocks are always present, but can potentially be of the same material as the background.
@@ -376,7 +374,7 @@ The background material for the background will always be the zeroth material pr
 The <a class="reference internal" href="#tomopt.optimisation.data.passives.AbsPassiveGenerator.get_data" title="tomopt.optimisation.data.passives.AbsPassiveGenerator.get_data"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_data()</span></code></a> method will return both the layout function and the target</p>
 <p>The block will be centred randomly in the volume, and can either be of fixed or random size.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>volume</strong> (<a class="reference internal" href="tomopt.volume.html#tomopt.volume.volume.Volume" title="tomopt.volume.volume.Volume"><code class="xref py py-class docutils literal notranslate"><span class="pre">Volume</span></code></a>) – Volume that the passive layout will be loaded into</p></li>
 <li><p><strong>block_size</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]]) – if set, will generate blocks of the specified size and random orientation, otherwise will randomly set the size of the blocks</p></li>
@@ -387,20 +385,20 @@ The <a class="reference internal" href="#tomopt.optimisation.data.passives.AbsPa
 </dl>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="tomopt.optimisation.data.passives.BlockPresentPassiveGenerator._abc_impl">
-<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#tomopt.optimisation.data.passives.BlockPresentPassiveGenerator._abc_impl" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc._abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#tomopt.optimisation.data.passives.BlockPresentPassiveGenerator._abc_impl" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.optimisation.data.passives.BlockPresentPassiveGenerator._generate">
-<span class="sig-name descname"><span class="pre">_generate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/data/passives.html#BlockPresentPassiveGenerator._generate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.data.passives.BlockPresentPassiveGenerator._generate" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">_generate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/data/passives.html#BlockPresentPassiveGenerator._generate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.data.passives.BlockPresentPassiveGenerator._generate" title="Permalink to this definition"></a></dt>
 <dd><p>Generates passive layouts containing a (randomly sized) block of random material at a random location surrounded by a fixed background.
 The background material for the background will always be the zeroth material provided during initialisation.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>A function that provides an xy tensor for a given layer when called with its z position, length and width, and size.
 Target: The X0 of the block material</p>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dt class="field-even">Return type</dt>
 <dd class="field-even"><p>RadLengthFunc</p>
 </dd>
 </dl>
@@ -410,7 +408,7 @@ Target: The X0 of the block material</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="tomopt.optimisation.data.passives.PassiveYielder">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.data.passives.</span></span><span class="sig-name descname"><span class="pre">PassiveYielder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">passives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_passives</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shuffle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/data/passives.html#PassiveYielder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.data.passives.PassiveYielder" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.data.passives.</span></span><span class="sig-name descname"><span class="pre">PassiveYielder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">passives</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_passives</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shuffle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/data/passives.html#PassiveYielder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.data.passives.PassiveYielder" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="simple">
 <dt>Dataset class that can either:</dt><dd><p>Yield from a set of pre-specified passive-volume layouts, and optional targets
@@ -418,7 +416,7 @@ Generate and yield random layouts and optional targets from a provided generator
 </dd>
 </dl>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>passives</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>], <code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]], <code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code>[[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]]], <a class="reference internal" href="#tomopt.optimisation.data.passives.AbsPassiveGenerator" title="tomopt.optimisation.data.passives.AbsPassiveGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsPassiveGenerator</span></code></a>]) – Either a list of passive-volume functions (and optional targets together in a tuple), or a passive-volume generator</p></li>
 <li><p><strong>n_passives</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]) – if a generator is used, this determines the number of volumes to generator per epoch in training, or in total when predicting</p></li>
@@ -430,7 +428,7 @@ Generate and yield random layouts and optional targets from a provided generator
 
 <dl class="py class">
 <dt class="sig sig-object py" id="tomopt.optimisation.data.passives.RandomBlockPassiveGenerator">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.data.passives.</span></span><span class="sig-name descname"><span class="pre">RandomBlockPassiveGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort_x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enforce_diff_mat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_size_max_half</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">materials</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/data/passives.html#RandomBlockPassiveGenerator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.data.passives.RandomBlockPassiveGenerator" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.data.passives.</span></span><span class="sig-name descname"><span class="pre">RandomBlockPassiveGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort_x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enforce_diff_mat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_size_max_half</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">materials</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/data/passives.html#RandomBlockPassiveGenerator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.data.passives.RandomBlockPassiveGenerator" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tomopt.optimisation.data.passives.AbsBlockPassiveGenerator" title="tomopt.optimisation.data.passives.AbsBlockPassiveGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsBlockPassiveGenerator</span></code></a></p>
 <p>Generates new passive layouts which contain a single cuboid of material (block) of random material against a random background material.
 Blocks are always present, but can potentially be of the same material as the background.
@@ -439,7 +437,7 @@ The target for the volumes is the X0 of the block material.</p>
 The <a class="reference internal" href="#tomopt.optimisation.data.passives.AbsPassiveGenerator.get_data" title="tomopt.optimisation.data.passives.AbsPassiveGenerator.get_data"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_data()</span></code></a> method will return both the layout function and the target</p>
 <p>The block will be centred randomly in the volume, and can either be of fixed or random size.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>volume</strong> (<a class="reference internal" href="tomopt.volume.html#tomopt.volume.volume.Volume" title="tomopt.volume.volume.Volume"><code class="xref py py-class docutils literal notranslate"><span class="pre">Volume</span></code></a>) – Volume that the passive layout will be loaded into</p></li>
 <li><p><strong>block_size</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]]) – if set, will generate blocks of the specified size and random orientation, otherwise will randomly set the size of the blocks</p></li>
@@ -452,19 +450,19 @@ The <a class="reference internal" href="#tomopt.optimisation.data.passives.AbsPa
 </dl>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="tomopt.optimisation.data.passives.RandomBlockPassiveGenerator._abc_impl">
-<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#tomopt.optimisation.data.passives.RandomBlockPassiveGenerator._abc_impl" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc._abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#tomopt.optimisation.data.passives.RandomBlockPassiveGenerator._abc_impl" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.optimisation.data.passives.RandomBlockPassiveGenerator._generate">
-<span class="sig-name descname"><span class="pre">_generate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/data/passives.html#RandomBlockPassiveGenerator._generate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.data.passives.RandomBlockPassiveGenerator._generate" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">_generate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/data/passives.html#RandomBlockPassiveGenerator._generate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.data.passives.RandomBlockPassiveGenerator._generate" title="Permalink to this definition"></a></dt>
 <dd><p>Generates passive layouts containing a (randomly sized) block of random material at a random location surrounded by a random background.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>A function that provides an xy tensor for a given layer when called with its z position, length and width, and size.
 Target: The X0 of the block material</p>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dt class="field-even">Return type</dt>
 <dd class="field-even"><p>RadLengthFunc</p>
 </dd>
 </dl>
@@ -474,13 +472,13 @@ Target: The X0 of the block material</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="tomopt.optimisation.data.passives.VoxelPassiveGenerator">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.data.passives.</span></span><span class="sig-name descname"><span class="pre">VoxelPassiveGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">materials</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/data/passives.html#VoxelPassiveGenerator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.data.passives.VoxelPassiveGenerator" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.data.passives.</span></span><span class="sig-name descname"><span class="pre">VoxelPassiveGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">materials</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/data/passives.html#VoxelPassiveGenerator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.data.passives.VoxelPassiveGenerator" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tomopt.optimisation.data.passives.AbsPassiveGenerator" title="tomopt.optimisation.data.passives.AbsPassiveGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsPassiveGenerator</span></code></a></p>
 <p>Generates new passive layouts where every voxel is of a random material.</p>
 <p>The <a class="reference internal" href="#tomopt.optimisation.data.passives.AbsPassiveGenerator.generate" title="tomopt.optimisation.data.passives.AbsPassiveGenerator.generate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">generate()</span></code></a> method will return only the layout function and no target
 The <a class="reference internal" href="#tomopt.optimisation.data.passives.AbsPassiveGenerator.get_data" title="tomopt.optimisation.data.passives.AbsPassiveGenerator.get_data"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_data()</span></code></a> method will return both the layout function and the target</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>volume</strong> (<a class="reference internal" href="tomopt.volume.html#tomopt.volume.volume.Volume" title="tomopt.volume.volume.Volume"><code class="xref py py-class docutils literal notranslate"><span class="pre">Volume</span></code></a>) – Volume that the passive layout will be loaded into</p></li>
 <li><p><strong>materials</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]]) – list of material names that can be used in the volume, None -&gt; all materials known to TomOpt</p></li>
@@ -489,19 +487,19 @@ The <a class="reference internal" href="#tomopt.optimisation.data.passives.AbsPa
 </dl>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="tomopt.optimisation.data.passives.VoxelPassiveGenerator._abc_impl">
-<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#tomopt.optimisation.data.passives.VoxelPassiveGenerator._abc_impl" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc._abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#tomopt.optimisation.data.passives.VoxelPassiveGenerator._abc_impl" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.optimisation.data.passives.VoxelPassiveGenerator._generate">
-<span class="sig-name descname"><span class="pre">_generate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/data/passives.html#VoxelPassiveGenerator._generate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.data.passives.VoxelPassiveGenerator._generate" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">_generate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/data/passives.html#VoxelPassiveGenerator._generate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.data.passives.VoxelPassiveGenerator._generate" title="Permalink to this definition"></a></dt>
 <dd><p>Generates new passive layouts where ever voxel is of a random material.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>A function that provides an xy tensor for a given layer when called with its z position, length and width, and size.
 Target: None</p>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dt class="field-even">Return type</dt>
 <dd class="field-even"><p>RadLengthFunc</p>
 </dd>
 </dl>

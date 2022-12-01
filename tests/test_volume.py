@@ -1,6 +1,7 @@
 import pytest
 from pytest_mock import mocker  # noqa F401
 import numpy as np
+import matplotlib.pyplot as plt
 
 import torch
 from torch import Tensor, nn
@@ -241,6 +242,21 @@ def test_volume_properties():
     assert volume._n_layer_costs == [4, 4]  # 4 panels per layer
     assert volume.budget_weights.shape == torch.Size([8])
     assert volume.budget_weights.sum() == 0  # Equal budget split at start
+
+
+def test_volume_draw(mocker):  # noqa F811
+    layers = get_panel_layers()
+    volume = Volume(layers=layers)
+    mocker.patch("matplotlib.pyplot.show")
+    mocker.spy(plt, "title")
+    mocker.spy(plt, "figure")
+    volume.draw()
+
+    # Assert plt.title has been called with expected arg
+    plt.title.assert_called_once_with("Volume layers")
+
+    # Assert plt.figure got called
+    assert plt.figure.called
 
 
 def test_volume_methods(mocker):  # noqa F811

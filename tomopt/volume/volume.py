@@ -9,8 +9,9 @@ import torch
 from torch import nn, Tensor
 import torch.nn.functional as F
 
-from .layer import AbsDetectorLayer, AbsLayer, PassiveLayer
+from .layer import AbsDetectorLayer, AbsLayer, PassiveLayer, PanelDetectorLayer
 from .panel import DetectorPanel
+from .heatmap import DetectorHeatMap
 from ..muon import MuonBatch
 from ..core import RadLengthFunc
 
@@ -221,10 +222,15 @@ class Volume(nn.Module):
             cost = torch.zeros((1), device=self.device)
         return cost
 
-    def draw(self, xlim: Tuple[float, float] = (-1, 2), ylim: Tuple[float, float] = (-1, 2), zlim: Tuple[float, float] = (0, 1.2)) -> None:
+    def draw(self, *, xlim: Tuple[float, float], ylim: Tuple[float, float], zlim: Tuple[float, float]) -> None:
         r"""
         Draws the layers/panels pertaining to the volume.
         When using this in a jupyter notebook, use "%matplotlib notebook" to have an interactive plot that you can rotate.
+
+        Arguments:
+            xlim: the x axis range for the three-dimensional plot.
+            ylim: the y axis range for the three-dimensional plot.
+            zlim: the z axis range for the three-dimensional plot.
         """
         ax = plt.figure(figsize=(9, 9)).add_subplot(projection="3d")
         ax.computed_zorder = False
@@ -276,17 +282,25 @@ class Volume(nn.Module):
                 passivearrays.append([rect, col, roundedz, 1])
                 continue
             # if not passive layer...
-            for i, p in layer.yield_zordered_panels():
-                col = "red" if isinstance(p, DetectorPanel) else ("blue" if isinstance(p, PassiveLayer) else "black")
+            if isinstance(layer, PanelDetectorLayer):
+                for i, p in layer.yield_zordered_panels():
+                    if isinstance(p, DetectorHeatMap):
+                        raise TypeError("Drawing not supported yet for DetectorHeatMap panels")
+                    col = "red" if isinstance(p, DetectorPanel) else ("blue" if isinstance(p, PassiveLayer) else "black")
+                    if not isinstance(p.xy, Tensor):
+                        raise ValueError("Panel xy is not a tensor, for some reason")
+                    if not isinstance(p.z, Tensor):
+                        raise ValueError("Panel z is not a tensor, for some reason")
+                    rect = [[
+                        (p.xy.data[0].item() - p.get_scaled_xy_span().data[0] / 2.0, p.xy.data[1].item() - p.get_scaled_xy_span().data[1] / 2.0, p.z.data[0].item()),
+                        (p.xy.data[0].item() + p.get_scaled_xy_span().data[0] / 2.0, p.xy.data[1].item() - p.get_scaled_xy_span().data[1] / 2.0, p.z.data[0].item()),
+                        (p.xy.data[0].item() + p.get_scaled_xy_span().data[0] / 2.0, p.xy.data[1].item() + p.get_scaled_xy_span().data[1] / 2.0, p.z.data[0].item()),
+                        (p.xy.data[0].item() - p.get_scaled_xy_span().data[0] / 2.0, p.xy.data[1].item() + p.get_scaled_xy_span().data[1] / 2.0, p.z.data[0].item())
+                    ]]
 
-                rect = [[
-                    (p.xy.data[0].item() - p.get_scaled_xy_span().data[0] / 2.0, p.xy.data[1].item() - p.get_scaled_xy_span().data[1] / 2.0, p.z.data[0].item()),
-                    (p.xy.data[0].item() + p.get_scaled_xy_span().data[0] / 2.0, p.xy.data[1].item() - p.get_scaled_xy_span().data[1] / 2.0, p.z.data[0].item()),
-                    (p.xy.data[0].item() + p.get_scaled_xy_span().data[0] / 2.0, p.xy.data[1].item() + p.get_scaled_xy_span().data[1] / 2.0, p.z.data[0].item()),
-                    (p.xy.data[0].item() - p.get_scaled_xy_span().data[0] / 2.0, p.xy.data[1].item() + p.get_scaled_xy_span().data[1] / 2.0, p.z.data[0].item())
-                ]]
-
-                activearrays.append([rect, col, p.z.data[0].item(), 0.2])
+                    activearrays.append([rect, col, p.z.data[0].item(), 0.2])
+            else:
+                raise TypeError("Volume.draw does not yet support layers of type", type(layer))
             # fmt: on
 
         allarrays = activearrays + passivearrays
@@ -302,7 +316,7 @@ class Volume(nn.Module):
         ax.set_zlim(zlim)
         plt.title("Volume layers")
         red_patch = mpatches.Patch(color="red", label="Active Detector Layers")
-        pink_patch = mpatches.Patch(color="pink", label="Passive Layers")
+        pink_patch = mpatches.Patch(color="blue", label="Passive Layers")
         ax.legend(handles=[red_patch, pink_patch])
         plt.show()
 
