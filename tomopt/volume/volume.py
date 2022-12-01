@@ -1,6 +1,12 @@
-from tomopt.volume.layer import AbsLayer
+from tomopt.volume.layer import AbsLayer, PassiveLayer
+from tomopt.volume.panel import DetectorPanel
 from typing import Tuple, List, Optional
 import numpy as np
+
+from matplotlib import pyplot as plt
+import matplotlib.patches as mpatches
+from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.axes as mlibaxes
 
 import torch
 from torch import nn, Tensor
@@ -217,6 +223,59 @@ class Volume(nn.Module):
             cost = torch.zeros((1), device=self.device)
         return cost
 
+    def draw(self) -> None:
+        r"""
+        Draws the layers/panels pertaining to the volume.
+        """
+        x, y, z = np.indices((10,10,10))
+        # grid inflated by a factor of 10 to allow drawing thickness for passive layers
+
+        ax = plt.figure(figsize=(9, 9)).add_subplot(projection='3d')
+        voxelarrays=[]
+        activearrays=[]
+        
+        for layer in self.layers:
+            if isinstance(layer, PassiveLayer):
+                lw, thez, size = layer.get_lw_z_size()
+                roundedz=np.round(thez.item(),2)
+                layercube = (x < 10*lw[0].item()) & (y < 10*lw[1].item()) & (z < 10*roundedz) & (z > 10*(roundedz-size-0.001))
+                col = 'red' if isinstance(layer, DetectorPanel) else( 'pink' if isinstance(layer, PassiveLayer) else 'black')
+                voxelarrays.append([layercube, col, thez.item()])
+                continue
+
+            # if not passive layer...
+            for i, p in layer.yield_zordered_panels():
+                col = 'red' if isinstance(p, DetectorPanel) else( 'blue' if isinstance(p, PassiveLayer) else 'black')
+                activearrays.append([p.xy.data[0].item(), p.xy.data[1].item(), p.z.data[0].item(), col])
+
+                
+        voxelarray=False
+        for stuff in voxelarrays:
+            voxelarray = voxelarray | stuff[0]
+        colors = np.empty(voxelarray.shape, dtype=object)
+        for stuff in voxelarrays:
+            colors[stuff[0]] = stuff[1]
+
+        for stuff in activearrays:
+            (xx, yy) = np.meshgrid(np.arange(0, 10, 0.1), np.arange(0, 10, 0.1))
+            zz = np.ones(xx.shape)
+            zz=zz*10*stuff[2]
+            ax.plot_surface(xx, yy, zz, color=stuff[3], alpha=0.5, zorder=1)
+
+        ax.voxels(voxelarray, facecolors=colors, edgecolor='k', zorder=20)
+        plt.ylim((0,10))
+        plt.xlim((0,10))
+        ax.set_zlim(0,10)
+        plt.xticks(np.arange(0,10,1),np.round(np.arange(0, 1, 0.1),1))
+        plt.yticks(np.arange(0,10,1),np.round(np.arange(0, 1, 0.1),1))
+        ax.set_zticks(np.arange(0, 10, 1)) # this and next line: equivalent to the non-existing zticks()
+        ax.set_zticklabels(np.round(np.arange(0, 1, 0.1),1))
+        plt.title("Volume layers")
+        red_patch = mpatches.Patch(color='red', label='Active Detector Layers')
+        pink_patch = mpatches.Patch(color='pink', label='Passive Layers')
+        ax.legend(handles=[red_patch,pink_patch])
+        plt.show()
+        
     def _configure_budget(self) -> None:
         r"""
         Creates a list of learnable parameters, which acts as the fractional assignment of the total budget to various parts of the detectors.

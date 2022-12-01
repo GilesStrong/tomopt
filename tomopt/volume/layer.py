@@ -57,6 +57,8 @@ class AbsLayer(nn.Module, metaclass=ABCMeta):
 
         pass
 
+    def get_lw_z_size(self):
+        return self.lw, self.z, self.size
 
 class PassiveLayer(AbsLayer):
     r"""
