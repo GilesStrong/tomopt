@@ -1,12 +1,16 @@
-from tomopt.volume.layer import AbsLayer
-from typing import Tuple, List, Optional
+from typing import Tuple, List, Optional, Any
 import numpy as np
+
+from matplotlib import pyplot as plt
+import matplotlib.patches as mpatches
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 import torch
 from torch import nn, Tensor
 import torch.nn.functional as F
 
-from .layer import AbsDetectorLayer, PassiveLayer
+from .layer import AbsDetectorLayer, AbsLayer, PassiveLayer
+from .panel import DetectorPanel
 from ..muon import MuonBatch
 from ..core import RadLengthFunc
 
@@ -216,6 +220,91 @@ class Volume(nn.Module):
         if cost is None:
             cost = torch.zeros((1), device=self.device)
         return cost
+
+    def draw(self, xlim: Tuple[float, float] = (-1, 2), ylim: Tuple[float, float] = (-1, 2), zlim: Tuple[float, float] = (0, 1.2)) -> None:
+        r"""
+        Draws the layers/panels pertaining to the volume.
+        When using this in a jupyter notebook, use "%matplotlib notebook" to have an interactive plot that you can rotate.
+        """
+        ax = plt.figure(figsize=(9, 9)).add_subplot(projection="3d")
+        ax.computed_zorder = False
+        # TODO: find a way to fix transparency overlap in order to have passive layers in front of bottom active layers.
+        passivearrays: List[Any] = []
+        activearrays: List[Any] = []
+
+        for layer in self.layers:
+            # fmt: off
+            if isinstance(layer, PassiveLayer):
+                lw, thez, size = layer.get_lw_z_size()
+                roundedz = np.round(thez.item(), 2)
+                # TODO: split these to allow for different alpha values (want: more transparent in front, more opaque in the back)
+                rect = [
+                    [
+                        (0, 0, roundedz - size),
+                        (0 + lw[0].item(), 0, roundedz - size),
+                        (0 + lw[0].item(), 0 + lw[1].item(), roundedz - size),
+                        (0, 0 + lw[1].item(), roundedz - size)
+                    ],
+                    [
+                        (0, 0, roundedz - size),
+                        (0 + lw[0].item(), 0, roundedz - size),
+                        (0 + lw[0].item(), 0, roundedz),
+                        (0, 0, roundedz)
+                    ],
+                    [
+                        (0, 0 + lw[1].item(), roundedz - size),
+                        (0 + lw[0].item(), 0 + lw[1].item(), roundedz - size),
+                        (0 + lw[0].item(), 0 + lw[1].item(), roundedz),
+                        (0, 0 + lw[1].item(), roundedz)
+                    ],
+                    [
+                        (0, 0, roundedz - size),
+                        (0, 0 + lw[1].item(), roundedz - size),
+                        (0, 0 + lw[1].item(), roundedz),
+                        (0, 0, roundedz)
+                    ],
+                    [
+                        (0 + lw[0].item(), 0, roundedz - size),
+                        (0 + lw[0].item(), 0 + lw[1].item(), roundedz - size),
+                        (0 + lw[0].item(), 0 + lw[1].item(), roundedz),
+                        (0 + lw[0].item(), 0, roundedz)
+                    ],
+                ]
+
+                col = "red" if isinstance(layer, DetectorPanel) else ("blue" if isinstance(layer, PassiveLayer) else "black")
+
+                passivearrays.append([rect, col, roundedz, 1])
+                continue
+            # if not passive layer...
+            for i, p in layer.yield_zordered_panels():
+                col = "red" if isinstance(p, DetectorPanel) else ("blue" if isinstance(p, PassiveLayer) else "black")
+
+                rect = [[
+                    (p.xy.data[0].item() - p.get_scaled_xy_span().data[0] / 2.0, p.xy.data[1].item() - p.get_scaled_xy_span().data[1] / 2.0, p.z.data[0].item()),
+                    (p.xy.data[0].item() + p.get_scaled_xy_span().data[0] / 2.0, p.xy.data[1].item() - p.get_scaled_xy_span().data[1] / 2.0, p.z.data[0].item()),
+                    (p.xy.data[0].item() + p.get_scaled_xy_span().data[0] / 2.0, p.xy.data[1].item() + p.get_scaled_xy_span().data[1] / 2.0, p.z.data[0].item()),
+                    (p.xy.data[0].item() - p.get_scaled_xy_span().data[0] / 2.0, p.xy.data[1].item() + p.get_scaled_xy_span().data[1] / 2.0, p.z.data[0].item())
+                ]]
+
+                activearrays.append([rect, col, p.z.data[0].item(), 0.2])
+            # fmt: on
+
+        allarrays = activearrays + passivearrays
+        allarrays.sort(key=lambda x: x[2])
+
+        # fmt: off
+        for voxelandcolour in allarrays:
+            ax.add_collection3d(Poly3DCollection(voxelandcolour[0], facecolors=voxelandcolour[1], linewidths=1, edgecolors=voxelandcolour[1], alpha=voxelandcolour[3],
+                                                 zorder=voxelandcolour[2], sort_zpos=voxelandcolour[2]))
+        # fmt: on
+        plt.ylim(xlim)
+        plt.xlim(ylim)
+        ax.set_zlim(zlim)
+        plt.title("Volume layers")
+        red_patch = mpatches.Patch(color="red", label="Active Detector Layers")
+        pink_patch = mpatches.Patch(color="pink", label="Passive Layers")
+        ax.legend(handles=[red_patch, pink_patch])
+        plt.show()
 
     def _configure_budget(self) -> None:
         r"""

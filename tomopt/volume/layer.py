@@ -57,6 +57,9 @@ class AbsLayer(nn.Module, metaclass=ABCMeta):
 
         pass
 
+    def get_lw_z_size(self) -> Tuple[Tensor, Tensor, float]:
+        return self.lw, self.z, self.size
+
 
 class PassiveLayer(AbsLayer):
     r"""
