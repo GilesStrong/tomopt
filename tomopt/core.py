@@ -57,5 +57,57 @@ DENSITIES = {  # https://pdg.lbl.gov/2022/AtomicNuclearProperties/index.html
     "soft tissue": 1000.0,
 }
 
+LADLE_MATERIALS = {  # https://github.com/GilesStrong/mode_muon_tomography/files/9094231/ladle.txt
+    # densities are in g/cm3
+    # fraction masses sum up to 1 (not 100)
+    "carbonRefractory": {
+        "density": 3.50,
+        "components": {
+            "elC": 1.0,
+        },
+    },
+    "liquidSteel": {
+        "density": 6.00,
+        "components": {
+            "elC": 0.001,
+            "elSi": 0.007,
+            "elCr": 0.18,
+            "elMn": 0.01,
+            "elFe": 0.712,
+            "elNi": 0.09,
+        },
+    },
+    "steel": {
+        "density": 7.85,
+        "components": {
+            "elFe": 0.98,
+            "elC": 0.001,
+            "elMn": 0.007,
+            "elSi": 0.002,
+            "elS": 0.001,
+            "elP": 0.001,
+            "elCu": 0.001,
+            "elSn": 0.001,
+            "elNi": 0.001,
+            "elMo": 0.001,
+            "elCr": 0.001,
+            "elV": 0.001,
+            "elAl": 0.001,
+            "elZn": 0.001,
+        },
+    },
+    "slag": {
+        "density": 2.00,
+        "components": {
+            "elC": 0.001,
+            "elSi": 0.007,
+            "elCr": 0.18,
+            "elMn": 0.01,
+            "elFe": 0.712,
+            "elNi": 0.09,
+        },
+    },
+}
+
 PartialOpt = Callable[[Iterator[nn.Parameter]], torch.optim.Optimizer]
 RadLengthFunc = Callable[[NamedArg(Tensor, "z"), NamedArg(Tensor, "lw"), NamedArg(float, "size")], Tensor]  # noqa F821
