@@ -12,6 +12,16 @@ __all__ = ["LadleFurnacePassiveGenerator"]
 
 class LadleFurnacePassiveGenerator(AbsPassiveGenerator):
     r"""
+    Generator class for a furnace.
+
+    Arguments:
+        volume: an instance of the Volume class containing a passive volume.
+        x0_furnace: radiation length of the material the furnace is built out of (defaults to iron).
+        fill_materials: list of names of the materials that constitute the filling (defaults to: ["aluminium"]). Radiation lengths are then queried from our database.
+        slag_materials: list of names of the materials that constitute the slag (defaults to: ["silicon", "graphite", "beryllium"]). Radiation lengths are then queried from our database.
+
+    Numerical data are based on GEANT4 model of the passive volume from: https://github.com/GilesStrong/mode_muon_tomography/files/9094231/ladle.txt
+
     Research tested only: no unit tests
     """
 
