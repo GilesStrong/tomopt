@@ -25,23 +25,29 @@ def plot_pred_true_x0(pred: np.ndarray, true: np.ndarray, savename: Optional[str
         pred_cbar_ax = fig.add_axes([0.45, 0.25, 0.03, 0.5])
         true_cbar_ax = fig.add_axes([0.90, 0.25, 0.03, 0.5])
 
-        for i in range(len(pred)):
-            idx = len(pred) - 1 - i
+        for plot_idx in range(len(pred)):
+            layer_idx = len(pred) - 1 - plot_idx
             sns.heatmap(
-                pred[idx],
-                ax=axs[i][0],
+                pred[layer_idx],
+                ax=axs[plot_idx][0],
                 cmap="viridis",
                 square=True,
-                cbar=(i == 0),
+                cbar=(plot_idx == 0),
                 vmin=np.nanmin(pred),
                 vmax=np.nanmax(pred),
-                cbar_ax=pred_cbar_ax if i == 0 else None,
+                cbar_ax=pred_cbar_ax if plot_idx == 0 else None,
             )
             sns.heatmap(
-                true[idx], ax=axs[i][1], cmap="viridis", square=True, cbar=(i == 0), vmin=true.min(), vmax=true.max(), cbar_ax=true_cbar_ax if i == 0 else None
+                true[layer_idx],
+                ax=axs[plot_idx][1],
+                cmap="viridis",
+                square=True,
+                cbar=(plot_idx == 0),
+                vmin=true.min(),
+                vmax=true.max(),
+                cbar_ax=true_cbar_ax if plot_idx == 0 else None,
             )
-
-            axs[i][0].set_ylabel(f"AbsLayer {idx}", fontsize=LBL_SZ, color=LBL_COL)
+            axs[plot_idx][0].set_ylabel(f"AbsLayer {layer_idx}", fontsize=LBL_SZ, color=LBL_COL)
         axs[-1][0].set_xlabel("Prediction", fontsize=LBL_SZ, color=LBL_COL)
         axs[-1][1].set_xlabel("True", fontsize=LBL_SZ, color=LBL_COL)
         if savename is not None:
