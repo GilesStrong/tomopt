@@ -71,8 +71,8 @@ class MetricLogger(Callback):
     h_mid = 8
     w_mid = h_mid * 16 / 9
 
-    def __init__(self, gif_filename: Optional[str] = "optimisation_history.gif", show_plots: bool = IN_NOTEBOOK):
-        self.gif_filename, self.show_plots = gif_filename, show_plots
+    def __init__(self, gif_filename: Optional[str] = "optimisation_history.gif", gif_length: float = 10.0, show_plots: bool = IN_NOTEBOOK):
+        self.gif_filename, self.gif_length, self.show_plots = gif_filename, gif_length, show_plots
 
     def _reset(self) -> None:
         r"""
@@ -328,7 +328,9 @@ class MetricLogger(Callback):
         Combines plot snapshots into a gif
         """
 
-        with imageio.get_writer(self.wrapper.fit_params.cb_savepath / self.gif_filename, mode="I") as writer:
+        with imageio.get_writer(
+            self.wrapper.fit_params.cb_savepath / self.gif_filename, mode="I", duration=self.gif_length / len(self._buffer_files)
+        ) as writer:
             for filename in self._buffer_files:
                 image = imageio.imread(filename)
                 writer.append_data(image)
