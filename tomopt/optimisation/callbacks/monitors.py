@@ -19,7 +19,7 @@ import torch
 
 from .callback import Callback
 from .eval_metric import EvalMetric
-from ...volume import PanelDetectorLayer
+from ...volume import PanelDetectorLayer, SigmoidDetectorPanel
 
 r"""
 Provides callbacks that produce live feedback of fitting, and record losses and metrics.
@@ -58,6 +58,7 @@ class MetricLogger(Callback):
     Arguments:
         gif_filename: optional savename for recording a gif of the optimisation process (None -> no gif)
             The savename will be appended to the callback savepath
+        gif_length: If saving gifs, controls the total length in seconds
         show_plots: whether to provide live plots during optimisation in notebooks
     """
 
@@ -346,6 +347,7 @@ class PanelMetricLogger(MetricLogger):
     Arguments:
         gif_filename: optional savename for recording a gif of the optimisation process (None -> no gif)
             The savename will be appended to the callback savepath
+        gif_length: If saving gifs, controls the total length in seconds
         show_plots: whether to provide live plots during optimisation in notebooks
     """
 
@@ -395,7 +397,24 @@ class PanelMetricLogger(MetricLogger):
                         )
                     )  # xy
 
+                if self.uses_sigmoid_panels:
+                    self.panel_smoothness.clear()
+                    with torch.no_grad():
+                        panel = det.panels[0]
+                        width = panel.get_scaled_xy_span()[0].cpu().item()
+                        centre = panel.xy[0].cpu().item()
+                        x = torch.linspace(-width, width, 50)[:, None]
+                        y = panel.sig_model(x + centre)[:, 0]
+                        self.panel_smoothness.plot(2 * x.cpu().numpy() / width, y.cpu().numpy())
+
             self._set_axes_labels()
+
+    def _reset(self) -> None:
+        if isinstance(self.wrapper.volume.get_detectors()[0], PanelDetectorLayer):
+            self.uses_sigmoid_panels = isinstance(self.wrapper.volume.get_detectors()[0].panels[0], SigmoidDetectorPanel)
+        else:
+            self.uses_sigmoid_panels = False
+        super()._reset()
 
     def _build_grid_spec(self) -> GridSpec:
         r"""
@@ -404,7 +423,7 @@ class PanelMetricLogger(MetricLogger):
         """
 
         self.n_dets = len(self.wrapper.get_detectors())
-        return self.fig.add_gridspec(5 + (self.main_metric_idx is None), 3)
+        return self.fig.add_gridspec(5 + (self.main_metric_idx is None), 3 + self.uses_sigmoid_panels)
 
     def _set_axes_labels(self) -> None:
         r"""
@@ -439,6 +458,10 @@ class PanelMetricLogger(MetricLogger):
             ax[2].set_ylim(xy_min.min() - margin, xy_max.max() + margin)
             ax[2].set_aspect("equal", "box")
 
+        if self.uses_sigmoid_panels:
+            self.panel_smoothness.set_xlim((-2, 2))
+            self.panel_smoothness.set_xlabel("Panel model (arb. pos.)", fontsize=0.8 * self.lbl_sz, color=self.lbl_col)
+
     def _prep_plots(self) -> None:
         r"""
         Creates the plots for a new optimisation
@@ -449,4 +472,6 @@ class PanelMetricLogger(MetricLogger):
             with sns.axes_style(**self.style):
                 self.above_det = [self.fig.add_subplot(self.grid_spec[-2:-1, i : i + 1]) for i in range(3)]
                 self.below_det = [self.fig.add_subplot(self.grid_spec[-1:, i : i + 1]) for i in range(3)]
+                if self.uses_sigmoid_panels:
+                    self.panel_smoothness = self.fig.add_subplot(self.grid_spec[-2:-1, -1:])
                 self._set_axes_labels()
