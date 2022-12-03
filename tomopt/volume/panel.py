@@ -13,7 +13,7 @@ Provides implementations of class simulating panel-style detectors with learnabl
 """
 
 
-__all__ = ["DetectorPanel"]
+__all__ = ["DetectorPanel", "SigmoidDetectorPanel"]
 
 
 class DetectorPanel(nn.Module):
