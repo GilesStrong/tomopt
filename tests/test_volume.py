@@ -7,7 +7,7 @@ import torch
 from torch import Tensor, nn
 import torch.nn.functional as F
 
-from tomopt.volume import PassiveLayer, Volume, PanelDetectorLayer, DetectorPanel
+from tomopt.volume import PassiveLayer, Volume, PanelDetectorLayer, DetectorPanel, SigmoidDetectorPanel
 from tomopt.optimisation import MuonResampler
 from tomopt.muon import MuonBatch, MuonGenerator2016
 from tomopt.core import X0
@@ -43,6 +43,38 @@ def get_panel_layers(init_res: float = 1e4, init_eff: float = 0.5, n_panels: int
             size=2 * SZ,
             panels=[
                 DetectorPanel(res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / n_panels)], init_xy_span=[1.0, 1.0])
+                for i in range(n_panels)
+            ],
+        )
+    )
+
+    return nn.ModuleList(layers)
+
+
+def get_sigmoid_panel_layers(smooth=Tensor([1.0]), init_res: float = 1e4, init_eff: float = 0.5, n_panels: int = 4) -> nn.ModuleList:
+    layers = []
+    layers.append(
+        PanelDetectorLayer(
+            pos="above",
+            lw=LW,
+            z=1,
+            size=2 * SZ,
+            panels=[
+                SigmoidDetectorPanel(smooth=smooth, res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / n_panels)], init_xy_span=[1.0, 1.0])
+                for i in range(n_panels)
+            ],
+        )
+    )
+    for z in [0.8, 0.7, 0.6, 0.5, 0.4, 0.3]:
+        layers.append(PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=z, size=SZ))
+    layers.append(
+        PanelDetectorLayer(
+            pos="below",
+            lw=LW,
+            z=0.2,
+            size=2 * SZ,
+            panels=[
+                SigmoidDetectorPanel(smooth=smooth, res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / n_panels)], init_xy_span=[1.0, 1.0])
                 for i in range(n_panels)
             ],
         )
@@ -332,8 +364,15 @@ def test_volume_methods(mocker):  # noqa F811
 
 
 @pytest.mark.flaky(max_runs=3, min_passes=2)
-def test_volume_forward_panel():
-    layers = get_panel_layers(n_panels=4)
+@pytest.mark.parametrize("panel", ["gauss", "sigmoid"])
+def test_volume_forward_panel(panel):
+    if panel == "gauss":
+        layers = get_panel_layers(n_panels=4)
+    elif panel == "sigmoid":
+        layers = get_sigmoid_panel_layers(n_panels=4)
+    else:
+        raise ValueError(f"Panel model {panel} not recognised")
+
     volume = Volume(layers=layers)
     gen = MuonGenerator2016.from_volume(volume)
     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
