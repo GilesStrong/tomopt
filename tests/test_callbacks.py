@@ -30,6 +30,7 @@ from tomopt.optimisation.callbacks import (
     VolumeTargetPredHandler,
     Save2HDF5PredHandler,
     WarmupCallback,
+    # PostWarmupCallback,
 )
 from tomopt.optimisation.loss import VoxelX0Loss
 from tomopt.optimisation.wrapper.volume_wrapper import AbsVolumeWrapper, FitParams, PanelVolumeWrapper
@@ -350,6 +351,7 @@ def test_metric_logger(detector, mocker):  # noqa F811
 
 def test_scatter_record():
     sr = ScatterRecord()
+    assert check_callback_base(sr)
     vw = MockWrapper()
     vw.volume = MockVolume()
     vw.volume.h = Tensor([1])
@@ -382,6 +384,7 @@ def test_scatter_record():
 
 def test_hit_record():
     hr = HitRecord()
+    assert check_callback_base(hr)
     vw = MockWrapper()
     vw.volume = MockVolume()
     vw.volume.h = Tensor([1])
@@ -410,6 +413,7 @@ def test_hit_record():
 def test_warmup_callback():
     vw = MockWrapper()
     wc1 = WarmupCallback(1)
+    assert check_callback_base(wc1)
     wc2 = WarmupCallback(2)
     vw.fit_params = FitParams(warmup_cbs=[wc1, wc2], state="train")
     wc1.set_wrapper(vw)
@@ -463,6 +467,9 @@ def test_warmup_callback():
     assert not vw.fit_params.skip_opt_step
 
 
+# def test_post_warmup_callback():
+
+
 def test_cost_coef_warmup():
     class VW(AbsVolumeWrapper):
         def _build_opt(self, **kwargs) -> None:
@@ -474,6 +481,7 @@ def test_cost_coef_warmup():
     vw = VW(volume=vol, partial_opts={}, loss_func=loss, partial_scatter_inferrer=None, partial_volume_inferrer=None)
     vw.fit_params = FitParams(pred=10)
     ccw = CostCoefWarmup(5)
+    assert check_callback_base(ccw)
     ccw.set_wrapper(vw)
     vw.fit_params.warmup_cbs = [ccw]
 
@@ -521,6 +529,7 @@ def test_panel_opt_config():
     z_pos_mult = -3
     xy_span_mult = 2
     poc = PanelOptConfig(n_warmup=2, xy_pos_rate=xy_pos_rate, z_pos_rate=z_pos_rate, xy_span_rate=xy_span_rate)
+    assert check_callback_base(poc)
     poc.set_wrapper(vw)
     vw.fit_params.warmup_cbs = [poc]
 
@@ -581,6 +590,7 @@ def test_muon_resampler_callback():
     vw.mu_generator = gen
 
     mr = MuonResampler()
+    assert check_callback_base(mr)
     mr.set_wrapper(vw)
     mr.on_mu_batch_begin()
     assert (vw.fit_params.mu.z == volume.h).all()
