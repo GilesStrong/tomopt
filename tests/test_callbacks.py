@@ -31,10 +31,11 @@ from tomopt.optimisation.callbacks import (
     Save2HDF5PredHandler,
     WarmupCallback,
     PostWarmupCallback,
+    SigmoidPanelSmoothnessSchedule,
 )
 from tomopt.optimisation.loss import VoxelX0Loss
 from tomopt.optimisation.wrapper.volume_wrapper import AbsVolumeWrapper, FitParams, PanelVolumeWrapper
-from tomopt.volume import PanelDetectorLayer, DetectorPanel, DetectorHeatMap
+from tomopt.volume import PanelDetectorLayer, DetectorPanel, DetectorHeatMap, SigmoidDetectorPanel
 from tomopt.muon import MuonBatch, MuonGenerator2016
 
 LW = Tensor([1, 1])
@@ -739,3 +740,33 @@ def test_save_2_hdf5_pred_handler():
 
     finally:
         out_path.unlink()
+
+
+@pytest.mark.parametrize("n_warmups", [0, 1, 2])
+def test_sigmoid_panel_smoothness_schedule(n_warmups):
+    cb = SigmoidPanelSmoothnessSchedule((1, 0.01))
+    assert check_callback_base(cb)
+
+    vw = MockWrapper()
+    wcbs = [WarmupCallback(1) for _ in range(n_warmups)]
+    cbs = wcbs + [cb]
+    vw.fit_params = FitParams(state="train", warmup_cbs=wcbs, cbs=cbs, n_epochs=3 + n_warmups)
+    cb.set_wrapper(vw)
+    vw.volume = MockVolume()
+    panel = SigmoidDetectorPanel(smooth=Tensor([0.5]), res=1e4, eff=0.9, init_xy_span=(0.5, 0.5), init_xyz=(0.5, 0.5, 1.0))
+    det = PanelDetectorLayer(pos="above", lw=LW, z=Z, size=SZ, panels=[panel])
+    vw.volume.get_detectors = lambda: [det]
+
+    for c in vw.fit_params.cbs:
+        c.set_wrapper(vw)
+    assert panel.smooth == 0.5
+    for c in vw.fit_params.cbs:
+        c.on_train_begin()
+    assert (panel.smooth - Tensor([1.0])).abs() < 1e-5
+    for i, smooth in enumerate(Tensor([1.0 for _ in range(n_warmups)] + [1.0, 0.1, 0.01])):
+        vw.fit_params.epoch = i + 1
+        for c in vw.fit_params.cbs:
+            c.on_epoch_begin()
+        assert (panel.smooth - smooth).abs() < 1e-5
+        for c in vw.fit_params.cbs:
+            c.on_epoch_end()
