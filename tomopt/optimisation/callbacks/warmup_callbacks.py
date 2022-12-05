@@ -124,7 +124,7 @@ class CostCoefWarmup(WarmupCallback):
 
 class PanelOptConfig(WarmupCallback):
     r"""
-    Allows the user to specify the desired update steps for :class:`~tomopt.volume.layer.PanelDetectorLayer`s in physical units.
+    Allows the user to specify the desired update steps for :class:`~tomopt.volume.layer.PanelDetectorLayer` s in physical units.
     Over the course of several warm-up epochs the gradients on the parameters are monitored, after which suitable learning rates for the optimisation are set.
     During the warm-up, the detectors will not be updated as optimiser learning rates will be set to zero.
 

@@ -39,7 +39,7 @@ class SigmoidPanelSmoothnessSchedule(PostWarmupCallback):
 
     def on_train_begin(self) -> None:
         r"""
-        Sets all :class:`~tomopt.volume.panel.SigmoidDetectorPanel`s to their initial smooth values.
+        Sets all :class:`~tomopt.volume.panel.SigmoidDetectorPanel` s to their initial smooth values.
         """
 
         super().on_train_begin()
@@ -47,7 +47,7 @@ class SigmoidPanelSmoothnessSchedule(PostWarmupCallback):
 
     def _set_smooth(self, smooth: Tensor) -> None:
         r"""
-        Sets the smooth values for all :class:`~tomopt.volume.panel.SigmoidDetectorPanel`s in the detector.
+        Sets the smooth values for all :class:`~tomopt.volume.panel.SigmoidDetectorPanel  in the detector.
 
         Arguments:
             smooth: smooth values for every :class:`~tomopt.volume.panel.SigmoidDetectorPanel` in the volume.
@@ -61,7 +61,7 @@ class SigmoidPanelSmoothnessSchedule(PostWarmupCallback):
 
     def on_epoch_begin(self) -> None:
         r"""
-        At the start of each training epoch, will anneal the :class:`~tomopt.volume.panel.SigmoidDetectorPanel`s' smooth attributes, if the callback is active.
+        At the start of each training epoch, will anneal the :class:`~tomopt.volume.panel.SigmoidDetectorPanel` s' smooth attributes, if the callback is active.
         """
 
         super().on_epoch_begin()

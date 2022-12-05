@@ -37,11 +37,11 @@ class Volume(nn.Module):
     The volume is expected to have its low-left-front (zxy) corner located at (0,0,0) metres.
 
     .. important::
-        Currently this class expects that all :class:`~tomopt.volume.layer.PassiveLayer`s form a single contiguous block,
+        Currently this class expects that all :class:`~tomopt.volume.layer.PassiveLayer` s form a single contiguous block,
         i.e. it does not currently support sparse, or multiple, passive volumes.
 
     Arguments:
-        layers: `torch.nn.ModuleList` of instantiated :class:`~tomopt.volume.layer.AbsLayer`s, ordered in decreasing z position.
+        layers: `torch.nn.ModuleList` of instantiated :class:`~tomopt.volume.layer.AbsLayer` s, ordered in decreasing z position.
         budget: optional budget of the detector in currency units.
             Supplying a value for the optional budget, here, will prepare the volume to learn budget assignments to the detectors,
             and configure the detectors for the budget.
@@ -101,7 +101,7 @@ class Volume(nn.Module):
     def get_detectors(self) -> List[AbsDetectorLayer]:
         r"""
         Returns:
-            A list of all :class:`~tomopt.volume.layer.AbsDetectorLayer`s in the volume, in the order of `layers` (normally decreasing z position)
+            A list of all :class:`~tomopt.volume.layer.AbsDetectorLayer` s in the volume, in the order of `layers` (normally decreasing z position)
         """
 
         return [l for l in self.layers if isinstance(l, AbsDetectorLayer)]
@@ -109,7 +109,7 @@ class Volume(nn.Module):
     def get_passives(self) -> List[PassiveLayer]:
         r"""
         Returns:
-            A list of all :class:`~tomopt.volume.layer.PassiveLayer`s in the volume, in the order of `layers` (normally decreasing z position)
+            A list of all :class:`~tomopt.volume.layer.PassiveLayer` s in the volume, in the order of `layers` (normally decreasing z position)
         """
 
         return [l for l in self.layers if isinstance(l, PassiveLayer)]
@@ -350,7 +350,7 @@ class Volume(nn.Module):
 
     def _check_passives(self) -> None:
         r"""
-        Ensures that all :class:`~tomopt.volume.layer.PassiveLayer`s have the same sizes
+        Ensures that all :class:`~tomopt.volume.layer.PassiveLayer` s have the same sizes
         """
 
         lw, sz = None, None

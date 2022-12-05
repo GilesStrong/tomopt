@@ -6,7 +6,7 @@
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
@@ -14,6 +14,8 @@
   
 
   
+  
+    <link rel="shortcut icon" href="_static/tomopt_logo.png"/>
   
   
   
@@ -239,9 +241,9 @@
              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
               
   <section id="tomopt-package">
-<h1>tomopt package<a class="headerlink" href="#tomopt-package" title="Permalink to this heading"></a></h1>
+<h1>tomopt package<a class="headerlink" href="#tomopt-package" title="Permalink to this heading">¶</a></h1>
 <section id="subpackages">
-<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this heading"></a></h2>
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="tomopt.benchmarks.html">tomopt.benchmarks package</a></li>
@@ -254,28 +256,28 @@
 </div>
 </section>
 <section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
 </section>
 <section id="module-tomopt.core">
-<span id="tomopt-core-module"></span><h2>tomopt.core module<a class="headerlink" href="#module-tomopt.core" title="Permalink to this heading"></a></h2>
+<span id="tomopt-core-module"></span><h2>tomopt.core module<a class="headerlink" href="#module-tomopt.core" title="Permalink to this heading">¶</a></h2>
 </section>
 <section id="module-tomopt.utils">
-<span id="tomopt-utils-module"></span><h2>tomopt.utils module<a class="headerlink" href="#module-tomopt.utils" title="Permalink to this heading"></a></h2>
+<span id="tomopt-utils-module"></span><h2>tomopt.utils module<a class="headerlink" href="#module-tomopt.utils" title="Permalink to this heading">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="tomopt.utils.class_to_x0preds">
-<span class="sig-prename descclassname"><span class="pre">tomopt.utils.</span></span><span class="sig-name descname"><span class="pre">class_to_x0preds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id2x0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/utils.html#class_to_x0preds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.utils.class_to_x0preds" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">tomopt.utils.</span></span><span class="sig-name descname"><span class="pre">class_to_x0preds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id2x0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/utils.html#class_to_x0preds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.utils.class_to_x0preds" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts array of classes to X0 predictions using the map defined in id2x0</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>array</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – array of integer class IDs</p></li>
 <li><p><strong>id2x0</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – map of class IDs to X0 float values</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
 </dd>
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>New array of X0 values</p>
 </dd>
 </dl>
@@ -283,11 +285,11 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="tomopt.utils.jacobian">
-<span class="sig-prename descclassname"><span class="pre">tomopt.utils.</span></span><span class="sig-name descname"><span class="pre">jacobian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">create_graph</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_unused</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/utils.html#jacobian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.utils.jacobian" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">tomopt.utils.</span></span><span class="sig-name descname"><span class="pre">jacobian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">create_graph</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_unused</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/utils.html#jacobian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.utils.jacobian" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the Jacobian (dy/dx) of y with respect to variables x. x and y can have multiple elements.
 If y has multiple elements then computation is vectorised via vmap.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>y</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – tensor to be differentiated</p></li>
 <li><p><strong>x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – dependent variables</p></li>
@@ -298,10 +300,10 @@ Default: False.</p></li>
 used when computing outputs (and therefore their grad is always</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
 </dd>
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>dy/dx tensor of shape y.shape+x.shape</p>
 </dd>
 </dl>
@@ -309,11 +311,11 @@ used when computing outputs (and therefore their grad is always</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="tomopt.utils.x0_from_mixture">
-<span class="sig-prename descclassname"><span class="pre">tomopt.utils.</span></span><span class="sig-name descname"><span class="pre">x0_from_mixture</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x0s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">densities</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_fracs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume_fracs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/utils.html#x0_from_mixture"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.utils.x0_from_mixture" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">tomopt.utils.</span></span><span class="sig-name descname"><span class="pre">x0_from_mixture</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x0s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">densities</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_fracs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume_fracs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/utils.html#x0_from_mixture"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.utils.x0_from_mixture" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the X0 of a mixture of (non-chemically bonded) materials,
 Based on <a class="reference external" href="https://cds.cern.ch/record/1279627/files/PH-EP-Tech-Note-2010-013.pdf">https://cds.cern.ch/record/1279627/files/PH-EP-Tech-Note-2010-013.pdf</a></p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x0s</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]]) – X0 values of the materials in the mixture in metres</p></li>
 <li><p><strong>densities</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]]) – densities of the materials in the mixture kg/m^3</p></li>
@@ -321,10 +323,10 @@ Based on <a class="reference external" href="https://cds.cern.ch/record/1279627/
 <li><p><strong>volume_fracs</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>], <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]) – the relative amounts of each material by volume</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The X0 of the defined mixture in metres, “density”: The density in kg/m^3 of the defined mixture}</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>{“X0”</p>
 </dd>
 </dl>
@@ -332,7 +334,7 @@ Based on <a class="reference external" href="https://cds.cern.ch/record/1279627/
 
 <dl class="py function">
 <dt class="sig sig-object py" id="tomopt.utils.x0targs_to_classtargs">
-<span class="sig-prename descclassname"><span class="pre">tomopt.utils.</span></span><span class="sig-name descname"><span class="pre">x0targs_to_classtargs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x02id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/utils.html#x0targs_to_classtargs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.utils.x0targs_to_classtargs" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">tomopt.utils.</span></span><span class="sig-name descname"><span class="pre">x0targs_to_classtargs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x02id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/utils.html#x0targs_to_classtargs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.utils.x0targs_to_classtargs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts array of float X0 targets to integer class IDs using the map defined in x02id.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
@@ -345,16 +347,16 @@ X0s will always be mapped to a class ID, even if the material isn’t defined in
 <p>The input array is modified in-place</p>
 </div>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>array</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – array of X0 values</p></li>
 <li><p><strong>x02id</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]) – map of X0 float values to class IDs</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
 </dd>
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Array of integer class IDs</p>
 </dd>
 </dl>
@@ -362,7 +364,7 @@ X0s will always be mapped to a class ID, even if the material isn’t defined in
 
 </section>
 <section id="module-tomopt.version">
-<span id="tomopt-version-module"></span><h2>tomopt.version module<a class="headerlink" href="#module-tomopt.version" title="Permalink to this heading"></a></h2>
+<span id="tomopt-version-module"></span><h2>tomopt.version module<a class="headerlink" href="#module-tomopt.version" title="Permalink to this heading">¶</a></h2>
 </section>
 </section>
 
