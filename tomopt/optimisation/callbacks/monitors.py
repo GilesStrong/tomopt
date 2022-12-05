@@ -351,6 +351,28 @@ class PanelMetricLogger(MetricLogger):
         show_plots: whether to provide live plots during optimisation in notebooks
     """
 
+    def _reset(self) -> None:
+        det = self.wrapper.volume.get_detectors()[0]
+        if isinstance(det, PanelDetectorLayer):
+            self.uses_sigmoid_panels = isinstance(det.panels[0], SigmoidDetectorPanel)
+        else:
+            self.uses_sigmoid_panels = False
+        super()._reset()
+
+    def _prep_plots(self) -> None:
+        r"""
+        Creates the plots for a new optimisation
+        """
+
+        super()._prep_plots()
+        if self.show_plots:
+            with sns.axes_style(**self.style):
+                self.above_det = [self.fig.add_subplot(self.grid_spec[-2:-1, i : i + 1]) for i in range(3)]
+                self.below_det = [self.fig.add_subplot(self.grid_spec[-1:, i : i + 1]) for i in range(3)]
+                if self.uses_sigmoid_panels:
+                    self.panel_smoothness = self.fig.add_subplot(self.grid_spec[-2:-1, -1:])
+                self._set_axes_labels()
+
     def update_plot(self) -> None:
         r"""
         Updates the plot(s).
@@ -409,13 +431,6 @@ class PanelMetricLogger(MetricLogger):
 
             self._set_axes_labels()
 
-    def _reset(self) -> None:
-        if isinstance(self.wrapper.volume.get_detectors()[0], PanelDetectorLayer):
-            self.uses_sigmoid_panels = isinstance(self.wrapper.volume.get_detectors()[0].panels[0], SigmoidDetectorPanel)
-        else:
-            self.uses_sigmoid_panels = False
-        super()._reset()
-
     def _build_grid_spec(self) -> GridSpec:
         r"""
         Returns:
@@ -461,17 +476,3 @@ class PanelMetricLogger(MetricLogger):
         if self.uses_sigmoid_panels:
             self.panel_smoothness.set_xlim((-2, 2))
             self.panel_smoothness.set_xlabel("Panel model (arb. pos.)", fontsize=0.8 * self.lbl_sz, color=self.lbl_col)
-
-    def _prep_plots(self) -> None:
-        r"""
-        Creates the plots for a new optimisation
-        """
-
-        super()._prep_plots()
-        if self.show_plots:
-            with sns.axes_style(**self.style):
-                self.above_det = [self.fig.add_subplot(self.grid_spec[-2:-1, i : i + 1]) for i in range(3)]
-                self.below_det = [self.fig.add_subplot(self.grid_spec[-1:, i : i + 1]) for i in range(3)]
-                if self.uses_sigmoid_panels:
-                    self.panel_smoothness = self.fig.add_subplot(self.grid_spec[-2:-1, -1:])
-                self._set_axes_labels()
