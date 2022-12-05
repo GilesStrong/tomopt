@@ -73,6 +73,16 @@ def get_panel_detector() -> PanelDetectorLayer:
     )
 
 
+def get_sigmoid_panel_detector(smooth: Tensor = Tensor([0.5])) -> PanelDetectorLayer:
+    return PanelDetectorLayer(
+        pos="above",
+        lw=LW,
+        z=1,
+        size=2 * SZ,
+        panels=[SigmoidDetectorPanel(smooth=smooth, res=1, eff=1, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[1.0, 1.0])],
+    )
+
+
 class MockWrapper:
     pass
 
@@ -234,16 +244,23 @@ def test_float_pred_handler():
     assert preds[0][1] == 0.5
 
 
-@pytest.mark.parametrize("detector", ["none", "panel"])
+@pytest.mark.parametrize("detector", ["none", "panel", "sigmoid_panel"])
 def test_metric_logger(detector, mocker):  # noqa F811
     vw = MockWrapper()
     vw.volume = MockVolume()
     if detector == "none":
         logger = MetricLogger()
-    if detector == "panel":
+    else:
+        if detector == "panel":
+            det = get_panel_detector()
+        elif detector == "sigmoid_panel":
+            det = get_sigmoid_panel_detector()
+        else:
+            raise ValueError(f"Detector {detector} not recognised")
         logger = PanelMetricLogger()
-        det = get_panel_detector()
-        vw.get_detectors = lambda: [det]
+        vw.volume.get_detectors = lambda: [det]
+        vw.get_detector = lambda: vw.volume.get_detectors()
+
     vw.loss_func = VoxelX0Loss(target_budget=1, cost_coef=1)
     vw.fit_params = FitParams(
         pred=10,
@@ -753,8 +770,8 @@ def test_sigmoid_panel_smoothness_schedule(n_warmups):
     vw.fit_params = FitParams(state="train", warmup_cbs=wcbs, cbs=cbs, n_epochs=3 + n_warmups)
     cb.set_wrapper(vw)
     vw.volume = MockVolume()
-    panel = SigmoidDetectorPanel(smooth=Tensor([0.5]), res=1e4, eff=0.9, init_xy_span=(0.5, 0.5), init_xyz=(0.5, 0.5, 1.0))
-    det = PanelDetectorLayer(pos="above", lw=LW, z=Z, size=SZ, panels=[panel])
+    det = get_sigmoid_panel_detector()
+    panel = det.panels[0]
     vw.volume.get_detectors = lambda: [det]
 
     for c in vw.fit_params.cbs:
