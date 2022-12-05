@@ -30,7 +30,7 @@ from tomopt.optimisation.callbacks import (
     VolumeTargetPredHandler,
     Save2HDF5PredHandler,
     WarmupCallback,
-    # PostWarmupCallback,
+    PostWarmupCallback,
 )
 from tomopt.optimisation.loss import VoxelX0Loss
 from tomopt.optimisation.wrapper.volume_wrapper import AbsVolumeWrapper, FitParams, PanelVolumeWrapper
@@ -467,7 +467,41 @@ def test_warmup_callback():
     assert not vw.fit_params.skip_opt_step
 
 
-# def test_post_warmup_callback():
+@pytest.mark.parametrize("n_warmups", [0, 1, 2])
+def test_post_warmup_callback(n_warmups, mocker):  # noqa F811
+    vw = MockWrapper()
+    pwcb = PostWarmupCallback()
+    assert check_callback_base(pwcb)
+    wcbs = [WarmupCallback(i + 1) for i in range(n_warmups)]
+    cbs = wcbs + [pwcb]
+
+    vw.fit_params = FitParams(cbs=cbs, warmup_cbs=wcbs, state="train")
+    for cb in vw.fit_params.cbs:
+        cb.set_wrapper(vw)
+    mocker.spy(pwcb, "_activate")
+
+    for cb in vw.fit_params.cbs:
+        cb.on_train_begin()
+    assert pwcb.active is False
+    n_warmup_epochs = np.arange(1, n_warmups + 1).sum()
+    print(f"{n_warmup_epochs=}")
+    for epoch in range(1, n_warmup_epochs + 3):
+        vw.fit_params.epoch = epoch
+        for c in vw.fit_params.cbs:
+            c.on_epoch_begin()
+        print(f"{epoch=}")
+        if n_warmup_epochs > 0 and epoch < n_warmup_epochs + 1:
+            for c in vw.fit_params.warmup_cbs:
+                print(c.warmup_active)
+            assert pwcb.active is False
+            assert pwcb._activate.call_count == 0
+        elif n_warmup_epochs == 0 or epoch >= n_warmup_epochs + 1:
+            if n_warmups > 0:
+                assert wcbs[-1].warmup_active is False
+            assert pwcb.active
+            assert pwcb._activate.call_count == 1
+        for c in vw.fit_params.cbs:
+            c.on_epoch_end()
 
 
 def test_cost_coef_warmup():

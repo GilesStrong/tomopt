@@ -219,7 +219,7 @@ class PostWarmupCallback(Callback):
 
         if self.active:
             return
-        if len(self.wrapper.fit_params.warmup_cbs) == 0 or self.wrapper.fit_params.warmup_cbs[-1].warmup_active is False:
+        if len(self.wrapper.fit_params.warmup_cbs) == 0 or np.all([c.warmup_active is False for c in self.wrapper.fit_params.warmup_cbs]):
             self._activate()
 
     def _activate(self) -> None:
