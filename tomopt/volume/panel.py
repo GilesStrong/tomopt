@@ -1,4 +1,4 @@
-from typing import Tuple, Optional, Dict
+from typing import Tuple, Optional, Dict, Union
 import numpy as np
 
 import torch
@@ -336,7 +336,7 @@ class SigmoidDetectorPanel(DetectorPanel):
     def __init__(
         self,
         *,
-        smooth: Tensor,
+        smooth: Union[float, Tensor],
         res: float,
         eff: float,
         init_xyz: Tuple[float, float, float],
@@ -356,7 +356,8 @@ class SigmoidDetectorPanel(DetectorPanel):
             realistic_validation=realistic_validation,
             device=device,
         )
-        self.register_buffer("smooth", smooth)
+        # Smooth will be massaged to Tensor, but MyPy doesn't spot this
+        self.smooth = smooth  # type: ignore
 
     def sig_model(self, xy: Tensor) -> Tensor:
         r"""
@@ -369,8 +370,6 @@ class SigmoidDetectorPanel(DetectorPanel):
             Multiplicative coefficients for the nominal resolution or efficiency of the panel based on the xy position relative to the panel position and size
         """
 
-        if not isinstance(self.smooth, Tensor):
-            raise ValueError("smooth is not a tensor for some reason")  # Yay MyPy
         half_width = self.xy_span / 2
         delta = (xy - self.xy) / half_width
         coef = torch.sigmoid((1 - (torch.sign(delta) * delta)) / self.smooth)
@@ -433,3 +432,18 @@ class SigmoidDetectorPanel(DetectorPanel):
             eff = torch.zeros(len(xy), device=self.device)  # Zero detection outside detector
             eff[mask] = self.efficiency
         return eff
+
+    @property
+    def smooth(self) -> Tensor:
+        return self._smooth
+
+    @smooth.setter
+    def smooth(self, smooth: Union[float, Tensor]) -> None:
+        if not smooth > 0:
+            raise ValueError("smooth artgument must be positive and non-zero")
+        if not isinstance(smooth, Tensor):
+            smooth = Tensor([smooth], device=self.device)
+        if hasattr(self, "_smooth"):
+            self._smooth = smooth
+        else:
+            self.register_buffer("_smooth", smooth)

@@ -2,6 +2,7 @@ import pytest
 from pytest_mock import mocker  # noqa F401
 import numpy as np
 import matplotlib.pyplot as plt
+from functools import partial
 
 import torch
 from torch import Tensor, nn
@@ -417,8 +418,9 @@ def test_volume_forward_panel(panel):
                     assert (grad != 0).sum() > 0
 
 
-def test_detector_panel_properties():
-    panel = DetectorPanel(res=1, eff=0.5, init_xyz=[0.5, 0.4, 0.9], init_xy_span=[0.3, 0.5], realistic_validation=False, m2_cost=4)
+@pytest.mark.parametrize("model, partial_panel", [["gauss", DetectorPanel], ["sigmoid", partial(SigmoidDetectorPanel, smooth=Tensor([1.0]))]])
+def test_detector_panel_properties(model, partial_panel):
+    panel = partial_panel(res=1, eff=0.5, init_xyz=[0.5, 0.4, 0.9], init_xy_span=[0.3, 0.5], realistic_validation=False, m2_cost=4)
     assert panel.m2_cost == Tensor([4])
     assert panel.budget_scale == Tensor([1])
     assert panel.resolution == Tensor([1])
@@ -429,28 +431,37 @@ def test_detector_panel_properties():
     assert (panel.get_scaled_xy_span() == Tensor([0.3, 0.5])).all()
     assert panel.x == Tensor([0.5])
     assert panel.y == Tensor([0.4])
+    if model == "sigmoid":
+        assert (panel.smooth - 1.0).abs() < 1e-5
 
-    panel = DetectorPanel(res=1, eff=0.5, init_xyz=[0.5, 0.4, 0.9], init_xy_span=[0.8, 0.5], realistic_validation=False, m2_cost=10, budget=64)
+    panel = partial_panel(res=1, eff=0.5, init_xyz=[0.5, 0.4, 0.9], init_xy_span=[0.8, 0.5], realistic_validation=False, m2_cost=10, budget=64)
     assert panel.budget_scale == Tensor([4])
     assert (panel.xy_span == Tensor([0.8, 0.5])).all()
     assert (panel.get_scaled_xy_span() == Tensor([3.2, 2.0])).all()
 
 
-def test_detector_panel_methods():
-    panel = DetectorPanel(res=10, eff=0.5, init_xyz=[0.0, 0.01, 0.9], init_xy_span=[0.5, 0.51])
+@pytest.mark.parametrize("model, partial_panel", [["gauss", DetectorPanel], ["sigmoid", partial(SigmoidDetectorPanel, smooth=Tensor([1.0]))]])
+def test_detector_panel_methods(model, partial_panel):
+    panel = partial_panel(res=10, eff=0.5, init_xyz=[0.0, 0.01, 0.9], init_xy_span=[0.5, 0.51])
 
     # get_xy_mask
     mask = panel.get_xy_mask(Tensor([[0, 0], [0.1, 0.1], [0.25, 0.25], [0.5, 0.5], [1, 1], [0.1, 1], [1, 0.1], [-1, -1]]))
     assert (mask.int() == Tensor([1, 1, 0, 0, 0, 0, 0, 0])).all()
 
-    # get_gauss
-    with pytest.raises(ValueError):
-        DetectorPanel(res=1, eff=0.5, init_xyz=[np.NaN, 0.0, 0.9], init_xy_span=[1.0, 1.0]).get_gauss()
-    with pytest.raises(ValueError):
-        DetectorPanel(res=1, eff=0.5, init_xyz=[0.0, 0.0, 0.9], init_xy_span=[0.5, np.NaN]).get_gauss()
-    gauss = panel.get_gauss()
-    assert (gauss.loc == Tensor([0.0, 0.01])).all()
-    assert (gauss.scale == Tensor([0.5 / 4, 0.51 / 4])).all()
+    if model == "gauss":
+        # get_gauss
+        with pytest.raises(ValueError):
+            partial_panel(res=1, eff=0.5, init_xyz=[np.NaN, 0.0, 0.9], init_xy_span=[1.0, 1.0]).get_gauss()
+        with pytest.raises(ValueError):
+            partial_panel(res=1, eff=0.5, init_xyz=[0.0, 0.0, 0.9], init_xy_span=[0.5, np.NaN]).get_gauss()
+        gauss = panel.get_gauss()
+        assert (gauss.loc == Tensor([0.0, 0.01])).all()
+        assert (gauss.scale == Tensor([0.5 / 4, 0.51 / 4])).all()
+    elif model == "sigmoid":
+        with pytest.raises(ValueError):
+            SigmoidDetectorPanel(smooth=-1, res=1, eff=0.5, init_xyz=[0.0, 0.0, 0.9], init_xy_span=[1.0, 1.0])
+        with pytest.raises(ValueError):
+            SigmoidDetectorPanel(smooth=torch.nan, res=1, eff=0.5, init_xyz=[0.0, 0.0, 0.9], init_xy_span=[1.0, 1.0])
 
     # get_resolution
     res = panel.get_resolution(Tensor([[0, 0.01], [0.1, 0.1], [0.5, 0.5], [0, 0.1]]))
@@ -499,7 +510,7 @@ def test_detector_panel_methods():
     panel.train()
 
     # get_hits
-    panel = DetectorPanel(res=10, eff=0.5, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[0.5, 0.5])
+    panel = partial_panel(res=10, eff=0.5, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[0.5, 0.5])
     mg = MuonGenerator2016(x_range=(0, LW[0].item()), y_range=(0, LW[1].item()))
     mu = MuonBatch(mg(100), 1)
     mu._xy = torch.ones_like(mu.xy) / 2
@@ -534,7 +545,7 @@ def test_detector_panel_methods():
     assert (panel.xy == Tensor([0.5, 0.5])).all()
     assert (panel.xy_span == Tensor([0.5, 0.5])).all()
 
-    panel = DetectorPanel(res=10, eff=0.5, init_xyz=[2.0, -2.0, 2.0], init_xy_span=[0.0, 20.0])
+    panel = partial_panel(res=10, eff=0.5, init_xyz=[2.0, -2.0, 2.0], init_xy_span=[0.0, 20.0])
     panel.clamp_params((0, 0, 0), (1, 1, 1))
     assert (panel.xy == Tensor([1, 0])).all()
     assert panel.z - 1 < 0
@@ -542,7 +553,7 @@ def test_detector_panel_methods():
     assert (panel.xy_span == Tensor([5e-2, 10])).all()
 
     # Budget assignment
-    panel = DetectorPanel(res=10, eff=0.5, init_xyz=[2.0, -2.0, 2.0], init_xy_span=[0.8, 0.5], m2_cost=10)
+    panel = partial_panel(res=10, eff=0.5, init_xyz=[2.0, -2.0, 2.0], init_xy_span=[0.8, 0.5], m2_cost=10)
     panel.assign_budget(None)
     assert panel.budget_scale == 1
     panel.assign_budget(Tensor([64]))
