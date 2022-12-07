@@ -370,7 +370,7 @@ class SigmoidDetectorPanel(DetectorPanel):
             Multiplicative coefficients for the nominal resolution or efficiency of the panel based on the xy position relative to the panel position and size
         """
 
-        half_width = self.xy_span / 2
+        half_width = self.get_scaled_xy_span() / 2
         delta = (xy - self.xy) / half_width
         coef = torch.sigmoid((1 - (torch.sign(delta) * delta)) / self.smooth)
         return coef / torch.sigmoid(1 / self.smooth)
