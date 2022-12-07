@@ -67,7 +67,7 @@ def get_panel_layers() -> nn.ModuleList:
     return nn.ModuleList(layers)
 
 
-def get_sigmoid_panel_layers(smooth=1.0, init_res: float = 1e5, init_eff: float = 0.9, n_panels: int = 4, init_xy_span=[3.0, 3.0]) -> nn.ModuleList:
+def get_sigmoid_panel_layers(smooth=1.0, init_res: float = INIT_RES, init_eff: float = INIT_EFF, n_panels: int = 4, init_xy_span=[3.0, 3.0]) -> nn.ModuleList:
     layers = []
     layers.append(
         PanelDetectorLayer(
@@ -267,40 +267,29 @@ def test_forwards_panel(mode, inferrer):
 #             assert torch.autograd.grad(loss_val, p.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
 
 
-def test_backwards_panel(panel_inferrer):
-    pred, weight = panel_inferrer.get_prediction()
+@pytest.mark.parametrize(
+    "mode, inferrer",
+    [
+        ["gauss panel", lazy_fixture("panel_inferrer")],
+        ["fixed-budget gauss panel", lazy_fixture("fixed_budget_panel_inferrer")],
+        ["sigmoid panel", lazy_fixture("sigmoid_panel_inferrer")],
+        ["fixed-budget sigmoid panel", lazy_fixture("fixed_budget_sigmoid_panel_inferrer")],
+    ],
+)
+def test_backwards_panel(mode, inferrer):
+    pred, weight = inferrer.get_prediction()
     loss_func = VoxelX0Loss(target_budget=1, cost_coef=0.15)
-    loss_val = loss_func(pred, weight, panel_inferrer.volume)
-    opt = torch.optim.SGD(panel_inferrer.volume.parameters(), lr=1)
+    loss_val = loss_func(pred, weight, inferrer.volume)
+    opt = torch.optim.SGD(inferrer.volume.parameters(), lr=1)
     opt.zero_grad()
     loss_val.backward()
-    for p in panel_inferrer.volume.parameters():
+    for p in inferrer.volume.parameters():
         assert p.grad is not None
     opt.step()
-    for l in panel_inferrer.volume.get_detectors():
-        for i, p in enumerate(l.panels):
-            assert (p.xy != Tensor([0.5, 0.5])).all()
-            if l.pos == "above":
-                assert (p.z != Tensor([1 - (i * (2 * SZ) / N_PANELS)])).all()
-            else:
-                assert (p.z != Tensor([0.2 - (i * (2 * SZ) / N_PANELS)])).all()
-            assert (p.xy_span != Tensor([0.5, 0.5])).all()
-            assert p.resolution == Tensor([INIT_RES])
-            assert p.efficiency == Tensor([INIT_EFF])
 
-
-def test_backwards_fixed_budget_panel(fixed_budget_panel_inferrer):
-    pred, weight = fixed_budget_panel_inferrer.get_prediction()
-    loss_func = VoxelX0Loss(target_budget=1, cost_coef=0.15)
-    loss_val = loss_func(pred, weight, fixed_budget_panel_inferrer.volume)
-    opt = torch.optim.SGD(fixed_budget_panel_inferrer.volume.parameters(), lr=1)
-    opt.zero_grad()
-    loss_val.backward()
-    for p in fixed_budget_panel_inferrer.volume.parameters():
-        assert p.grad is not None
-    opt.step()
-    assert (fixed_budget_panel_inferrer.volume.budget_weights != torch.zeros(2 * N_PANELS)).all()
-    for l in fixed_budget_panel_inferrer.volume.get_detectors():
+    if "fixed_budget" in mode:
+        assert (inferrer.volume.budget_weights != torch.zeros(2 * N_PANELS)).all()
+    for l in inferrer.volume.get_detectors():
         for i, p in enumerate(l.panels):
             assert (p.xy != Tensor([0.5, 0.5])).all()
             if l.pos == "above":
