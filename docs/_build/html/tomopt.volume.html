@@ -1315,7 +1315,7 @@ however the :class”<cite>~tomopt.volume.volume.Volume</cite> class will pass t
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>smooth</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – smoothness of the sigmoid: A higher smooth value provides a slower change, with higher resolution|efficiency outside the physical panel,
+<li><p><strong>smooth</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]) – smoothness of the sigmoid: A higher smooth value provides a slower change, with higher resolution|efficiency outside the physical panel,
 whereas a lower smooth value provides a sharper transition, with lower sensitivity to muons outside the panel
 (and therefore more strongly approximated a physical panel).</p></li>
 <li><p><strong>res</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – resolution of the panel in m^-1, i.e. a higher value improves the precision on the hit recording</p></li>
@@ -1442,6 +1442,16 @@ If required, but not supplied, than will be computed automatically.</p></li>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Multiplicative coefficients for the nominal resolution or efficiency of the panel based on the xy position relative to the panel position and size</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.volume.panel.SigmoidDetectorPanel.smooth">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">smooth</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.volume.panel.SigmoidDetectorPanel.smooth" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1953,6 +1963,7 @@ The target can be set as part of the call to <a class="reference internal" href=
 <li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel.get_efficiency"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel.get_efficiency()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel.get_resolution"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel.get_resolution()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel.sig_model"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel.sig_model()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel.smooth"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel.smooth</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel.training"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel.training</span></code></a></li>
 </ul>
 </li>
