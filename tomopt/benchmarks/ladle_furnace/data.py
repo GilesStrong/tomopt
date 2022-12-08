@@ -37,7 +37,7 @@ class LadleFurnacePassiveGenerator(AbsPassiveGenerator):
         self.slag_x0s = Tensor([X0[m] for m in self.slag_materials], device=self.volume.device)
         self.fill_x0s = Tensor([X0[m] for m in self.fill_materials], device=self.volume.device)
 
-        self.xy_shp = (self.lw / self.size).astype(int).tolist()
+        self.xy_shape = (self.lw / self.size).astype(int).tolist()
         self.fill_z_range = ((self.z_range[0]) + self.size, self.z_range[1])
 
     def _generate(self) -> Tuple[RadLengthFunc, Tensor]:
@@ -46,17 +46,17 @@ class LadleFurnacePassiveGenerator(AbsPassiveGenerator):
 
         def generator(*, z: Tensor, lw: Tensor, size: float) -> Tensor:
             if z <= self.fill_z_range[0]:
-                x0 = self.x0_furnace * torch.ones(self.xy_shp)
+                x0 = self.x0_furnace * torch.ones(self.xy_shape)
             elif z > self.fill_z_range[0] and z <= mat_z:
-                x0 = self.fill_x0s[torch.randint(high=len(self.fill_x0s), size=(self.xy_shp[0] * self.xy_shp[1],), device=self.fill_x0s.device)].reshape(
-                    self.xy_shp
+                x0 = self.fill_x0s[torch.randint(high=len(self.fill_x0s), size=(self.xy_shape[0] * self.xy_shape[1],), device=self.fill_x0s.device)].reshape(
+                    self.xy_shape
                 )
             elif z > mat_z and z <= slag_z:
-                x0 = self.slag_x0s[torch.randint(high=len(self.slag_x0s), size=(self.xy_shp[0] * self.xy_shp[1],), device=self.slag_x0s.device)].reshape(
-                    self.xy_shp
+                x0 = self.slag_x0s[torch.randint(high=len(self.slag_x0s), size=(self.xy_shape[0] * self.xy_shape[1],), device=self.slag_x0s.device)].reshape(
+                    self.xy_shape
                 )
             elif z > slag_z:
-                x0 = X0["air"] * torch.ones(self.xy_shp)
+                x0 = X0["air"] * torch.ones(self.xy_shape)
             x0[0, :] = self.x0_furnace
             x0[-1, :] = self.x0_furnace
             x0[:, 0] = self.x0_furnace
