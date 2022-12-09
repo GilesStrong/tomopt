@@ -30,6 +30,7 @@ from tomopt.optimisation.callbacks import (
     VolumeTargetPredHandler,
     Save2HDF5PredHandler,
     WarmupCallback,
+    PanelUpdateLimiter,
 )
 from tomopt.optimisation.loss import VoxelX0Loss
 from tomopt.optimisation.wrapper.volume_wrapper import AbsVolumeWrapper, FitParams, PanelVolumeWrapper
@@ -695,3 +696,37 @@ def test_save_2_hdf5_pred_handler():
 
     finally:
         out_path.unlink()
+
+
+def test_panel_update_limiter():
+    cb1 = PanelUpdateLimiter(max_xy_step=(0.01, 0.01))
+    cb2 = PanelUpdateLimiter(max_xy_step=(0.01, 0.01), max_xy_span_step=(0.02, 0.05), max_z_step=0.005)
+    assert check_callback_base(cb1)
+
+    vw = MockWrapper()
+    vw.volume = MockVolume()
+    panel_det = get_panel_detector()
+    vw.volume.get_detectors = lambda: [panel_det]
+    cb1.set_wrapper(vw)
+    cb2.set_wrapper(vw)
+
+    cb1.on_backwards_end()
+    cb2.on_backwards_end()
+    assert ((cb1.panel_params[0]["xy"] - panel_det.panels[0].xy).abs() < 1e-5).all()
+    assert ((cb1.panel_params[0]["xy_span"] - panel_det.panels[0].xy_span).abs() < 1e-5).all()
+    assert (cb1.panel_params[0]["z"] - panel_det.panels[0].z).abs() < 1e-5
+
+    with torch.no_grad():
+        panel_det.panels[0].xy.data += Tensor([0.0, -1.0])
+        panel_det.panels[0].xy_span.data += Tensor([0.3, 0.03])
+        panel_det.panels[0].z.data -= 0.01
+
+    cb1.on_step_end()
+    assert ((cb1.panel_params[0]["xy"] + Tensor([0.0, -0.01]) - panel_det.panels[0].xy).abs() < 1e-5).all()
+    assert ((cb1.panel_params[0]["xy_span"] + Tensor([0.3, 0.03]) - panel_det.panels[0].xy_span).abs() < 1e-5).all()  # Params *aren't* modified
+    assert (cb1.panel_params[0]["z"] - 0.01 - panel_det.panels[0].z).abs() < 1e-5
+
+    cb2.on_step_end()
+    assert ((cb1.panel_params[0]["xy"] + Tensor([0.0, -0.01]) - panel_det.panels[0].xy).abs() < 1e-5).all()
+    assert ((cb1.panel_params[0]["xy_span"] + Tensor([0.02, 0.03]) - panel_det.panels[0].xy_span).abs() < 1e-5).all()
+    assert (cb1.panel_params[0]["z"] - 0.005 - panel_det.panels[0].z).abs() < 1e-5
