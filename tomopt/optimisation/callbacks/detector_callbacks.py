@@ -14,6 +14,16 @@ __all__ = ["PanelUpdateLimiter"]
 
 
 class PanelUpdateLimiter(Callback):
+    r"""
+    Limits the maximum difference that optimisers can make to panel parameters, to prevent them from being affected by large updates from anomolous gradients.
+    This is enacted by a hard-clamping based on the initial and final parameter values before/after each update step.
+
+    Arguments:
+        max_xy_step: maximum update in xy position of panels
+        max_z_step: maximum update in z position of panels
+        max_xy_span_step: maximum update in xy_span position of panels
+    """
+
     def __init__(
         self, max_xy_step: Optional[Tuple[float, float]] = None, max_z_step: Optional[float] = None, max_xy_span_step: Optional[Tuple[float, float]] = None
     ):
@@ -22,6 +32,10 @@ class PanelUpdateLimiter(Callback):
         self.max_xy_span_step = Tensor(max_xy_span_step) if max_xy_span_step is not None else None
 
     def on_backwards_end(self) -> None:
+        r"""
+        Records the current paramaters of each panel before they are updated.
+        """
+
         self.panel_params: List[Dict[str, Tensor]] = []
         for det in self.wrapper.volume.get_detectors():
             if isinstance(det, PanelDetectorLayer):
@@ -29,6 +43,11 @@ class PanelUpdateLimiter(Callback):
                     self.panel_params.append({"xy": panel.xy.detach().clone(), "z": panel.z.detach().clone(), "xy_span": panel.xy_span.detach().clone()})
 
     def on_step_end(self) -> None:
+        r"""
+        After the update step, goes through and hard-clamps parameter updates based on the difference between their current values
+        and values before the update step.
+        """
+
         with torch.no_grad():
             panel_idx = 0
             for det in self.wrapper.volume.get_detectors():
