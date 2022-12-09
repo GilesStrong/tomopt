@@ -68,7 +68,7 @@ class DetectorPanel(nn.Module):
         init_xy_span: Tuple[float, float],
         m2_cost: float = 1,
         budget: Optional[Tensor] = None,
-        realistic_validation: bool = False,
+        realistic_validation: bool = True,
         device: torch.device = DEVICE,
     ):
         r"""
@@ -343,7 +343,7 @@ class SigmoidDetectorPanel(DetectorPanel):
         init_xy_span: Tuple[float, float],
         m2_cost: float = 1,
         budget: Optional[Tensor] = None,
-        realistic_validation: bool = False,
+        realistic_validation: bool = True,
         device: torch.device = DEVICE,
     ):
         super().__init__(

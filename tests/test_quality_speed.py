@@ -81,4 +81,4 @@ def test_lead_beryllium(mock_show):
         [preds[0][1:3, :5, :5].flatten(), preds[0][1:3, 5:, :5].flatten(), preds[0][1:3, :5, 5:].flatten(), preds[0][(1, 3, 4, 5), :, :].flatten()]
     )
     met = (be.mean() - pb.mean()) / (np.sqrt((pb.std() ** 2) + (be.std() * 2)))
-    assert 0.29 <= met <= 0.33
+    assert 0.3 <= met <= 0.4
