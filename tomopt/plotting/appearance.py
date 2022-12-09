@@ -4,7 +4,7 @@ Defines global constants for producing consistently styled plots
 
 TK_SZ = 16
 TK_COL = "black"
-LBL_SZ = 24
+LBL_SZ = 22
 LBL_COL = "black"
 LEG_SZ = 16
 CAT_PALETTE = "tab10"

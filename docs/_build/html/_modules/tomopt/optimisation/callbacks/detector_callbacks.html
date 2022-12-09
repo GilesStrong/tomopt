@@ -236,7 +236,7 @@
              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
               
   <h1>Source code for tomopt.optimisation.callbacks.detector_callbacks</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
@@ -244,12 +244,13 @@
 
 <span class="kn">from</span> <span class="nn">.warmup_callbacks</span> <span class="kn">import</span> <span class="n">PostWarmupCallback</span>
 <span class="kn">from</span> <span class="nn">...volume</span> <span class="kn">import</span> <span class="n">PanelDetectorLayer</span><span class="p">,</span> <span class="n">SigmoidDetectorPanel</span>
+<span class="kn">from</span> <span class="nn">.callback</span> <span class="kn">import</span> <span class="n">Callback</span>
 
 <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Set of callbacks that affect the detectors during optimisation</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;SigmoidPanelSmoothnessSchedule&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;PanelUpdateLimiter&#39;</span><span class="p">,</span> <span class="s2">&quot;SigmoidPanelSmoothnessSchedule&quot;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="SigmoidPanelSmoothnessSchedule"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule">[docs]</a><span class="k">class</span> <span class="nc">SigmoidPanelSmoothnessSchedule</span><span class="p">(</span><span class="n">PostWarmupCallback</span><span class="p">):</span>
@@ -306,6 +307,68 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrapper</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s2">&quot;train&quot;</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_set_smooth</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">smooth</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">wrapper</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">epoch</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span></div></div>
+
+
+<div class="viewcode-block" id="PanelUpdateLimiter"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.detector_callbacks.PanelUpdateLimiter">[docs]</a><span class="k">class</span> <span class="nc">PanelUpdateLimiter</span><span class="p">(</span><span class="n">Callback</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Limits the maximum difference that optimisers can make to panel parameters, to prevent them from being affected by large updates from anomolous gradients.</span>
+<span class="sd">    This is enacted by a hard-clamping based on the initial and final parameter values before/after each update step.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        max_xy_step: maximum update in xy position of panels</span>
+<span class="sd">        max_z_step: maximum update in z position of panels</span>
+<span class="sd">        max_xy_span_step: maximum update in xy_span position of panels</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">max_xy_step</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_z_step</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_xy_span_step</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_xy_step</span> <span class="o">=</span> <span class="n">Tensor</span><span class="p">(</span><span class="n">max_xy_step</span><span class="p">)</span> <span class="k">if</span> <span class="n">max_xy_step</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_z_step</span> <span class="o">=</span> <span class="n">Tensor</span><span class="p">([</span><span class="n">max_z_step</span><span class="p">])</span> <span class="k">if</span> <span class="n">max_z_step</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_xy_span_step</span> <span class="o">=</span> <span class="n">Tensor</span><span class="p">(</span><span class="n">max_xy_span_step</span><span class="p">)</span> <span class="k">if</span> <span class="n">max_xy_span_step</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="PanelUpdateLimiter.on_backwards_end"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.detector_callbacks.PanelUpdateLimiter.on_backwards_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_backwards_end</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Records the current paramaters of each panel before they are updated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">panel_params</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">det</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrapper</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">get_detectors</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">det</span><span class="p">,</span> <span class="n">PanelDetectorLayer</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">panel</span> <span class="ow">in</span> <span class="n">det</span><span class="o">.</span><span class="n">panels</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">panel_params</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;xy&quot;</span><span class="p">:</span> <span class="n">panel</span><span class="o">.</span><span class="n">xy</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="n">panel</span><span class="o">.</span><span class="n">z</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span> <span class="s2">&quot;xy_span&quot;</span><span class="p">:</span> <span class="n">panel</span><span class="o">.</span><span class="n">xy_span</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">clone</span><span class="p">()})</span></div>
+
+<div class="viewcode-block" id="PanelUpdateLimiter.on_step_end"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.detector_callbacks.PanelUpdateLimiter.on_step_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_step_end</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        After the update step, goes through and hard-clamps parameter updates based on the difference between their current values</span>
+<span class="sd">        and values before the update step.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="n">panel_idx</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">det</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrapper</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">get_detectors</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">det</span><span class="p">,</span> <span class="n">PanelDetectorLayer</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">panel</span> <span class="ow">in</span> <span class="n">det</span><span class="o">.</span><span class="n">panels</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_xy_step</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="n">delta</span> <span class="o">=</span> <span class="n">panel</span><span class="o">.</span><span class="n">xy</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">panel_params</span><span class="p">[</span><span class="n">panel_idx</span><span class="p">][</span><span class="s2">&quot;xy&quot;</span><span class="p">]</span>
+                            <span class="n">panel</span><span class="o">.</span><span class="n">xy</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                                <span class="n">delta</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_xy_step</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">panel_params</span><span class="p">[</span><span class="n">panel_idx</span><span class="p">][</span><span class="s2">&quot;xy&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_xy_step</span><span class="p">),</span> <span class="n">panel</span><span class="o">.</span><span class="n">xy</span>
+                            <span class="p">)</span>
+
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_z_step</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="n">delta</span> <span class="o">=</span> <span class="n">panel</span><span class="o">.</span><span class="n">z</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">panel_params</span><span class="p">[</span><span class="n">panel_idx</span><span class="p">][</span><span class="s2">&quot;z&quot;</span><span class="p">]</span>
+                            <span class="n">panel</span><span class="o">.</span><span class="n">z</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                                <span class="n">delta</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_z_step</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">panel_params</span><span class="p">[</span><span class="n">panel_idx</span><span class="p">][</span><span class="s2">&quot;z&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_z_step</span><span class="p">),</span> <span class="n">panel</span><span class="o">.</span><span class="n">z</span>
+                            <span class="p">)</span>
+
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_xy_span_step</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="n">delta</span> <span class="o">=</span> <span class="n">panel</span><span class="o">.</span><span class="n">xy_span</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">panel_params</span><span class="p">[</span><span class="n">panel_idx</span><span class="p">][</span><span class="s2">&quot;xy_span&quot;</span><span class="p">]</span>
+                            <span class="n">panel</span><span class="o">.</span><span class="n">xy_span</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                                <span class="n">delta</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_xy_span_step</span><span class="p">,</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">panel_params</span><span class="p">[</span><span class="n">panel_idx</span><span class="p">][</span><span class="s2">&quot;xy_span&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_xy_span_step</span><span class="p">),</span>
+                                <span class="n">panel</span><span class="o">.</span><span class="n">xy_span</span><span class="p">,</span>
+                            <span class="p">)</span>
+                        <span class="n">panel_idx</span> <span class="o">+=</span> <span class="mi">1</span></div></div>
 </pre></div>
 
              </article>

@@ -194,6 +194,13 @@ class Callback:
 
         pass
 
+    def on_step_end(self) -> None:
+        r"""
+        Runs when the parameters have been updated.
+        """
+
+        pass
+
     def on_epoch_end(self) -> None:
         r"""
         Runs when a training or validations epoch ends.
