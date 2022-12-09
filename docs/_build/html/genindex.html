@@ -14,6 +14,8 @@
 
   
   
+    <link rel="shortcut icon" href="_static/tomopt_logo.png"/>
+  
   
   
 
@@ -563,22 +565,6 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="tomopt.muon.html#tomopt.muon.muon_batch.MuonBatch._keep_mask">_keep_mask (tomopt.muon.muon_batch.MuonBatch attribute)</a>
 </li>
-      <li><a href="tomopt.optimisation.loss.html#tomopt.optimisation.loss.loss.AbsMaterialClassLoss._load_state_dict_post_hooks">_load_state_dict_post_hooks (tomopt.optimisation.loss.loss.AbsMaterialClassLoss attribute)</a>
-
-      <ul>
-        <li><a href="tomopt.optimisation.loss.html#tomopt.optimisation.loss.loss.VolumeClassLoss._load_state_dict_post_hooks">(tomopt.optimisation.loss.loss.VolumeClassLoss attribute)</a>
-</li>
-        <li><a href="tomopt.optimisation.loss.html#tomopt.optimisation.loss.loss.VolumeIntClassLoss._load_state_dict_post_hooks">(tomopt.optimisation.loss.loss.VolumeIntClassLoss attribute)</a>
-</li>
-        <li><a href="tomopt.optimisation.loss.html#tomopt.optimisation.loss.loss.VoxelClassLoss._load_state_dict_post_hooks">(tomopt.optimisation.loss.loss.VoxelClassLoss attribute)</a>
-</li>
-        <li><a href="tomopt.optimisation.loss.html#tomopt.optimisation.loss.loss.VoxelX0Loss._load_state_dict_post_hooks">(tomopt.optimisation.loss.loss.VoxelX0Loss attribute)</a>
-</li>
-        <li><a href="tomopt.volume.html#tomopt.volume.layer.PanelDetectorLayer._load_state_dict_post_hooks">(tomopt.volume.layer.PanelDetectorLayer attribute)</a>
-</li>
-        <li><a href="tomopt.volume.html#tomopt.volume.layer.PassiveLayer._load_state_dict_post_hooks">(tomopt.volume.layer.PassiveLayer attribute)</a>
-</li>
-      </ul></li>
       <li><a href="tomopt.optimisation.loss.html#tomopt.optimisation.loss.loss.AbsMaterialClassLoss._load_state_dict_pre_hooks">_load_state_dict_pre_hooks (tomopt.optimisation.loss.loss.AbsMaterialClassLoss attribute)</a>
 
       <ul>
@@ -1345,6 +1331,8 @@
 </li>
         <li><a href="tomopt.optimisation.callbacks.html#module-tomopt.optimisation.callbacks.data_callbacks">tomopt.optimisation.callbacks.data_callbacks</a>
 </li>
+        <li><a href="tomopt.optimisation.callbacks.html#module-tomopt.optimisation.callbacks.detector_callbacks">tomopt.optimisation.callbacks.detector_callbacks</a>
+</li>
         <li><a href="tomopt.optimisation.callbacks.html#module-tomopt.optimisation.callbacks.diagnostic_callbacks">tomopt.optimisation.callbacks.diagnostic_callbacks</a>
 </li>
         <li><a href="tomopt.optimisation.callbacks.html#module-tomopt.optimisation.callbacks.eval_metric">tomopt.optimisation.callbacks.eval_metric</a>
@@ -1469,6 +1457,8 @@
       <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.callback.Callback.on_backwards_end">on_backwards_end() (tomopt.optimisation.callbacks.callback.Callback method)</a>
 
       <ul>
+        <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.detector_callbacks.PanelUpdateLimiter.on_backwards_end">(tomopt.optimisation.callbacks.detector_callbacks.PanelUpdateLimiter method)</a>
+</li>
         <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.grad_callbacks.NoMoreNaNs.on_backwards_end">(tomopt.optimisation.callbacks.grad_callbacks.NoMoreNaNs method)</a>
 </li>
         <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.monitors.MetricLogger.on_backwards_end">(tomopt.optimisation.callbacks.monitors.MetricLogger method)</a>
@@ -1526,6 +1516,12 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.callback.Callback.on_step_end">on_step_end() (tomopt.optimisation.callbacks.callback.Callback method)</a>
+
+      <ul>
+        <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.detector_callbacks.PanelUpdateLimiter.on_step_end">(tomopt.optimisation.callbacks.detector_callbacks.PanelUpdateLimiter method)</a>
+</li>
+      </ul></li>
       <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.callback.Callback.on_train_begin">on_train_begin() (tomopt.optimisation.callbacks.callback.Callback method)</a>
 
       <ul>
@@ -1610,6 +1606,8 @@
 </li>
       <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.PanelOptConfig">PanelOptConfig (class in tomopt.optimisation.callbacks.warmup_callbacks)</a>
 </li>
+      <li><a href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.detector_callbacks.PanelUpdateLimiter">PanelUpdateLimiter (class in tomopt.optimisation.callbacks.detector_callbacks)</a>
+</li>
       <li><a href="tomopt.optimisation.wrapper.html#tomopt.optimisation.wrapper.volume_wrapper.PanelVolumeWrapper">PanelVolumeWrapper (class in tomopt.optimisation.wrapper.volume_wrapper)</a>
 </li>
       <li><a href="tomopt.inference.html#tomopt.inference.volume.PanelX0Inferrer">PanelX0Inferrer (class in tomopt.inference.volume)</a>
@@ -1630,10 +1628,10 @@
 </li>
       <li><a href="tomopt.muon.html#tomopt.muon.muon_batch.MuonBatch.phi_from_theta_xy">phi_from_theta_xy() (tomopt.muon.muon_batch.MuonBatch static method)</a>
 </li>
-      <li><a href="tomopt.inference.html#tomopt.inference.scattering.ScatterBatch.phi_in">phi_in (tomopt.inference.scattering.ScatterBatch property)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="tomopt.inference.html#tomopt.inference.scattering.ScatterBatch.phi_in">phi_in (tomopt.inference.scattering.ScatterBatch property)</a>
+</li>
       <li><a href="tomopt.inference.html#tomopt.inference.scattering.ScatterBatch.phi_in_unc">phi_in_unc (tomopt.inference.scattering.ScatterBatch property)</a>
 </li>
       <li><a href="tomopt.inference.html#tomopt.inference.scattering.ScatterBatch.phi_out">phi_out (tomopt.inference.scattering.ScatterBatch property)</a>
@@ -1930,6 +1928,13 @@
 
       <ul>
         <li><a href="tomopt.optimisation.callbacks.html#module-tomopt.optimisation.callbacks.data_callbacks">module</a>
+</li>
+      </ul></li>
+      <li>
+    tomopt.optimisation.callbacks.detector_callbacks
+
+      <ul>
+        <li><a href="tomopt.optimisation.callbacks.html#module-tomopt.optimisation.callbacks.detector_callbacks">module</a>
 </li>
       </ul></li>
       <li>

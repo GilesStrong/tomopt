@@ -14,6 +14,8 @@
 
   
   
+    <link rel="shortcut icon" href="../../../../_static/tomopt_logo.png"/>
+  
   
   
 
@@ -334,15 +336,15 @@
 <span class="sd">            Muons with &lt;2 hits within panels have NaN trajectory.</span>
 <span class="sd">            Muons with &gt;=2 hits in panels have valid trajectories</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;We still need to work out how to fit tracks efficiently!&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;We still need to work out how to fit tracks efficiently!&quot;</span><span class="p">)</span></div></div>
 
-        <span class="n">hits</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">hits</span><span class="p">),</span> <span class="n">lw</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">hits</span><span class="o">.</span><span class="n">type</span><span class="p">())</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">hits</span><span class="p">)</span>
-        <span class="n">uncs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">uncs</span><span class="p">)</span>  <span class="c1"># Set Infs to large number</span>
+        <span class="c1"># hits = torch.where(torch.isinf(hits), lw.mean().type(hits.type()) / 2, hits)</span>
+        <span class="c1"># uncs = torch.nan_to_num(uncs)  # Set Infs to large number</span>
 
-        <span class="n">x0</span><span class="p">:</span> <span class="n">Tensor</span>
-        <span class="n">y0</span><span class="p">:</span> <span class="n">Tensor</span>  <span class="c1"># Track positions at Z0=0</span>
-        <span class="n">phi</span><span class="p">:</span> <span class="n">Tensor</span>
-        <span class="n">theta</span><span class="p">:</span> <span class="n">Tensor</span>  <span class="c1"># Track angles</span></div></div>
+        <span class="c1"># x0: Tensor</span>
+        <span class="c1"># y0: Tensor  # Track positions at Z0=0</span>
+        <span class="c1"># phi: Tensor</span>
+        <span class="c1"># theta: Tensor  # Track angles</span>
 </pre></div>
 
              </article>

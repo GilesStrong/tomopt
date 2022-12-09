@@ -6,7 +6,7 @@
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
@@ -14,6 +14,8 @@
   
 
   
+  
+    <link rel="shortcut icon" href="_static/tomopt_logo.png"/>
   
   
   
@@ -243,36 +245,36 @@
              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
               
   <section id="tomopt-benchmarks-phi-detector-package">
-<h1>tomopt.benchmarks.phi_detector package<a class="headerlink" href="#tomopt-benchmarks-phi-detector-package" title="Permalink to this heading"></a></h1>
+<h1>tomopt.benchmarks.phi_detector package<a class="headerlink" href="#tomopt-benchmarks-phi-detector-package" title="Permalink to this heading">¶</a></h1>
 <section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
 </section>
 <section id="module-tomopt.benchmarks.phi_detector.detector">
-<span id="tomopt-benchmarks-phi-detector-detector-module"></span><h2>tomopt.benchmarks.phi_detector.detector module<a class="headerlink" href="#module-tomopt.benchmarks.phi_detector.detector" title="Permalink to this heading"></a></h2>
+<span id="tomopt-benchmarks-phi-detector-detector-module"></span><h2>tomopt.benchmarks.phi_detector.detector module<a class="headerlink" href="#module-tomopt.benchmarks.phi_detector.detector" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="tomopt.benchmarks.phi_detector.detector.PhiDetectorPanel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.benchmarks.phi_detector.detector.</span></span><span class="sig-name descname"><span class="pre">PhiDetectorPanel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">device(type='cpu')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/phi_detector/detector.html#PhiDetectorPanel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.phi_detector.detector.PhiDetectorPanel" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.benchmarks.phi_detector.detector.</span></span><span class="sig-name descname"><span class="pre">PhiDetectorPanel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">device(type='cpu')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/phi_detector/detector.html#PhiDetectorPanel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.phi_detector.detector.PhiDetectorPanel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tomopt.volume.html#tomopt.volume.panel.DetectorPanel" title="tomopt.volume.panel.DetectorPanel"><code class="xref py py-class docutils literal notranslate"><span class="pre">DetectorPanel</span></code></a></p>
 <p>Research tested only: no unit tests</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="tomopt.benchmarks.phi_detector.detector.PhiDetectorPanel._is_full_backward_hook">
-<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.benchmarks.phi_detector.detector.PhiDetectorPanel._is_full_backward_hook" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.benchmarks.phi_detector.detector.PhiDetectorPanel._is_full_backward_hook" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.benchmarks.phi_detector.detector.PhiDetectorPanel.clamp_params">
-<span class="sig-name descname"><span class="pre">clamp_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyz_low</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xyz_high</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/phi_detector/detector.html#PhiDetectorPanel.clamp_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.phi_detector.detector.PhiDetectorPanel.clamp_params" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">clamp_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xyz_low</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xyz_high</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/phi_detector/detector.html#PhiDetectorPanel.clamp_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.phi_detector.detector.PhiDetectorPanel.clamp_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>Ensures that the panel is centred within the supplied xyz range,
 and that the span of the panel is between xyz_high/20 and xyz_high*10.
 A small random number &lt; 1e-3 is added/subtracted to the min/max z position of the panel, to ensure it doesn’t overlap with other panels.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>xyz_low</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – minimum x,y,z values for the panel centre in metres</p></li>
 <li><p><strong>xyz_high</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – maximum x,y,z values for the panel centre in metres</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
 </dd>
 </dl>
@@ -280,13 +282,13 @@ A small random number &lt; 1e-3 is added/subtracted to the min/max z position of
 
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.benchmarks.phi_detector.detector.PhiDetectorPanel.get_efficiency">
-<span class="sig-name descname"><span class="pre">get_efficiency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">as_2d</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/phi_detector/detector.html#PhiDetectorPanel.get_efficiency"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.phi_detector.detector.PhiDetectorPanel.get_efficiency" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_efficiency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">as_2d</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/phi_detector/detector.html#PhiDetectorPanel.get_efficiency"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.phi_detector.detector.PhiDetectorPanel.get_efficiency" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the efficiency of panel at the supplied list of xy points.
 If running in evaluation mode with <cite>realistic_validation</cite>,
 then these will be the full efficiency of the panel for points inside the panel (indicated by the mask), and zero outside.
 Otherwise, the Gaussian model will be used.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>xy</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) or (N,xy) tensor of positions</p></li>
 <li><p><strong>mask</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]) – optional pre-computed (N,) Boolean mask, where True indicates that the xy point is inside the panel.
@@ -294,10 +296,10 @@ Only used in evaluation mode and if <cite>realistic_validation</cite> is True.
 If required, but not supplied, than will be computed automatically.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
 </dd>
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>eff, a (N,)tensor of the efficiency at the xy points</p>
 </dd>
 </dl>
@@ -305,7 +307,7 @@ If required, but not supplied, than will be computed automatically.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.benchmarks.phi_detector.detector.PhiDetectorPanel.get_hits">
-<span class="sig-name descname"><span class="pre">get_hits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">budget</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/phi_detector/detector.html#PhiDetectorPanel.get_hits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.phi_detector.detector.PhiDetectorPanel.get_hits" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_hits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">budget</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/phi_detector/detector.html#PhiDetectorPanel.get_hits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.phi_detector.detector.PhiDetectorPanel.get_hits" title="Permalink to this definition">¶</a></dt>
 <dd><p>The main interaction method with the panel: returns hits for the supplied muons.
 Hits consist of:</p>
 <blockquote>
@@ -317,7 +319,7 @@ z: z position of the panel</p>
 then these will be the full resolution of the panel for points inside the panel (indicated by the mask), and zero outside.
 Otherwise, the Gaussian model will be used.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]</p>
 </dd>
 </dl>
@@ -325,13 +327,13 @@ Otherwise, the Gaussian model will be used.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.benchmarks.phi_detector.detector.PhiDetectorPanel.get_resolution">
-<span class="sig-name descname"><span class="pre">get_resolution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/phi_detector/detector.html#PhiDetectorPanel.get_resolution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.phi_detector.detector.PhiDetectorPanel.get_resolution" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_resolution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/phi_detector/detector.html#PhiDetectorPanel.get_resolution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.phi_detector.detector.PhiDetectorPanel.get_resolution" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the xy resolutions of panel at the supplied list of xy points.
 If running in evaluation mode with <cite>realistic_validation</cite>,
 then these will be the full resolution of the panel for points inside the panel (indicated by the mask), and zero outside.
 Otherwise, the Gaussian model will be used.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>xy</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,xy) tensor of positions</p></li>
 <li><p><strong>mask</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]) – optional pre-computed (N,) Boolean mask, where True indicates that the xy point is inside the panel.
@@ -339,10 +341,10 @@ Only used in evaluation mode and if <cite>realistic_validation</cite> is True.
 If required, but not supplied, than will be computed automatically.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
 </dd>
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>res, a (N,xy) tensor of the resolution at the xy points</p>
 </dd>
 </dl>
@@ -350,25 +352,25 @@ If required, but not supplied, than will be computed automatically.</p></li>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="tomopt.benchmarks.phi_detector.detector.PhiDetectorPanel.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#tomopt.benchmarks.phi_detector.detector.PhiDetectorPanel.training" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#tomopt.benchmarks.phi_detector.detector.PhiDetectorPanel.training" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 </section>
 <section id="module-tomopt.benchmarks.phi_detector.inference">
-<span id="tomopt-benchmarks-phi-detector-inference-module"></span><h2>tomopt.benchmarks.phi_detector.inference module<a class="headerlink" href="#module-tomopt.benchmarks.phi_detector.inference" title="Permalink to this heading"></a></h2>
+<span id="tomopt-benchmarks-phi-detector-inference-module"></span><h2>tomopt.benchmarks.phi_detector.inference module<a class="headerlink" href="#module-tomopt.benchmarks.phi_detector.inference" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="tomopt.benchmarks.phi_detector.inference.PhiDetScatterBatch">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.benchmarks.phi_detector.inference.</span></span><span class="sig-name descname"><span class="pre">PhiDetScatterBatch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/phi_detector/inference.html#PhiDetScatterBatch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.phi_detector.inference.PhiDetScatterBatch" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.benchmarks.phi_detector.inference.</span></span><span class="sig-name descname"><span class="pre">PhiDetScatterBatch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/phi_detector/inference.html#PhiDetScatterBatch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.phi_detector.inference.PhiDetScatterBatch" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tomopt.inference.html#tomopt.inference.scattering.ScatterBatch" title="tomopt.inference.scattering.ScatterBatch"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScatterBatch</span></code></a></p>
 <p>Untested: no unit tests</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.benchmarks.phi_detector.inference.PhiDetScatterBatch._compute_tracks">
-<span class="sig-name descname"><span class="pre">_compute_tracks</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/phi_detector/inference.html#PhiDetScatterBatch._compute_tracks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.phi_detector.inference.PhiDetScatterBatch._compute_tracks" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">_compute_tracks</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/phi_detector/inference.html#PhiDetScatterBatch._compute_tracks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.phi_detector.inference.PhiDetScatterBatch._compute_tracks" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes tracks from hits according to the uncertainty and efficiency of the hits, computed as 1/(resolution*efficiency).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
 </dd>
 </dl>
@@ -376,10 +378,10 @@ If required, but not supplied, than will be computed automatically.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.benchmarks.phi_detector.inference.PhiDetScatterBatch._extract_hits">
-<span class="sig-name descname"><span class="pre">_extract_hits</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/phi_detector/inference.html#PhiDetScatterBatch._extract_hits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.phi_detector.inference.PhiDetScatterBatch._extract_hits" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">_extract_hits</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/phi_detector/inference.html#PhiDetScatterBatch._extract_hits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.phi_detector.inference.PhiDetScatterBatch._extract_hits" title="Permalink to this definition">¶</a></dt>
 <dd><p>Takes the dictionary of hits from the muons and combines them into single tensors of recorded and true hits.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
 </dd>
 </dl>
@@ -387,9 +389,9 @@ If required, but not supplied, than will be computed automatically.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.benchmarks.phi_detector.inference.PhiDetScatterBatch._get_hit_uncs">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_get_hit_uncs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zordered_panels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hits</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/phi_detector/inference.html#PhiDetScatterBatch._get_hit_uncs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.phi_detector.inference.PhiDetScatterBatch._get_hit_uncs" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_get_hit_uncs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zordered_panels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hits</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/phi_detector/inference.html#PhiDetScatterBatch._get_hit_uncs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.phi_detector.inference.PhiDetScatterBatch._get_hit_uncs" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
 </dd>
 </dl>
@@ -397,7 +399,7 @@ If required, but not supplied, than will be computed automatically.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.benchmarks.phi_detector.inference.PhiDetScatterBatch.get_muon_trajectory">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_muon_trajectory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uncs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lw</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/phi_detector/inference.html#PhiDetScatterBatch.get_muon_trajectory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.phi_detector.inference.PhiDetScatterBatch.get_muon_trajectory" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_muon_trajectory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uncs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lw</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/phi_detector/inference.html#PhiDetScatterBatch.get_muon_trajectory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.phi_detector.inference.PhiDetScatterBatch.get_muon_trajectory" title="Permalink to this definition">¶</a></dt>
 <dd><p>hits = (muons,panels,(h,phi,z))
 uncs = (muons,panels,(unc,0,0))</p>
 <p>Assumes no uncertainty for z and phi</p>
@@ -418,7 +420,7 @@ Muons with &gt;=2 hits in panels have valid trajectories</p>
 </dd>
 </dl>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]</p>
 </dd>
 </dl>
@@ -426,13 +428,13 @@ Muons with &gt;=2 hits in panels have valid trajectories</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.benchmarks.phi_detector.inference.PhiDetScatterBatch.plot_scatter">
-<span class="sig-name descname"><span class="pre">plot_scatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/phi_detector/inference.html#PhiDetScatterBatch.plot_scatter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.phi_detector.inference.PhiDetScatterBatch.plot_scatter" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">plot_scatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/phi_detector/inference.html#PhiDetScatterBatch.plot_scatter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.phi_detector.inference.PhiDetScatterBatch.plot_scatter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots representation of hits and fitted trajectories for a single muon.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>idx</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – index of muon to plot</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
 </dd>
 </dl>
