@@ -293,7 +293,14 @@
 <span class="sd">            mu: the incoming batch of muons</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">pass</span></div></div>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="AbsLayer.get_lw_z_size"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.AbsLayer.get_lw_z_size">[docs]</a>    <span class="k">def</span> <span class="nf">get_lw_z_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            The length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0), the z position of the top of layer in metres, and the voxel size in metres.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lw</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span></div></div>
 
 
 <div class="viewcode-block" id="PassiveLayer"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.PassiveLayer">[docs]</a><span class="k">class</span> <span class="nc">PassiveLayer</span><span class="p">(</span><span class="n">AbsLayer</span><span class="p">):</span>

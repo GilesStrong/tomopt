@@ -524,6 +524,19 @@ size is also used to set the length, width, and height of the voxels that make u
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.volume.layer.AbsLayer.get_lw_z_size">
+<span class="sig-name descname"><span class="pre">get_lw_z_size</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/layer.html#AbsLayer.get_lw_z_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.layer.AbsLayer.get_lw_z_size" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0), the z position of the top of layer in metres, and the voxel size in metres.</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="tomopt.volume.layer.AbsLayer.training">
 <span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#tomopt.volume.layer.AbsLayer.training" title="Permalink to this definition">¶</a></dt>
@@ -1396,6 +1409,25 @@ Slices of these budgets are then passed to the layers, with the length of the sl
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.volume.volume.Volume.draw">
+<span class="sig-name descname"><span class="pre">draw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zlim</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/volume.html#Volume.draw"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.volume.Volume.draw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draws the layers/panels pertaining to the volume.
+When using this in a jupyter notebook, use “%matplotlib notebook” to have an interactive plot that you can rotate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xlim</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – the x axis range for the three-dimensional plot.</p></li>
+<li><p><strong>ylim</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – the y axis range for the three-dimensional plot.</p></li>
+<li><p><strong>zlim</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – the z axis range for the three-dimensional plot.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="tomopt.volume.volume.Volume.edges">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">edges</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.volume.volume.Volume.edges" title="Permalink to this definition">¶</a></dt>
@@ -1665,6 +1697,7 @@ The target can be set as part of the call to <a class="reference internal" href=
 <li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer._abc_impl"><code class="docutils literal notranslate"><span class="pre">AbsLayer._abc_impl</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">AbsLayer._is_full_backward_hook</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer.forward"><code class="docutils literal notranslate"><span class="pre">AbsLayer.forward()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer.get_lw_z_size"><code class="docutils literal notranslate"><span class="pre">AbsLayer.get_lw_z_size()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer.training"><code class="docutils literal notranslate"><span class="pre">AbsLayer.training</span></code></a></li>
 </ul>
 </li>
@@ -1748,6 +1781,7 @@ The target can be set as part of the call to <a class="reference internal" href=
 <li><a class="reference internal" href="#tomopt.volume.volume.Volume.build_edges"><code class="docutils literal notranslate"><span class="pre">Volume.build_edges()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.volume.Volume.centres"><code class="docutils literal notranslate"><span class="pre">Volume.centres</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.volume.Volume.device"><code class="docutils literal notranslate"><span class="pre">Volume.device</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.volume.volume.Volume.draw"><code class="docutils literal notranslate"><span class="pre">Volume.draw()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.volume.Volume.edges"><code class="docutils literal notranslate"><span class="pre">Volume.edges</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.volume.Volume.forward"><code class="docutils literal notranslate"><span class="pre">Volume.forward()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.volume.Volume.get_cost"><code class="docutils literal notranslate"><span class="pre">Volume.get_cost()</span></code></a></li>

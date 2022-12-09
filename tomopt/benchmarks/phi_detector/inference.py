@@ -100,10 +100,10 @@ class PhiDetScatterBatch(ScatterBatch):
         """
         raise NotImplementedError("We still need to work out how to fit tracks efficiently!")
 
-        hits = torch.where(torch.isinf(hits), lw.mean().type(hits.type()) / 2, hits)
-        uncs = torch.nan_to_num(uncs)  # Set Infs to large number
+        # hits = torch.where(torch.isinf(hits), lw.mean().type(hits.type()) / 2, hits)
+        # uncs = torch.nan_to_num(uncs)  # Set Infs to large number
 
-        x0: Tensor
-        y0: Tensor  # Track positions at Z0=0
-        phi: Tensor
-        theta: Tensor  # Track angles
+        # x0: Tensor
+        # y0: Tensor  # Track positions at Z0=0
+        # phi: Tensor
+        # theta: Tensor  # Track angles
