@@ -237,18 +237,76 @@
               
   <h1>Source code for tomopt.optimisation.callbacks.detector_callbacks</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
 
+<span class="kn">from</span> <span class="nn">.warmup_callbacks</span> <span class="kn">import</span> <span class="n">PostWarmupCallback</span>
+<span class="kn">from</span> <span class="nn">...volume</span> <span class="kn">import</span> <span class="n">PanelDetectorLayer</span><span class="p">,</span> <span class="n">SigmoidDetectorPanel</span>
 <span class="kn">from</span> <span class="nn">.callback</span> <span class="kn">import</span> <span class="n">Callback</span>
-<span class="kn">from</span> <span class="nn">...volume</span> <span class="kn">import</span> <span class="n">PanelDetectorLayer</span>
 
 <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Set of callbacks that affect the detectors during optimisation</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;PanelUpdateLimiter&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;PanelUpdateLimiter&#39;</span><span class="p">,</span> <span class="s2">&quot;SigmoidPanelSmoothnessSchedule&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="SigmoidPanelSmoothnessSchedule"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule">[docs]</a><span class="k">class</span> <span class="nc">SigmoidPanelSmoothnessSchedule</span><span class="p">(</span><span class="n">PostWarmupCallback</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates an annealing schedule for the smooth attribute of :class:`~tomopt.volume.panel.SigmoidDetectorPanel`.</span>
+<span class="sd">    This can be used to move from smooth, unphysical panel with high sensitivity outside the physical panel boundaries,</span>
+<span class="sd">    to one with sharper decrease in resolution | efficiency at the edge, and so more closely resembles a physical panel, whilst still being differentiable.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        smooth_range: tuple of initial and final values for the smooth attributes of all panels in the volume.</span>
+<span class="sd">            A base-10 log schedule used over the number of epochs-total number of warmup epochs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">smooth_range</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">smooth_range</span> <span class="o">=</span> <span class="n">smooth_range</span>
+
+<div class="viewcode-block" id="SigmoidPanelSmoothnessSchedule._activate"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule._activate">[docs]</a>    <span class="k">def</span> <span class="nf">_activate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        When the schedule begins, computes the appropriate smooth value at each up-coming epoch.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_activate</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrapper</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">epoch</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">smooth</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">smooth_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">smooth_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrapper</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">n_epochs</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SigmoidPanelSmoothnessSchedule.on_train_begin"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule.on_train_begin">[docs]</a>    <span class="k">def</span> <span class="nf">on_train_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets all :class:`~tomopt.volume.panel.SigmoidDetectorPanel` s to their initial smooth values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">on_train_begin</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_smooth</span><span class="p">(</span><span class="n">Tensor</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">smooth_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]]))</span></div>
+
+<div class="viewcode-block" id="SigmoidPanelSmoothnessSchedule._set_smooth"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule._set_smooth">[docs]</a>    <span class="k">def</span> <span class="nf">_set_smooth</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">smooth</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the smooth values for all :class:`~tomopt.volume.panel.SigmoidDetectorPanel  in the detector.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            smooth: smooth values for every :class:`~tomopt.volume.panel.SigmoidDetectorPanel` in the volume.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">det</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrapper</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">get_detectors</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">det</span><span class="p">,</span> <span class="n">PanelDetectorLayer</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">det</span><span class="o">.</span><span class="n">panels</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">SigmoidDetectorPanel</span><span class="p">):</span>
+                        <span class="n">p</span><span class="o">.</span><span class="n">smooth</span> <span class="o">=</span> <span class="n">smooth</span></div>
+
+<div class="viewcode-block" id="SigmoidPanelSmoothnessSchedule.on_epoch_begin"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule.on_epoch_begin">[docs]</a>    <span class="k">def</span> <span class="nf">on_epoch_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        At the start of each training epoch, will anneal the :class:`~tomopt.volume.panel.SigmoidDetectorPanel` s&#39; smooth attributes, if the callback is active.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">on_epoch_begin</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrapper</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s2">&quot;train&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_set_smooth</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">smooth</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">wrapper</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">epoch</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span></div></div>
 
 
 <div class="viewcode-block" id="PanelUpdateLimiter"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.detector_callbacks.PanelUpdateLimiter">[docs]</a><span class="k">class</span> <span class="nc">PanelUpdateLimiter</span><span class="p">(</span><span class="n">Callback</span><span class="p">):</span>

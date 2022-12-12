@@ -1,4 +1,4 @@
-from typing import Tuple, Optional, Dict
+from typing import Tuple, Optional, Dict, Union
 import numpy as np
 
 import torch
@@ -13,7 +13,7 @@ Provides implementations of class simulating panel-style detectors with learnabl
 """
 
 
-__all__ = ["DetectorPanel"]
+__all__ = ["DetectorPanel", "SigmoidDetectorPanel"]
 
 
 class DetectorPanel(nn.Module):
@@ -68,7 +68,7 @@ class DetectorPanel(nn.Module):
         init_xy_span: Tuple[float, float],
         m2_cost: float = 1,
         budget: Optional[Tensor] = None,
-        realistic_validation: bool = False,
+        realistic_validation: bool = True,
         device: torch.device = DEVICE,
     ):
         r"""
@@ -282,3 +282,168 @@ class DetectorPanel(nn.Module):
     @property
     def y(self) -> Tensor:
         return self.xy[1]
+
+
+class SigmoidDetectorPanel(DetectorPanel):
+    r"""
+    Provides an infinitely thin, rectangular panel in the xy plane, centred at a learnable xyz position (metres, in absolute position in the volume frame),
+    with a learnable width in x and y (`xy_span`).
+    Whilst this class can be used manually, it is designed to be used by the :class:`~tomopt.volume.layer.PanelDetectorLayer` class.
+
+    Despite inheriting from `nn.Module`, the `forward` method should not be called, instead passing a :class:`~tomopt.muon.muon_batch.MuonBatch` to the
+    `get_hits` method will return hits corresponding to the muons.
+
+    During training model (`.train()` or `.training` is True), a continuous model of the resolution and efficiency will be used, such that hits are
+    differentiable w.r.t. the learnable parameters of the panel. This means that muons outside of the physical panel will have hits at non-zero resolution.
+    The model is a 2D uncorrelated Sigmoid in xy, centred over the panel, which pass 0.5 at the xy_spans/2.
+    The smoothness of the sigmoid affects the rate of change of resolution|efficiency near the edge of the physical border:
+    A higher smooth value provides a slower change, with higher resolution|efficiency outside the physical panel, whereas a lower smooth value provides a
+    sharper transition, with lower sensitivity to muons outside the panel (and therefore more strongly approximated a physical panel).
+    The :class:`~tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule` can be used to anneal this smoothness during optimisation.
+
+    Efficiency is accounted for via a weighting approach, rather than deciding whether to record hits or not, i.e. muons will always record hits,
+    but the probability of the hit actually being recorded is computable.
+
+    During evaluation mode (`.eval()` or `.training` is False), if the panel is set to use `realistic_validation`, then the physical panel will be simulated:
+    Muons outside the panel have zero resolution and efficiency, resulting in NaN hits positions.
+    Muons inside the panel will have the full resolution and efficiency of the panel,
+    but hits will not be differentiable w.r.t. the panel xy-position or xy-span.
+    If `realistic_validation` is False, then the continuous model will be used also in evaluation mode.
+
+    The cost of the panel is based on the supplied cost per metre squared, and the current area of the panel, according to its learnt xy-span.
+    Panels can also be run in "fixed-budget" mode, in which a cost of the panel is specified via the `.assign_budget` method.
+    Based on the cost per m^2, the panel will change in effective width, based on its learn xy_span (now an aspect ratio), such that its area results in a cost
+    equal to the specified cost of the panel.
+
+    The resolution and efficiency remain fixed at the specified values.
+    If intending to run in "fixed-budget" mode, then a budget can be specified here,
+    however the :class"`~tomopt.volume.volume.Volume` class will pass through all panels and initialise their budgets.
+
+    Arguments:
+        smooth: smoothness of the sigmoid: A higher smooth value provides a slower change, with higher resolution|efficiency outside the physical panel,
+            whereas a lower smooth value provides a sharper transition, with lower sensitivity to muons outside the panel
+            (and therefore more strongly approximated a physical panel).
+        res: resolution of the panel in m^-1, i.e. a higher value improves the precision on the hit recording
+        eff: efficiency of the hit recording of the panel, indicated as a probability [0,1]
+        init_xyz: initial xyz position of the panel in metres in the volume frame
+        init_xy_span: initial xy-span (total width) of the panel in metres
+        m2_cost: the cost in unit currency of the 1 square metre of detector
+        budget: optional required cost of the panel. Based on the span and cost per m^2, the panel will resize to meet the required cost
+        realistic_validation: if True, will use the physical interpretation of the panel during evaluation
+        device: device on which to place tensors
+    """
+
+    def __init__(
+        self,
+        *,
+        smooth: Union[float, Tensor],
+        res: float,
+        eff: float,
+        init_xyz: Tuple[float, float, float],
+        init_xy_span: Tuple[float, float],
+        m2_cost: float = 1,
+        budget: Optional[Tensor] = None,
+        realistic_validation: bool = True,
+        device: torch.device = DEVICE,
+    ):
+        super().__init__(
+            res=res,
+            eff=eff,
+            init_xyz=init_xyz,
+            init_xy_span=init_xy_span,
+            m2_cost=m2_cost,
+            budget=budget,
+            realistic_validation=realistic_validation,
+            device=device,
+        )
+        # Smooth will be massaged to Tensor, but MyPy doesn't spot this
+        self.smooth = smooth  # type: ignore
+
+    def sig_model(self, xy: Tensor) -> Tensor:
+        r"""
+        Models fractional resolution and efficiency from a sigmoid-based model to provide a smooth and differentiable model of a physical detector-panel.
+
+        Arguments:
+            xy: (N,xy) tensor of positions
+
+        Returns:
+            Multiplicative coefficients for the nominal resolution or efficiency of the panel based on the xy position relative to the panel position and size
+        """
+
+        half_width = self.get_scaled_xy_span() / 2
+        delta = (xy - self.xy) / half_width
+        coef = torch.sigmoid((1 - (torch.sign(delta) * delta)) / self.smooth)
+        return coef / torch.sigmoid(1 / self.smooth)
+
+    def get_resolution(self, xy: Tensor, mask: Optional[Tensor] = None) -> Tensor:
+        r"""
+        Computes the xy resolutions of panel at the supplied list of xy points.
+        If running in evaluation mode with `realistic_validation`,
+        then these will be the full resolution of the panel for points inside the panel (indicated by the mask), and zero outside.
+        Otherwise, the Sigmoid model will be used.
+
+        Arguments:
+            xy: (N,xy) tensor of positions
+            mask: optional pre-computed (N,) Boolean mask, where True indicates that the xy point is inside the panel.
+                Only used in evaluation mode and if `realistic_validation` is True.
+                If required, but not supplied, than will be computed automatically.
+
+        Returns:
+            res, a (N,xy) tensor of the resolution at the xy points
+        """
+
+        if not isinstance(self.resolution, Tensor):
+            raise ValueError(f"{self.resolution} is not a Tensor for some reason.")  # To appease MyPy
+        if self.training or not self.realistic_validation:
+            res = self.resolution * self.sig_model(xy)
+            res = torch.clamp_min(res, 1e-10)  # To avoid NaN gradients
+        else:
+            if mask is None:
+                mask = self.get_xy_mask(xy)
+            res = torch.zeros((len(xy), 2), device=self.device)  # Zero detection outside detector
+            res[mask] = self.resolution
+        return res
+
+    def get_efficiency(self, xy: Tensor, mask: Optional[Tensor] = None) -> Tensor:
+        r"""
+        Computes the efficiency of panel at the supplied list of xy points.
+        If running in evaluation mode with `realistic_validation`,
+        then these will be the full efficiency of the panel for points inside the panel (indicated by the mask), and zero outside.
+        Otherwise, the Sigmoid model will be used.
+
+        Arguments:
+            xy: (N,) or (N,xy) tensor of positions
+            mask: optional pre-computed (N,) Boolean mask, where True indicates that the xy point is inside the panel.
+                Only used in evaluation mode and if `realistic_validation` is True.
+                If required, but not supplied, than will be computed automatically.
+
+        Returns:
+            eff, a (N,)tensor of the efficiency at the xy points
+        """
+
+        if not isinstance(self.efficiency, Tensor):
+            raise ValueError(f"{self.efficiency} is not a Tensor for some reason.")  # To appease MyPy
+        if self.training or not self.realistic_validation:
+            eff = self.efficiency * self.sig_model(xy).prod(dim=-1)
+            eff = torch.clamp_min(eff, 1e-10)  # To avoid NaN gradients
+        else:
+            if mask is None:
+                mask = self.get_xy_mask(xy)
+            eff = torch.zeros(len(xy), device=self.device)  # Zero detection outside detector
+            eff[mask] = self.efficiency
+        return eff
+
+    @property
+    def smooth(self) -> Tensor:
+        return self._smooth
+
+    @smooth.setter
+    def smooth(self, smooth: Union[float, Tensor]) -> None:
+        if not smooth > 0:
+            raise ValueError("smooth artgument must be positive and non-zero")
+        if not isinstance(smooth, Tensor):
+            smooth = Tensor([smooth], device=self.device)
+        if hasattr(self, "_smooth"):
+            self._smooth = smooth
+        else:
+            self.register_buffer("_smooth", smooth)

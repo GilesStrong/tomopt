@@ -112,7 +112,6 @@ tomopt.optimisation.callbacks.warmup\_callbacks module
    :show-inheritance:
    :private-members:
 
-
 tomopt.optimisation.callbacks.detector\_callbacks module
 ----------------------------------------------------
 

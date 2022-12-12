@@ -1031,7 +1031,7 @@ If a muon moves into a neighbouring voxel of differing X0, then this will only b
 <span id="tomopt-volume-panel-module"></span><h2>tomopt.volume.panel module<a class="headerlink" href="#module-tomopt.volume.panel" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="tomopt.volume.panel.DetectorPanel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.volume.panel.</span></span><span class="sig-name descname"><span class="pre">DetectorPanel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_xyz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_xy_span</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m2_cost</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">budget</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">realistic_validation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">device(type='cpu')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/panel.html#DetectorPanel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.panel.DetectorPanel" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.volume.panel.</span></span><span class="sig-name descname"><span class="pre">DetectorPanel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_xyz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_xy_span</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m2_cost</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">budget</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">realistic_validation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">device(type='cpu')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/panel.html#DetectorPanel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.panel.DetectorPanel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
 <p>Provides an infinitely thin, rectangular panel in the xy plane, centred at a learnable xyz position (metres, in absolute position in the volume frame),
 with a learnable width in x and y (<cite>xy_span</cite>).
@@ -1282,6 +1282,187 @@ If required, but not supplied, than will be computed automatically.</p></li>
 
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="tomopt.volume.panel.SigmoidDetectorPanel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.volume.panel.</span></span><span class="sig-name descname"><span class="pre">SigmoidDetectorPanel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smooth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_xyz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_xy_span</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m2_cost</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">budget</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">realistic_validation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">device(type='cpu')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/panel.html#SigmoidDetectorPanel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.panel.SigmoidDetectorPanel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tomopt.volume.panel.DetectorPanel" title="tomopt.volume.panel.DetectorPanel"><code class="xref py py-class docutils literal notranslate"><span class="pre">DetectorPanel</span></code></a></p>
+<p>Provides an infinitely thin, rectangular panel in the xy plane, centred at a learnable xyz position (metres, in absolute position in the volume frame),
+with a learnable width in x and y (<cite>xy_span</cite>).
+Whilst this class can be used manually, it is designed to be used by the <a class="reference internal" href="#tomopt.volume.layer.PanelDetectorLayer" title="tomopt.volume.layer.PanelDetectorLayer"><code class="xref py py-class docutils literal notranslate"><span class="pre">PanelDetectorLayer</span></code></a> class.</p>
+<p>Despite inheriting from <cite>nn.Module</cite>, the <cite>forward</cite> method should not be called, instead passing a <a class="reference internal" href="tomopt.muon.html#tomopt.muon.muon_batch.MuonBatch" title="tomopt.muon.muon_batch.MuonBatch"><code class="xref py py-class docutils literal notranslate"><span class="pre">MuonBatch</span></code></a> to the
+<cite>get_hits</cite> method will return hits corresponding to the muons.</p>
+<p>During training model (<cite>.train()</cite> or <cite>.training</cite> is True), a continuous model of the resolution and efficiency will be used, such that hits are
+differentiable w.r.t. the learnable parameters of the panel. This means that muons outside of the physical panel will have hits at non-zero resolution.
+The model is a 2D uncorrelated Sigmoid in xy, centred over the panel, which pass 0.5 at the xy_spans/2.
+The smoothness of the sigmoid affects the rate of change of resolution|efficiency near the edge of the physical border:
+A higher smooth value provides a slower change, with higher resolution|efficiency outside the physical panel, whereas a lower smooth value provides a
+sharper transition, with lower sensitivity to muons outside the panel (and therefore more strongly approximated a physical panel).
+The <a class="reference internal" href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule" title="tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule"><code class="xref py py-class docutils literal notranslate"><span class="pre">SigmoidPanelSmoothnessSchedule</span></code></a> can be used to anneal this smoothness during optimisation.</p>
+<p>Efficiency is accounted for via a weighting approach, rather than deciding whether to record hits or not, i.e. muons will always record hits,
+but the probability of the hit actually being recorded is computable.</p>
+<p>During evaluation mode (<cite>.eval()</cite> or <cite>.training</cite> is False), if the panel is set to use <cite>realistic_validation</cite>, then the physical panel will be simulated:
+Muons outside the panel have zero resolution and efficiency, resulting in NaN hits positions.
+Muons inside the panel will have the full resolution and efficiency of the panel,
+but hits will not be differentiable w.r.t. the panel xy-position or xy-span.
+If <cite>realistic_validation</cite> is False, then the continuous model will be used also in evaluation mode.</p>
+<p>The cost of the panel is based on the supplied cost per metre squared, and the current area of the panel, according to its learnt xy-span.
+Panels can also be run in “fixed-budget” mode, in which a cost of the panel is specified via the <cite>.assign_budget</cite> method.
+Based on the cost per m^2, the panel will change in effective width, based on its learn xy_span (now an aspect ratio), such that its area results in a cost
+equal to the specified cost of the panel.</p>
+<p>The resolution and efficiency remain fixed at the specified values.
+If intending to run in “fixed-budget” mode, then a budget can be specified here,
+however the :class”<cite>~tomopt.volume.volume.Volume</cite> class will pass through all panels and initialise their budgets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>smooth</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]) – smoothness of the sigmoid: A higher smooth value provides a slower change, with higher resolution|efficiency outside the physical panel,
+whereas a lower smooth value provides a sharper transition, with lower sensitivity to muons outside the panel
+(and therefore more strongly approximated a physical panel).</p></li>
+<li><p><strong>res</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – resolution of the panel in m^-1, i.e. a higher value improves the precision on the hit recording</p></li>
+<li><p><strong>eff</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – efficiency of the hit recording of the panel, indicated as a probability [0,1]</p></li>
+<li><p><strong>init_xyz</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – initial xyz position of the panel in metres in the volume frame</p></li>
+<li><p><strong>init_xy_span</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – initial xy-span (total width) of the panel in metres</p></li>
+<li><p><strong>m2_cost</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – the cost in unit currency of the 1 square metre of detector</p></li>
+<li><p><strong>budget</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]) – optional required cost of the panel. Based on the span and cost per m^2, the panel will resize to meet the required cost</p></li>
+<li><p><strong>realistic_validation</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code>) – if True, will use the physical interpretation of the panel during evaluation</p></li>
+<li><p><strong>device</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">device</span></code>) – device on which to place tensors</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.volume.panel.SigmoidDetectorPanel._backward_hooks">
+<span class="sig-name descname"><span class="pre">_backward_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.panel.SigmoidDetectorPanel._backward_hooks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.volume.panel.SigmoidDetectorPanel._buffers">
+<span class="sig-name descname"><span class="pre">_buffers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.panel.SigmoidDetectorPanel._buffers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.volume.panel.SigmoidDetectorPanel._forward_hooks">
+<span class="sig-name descname"><span class="pre">_forward_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.panel.SigmoidDetectorPanel._forward_hooks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.volume.panel.SigmoidDetectorPanel._forward_pre_hooks">
+<span class="sig-name descname"><span class="pre">_forward_pre_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.panel.SigmoidDetectorPanel._forward_pre_hooks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.volume.panel.SigmoidDetectorPanel._is_full_backward_hook">
+<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.panel.SigmoidDetectorPanel._is_full_backward_hook" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.volume.panel.SigmoidDetectorPanel._load_state_dict_pre_hooks">
+<span class="sig-name descname"><span class="pre">_load_state_dict_pre_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.panel.SigmoidDetectorPanel._load_state_dict_pre_hooks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.volume.panel.SigmoidDetectorPanel._modules">
+<span class="sig-name descname"><span class="pre">_modules</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'Module'</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.panel.SigmoidDetectorPanel._modules" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.volume.panel.SigmoidDetectorPanel._non_persistent_buffers_set">
+<span class="sig-name descname"><span class="pre">_non_persistent_buffers_set</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.panel.SigmoidDetectorPanel._non_persistent_buffers_set" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.volume.panel.SigmoidDetectorPanel._parameters">
+<span class="sig-name descname"><span class="pre">_parameters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Parameter</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.panel.SigmoidDetectorPanel._parameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.volume.panel.SigmoidDetectorPanel._state_dict_hooks">
+<span class="sig-name descname"><span class="pre">_state_dict_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.panel.SigmoidDetectorPanel._state_dict_hooks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.volume.panel.SigmoidDetectorPanel.get_efficiency">
+<span class="sig-name descname"><span class="pre">get_efficiency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/panel.html#SigmoidDetectorPanel.get_efficiency"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.panel.SigmoidDetectorPanel.get_efficiency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the efficiency of panel at the supplied list of xy points.
+If running in evaluation mode with <cite>realistic_validation</cite>,
+then these will be the full efficiency of the panel for points inside the panel (indicated by the mask), and zero outside.
+Otherwise, the Sigmoid model will be used.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xy</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) or (N,xy) tensor of positions</p></li>
+<li><p><strong>mask</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]) – optional pre-computed (N,) Boolean mask, where True indicates that the xy point is inside the panel.
+Only used in evaluation mode and if <cite>realistic_validation</cite> is True.
+If required, but not supplied, than will be computed automatically.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>eff, a (N,)tensor of the efficiency at the xy points</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.volume.panel.SigmoidDetectorPanel.get_resolution">
+<span class="sig-name descname"><span class="pre">get_resolution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/panel.html#SigmoidDetectorPanel.get_resolution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.panel.SigmoidDetectorPanel.get_resolution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the xy resolutions of panel at the supplied list of xy points.
+If running in evaluation mode with <cite>realistic_validation</cite>,
+then these will be the full resolution of the panel for points inside the panel (indicated by the mask), and zero outside.
+Otherwise, the Sigmoid model will be used.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xy</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,xy) tensor of positions</p></li>
+<li><p><strong>mask</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]) – optional pre-computed (N,) Boolean mask, where True indicates that the xy point is inside the panel.
+Only used in evaluation mode and if <cite>realistic_validation</cite> is True.
+If required, but not supplied, than will be computed automatically.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>res, a (N,xy) tensor of the resolution at the xy points</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.volume.panel.SigmoidDetectorPanel.sig_model">
+<span class="sig-name descname"><span class="pre">sig_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xy</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/panel.html#SigmoidDetectorPanel.sig_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.panel.SigmoidDetectorPanel.sig_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Models fractional resolution and efficiency from a sigmoid-based model to provide a smooth and differentiable model of a physical detector-panel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>xy</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,xy) tensor of positions</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Multiplicative coefficients for the nominal resolution or efficiency of the panel based on the xy position relative to the panel position and size</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.volume.panel.SigmoidDetectorPanel.smooth">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">smooth</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.volume.panel.SigmoidDetectorPanel.smooth" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.volume.panel.SigmoidDetectorPanel.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#tomopt.volume.panel.SigmoidDetectorPanel.training" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="module-tomopt.volume.scatter_model">
 <span id="tomopt-volume-scatter-model-module"></span><h2>tomopt.volume.scatter_model module<a class="headerlink" href="#module-tomopt.volume.scatter_model" title="Permalink to this heading">¶</a></h2>
@@ -1302,13 +1483,13 @@ The target can be set as part of the call to <a class="reference internal" href=
 <p>The volume is expected to have its low-left-front (zxy) corner located at (0,0,0) metres.</p>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
-<p>Currently this class expects that all :class:<a href="#id1"><span class="problematic" id="id2">`</span></a>~tomopt.volume.layer.PassiveLayer`s form a single contiguous block,
+<p>Currently this class expects that all <a class="reference internal" href="#tomopt.volume.layer.PassiveLayer" title="tomopt.volume.layer.PassiveLayer"><code class="xref py py-class docutils literal notranslate"><span class="pre">PassiveLayer</span></code></a> s form a single contiguous block,
 i.e. it does not currently support sparse, or multiple, passive volumes.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>layers</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ModuleList</span></code>) – <cite>torch.nn.ModuleList</cite> of instantiated :class:<a href="#id3"><span class="problematic" id="id4">`</span></a>~tomopt.volume.layer.AbsLayer`s, ordered in decreasing z position.</p></li>
+<li><p><strong>layers</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ModuleList</span></code>) – <cite>torch.nn.ModuleList</cite> of instantiated <a class="reference internal" href="#tomopt.volume.layer.AbsLayer" title="tomopt.volume.layer.AbsLayer"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsLayer</span></code></a> s, ordered in decreasing z position.</p></li>
 <li><p><strong>budget</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – optional budget of the detector in currency units.
 Supplying a value for the optional budget, here, will prepare the volume to learn budget assignments to the detectors,
 and configure the detectors for the budget.</p></li>
@@ -1318,7 +1499,7 @@ and configure the detectors for the budget.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.volume.volume.Volume._check_passives">
 <span class="sig-name descname"><span class="pre">_check_passives</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/volume.html#Volume._check_passives"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.volume.Volume._check_passives" title="Permalink to this definition">¶</a></dt>
-<dd><p>Ensures that all :class:<a href="#id5"><span class="problematic" id="id6">`</span></a>~tomopt.volume.layer.PassiveLayer`s have the same sizes</p>
+<dd><p>Ensures that all <a class="reference internal" href="#tomopt.volume.layer.PassiveLayer" title="tomopt.volume.layer.PassiveLayer"><code class="xref py py-class docutils literal notranslate"><span class="pre">PassiveLayer</span></code></a> s have the same sizes</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
@@ -1479,7 +1660,7 @@ Prior to propagating muons, the <a class="reference internal" href="#tomopt.volu
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="#tomopt.volume.layer.AbsDetectorLayer" title="tomopt.volume.layer.AbsDetectorLayer"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsDetectorLayer</span></code></a>]</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A list of all <code class="xref py py-class docutils literal notranslate"><span class="pre">AbsDetectorLayer`s</span> <span class="pre">in</span> <span class="pre">the</span> <span class="pre">volume,</span> <span class="pre">in</span> <span class="pre">the</span> <span class="pre">order</span> <span class="pre">of</span> <span class="pre">`layers</span></code> (normally decreasing z position)</p>
+<dd class="field-even"><p>A list of all <a class="reference internal" href="#tomopt.volume.layer.AbsDetectorLayer" title="tomopt.volume.layer.AbsDetectorLayer"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsDetectorLayer</span></code></a> s in the volume, in the order of <cite>layers</cite> (normally decreasing z position)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1505,7 +1686,7 @@ Prior to propagating muons, the <a class="reference internal" href="#tomopt.volu
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="#tomopt.volume.layer.PassiveLayer" title="tomopt.volume.layer.PassiveLayer"><code class="xref py py-class docutils literal notranslate"><span class="pre">PassiveLayer</span></code></a>]</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A list of all <code class="xref py py-class docutils literal notranslate"><span class="pre">PassiveLayer`s</span> <span class="pre">in</span> <span class="pre">the</span> <span class="pre">volume,</span> <span class="pre">in</span> <span class="pre">the</span> <span class="pre">order</span> <span class="pre">of</span> <span class="pre">`layers</span></code> (normally decreasing z position)</p>
+<dd class="field-even"><p>A list of all <a class="reference internal" href="#tomopt.volume.layer.PassiveLayer" title="tomopt.volume.layer.PassiveLayer"><code class="xref py py-class docutils literal notranslate"><span class="pre">PassiveLayer</span></code></a> s in the volume, in the order of <cite>layers</cite> (normally decreasing z position)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1766,6 +1947,24 @@ The target can be set as part of the call to <a class="reference internal" href=
 <li><a class="reference internal" href="#tomopt.volume.panel.DetectorPanel.training"><code class="docutils literal notranslate"><span class="pre">DetectorPanel.training</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.panel.DetectorPanel.x"><code class="docutils literal notranslate"><span class="pre">DetectorPanel.x</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.panel.DetectorPanel.y"><code class="docutils literal notranslate"><span class="pre">DetectorPanel.y</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel</span></code></a><ul>
+<li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel._backward_hooks"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel._backward_hooks</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel._buffers"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel._buffers</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel._forward_hooks"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel._forward_hooks</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel._forward_pre_hooks"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel._forward_pre_hooks</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel._is_full_backward_hook</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel._load_state_dict_pre_hooks"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel._load_state_dict_pre_hooks</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel._modules"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel._modules</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel._non_persistent_buffers_set"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel._non_persistent_buffers_set</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel._parameters"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel._parameters</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel._state_dict_hooks"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel._state_dict_hooks</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel.get_efficiency"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel.get_efficiency()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel.get_resolution"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel.get_resolution()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel.sig_model"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel.sig_model()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel.smooth"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel.smooth</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel.training"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel.training</span></code></a></li>
 </ul>
 </li>
 </ul>

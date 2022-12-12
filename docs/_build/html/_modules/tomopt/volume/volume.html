@@ -275,11 +275,11 @@
 <span class="sd">    The volume is expected to have its low-left-front (zxy) corner located at (0,0,0) metres.</span>
 
 <span class="sd">    .. important::</span>
-<span class="sd">        Currently this class expects that all :class:`~tomopt.volume.layer.PassiveLayer`s form a single contiguous block,</span>
+<span class="sd">        Currently this class expects that all :class:`~tomopt.volume.layer.PassiveLayer` s form a single contiguous block,</span>
 <span class="sd">        i.e. it does not currently support sparse, or multiple, passive volumes.</span>
 
 <span class="sd">    Arguments:</span>
-<span class="sd">        layers: `torch.nn.ModuleList` of instantiated :class:`~tomopt.volume.layer.AbsLayer`s, ordered in decreasing z position.</span>
+<span class="sd">        layers: `torch.nn.ModuleList` of instantiated :class:`~tomopt.volume.layer.AbsLayer` s, ordered in decreasing z position.</span>
 <span class="sd">        budget: optional budget of the detector in currency units.</span>
 <span class="sd">            Supplying a value for the optional budget, here, will prepare the volume to learn budget assignments to the detectors,</span>
 <span class="sd">            and configure the detectors for the budget.</span>
@@ -339,7 +339,7 @@
 <div class="viewcode-block" id="Volume.get_detectors"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.volume.Volume.get_detectors">[docs]</a>    <span class="k">def</span> <span class="nf">get_detectors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">AbsDetectorLayer</span><span class="p">]:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
-<span class="sd">            A list of all :class:`~tomopt.volume.layer.AbsDetectorLayer`s in the volume, in the order of `layers` (normally decreasing z position)</span>
+<span class="sd">            A list of all :class:`~tomopt.volume.layer.AbsDetectorLayer` s in the volume, in the order of `layers` (normally decreasing z position)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">return</span> <span class="p">[</span><span class="n">l</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">AbsDetectorLayer</span><span class="p">)]</span></div>
@@ -347,7 +347,7 @@
 <div class="viewcode-block" id="Volume.get_passives"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.volume.Volume.get_passives">[docs]</a>    <span class="k">def</span> <span class="nf">get_passives</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">PassiveLayer</span><span class="p">]:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
-<span class="sd">            A list of all :class:`~tomopt.volume.layer.PassiveLayer`s in the volume, in the order of `layers` (normally decreasing z position)</span>
+<span class="sd">            A list of all :class:`~tomopt.volume.layer.PassiveLayer` s in the volume, in the order of `layers` (normally decreasing z position)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">return</span> <span class="p">[</span><span class="n">l</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">PassiveLayer</span><span class="p">)]</span></div>
@@ -588,7 +588,7 @@
 
 <div class="viewcode-block" id="Volume._check_passives"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.volume.Volume._check_passives">[docs]</a>    <span class="k">def</span> <span class="nf">_check_passives</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Ensures that all :class:`~tomopt.volume.layer.PassiveLayer`s have the same sizes</span>
+<span class="sd">        Ensures that all :class:`~tomopt.volume.layer.PassiveLayer` s have the same sizes</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">lw</span><span class="p">,</span> <span class="n">sz</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>

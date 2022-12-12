@@ -14,6 +14,8 @@
 
   
   
+    <link rel="shortcut icon" href="../../../_static/tomopt_logo.png"/>
+  
   
   
 
@@ -234,7 +236,7 @@
              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
               
   <h1>Source code for tomopt.volume.panel</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Union</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
@@ -249,7 +251,7 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;DetectorPanel&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;DetectorPanel&quot;</span><span class="p">,</span> <span class="s2">&quot;SigmoidDetectorPanel&quot;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="DetectorPanel"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.panel.DetectorPanel">[docs]</a><span class="k">class</span> <span class="nc">DetectorPanel</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -304,7 +306,7 @@
         <span class="n">init_xy_span</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
         <span class="n">m2_cost</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="n">budget</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">realistic_validation</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">realistic_validation</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">DEVICE</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
@@ -518,6 +520,171 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">y</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">xy</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="SigmoidDetectorPanel"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.panel.SigmoidDetectorPanel">[docs]</a><span class="k">class</span> <span class="nc">SigmoidDetectorPanel</span><span class="p">(</span><span class="n">DetectorPanel</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Provides an infinitely thin, rectangular panel in the xy plane, centred at a learnable xyz position (metres, in absolute position in the volume frame),</span>
+<span class="sd">    with a learnable width in x and y (`xy_span`).</span>
+<span class="sd">    Whilst this class can be used manually, it is designed to be used by the :class:`~tomopt.volume.layer.PanelDetectorLayer` class.</span>
+
+<span class="sd">    Despite inheriting from `nn.Module`, the `forward` method should not be called, instead passing a :class:`~tomopt.muon.muon_batch.MuonBatch` to the</span>
+<span class="sd">    `get_hits` method will return hits corresponding to the muons.</span>
+
+<span class="sd">    During training model (`.train()` or `.training` is True), a continuous model of the resolution and efficiency will be used, such that hits are</span>
+<span class="sd">    differentiable w.r.t. the learnable parameters of the panel. This means that muons outside of the physical panel will have hits at non-zero resolution.</span>
+<span class="sd">    The model is a 2D uncorrelated Sigmoid in xy, centred over the panel, which pass 0.5 at the xy_spans/2.</span>
+<span class="sd">    The smoothness of the sigmoid affects the rate of change of resolution|efficiency near the edge of the physical border:</span>
+<span class="sd">    A higher smooth value provides a slower change, with higher resolution|efficiency outside the physical panel, whereas a lower smooth value provides a</span>
+<span class="sd">    sharper transition, with lower sensitivity to muons outside the panel (and therefore more strongly approximated a physical panel).</span>
+<span class="sd">    The :class:`~tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule` can be used to anneal this smoothness during optimisation.</span>
+
+<span class="sd">    Efficiency is accounted for via a weighting approach, rather than deciding whether to record hits or not, i.e. muons will always record hits,</span>
+<span class="sd">    but the probability of the hit actually being recorded is computable.</span>
+
+<span class="sd">    During evaluation mode (`.eval()` or `.training` is False), if the panel is set to use `realistic_validation`, then the physical panel will be simulated:</span>
+<span class="sd">    Muons outside the panel have zero resolution and efficiency, resulting in NaN hits positions.</span>
+<span class="sd">    Muons inside the panel will have the full resolution and efficiency of the panel,</span>
+<span class="sd">    but hits will not be differentiable w.r.t. the panel xy-position or xy-span.</span>
+<span class="sd">    If `realistic_validation` is False, then the continuous model will be used also in evaluation mode.</span>
+
+<span class="sd">    The cost of the panel is based on the supplied cost per metre squared, and the current area of the panel, according to its learnt xy-span.</span>
+<span class="sd">    Panels can also be run in &quot;fixed-budget&quot; mode, in which a cost of the panel is specified via the `.assign_budget` method.</span>
+<span class="sd">    Based on the cost per m^2, the panel will change in effective width, based on its learn xy_span (now an aspect ratio), such that its area results in a cost</span>
+<span class="sd">    equal to the specified cost of the panel.</span>
+
+<span class="sd">    The resolution and efficiency remain fixed at the specified values.</span>
+<span class="sd">    If intending to run in &quot;fixed-budget&quot; mode, then a budget can be specified here,</span>
+<span class="sd">    however the :class&quot;`~tomopt.volume.volume.Volume` class will pass through all panels and initialise their budgets.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        smooth: smoothness of the sigmoid: A higher smooth value provides a slower change, with higher resolution|efficiency outside the physical panel,</span>
+<span class="sd">            whereas a lower smooth value provides a sharper transition, with lower sensitivity to muons outside the panel</span>
+<span class="sd">            (and therefore more strongly approximated a physical panel).</span>
+<span class="sd">        res: resolution of the panel in m^-1, i.e. a higher value improves the precision on the hit recording</span>
+<span class="sd">        eff: efficiency of the hit recording of the panel, indicated as a probability [0,1]</span>
+<span class="sd">        init_xyz: initial xyz position of the panel in metres in the volume frame</span>
+<span class="sd">        init_xy_span: initial xy-span (total width) of the panel in metres</span>
+<span class="sd">        m2_cost: the cost in unit currency of the 1 square metre of detector</span>
+<span class="sd">        budget: optional required cost of the panel. Based on the span and cost per m^2, the panel will resize to meet the required cost</span>
+<span class="sd">        realistic_validation: if True, will use the physical interpretation of the panel during evaluation</span>
+<span class="sd">        device: device on which to place tensors</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">smooth</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">],</span>
+        <span class="n">res</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">eff</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">init_xyz</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+        <span class="n">init_xy_span</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+        <span class="n">m2_cost</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">budget</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">realistic_validation</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">DEVICE</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">res</span><span class="o">=</span><span class="n">res</span><span class="p">,</span>
+            <span class="n">eff</span><span class="o">=</span><span class="n">eff</span><span class="p">,</span>
+            <span class="n">init_xyz</span><span class="o">=</span><span class="n">init_xyz</span><span class="p">,</span>
+            <span class="n">init_xy_span</span><span class="o">=</span><span class="n">init_xy_span</span><span class="p">,</span>
+            <span class="n">m2_cost</span><span class="o">=</span><span class="n">m2_cost</span><span class="p">,</span>
+            <span class="n">budget</span><span class="o">=</span><span class="n">budget</span><span class="p">,</span>
+            <span class="n">realistic_validation</span><span class="o">=</span><span class="n">realistic_validation</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># Smooth will be massaged to Tensor, but MyPy doesn&#39;t spot this</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">smooth</span> <span class="o">=</span> <span class="n">smooth</span>  <span class="c1"># type: ignore</span>
+
+<div class="viewcode-block" id="SigmoidDetectorPanel.sig_model"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.panel.SigmoidDetectorPanel.sig_model">[docs]</a>    <span class="k">def</span> <span class="nf">sig_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xy</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Models fractional resolution and efficiency from a sigmoid-based model to provide a smooth and differentiable model of a physical detector-panel.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            xy: (N,xy) tensor of positions</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Multiplicative coefficients for the nominal resolution or efficiency of the panel based on the xy position relative to the panel position and size</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">half_width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_scaled_xy_span</span><span class="p">()</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="p">(</span><span class="n">xy</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">xy</span><span class="p">)</span> <span class="o">/</span> <span class="n">half_width</span>
+        <span class="n">coef</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span> <span class="o">*</span> <span class="n">delta</span><span class="p">))</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">smooth</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">coef</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">smooth</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SigmoidDetectorPanel.get_resolution"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.panel.SigmoidDetectorPanel.get_resolution">[docs]</a>    <span class="k">def</span> <span class="nf">get_resolution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xy</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the xy resolutions of panel at the supplied list of xy points.</span>
+<span class="sd">        If running in evaluation mode with `realistic_validation`,</span>
+<span class="sd">        then these will be the full resolution of the panel for points inside the panel (indicated by the mask), and zero outside.</span>
+<span class="sd">        Otherwise, the Sigmoid model will be used.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            xy: (N,xy) tensor of positions</span>
+<span class="sd">            mask: optional pre-computed (N,) Boolean mask, where True indicates that the xy point is inside the panel.</span>
+<span class="sd">                Only used in evaluation mode and if `realistic_validation` is True.</span>
+<span class="sd">                If required, but not supplied, than will be computed automatically.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            res, a (N,xy) tensor of the resolution at the xy points</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">resolution</span><span class="si">}</span><span class="s2"> is not a Tensor for some reason.&quot;</span><span class="p">)</span>  <span class="c1"># To appease MyPy</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">realistic_validation</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sig_model</span><span class="p">(</span><span class="n">xy</span><span class="p">)</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp_min</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="mf">1e-10</span><span class="p">)</span>  <span class="c1"># To avoid NaN gradients</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_xy_mask</span><span class="p">(</span><span class="n">xy</span><span class="p">)</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">xy</span><span class="p">),</span> <span class="mi">2</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>  <span class="c1"># Zero detection outside detector</span>
+            <span class="n">res</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resolution</span>
+        <span class="k">return</span> <span class="n">res</span></div>
+
+<div class="viewcode-block" id="SigmoidDetectorPanel.get_efficiency"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.panel.SigmoidDetectorPanel.get_efficiency">[docs]</a>    <span class="k">def</span> <span class="nf">get_efficiency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xy</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes the efficiency of panel at the supplied list of xy points.</span>
+<span class="sd">        If running in evaluation mode with `realistic_validation`,</span>
+<span class="sd">        then these will be the full efficiency of the panel for points inside the panel (indicated by the mask), and zero outside.</span>
+<span class="sd">        Otherwise, the Sigmoid model will be used.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            xy: (N,) or (N,xy) tensor of positions</span>
+<span class="sd">            mask: optional pre-computed (N,) Boolean mask, where True indicates that the xy point is inside the panel.</span>
+<span class="sd">                Only used in evaluation mode and if `realistic_validation` is True.</span>
+<span class="sd">                If required, but not supplied, than will be computed automatically.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            eff, a (N,)tensor of the efficiency at the xy points</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">efficiency</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">efficiency</span><span class="si">}</span><span class="s2"> is not a Tensor for some reason.&quot;</span><span class="p">)</span>  <span class="c1"># To appease MyPy</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">realistic_validation</span><span class="p">:</span>
+            <span class="n">eff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">efficiency</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sig_model</span><span class="p">(</span><span class="n">xy</span><span class="p">)</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">eff</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp_min</span><span class="p">(</span><span class="n">eff</span><span class="p">,</span> <span class="mf">1e-10</span><span class="p">)</span>  <span class="c1"># To avoid NaN gradients</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_xy_mask</span><span class="p">(</span><span class="n">xy</span><span class="p">)</span>
+            <span class="n">eff</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">xy</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>  <span class="c1"># Zero detection outside detector</span>
+            <span class="n">eff</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">efficiency</span>
+        <span class="k">return</span> <span class="n">eff</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">smooth</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_smooth</span>
+
+    <span class="nd">@smooth</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">smooth</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">smooth</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">smooth</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;smooth artgument must be positive and non-zero&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">smooth</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">):</span>
+            <span class="n">smooth</span> <span class="o">=</span> <span class="n">Tensor</span><span class="p">([</span><span class="n">smooth</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_smooth&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_smooth</span> <span class="o">=</span> <span class="n">smooth</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">&quot;_smooth&quot;</span><span class="p">,</span> <span class="n">smooth</span><span class="p">)</span></div>
 </pre></div>
 
              </article>
