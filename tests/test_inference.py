@@ -4,12 +4,13 @@ import numpy as np
 from unittest.mock import patch
 from typing import Tuple
 import math
+from pytest_lazyfixture import lazy_fixture
 
 import torch
 from torch import Tensor, nn
 import torch.nn.functional as F
 
-from tomopt.volume import PassiveLayer, Volume, PanelDetectorLayer, DetectorPanel
+from tomopt.volume import PassiveLayer, Volume, PanelDetectorLayer, DetectorPanel, SigmoidDetectorPanel
 from tomopt.muon import MuonBatch, MuonGenerator2016
 from tomopt.core import X0
 from tomopt.inference import (
@@ -75,6 +76,38 @@ def get_panel_layers(init_res: float = 1e5, init_eff: float = 0.9, n_panels: int
     return nn.ModuleList(layers)
 
 
+def get_sigmoid_panel_layers(smooth=1.0, init_res: float = 1e5, init_eff: float = 0.9, n_panels: int = 4, init_xy_span=[3.0, 3.0]) -> nn.ModuleList:
+    layers = []
+    layers.append(
+        PanelDetectorLayer(
+            pos="above",
+            lw=LW,
+            z=1,
+            size=2 * SZ,
+            panels=[
+                SigmoidDetectorPanel(smooth=smooth, res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / n_panels)], init_xy_span=init_xy_span)
+                for i in range(n_panels)
+            ],
+        )
+    )
+    for z in [0.8, 0.7, 0.6, 0.5, 0.4, 0.3]:
+        layers.append(PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=z, size=SZ))
+    layers.append(
+        PanelDetectorLayer(
+            pos="below",
+            lw=LW,
+            z=0.2,
+            size=2 * SZ,
+            panels=[
+                SigmoidDetectorPanel(smooth=smooth, res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / n_panels)], init_xy_span=init_xy_span)
+                for i in range(n_panels)
+            ],
+        )
+    )
+
+    return nn.ModuleList(layers)
+
+
 @pytest.fixture
 def panel_scatter_batch() -> Tuple[MuonBatch, Volume, ScatterBatch]:
     volume = Volume(get_panel_layers())
@@ -86,10 +119,22 @@ def panel_scatter_batch() -> Tuple[MuonBatch, Volume, ScatterBatch]:
     return mu, volume, sb
 
 
+@pytest.fixture
+def sigmoid_panel_scatter_batch() -> Tuple[MuonBatch, Volume, ScatterBatch]:
+    volume = Volume(get_sigmoid_panel_layers())
+    gen = MuonGenerator2016.from_volume(volume)
+    mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
+    mu = MuonBatch(mus, init_z=volume.h)
+    volume(mu)
+    sb = ScatterBatch(mu=mu, volume=volume)
+    return mu, volume, sb
+
+
 @pytest.mark.flaky(max_runs=3, min_passes=2)
 @patch("matplotlib.pyplot.show")
-def test_panel_scatter_batch(mock_show, panel_scatter_batch):
-    mu, volume, sb = panel_scatter_batch
+@pytest.mark.parametrize("scatter_batch", [lazy_fixture("panel_scatter_batch"), lazy_fixture("sigmoid_panel_scatter_batch")])
+def test_panel_scatter_batch(mock_show, scatter_batch):
+    mu, volume, sb = scatter_batch
     assert len(sb) == len(mu)
 
     # hits

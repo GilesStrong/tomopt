@@ -20,3 +20,4 @@ pytest
 mypy
 pytest-mock
 flaky
+pytest-lazy-fixture

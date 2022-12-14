@@ -810,6 +810,8 @@
                     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">mean_loss</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">skip_opt_step</span><span class="p">:</span>
                         <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">opts</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
                             <span class="n">o</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+                    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">cbs</span><span class="p">:</span>
+                        <span class="n">c</span><span class="o">.</span><span class="n">on_step_end</span><span class="p">()</span>
                     <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">get_detectors</span><span class="p">():</span>
                         <span class="n">d</span><span class="o">.</span><span class="n">conform_detector</span><span class="p">()</span>
 

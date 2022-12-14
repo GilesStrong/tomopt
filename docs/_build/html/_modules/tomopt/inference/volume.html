@@ -268,7 +268,7 @@
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Abstract base class for volume inference.</span>
 
-<span class="sd">    Inheriting classes are expected to be fed multiple :class:`~tomopt.inference.scattering.ScatterBatch`s,</span>
+<span class="sd">    Inheriting classes are expected to be fed multiple :class:`~tomopt.inference.scattering.ScatterBatch` s,</span>
 <span class="sd">    via :meth:`~tomopt.inference.volume.AbsVolumeInferrer.add_scatters`, for a single :class:`~tomopt.volume.volume.Volume`</span>
 <span class="sd">    and return a volume prediction based on all of the muon batches when :meth:`~tomopt.inference.volume.AbsVolumeInferrer.get_prediction` is called.</span>
 
@@ -315,7 +315,7 @@
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Appends a new set of muon scatter variables.</span>
 <span class="sd">        When :meth:`~tomopt.inference.volume.AbsVolumeInferrer.get_prediction` is called, the prediction will be based on all</span>
-<span class="sd">        :class:`~tomopt.inference.scattering.ScatterBatch`s added up to that point</span>
+<span class="sd">        :class:`~tomopt.inference.scattering.ScatterBatch` s added up to that point</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_reset_vars</span><span class="p">()</span>  <span class="c1"># Ensure that any previously computed predictions are wiped</span>
@@ -768,7 +768,7 @@
 
 <div class="viewcode-block" id="PanelX0Inferrer"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.volume.PanelX0Inferrer">[docs]</a><span class="k">class</span> <span class="nc">PanelX0Inferrer</span><span class="p">(</span><span class="n">AbsX0Inferrer</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Class for inferring the X0 of every voxel in the passive volume using hits recorded by :class:`~tomopt.volume.layer.PanelDetectorLayer`s.</span>
+<span class="sd">    Class for inferring the X0 of every voxel in the passive volume using hits recorded by :class:`~tomopt.volume.layer.PanelDetectorLayer` s.</span>
 
 <span class="sd">    The inference is based on the PoCA approach of assigning the entirety of the muon scattering to a single point,</span>
 <span class="sd">    and the X0 computation is based on inversion of the PDG scattering model described in</span>

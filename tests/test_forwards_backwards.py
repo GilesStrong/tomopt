@@ -1,12 +1,13 @@
 from collections import defaultdict
 import pytest
+from pytest_lazyfixture import lazy_fixture
 
 import torch
 from torch import nn, Tensor
 import torch.nn.functional as F
 
 from tomopt.core import X0
-from tomopt.volume import Volume, PassiveLayer, PanelDetectorLayer, DetectorPanel, DetectorHeatMap
+from tomopt.volume import Volume, PassiveLayer, PanelDetectorLayer, DetectorPanel, DetectorHeatMap, SigmoidDetectorPanel
 from tomopt.muon import MuonBatch, MuonGenerator2016
 from tomopt.inference import ScatterBatch, PanelX0Inferrer
 from tomopt.optimisation import VoxelX0Loss, MuonResampler
@@ -59,6 +60,38 @@ def get_panel_layers() -> nn.ModuleList:
             panels=[
                 DetectorPanel(res=INIT_RES, eff=INIT_EFF, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / N_PANELS)], init_xy_span=[1.0, 1.0])
                 for i in range(N_PANELS)
+            ],
+        )
+    )
+
+    return nn.ModuleList(layers)
+
+
+def get_sigmoid_panel_layers(smooth=1.0, init_res: float = INIT_RES, init_eff: float = INIT_EFF, n_panels: int = 4, init_xy_span=[3.0, 3.0]) -> nn.ModuleList:
+    layers = []
+    layers.append(
+        PanelDetectorLayer(
+            pos="above",
+            lw=LW,
+            z=1,
+            size=2 * SZ,
+            panels=[
+                SigmoidDetectorPanel(smooth=smooth, res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 1 - (i * (2 * SZ) / n_panels)], init_xy_span=init_xy_span)
+                for i in range(n_panels)
+            ],
+        )
+    )
+    for z in [0.8, 0.7, 0.6, 0.5, 0.4, 0.3]:
+        layers.append(PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=z, size=SZ))
+    layers.append(
+        PanelDetectorLayer(
+            pos="below",
+            lw=LW,
+            z=0.2,
+            size=2 * SZ,
+            panels=[
+                SigmoidDetectorPanel(smooth=smooth, res=init_res, eff=init_eff, init_xyz=[0.5, 0.5, 0.2 - (i * (2 * SZ) / n_panels)], init_xy_span=init_xy_span)
+                for i in range(n_panels)
             ],
         )
     )
@@ -137,6 +170,32 @@ def heatmap_inferrer() -> PanelX0Inferrer:
     return inf
 
 
+@pytest.fixture
+def sigmoid_panel_inferrer() -> PanelX0Inferrer:
+    volume = Volume(get_sigmoid_panel_layers())
+    gen = MuonGenerator2016.from_volume(volume)
+    mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
+    mu = MuonBatch(mus, init_z=volume.h)
+    volume(mu)
+    sb = ScatterBatch(mu=mu, volume=volume)
+    inf = PanelX0Inferrer(volume=volume)
+    inf.add_scatters(sb)
+    return inf
+
+
+@pytest.fixture
+def fixed_budget_sigmoid_panel_inferrer() -> PanelX0Inferrer:
+    volume = Volume(get_sigmoid_panel_layers(), budget=8)
+    gen = MuonGenerator2016.from_volume(volume)
+    mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
+    mu = MuonBatch(mus, init_z=volume.h)
+    volume(mu)
+    sb = ScatterBatch(mu=mu, volume=volume)
+    inf = PanelX0Inferrer(volume=volume)
+    inf.add_scatters(sb)
+    return inf
+
+
 # @pytest.fixture
 # def deep_inferrer() -> DeepVolumeInferrer:
 #     volume = Volume(get_panel_layers())
@@ -163,42 +222,37 @@ def heatmap_inferrer() -> PanelX0Inferrer:
 #     return inf
 
 
-def test_forwards_panel(panel_inferrer):
-    pred, weight = panel_inferrer.get_prediction()
-    loss_func = VoxelX0Loss(target_budget=1, cost_coef=1e-5)
-    loss_val = loss_func(pred, weight, panel_inferrer.volume)
+@pytest.mark.parametrize(
+    "mode, inferrer",
+    [
+        ["gauss panel", lazy_fixture("panel_inferrer")],
+        ["fixed-budget gauss panel", lazy_fixture("fixed_budget_panel_inferrer")],
+        ["sigmoid panel", lazy_fixture("sigmoid_panel_inferrer")],
+        ["fixed-budget sigmoid panel", lazy_fixture("fixed_budget_sigmoid_panel_inferrer")],
+        ["heatmap", lazy_fixture("heatmap_inferrer")],
+    ],
+)
+def test_forwards_panel(mode, inferrer):
+    pred, weight = inferrer.get_prediction()
+    loss_func = VoxelX0Loss(target_budget=None, cost_coef=None)
+    loss_val = loss_func(pred, weight, inferrer.volume)
 
-    for l in panel_inferrer.volume.get_detectors():
-        for p in l.panels:
-            assert torch.autograd.grad(loss_val, p.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-            assert torch.autograd.grad(loss_val, p.z, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-            assert torch.autograd.grad(loss_val, p.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+    if "fixed-budget" in mode:
+        assert torch.autograd.grad(loss_val, inferrer.volume.budget_weights, retain_graph=True, allow_unused=False)[0].abs().sum() > 0
 
-
-def test_forwards_fixed_budget_panel(fixed_budget_panel_inferrer):
-    pred, weight = fixed_budget_panel_inferrer.get_prediction()
-    loss_func = VoxelX0Loss(target_budget=1, cost_coef=1e-5)
-    loss_val = loss_func(pred, weight, fixed_budget_panel_inferrer.volume)
-
-    assert torch.autograd.grad(loss_val, fixed_budget_panel_inferrer.volume.budget_weights, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-    for l in fixed_budget_panel_inferrer.volume.get_detectors():
-        for p in l.panels:
-            assert torch.autograd.grad(loss_val, p.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-            assert torch.autograd.grad(loss_val, p.z, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-            assert torch.autograd.grad(loss_val, p.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-
-
-def test_forwards_heatmap(heatmap_inferrer):
-    pred, weight = heatmap_inferrer.get_prediction()
-    loss_func = VoxelX0Loss(target_budget=1, cost_coef=1e-5)
-    loss_val = loss_func(pred, weight, heatmap_inferrer.volume)
-
-    for l in heatmap_inferrer.volume.get_detectors():
-        for p in l.panels:
-            assert torch.autograd.grad(loss_val, p.mu, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-            assert torch.autograd.grad(loss_val, p.sig, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-            assert torch.autograd.grad(loss_val, p.norm, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-            assert torch.autograd.grad(loss_val, p.z, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+    if "panel" in mode:
+        for l in inferrer.volume.get_detectors():
+            for p in l.panels:
+                assert torch.autograd.grad(loss_val, p.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+                assert torch.autograd.grad(loss_val, p.z, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+                assert torch.autograd.grad(loss_val, p.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+    elif "heatmap" in mode:
+        for l in inferrer.volume.get_detectors():
+            for p in l.panels:
+                assert torch.autograd.grad(loss_val, p.mu, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+                assert torch.autograd.grad(loss_val, p.sig, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+                assert torch.autograd.grad(loss_val, p.norm, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
+                assert torch.autograd.grad(loss_val, p.z, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
 
 
 # def test_forwards_deep_panel(deep_inferrer):
@@ -213,40 +267,29 @@ def test_forwards_heatmap(heatmap_inferrer):
 #             assert torch.autograd.grad(loss_val, p.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
 
 
-def test_backwards_panel(panel_inferrer):
-    pred, weight = panel_inferrer.get_prediction()
+@pytest.mark.parametrize(
+    "mode, inferrer",
+    [
+        ["gauss panel", lazy_fixture("panel_inferrer")],
+        ["fixed-budget gauss panel", lazy_fixture("fixed_budget_panel_inferrer")],
+        ["sigmoid panel", lazy_fixture("sigmoid_panel_inferrer")],
+        ["fixed-budget sigmoid panel", lazy_fixture("fixed_budget_sigmoid_panel_inferrer")],
+    ],
+)
+def test_backwards_panel(mode, inferrer):
+    pred, weight = inferrer.get_prediction()
     loss_func = VoxelX0Loss(target_budget=1, cost_coef=0.15)
-    loss_val = loss_func(pred, weight, panel_inferrer.volume)
-    opt = torch.optim.SGD(panel_inferrer.volume.parameters(), lr=1)
+    loss_val = loss_func(pred, weight, inferrer.volume)
+    opt = torch.optim.SGD(inferrer.volume.parameters(), lr=1)
     opt.zero_grad()
     loss_val.backward()
-    for p in panel_inferrer.volume.parameters():
+    for p in inferrer.volume.parameters():
         assert p.grad is not None
     opt.step()
-    for l in panel_inferrer.volume.get_detectors():
-        for i, p in enumerate(l.panels):
-            assert (p.xy != Tensor([0.5, 0.5])).all()
-            if l.pos == "above":
-                assert (p.z != Tensor([1 - (i * (2 * SZ) / N_PANELS)])).all()
-            else:
-                assert (p.z != Tensor([0.2 - (i * (2 * SZ) / N_PANELS)])).all()
-            assert (p.xy_span != Tensor([0.5, 0.5])).all()
-            assert p.resolution == Tensor([INIT_RES])
-            assert p.efficiency == Tensor([INIT_EFF])
 
-
-def test_backwards_fixed_budget_panel(fixed_budget_panel_inferrer):
-    pred, weight = fixed_budget_panel_inferrer.get_prediction()
-    loss_func = VoxelX0Loss(target_budget=1, cost_coef=0.15)
-    loss_val = loss_func(pred, weight, fixed_budget_panel_inferrer.volume)
-    opt = torch.optim.SGD(fixed_budget_panel_inferrer.volume.parameters(), lr=1)
-    opt.zero_grad()
-    loss_val.backward()
-    for p in fixed_budget_panel_inferrer.volume.parameters():
-        assert p.grad is not None
-    opt.step()
-    assert (fixed_budget_panel_inferrer.volume.budget_weights != torch.zeros(2 * N_PANELS)).all()
-    for l in fixed_budget_panel_inferrer.volume.get_detectors():
+    if "fixed_budget" in mode:
+        assert (inferrer.volume.budget_weights != torch.zeros(2 * N_PANELS)).all()
+    for l in inferrer.volume.get_detectors():
         for i, p in enumerate(l.panels):
             assert (p.xy != Tensor([0.5, 0.5])).all()
             if l.pos == "above":

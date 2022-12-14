@@ -9,14 +9,14 @@ r"""
 Provides callbacks that act at the start of training to freeze the optimisation and adjust themselves to the initial state of the detectors
 """
 
-__all__ = ["WarmupCallback", "CostCoefWarmup", "PanelOptConfig"]
+__all__ = ["WarmupCallback", "CostCoefWarmup", "PanelOptConfig", "PostWarmupCallback"]
 
 
 class WarmupCallback(Callback):
     r"""
-    Warmup callbacks act at the start of training to track and set paramters based on the initial state of the detector.
+    Warmup callbacks act at the start of training to track and set parameters based on the initial state of the detector.
     During warmup, optimisation of the detector is prevented, via a flag.
-    If multiple warmup callbacks aare present, they will wait to warmup according to the order they are provided in.
+    If multiple warmup callbacks are present, they will wait to warmup according to the order they are provided in.
     Once the last warmup callback finished, the flag will be set to allow the detectors to be optimised.
     When a `WarmupCallback` is warming up, its `warmup_active` attribute will be True.
 
@@ -24,7 +24,7 @@ class WarmupCallback(Callback):
         When inheriting from `WarmupCallback`, the super methods of `on_train_begin`, `on_epoch_begin`, and `on_epoch_end` must be called.
 
     Arguments:
-        n_warmup: number of training epochs overwhich to warmup
+        n_warmup: number of training epochs over-which to warmup
     """
 
     def __init__(self, n_warmup: int):
@@ -124,7 +124,7 @@ class CostCoefWarmup(WarmupCallback):
 
 class PanelOptConfig(WarmupCallback):
     r"""
-    Allows the user to specify the desired update steps for :class:`~tomopt.volume.layer.PanelDetectorLayer`s in physical units.
+    Allows the user to specify the desired update steps for :class:`~tomopt.volume.layer.PanelDetectorLayer` s in physical units.
     Over the course of several warm-up epochs the gradients on the parameters are monitored, after which suitable learning rates for the optimisation are set.
     During the warm-up, the detectors will not be updated as optimiser learning rates will be set to zero.
 
@@ -197,3 +197,38 @@ class PanelOptConfig(WarmupCallback):
     def _reset(self) -> None:
         super()._reset()
         self.stats: Dict[str, List[np.ndarray]] = {k: [] for k in self.rates}
+
+
+class PostWarmupCallback(Callback):
+    r"""
+    Callback class that waits for all :class:`~tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback` obejcts to finish their warmups before activating.
+    """
+
+    def on_train_begin(self) -> None:
+        r"""
+        Prepares for new training
+        """
+
+        super().on_train_begin()
+        self.active = False
+
+    def check_warmups(self) -> None:
+        r"""
+        When all WarmupCallbacks have finished, sets the callback to be active.
+        """
+
+        if self.active:
+            return
+        if len(self.wrapper.fit_params.warmup_cbs) == 0 or np.all([c.warmup_active is False for c in self.wrapper.fit_params.warmup_cbs]):
+            self._activate()
+
+    def _activate(self) -> None:
+        self.active = True
+
+    def on_epoch_begin(self) -> None:
+        r"""
+        Checks to see whether the callback should be active.
+        """
+
+        if self.wrapper.fit_params.state == "train":
+            self.check_warmups()

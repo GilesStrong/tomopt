@@ -61,7 +61,7 @@ class AbsMuonGenerator:
 
         # Calculate 2d flux function
         xx, yy = np.meshgrid(self._energy_centres, self._theta_centres)
-        self._edges_1d = np.cumsum(self.flux(xx, yy))  # theta x energy --> e0t0, e1t0, ...
+        self._cumulative_flux = np.cumsum(self.flux(xx, yy))  # theta x energy --> e0t0, e1t0, ...
 
     def __repr__(self) -> str:
         rep = f"Muon generator: x,y range: {self.x_range}, {self.y_range}."
@@ -131,8 +131,8 @@ class AbsMuonGenerator:
         """
 
         # Sample 2d function in 1d intervals
-        muon_sample = np.random.uniform(0.0, self._edges_1d[-1], n_muons)
-        indices_1d = self._edges_1d.searchsorted(muon_sample)
+        muon_sample = np.random.uniform(0.0, self._cumulative_flux[-1], n_muons)
+        indices_1d = self._cumulative_flux.searchsorted(muon_sample)
 
         # Get corresponding values
         theta_indices, energy_indices = [indices_1d // self._n_bins_energy, indices_1d % self._n_bins_energy]

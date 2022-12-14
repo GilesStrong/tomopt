@@ -30,10 +30,13 @@ from tomopt.optimisation.callbacks import (
     VolumeTargetPredHandler,
     Save2HDF5PredHandler,
     WarmupCallback,
+    PostWarmupCallback,
+    SigmoidPanelSmoothnessSchedule,
+    PanelUpdateLimiter,
 )
 from tomopt.optimisation.loss import VoxelX0Loss
 from tomopt.optimisation.wrapper.volume_wrapper import AbsVolumeWrapper, FitParams, PanelVolumeWrapper
-from tomopt.volume import PanelDetectorLayer, DetectorPanel, DetectorHeatMap
+from tomopt.volume import PanelDetectorLayer, DetectorPanel, DetectorHeatMap, SigmoidDetectorPanel
 from tomopt.muon import MuonBatch, MuonGenerator2016
 
 LW = Tensor([1, 1])
@@ -68,6 +71,16 @@ def get_panel_detector() -> PanelDetectorLayer:
         z=1,
         size=2 * SZ,
         panels=[DetectorPanel(res=1, eff=1, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[1.0, 1.0])],
+    )
+
+
+def get_sigmoid_panel_detector(smooth: Tensor = Tensor([0.5])) -> PanelDetectorLayer:
+    return PanelDetectorLayer(
+        pos="above",
+        lw=LW,
+        z=1,
+        size=2 * SZ,
+        panels=[SigmoidDetectorPanel(smooth=smooth, res=1, eff=1, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[1.0, 1.0])],
     )
 
 
@@ -232,16 +245,23 @@ def test_float_pred_handler():
     assert preds[0][1] == 0.5
 
 
-@pytest.mark.parametrize("detector", ["none", "panel"])
+@pytest.mark.parametrize("detector", ["none", "panel", "sigmoid_panel"])
 def test_metric_logger(detector, mocker):  # noqa F811
     vw = MockWrapper()
     vw.volume = MockVolume()
     if detector == "none":
         logger = MetricLogger()
-    if detector == "panel":
+    else:
+        if detector == "panel":
+            det = get_panel_detector()
+        elif detector == "sigmoid_panel":
+            det = get_sigmoid_panel_detector()
+        else:
+            raise ValueError(f"Detector {detector} not recognised")
         logger = PanelMetricLogger()
-        det = get_panel_detector()
-        vw.get_detectors = lambda: [det]
+        vw.volume.get_detectors = lambda: [det]
+        vw.get_detector = lambda: vw.volume.get_detectors()
+
     vw.loss_func = VoxelX0Loss(target_budget=1, cost_coef=1)
     vw.fit_params = FitParams(
         pred=10,
@@ -350,6 +370,7 @@ def test_metric_logger(detector, mocker):  # noqa F811
 
 def test_scatter_record():
     sr = ScatterRecord()
+    assert check_callback_base(sr)
     vw = MockWrapper()
     vw.volume = MockVolume()
     vw.volume.h = Tensor([1])
@@ -382,6 +403,7 @@ def test_scatter_record():
 
 def test_hit_record():
     hr = HitRecord()
+    assert check_callback_base(hr)
     vw = MockWrapper()
     vw.volume = MockVolume()
     vw.volume.h = Tensor([1])
@@ -410,6 +432,7 @@ def test_hit_record():
 def test_warmup_callback():
     vw = MockWrapper()
     wc1 = WarmupCallback(1)
+    assert check_callback_base(wc1)
     wc2 = WarmupCallback(2)
     vw.fit_params = FitParams(warmup_cbs=[wc1, wc2], state="train")
     wc1.set_wrapper(vw)
@@ -463,6 +486,43 @@ def test_warmup_callback():
     assert not vw.fit_params.skip_opt_step
 
 
+@pytest.mark.parametrize("n_warmups", [0, 1, 2])
+def test_post_warmup_callback(n_warmups, mocker):  # noqa F811
+    vw = MockWrapper()
+    pwcb = PostWarmupCallback()
+    assert check_callback_base(pwcb)
+    wcbs = [WarmupCallback(i + 1) for i in range(n_warmups)]
+    cbs = wcbs + [pwcb]
+
+    vw.fit_params = FitParams(cbs=cbs, warmup_cbs=wcbs, state="train")
+    for cb in vw.fit_params.cbs:
+        cb.set_wrapper(vw)
+    mocker.spy(pwcb, "_activate")
+
+    for cb in vw.fit_params.cbs:
+        cb.on_train_begin()
+    assert pwcb.active is False
+    n_warmup_epochs = np.arange(1, n_warmups + 1).sum()
+    print(f"{n_warmup_epochs=}")
+    for epoch in range(1, n_warmup_epochs + 3):
+        vw.fit_params.epoch = epoch
+        for c in vw.fit_params.cbs:
+            c.on_epoch_begin()
+        print(f"{epoch=}")
+        if n_warmup_epochs > 0 and epoch < n_warmup_epochs + 1:
+            for c in vw.fit_params.warmup_cbs:
+                print(c.warmup_active)
+            assert pwcb.active is False
+            assert pwcb._activate.call_count == 0
+        elif n_warmup_epochs == 0 or epoch >= n_warmup_epochs + 1:
+            if n_warmups > 0:
+                assert wcbs[-1].warmup_active is False
+            assert pwcb.active
+            assert pwcb._activate.call_count == 1
+        for c in vw.fit_params.cbs:
+            c.on_epoch_end()
+
+
 def test_cost_coef_warmup():
     class VW(AbsVolumeWrapper):
         def _build_opt(self, **kwargs) -> None:
@@ -474,6 +534,7 @@ def test_cost_coef_warmup():
     vw = VW(volume=vol, partial_opts={}, loss_func=loss, partial_scatter_inferrer=None, partial_volume_inferrer=None)
     vw.fit_params = FitParams(pred=10)
     ccw = CostCoefWarmup(5)
+    assert check_callback_base(ccw)
     ccw.set_wrapper(vw)
     vw.fit_params.warmup_cbs = [ccw]
 
@@ -521,6 +582,7 @@ def test_panel_opt_config():
     z_pos_mult = -3
     xy_span_mult = 2
     poc = PanelOptConfig(n_warmup=2, xy_pos_rate=xy_pos_rate, z_pos_rate=z_pos_rate, xy_span_rate=xy_span_rate)
+    assert check_callback_base(poc)
     poc.set_wrapper(vw)
     vw.fit_params.warmup_cbs = [poc]
 
@@ -581,6 +643,7 @@ def test_muon_resampler_callback():
     vw.mu_generator = gen
 
     mr = MuonResampler()
+    assert check_callback_base(mr)
     mr.set_wrapper(vw)
     mr.on_mu_batch_begin()
     assert (vw.fit_params.mu.z == volume.h).all()
@@ -695,3 +758,67 @@ def test_save_2_hdf5_pred_handler():
 
     finally:
         out_path.unlink()
+
+
+@pytest.mark.parametrize("n_warmups", [0, 1, 2])
+def test_sigmoid_panel_smoothness_schedule(n_warmups):
+    cb = SigmoidPanelSmoothnessSchedule((1, 0.01))
+    assert check_callback_base(cb)
+
+    vw = MockWrapper()
+    wcbs = [WarmupCallback(1) for _ in range(n_warmups)]
+    cbs = wcbs + [cb]
+    vw.fit_params = FitParams(state="train", warmup_cbs=wcbs, cbs=cbs, n_epochs=3 + n_warmups)
+    cb.set_wrapper(vw)
+    vw.volume = MockVolume()
+    det = get_sigmoid_panel_detector()
+    panel = det.panels[0]
+    vw.volume.get_detectors = lambda: [det]
+
+    for c in vw.fit_params.cbs:
+        c.set_wrapper(vw)
+    assert panel.smooth == 0.5
+    for c in vw.fit_params.cbs:
+        c.on_train_begin()
+    assert (panel.smooth - Tensor([1.0])).abs() < 1e-5
+    for i, smooth in enumerate(Tensor([1.0 for _ in range(n_warmups)] + [1.0, 0.1, 0.01])):
+        vw.fit_params.epoch = i + 1
+        for c in vw.fit_params.cbs:
+            c.on_epoch_begin()
+        assert (panel.smooth - smooth).abs() < 1e-5
+        for c in vw.fit_params.cbs:
+            c.on_epoch_end()
+
+
+def test_panel_update_limiter():
+    cb1 = PanelUpdateLimiter(max_xy_step=(0.01, 0.01))
+    cb2 = PanelUpdateLimiter(max_xy_step=(0.01, 0.01), max_xy_span_step=(0.02, 0.05), max_z_step=0.005)
+    assert check_callback_base(cb1)
+
+    vw = MockWrapper()
+    vw.volume = MockVolume()
+    panel_det = get_panel_detector()
+    vw.volume.get_detectors = lambda: [panel_det]
+    cb1.set_wrapper(vw)
+    cb2.set_wrapper(vw)
+
+    cb1.on_backwards_end()
+    cb2.on_backwards_end()
+    assert ((cb1.panel_params[0]["xy"] - panel_det.panels[0].xy).abs() < 1e-5).all()
+    assert ((cb1.panel_params[0]["xy_span"] - panel_det.panels[0].xy_span).abs() < 1e-5).all()
+    assert (cb1.panel_params[0]["z"] - panel_det.panels[0].z).abs() < 1e-5
+
+    with torch.no_grad():
+        panel_det.panels[0].xy.data += Tensor([0.0, -1.0])
+        panel_det.panels[0].xy_span.data += Tensor([0.3, 0.03])
+        panel_det.panels[0].z.data -= 0.01
+
+    cb1.on_step_end()
+    assert ((cb1.panel_params[0]["xy"] + Tensor([0.0, -0.01]) - panel_det.panels[0].xy).abs() < 1e-5).all()
+    assert ((cb1.panel_params[0]["xy_span"] + Tensor([0.3, 0.03]) - panel_det.panels[0].xy_span).abs() < 1e-5).all()  # Params *aren't* modified
+    assert (cb1.panel_params[0]["z"] - 0.01 - panel_det.panels[0].z).abs() < 1e-5
+
+    cb2.on_step_end()
+    assert ((cb1.panel_params[0]["xy"] + Tensor([0.0, -0.01]) - panel_det.panels[0].xy).abs() < 1e-5).all()
+    assert ((cb1.panel_params[0]["xy_span"] + Tensor([0.02, 0.03]) - panel_det.panels[0].xy_span).abs() < 1e-5).all()
+    assert (cb1.panel_params[0]["z"] - 0.005 - panel_det.panels[0].z).abs() < 1e-5

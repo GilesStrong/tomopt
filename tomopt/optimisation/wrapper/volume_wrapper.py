@@ -572,6 +572,8 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
                     if self.fit_params.mean_loss is not None and not self.fit_params.skip_opt_step:
                         for o in self.opts.values():
                             o.step()
+                    for c in self.fit_params.cbs:
+                        c.on_step_end()
                     for d in self.volume.get_detectors():
                         d.conform_detector()
 

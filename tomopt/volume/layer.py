@@ -57,6 +57,13 @@ class AbsLayer(nn.Module, metaclass=ABCMeta):
 
         pass
 
+    def get_lw_z_size(self) -> Tuple[Tensor, Tensor, float]:
+        r"""
+        Returns:
+            The length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0), the z position of the top of layer in metres, and the voxel size in metres.
+        """
+        return self.lw, self.z, self.size
+
 
 class PassiveLayer(AbsLayer):
     r"""

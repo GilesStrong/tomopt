@@ -30,7 +30,7 @@ class AbsVolumeInferrer(metaclass=ABCMeta):
     r"""
     Abstract base class for volume inference.
 
-    Inheriting classes are expected to be fed multiple :class:`~tomopt.inference.scattering.ScatterBatch`s,
+    Inheriting classes are expected to be fed multiple :class:`~tomopt.inference.scattering.ScatterBatch` s,
     via :meth:`~tomopt.inference.volume.AbsVolumeInferrer.add_scatters`, for a single :class:`~tomopt.volume.volume.Volume`
     and return a volume prediction based on all of the muon batches when :meth:`~tomopt.inference.volume.AbsVolumeInferrer.get_prediction` is called.
 
@@ -77,7 +77,7 @@ class AbsVolumeInferrer(metaclass=ABCMeta):
         r"""
         Appends a new set of muon scatter variables.
         When :meth:`~tomopt.inference.volume.AbsVolumeInferrer.get_prediction` is called, the prediction will be based on all
-        :class:`~tomopt.inference.scattering.ScatterBatch`s added up to that point
+        :class:`~tomopt.inference.scattering.ScatterBatch` s added up to that point
         """
 
         self._reset_vars()  # Ensure that any previously computed predictions are wiped
@@ -530,7 +530,7 @@ class AbsX0Inferrer(AbsVolumeInferrer):
 
 class PanelX0Inferrer(AbsX0Inferrer):
     r"""
-    Class for inferring the X0 of every voxel in the passive volume using hits recorded by :class:`~tomopt.volume.layer.PanelDetectorLayer`s.
+    Class for inferring the X0 of every voxel in the passive volume using hits recorded by :class:`~tomopt.volume.layer.PanelDetectorLayer` s.
 
     The inference is based on the PoCA approach of assigning the entirety of the muon scattering to a single point,
     and the X0 computation is based on inversion of the PDG scattering model described in
