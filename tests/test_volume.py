@@ -150,8 +150,10 @@ def test_passive_layer_scatter_and_propagate(mocker):  # noqa: F811
         pl(batch)
         curr_count = batch.propagate_d.call_count
         assert curr_count > prev_count
+        # assert batch.propagate_dz.call_count == 2
         assert batch.scatter_dxyz.call_count == curr_count
         assert batch.get_xy_mask.call_count == curr_count
+        # assert batch.scatter_dtheta_xy.call_count == curr_count
         prev_count = curr_count
 
 
