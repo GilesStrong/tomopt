@@ -210,7 +210,7 @@ class MuonBatch:
             mask = torch.ones(len(self._muons), device=self.device).bool()
 
         if dphi_vol is not None:
-            self._phi = (self._phi[mask] + dphi_vol) % (2 * torch.pi)
+            self._phi[mask] = (self._phi[mask] + dphi_vol) % (2 * torch.pi)
         if dtheta_vol is not None:
             theta = (self._theta[mask] + dtheta_vol) % (2 * torch.pi)
             # Correct theta, must avoid double Bool mask
@@ -218,8 +218,8 @@ class MuonBatch:
             m = theta > torch.pi
             phi[m] = (phi[m] + torch.pi) % (2 * torch.pi)  # rotate in phi
             theta[m] = (2 * torch.pi) - theta[m]  # theta (0,pi)
-            self._phi = phi
-            self._theta = theta
+            self._phi[mask] = phi
+            self._theta[mask] = theta
         self.remove_upwards_muons()
 
     def scatter_dtheta_xy(self, dtheta_x_vol: Optional[Tensor] = None, dtheta_y_vol: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
