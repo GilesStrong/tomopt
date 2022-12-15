@@ -220,6 +220,7 @@ class MuonBatch:
             theta[m] = (2 * torch.pi) - theta[m]  # theta (0,pi)
             self._phi = phi
             self._theta = theta
+        self.remove_upwards_muons()
 
     def scatter_dtheta_xy(self, dtheta_x_vol: Optional[Tensor] = None, dtheta_y_vol: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
         r"""
@@ -241,8 +242,8 @@ class MuonBatch:
             theta_x = theta_x + dtheta_x_vol
         if dtheta_y_vol is not None:
             theta_y = theta_y + dtheta_y_vol
-        self.theta[mask] = self.theta_from_theta_xy(theta_x, theta_y)
-        self.phi[mask] = self.phi_from_theta_xy(theta_x, theta_y)
+        self.theta[mask] = self.theta_from_theta_xy(theta_x, theta_y).type(torch.float)
+        self.phi[mask] = self.phi_from_theta_xy(theta_x, theta_y).type(torch.float)
 
         self.remove_upwards_muons()
 
