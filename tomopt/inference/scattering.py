@@ -538,13 +538,13 @@ class ScatterBatch:
         An assumption is necessary here, since there is a loss of information in the when the muons undergo scattering in theta and phi:
         since theta is [0,pi] a negative scattering in theta will always results in a positive theta, but phi can become phi+pi.
         When inferring the angular scattering, one cannot precisely tell whether instead a large scattering in phi occurred.
-        The total scattering (`total_scatter`) is the quadrature sum of dtheta and dphi, and all three are computed under both hypotheses.
+        The total scattering is computed as the (only) angle between incoming and outgoing tracks. Computation is done by the _compute_theta_msc() method.
         The final values of these are chosen using the hypothesis which minimises the total amount of scattering.
         This assumption has been tested and found to be good.
         """
 
         values = self._compute_dtheta_dphi_scatter(theta_in=self.theta_in, phi_in=self.phi_in, theta_out=self.theta_out, phi_out=self.phi_out)
-        self._dtheta, self._dphi, self._total_scatter = values["dtheta"], values["dphi"], values["total_scatter"]
+        self._dtheta, self._dphi, self._total_scatter = values["dtheta"], values["dphi"], self._compute_theta_msc(self.track_in, self.track_out)
         self._dtheta_unc, self._dphi_unc, self._total_scatter_unc = None, None, None
 
     @property
