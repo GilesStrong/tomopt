@@ -233,33 +233,39 @@ def test_muon_batch_methods():
     assert len(hits["above"]["xy"]) == 2
 
 
-def test_muon_batch_scatter_dxy():
+def test_muon_batch_scatter_dxyz():
     batch = MuonBatch(Tensor([[1, 0, 0, 1, 6], [1, 0, 0, 1, 6]]), init_z=1)
     # copy & propagate
     start = batch.copy()
 
-    batch.scatter_dxy()
-    assert (batch.xy == start.xy).all()
+    batch.scatter_dxyz()
+    assert (batch.xyz == start.xyz).all()
 
-    batch.scatter_dxy(dx_vol=Tensor([1, -1]))
+    batch.scatter_dxyz(dx_vol=Tensor([1, -1]))
     assert (batch.x != start.x).all()
     assert (batch.y == start.y).all()
+    assert (batch.z == start.z).all()
+
 
     batch = start.copy()
-    batch.scatter_dxy(dy_vol=Tensor([1, -1]))
+    batch.scatter_dxyz(dy_vol=Tensor([1, -1]))
     assert (batch.y != start.y).all()
     assert (batch.x == start.x).all()
+    assert (batch.z == start.z).all()
+
 
     batch = start.copy()
-    batch.scatter_dxy(dx_vol=Tensor([1, -1]), dy_vol=Tensor([1, -1]))
-    assert (batch.xy != start.xy).all()
+    batch.scatter_dxyz(dx_vol=Tensor([1, -1]), dy_vol=Tensor([1, -1]), dz_vol=Tensor([1, -1]))
+    assert (batch.xyz != start.xyz).all()
 
     batch = start.copy()
-    batch.scatter_dxy(dx_vol=Tensor([1]), dy_vol=Tensor([1]), mask=Tensor([1, 0]).bool())
+    batch.scatter_dxyz(dx_vol=Tensor([1]), dy_vol=Tensor([1]), dz_vol=Tensor([1]), mask=Tensor([1, 0]).bool())
     assert batch.x[0] != start.x[0]
     assert batch.x[1] == start.x[1]
     assert batch.y[0] != start.y[0]
     assert batch.y[1] == start.y[1]
+    assert batch.z[0] != start.z[0]
+    assert batch.z[1] == start.z[1]
 
     assert (batch.theta == start.theta).all()
     assert (batch.phi == start.phi).all()
