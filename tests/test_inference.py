@@ -520,23 +520,23 @@ def test_x0_inferrer_scatter_inversion(mocker, panel_scatter_batch):  # noqa F81
     mu, volume, sb = panel_scatter_batch
     inferrer = PanelX0Inferrer(volume=volume)
     inferrer.size = SZ
-    x0 = X0["lead"]
+    x0 = torch.ones_like(mu.theta)*X0["lead"]
     mocker.patch("tomopt.volume.layer.torch.randn", lambda n, device: torch.ones(n, device=device))  # remove randomness
     layer = PassiveLayer(LW, Z, SZ, step_sz=SZ / mu.theta.cos())
-    scatters = layer._pdg_scatter(x0=x0, theta=mu.theta, theta_x=mu.theta_x, theta_y=mu.theta_y, mom=mu.mom, log_term=False)
-    dtheta, dphi = scatters["dtheta_vol"], scatters["dphi_vol"]
+    scatters = layer._pdg_scatter(x0=x0, theta=mu.theta, phi=mu.phi,theta_x=mu.theta_x, theta_y=mu.theta_y, mom=mu.mom, log_term=False, step_sz=SZ/mu.theta.cos())
+    dtheta_x_m, dtheta_y_m = scatters["dtheta_x_m"], scatters["dtheta_x_m"]
 
     mu_start = mu.copy()
-    mu.scatter_dtheta_dphi(dtheta_vol=dtheta, dphi_vol=dphi)
+    mu.scatter_dtheta_xy(dtheta_x_vol=scatters["dtheta_x_vol"],dtheta_y_vol=scatters["dtheta_y_vol"])
     pred = inferrer.x0_from_scatters(
         deltaz=SZ,
-        total_scatter=torch.sqrt((dtheta**2) + (dphi**2)) / math.sqrt(2),
+        total_scatter=torch.sqrt((dtheta_x_m**2) + (dtheta_y_m**2)) / math.sqrt(2),
         theta_in=mu_start.theta,
         theta_out=mu.theta,
         mom=mu.mom,
     )
 
-    assert (pred.mean() - x0).abs() < 1e-4
+    assert (pred.mean() - X0["lead"]).abs() < 1e-4
 
 
 @pytest.mark.flaky(max_runs=5, min_passes=1)
@@ -546,7 +546,7 @@ def test_x0_inferrer_scatter_inversion_via_scatter_batch():
     x0 = torch.ones(len(muons)) * X0["lead"]
     dz = 0.01
     layer = PassiveLayer(lw=Tensor([1, 1]), z=1, size=0.1, step_sz=dz / muons.theta.cos())
-    pdg_scattering = layer._pdg_scatter(x0=x0, theta=muons.theta, theta_x=muons.theta_x, theta_y=muons.theta_y, mom=muons.mom, log_term=False)
+    pdg_scattering = layer._pdg_scatter(x0=x0, theta=muons.theta, theta_x=muons.theta_x, theta_y=muons.theta_y, mom=muons.mom, log_term=False, phi=muons.phi, step_sz=dz / muons.theta.cos())
 
     xyz = F.pad(muons.xy.detach().clone(), (0, 1))
     xyz[:, 2] = muons.z.detach().clone()
@@ -572,7 +572,7 @@ def test_x0_inferrer_scatter_inversion_via_scatter_batch():
         pos="above",
     )
     muons.propagate_dz(dz)
-    muons.scatter_dtheta_dphi(dtheta_vol=pdg_scattering["dtheta_vol"], dphi_vol=pdg_scattering["dphi_vol"])
+    muons.scatter_dtheta_xy(dtheta_x_vol=pdg_scattering["dtheta_x_vol"],dtheta_y_vol=pdg_scattering["dtheta_y_vol"])
     xyz = F.pad(muons.xy.detach().clone(), (0, 1))
     xyz[:, 2] = muons.z.detach().clone()
     muons.append_hits(
