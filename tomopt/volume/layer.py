@@ -309,7 +309,7 @@ class PassiveLayer(AbsLayer):
         dtheta_x_m = dtheta_xy_mu[0]
         dtheta_y_m = dtheta_xy_mu[1]
 
-        M = torch.zeros([3, len(theta)], dtype=torch.float)
+        M = torch.zeros([3, len(theta)], dtype=torch.double)
         M[0] = torch.tan(theta_x)
         M[1] = torch.tan(theta_y)
         M[2] = 1.0
