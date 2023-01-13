@@ -291,47 +291,53 @@ class PassiveLayer(AbsLayer):
         # (generation of MSC formulas are oblivious of angle of incidence) so we need
         # to decompose them into displacements in x,y,z in the volume frame
         phi_defined = theta != 0  # If theta is a zero, there is no phi defined
-        dx_vol = torch.where(phi_defined, -dxy_mu[0]*torch.sin(phi)-dxy_mu[1]*torch.cos(theta)*torch.cos(phi), dxy_mu[0])
-        dy_vol = torch.where(phi_defined, dxy_mu[0]*torch.cos(phi)-dxy_mu[1]*torch.cos(theta)*torch.sin(phi), dxy_mu[1])
+        dx_vol = torch.where(phi_defined, -dxy_mu[0] * torch.sin(phi) - dxy_mu[1] * torch.cos(theta) * torch.cos(phi), dxy_mu[0])
+        dy_vol = torch.where(phi_defined, dxy_mu[0] * torch.cos(phi) - dxy_mu[1] * torch.cos(theta) * torch.sin(phi), dxy_mu[1])
         dz_vol = torch.where(phi_defined, dxy_mu[1] * torch.sin(theta), torch.zeros_like(dxy_mu[1]))
-        
-        
+
         # We need to convert deflection in the muon reference frame (dtheta_x_m and dtheta_y_m)
         # into deflection in the volume reference frame (dtheta_x_vol and dtheta_y_vol)
         # In order to do so, we will use equations obtained from Euler rotation matrices where the
-        # Muon reference frame (R') is rotated by angle theta (angle between z and z') 
+        # Muon reference frame (R') is rotated by angle theta (angle between z and z')
         # and phi (x and x' axis) w.r.t the Volume reference frame (R)
         # 1 - Convert the deflection dtheta_xy_muon in the muon reference frame to a x and y (xy_muon) distance in the muon reference fr
         # 2 - We convert that xy_muon distance into the volume reference frame xy_volume
         # 3 - We convert that xy_volume distance into an angular deflection in the volume reference frame theta_x_vol and theta_y_vol
         # Currently, we do not compute a deflection but we compute the final angle the muon will have once it exits the volume
-        # define point M used as a reference to compute the original muon direction and the updated one 
-        
+        # define point M used as a reference to compute the original muon direction and the updated one
+
         dtheta_x_m = dtheta_xy_mu[0]
         dtheta_y_m = dtheta_xy_mu[1]
 
-        M = torch.zeros([3,len(theta)],dtype=torch.double)
+        M = torch.zeros([3, len(theta)], dtype=torch.float)
         M[0] = torch.tan(theta_x)
         M[1] = torch.tan(theta_y)
-        M[2] = 1.
-        r = torch.sqrt(M[0]**2+M[1]**2+M[2]**2)
+        M[2] = 1.0
+        r = torch.sqrt(M[0] ** 2 + M[1] ** 2 + M[2] ** 2)
         # 1 -
-        dx_m = r*torch.tan(dtheta_x_m)
-        dy_m = r*torch.tan(dtheta_y_m)
-        # 2 - 
-        dx_vol_angle = torch.where(phi_defined, -dx_m*torch.sin(phi)-dy_m*torch.cos(theta)*torch.cos(phi), dx_m)
-        dy_vol_angle = torch.where(phi_defined, dx_m*torch.cos(phi)-dy_m*torch.cos(theta)*torch.sin(phi), dy_m)
-        dz_vol_angle = torch.where(phi_defined, dy_m*torch.sin(theta), torch.zeros_like(dxy_mu[1]))
-        # 3 - 
+        dx_m = r * torch.tan(dtheta_x_m)
+        dy_m = r * torch.tan(dtheta_y_m)
+        # 2 -
+        dx_vol_angle = torch.where(phi_defined, -dx_m * torch.sin(phi) - dy_m * torch.cos(theta) * torch.cos(phi), dx_m)
+        dy_vol_angle = torch.where(phi_defined, dx_m * torch.cos(phi) - dy_m * torch.cos(theta) * torch.sin(phi), dy_m)
+        dz_vol_angle = torch.where(phi_defined, dy_m * torch.sin(theta), torch.zeros_like(dxy_mu[1]))
+        # 3 -
         d_out = -M
-        d_out[0]+=dx_vol_angle
-        d_out[1]+=dy_vol_angle
-        d_out[2]+=dz_vol_angle
-        dtheta_x_vol = torch.arctan(d_out[0]/d_out[2])-theta_x
-        dtheta_y_vol = torch.arctan(d_out[1]/d_out[2])-theta_y 
+        d_out[0] += dx_vol_angle
+        d_out[1] += dy_vol_angle
+        d_out[2] += dz_vol_angle
+        dtheta_x_vol = torch.arctan(d_out[0] / d_out[2]) - theta_x
+        dtheta_y_vol = torch.arctan(d_out[1] / d_out[2]) - theta_y
 
-
-        return {"dtheta_x_vol": dtheta_x_vol, "dtheta_y_vol": dtheta_y_vol, "dx_vol": dx_vol, "dy_vol": dy_vol, "dz_vol": dz_vol, "dtheta_x_m":dtheta_x_m,"dtheta_y_m":dtheta_y_m}
+        return {
+            "dtheta_x_vol": dtheta_x_vol,
+            "dtheta_y_vol": dtheta_y_vol,
+            "dx_vol": dx_vol,
+            "dy_vol": dy_vol,
+            "dz_vol": dz_vol,
+            "dtheta_x_m": dtheta_x_m,
+            "dtheta_y_m": dtheta_y_m,
+        }
 
     def _compute_scattering(
         self, *, x0: Tensor, theta: Tensor, phi: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor, step_sz: Tensor
