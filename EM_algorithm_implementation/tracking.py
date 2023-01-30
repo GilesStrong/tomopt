@@ -17,7 +17,7 @@ class Tracking:
         self.events=len(self.data)
 
         self.tracks = self.compute_discrete_tracks()
-        self.triggered_voxels = self.identify_triggered_voxels()
+        self.triggered_voxels = self.find_triggered_voxels()
 
     def compute_discrete_tracks(self):
         
@@ -68,71 +68,35 @@ class Tracking:
 
         return torch.stack([x_track,y_track,Z_discrete.flip(dims=(0,))])
 
-    
-    def identify_triggered_voxels(self):
 
-        """
-        Identifying indices of voxels triggered given a muon trajectory. 
-
-        INPUT: Muons tracks - tensor of size = [coordinate,Nlayer_along_Z + 1, Nevents] ([3,7,9999])
-        OUPUT: List of voxels' indices triggered by every muon - tensor of size = [Nevents, N_var_Voxel_indices]
-
-        Logic: 
-                check along every Z level whether track of the muon is within >Xin & <Xout
-                if satisfied
-                save the indices of the voxel .... indices would be 3D coordinates within N,N,N1
-        """
-        from fastprogress import progress_bar
-
-        print('\nVoxel triggering: in pogress')
-        event_triggered_voxels=[]
-        level_triggered_voxels=tensor(())
-        for event in progress_bar(range(self.events)):
-            for z_i in range(0,self.Nvox_Z):
-
-                muon_x_position_in  = self.tracks[0,z_i,event]
-                muon_y_position_in  = self.tracks[1,z_i,event]
-                muon_z_position_in  = self.tracks[2,z_i,event]
-                muon_x_position_out = self.tracks[0,z_i+1,event]
-                muon_y_position_out = self.tracks[1,z_i+1,event]
-                muon_z_position_out = self.tracks[2,z_i+1,event]
-
-                if muon_x_position_in>muon_x_position_out:
-                    x_max=muon_x_position_in
-                    x_min=muon_x_position_out
-                else:
-                    x_max=muon_x_position_out
-                    x_min=muon_x_position_in
-
-                if muon_y_position_in>muon_y_position_out:
-                    y_max=muon_y_position_in
-                    y_min=muon_y_position_out
-                else:
-                    y_max=muon_y_position_out
-                    y_min=muon_y_position_in
-
-                if muon_z_position_in>muon_z_position_out:
-                    z_max=muon_z_position_in
-                    z_min=muon_z_position_out
-                else:
-                    z_max=muon_z_position_out
-                    z_min=muon_z_position_in
-
-                mask_x = (self.voxel_edges[:,:,:,0,0]<x_max) & (self.voxel_edges[:,:,:,1,0]>x_min)
-                mask_y = (self.voxel_edges[:,:,:,0,1]<y_max) & (self.voxel_edges[:,:,:,1,1]>y_min)
-                mask_z = (self.voxel_edges[:,:,:,0,2]<=z_max) & (self.voxel_edges[:,:,:,1,2]>=z_min)
-
-
-                mask = mask_x & mask_y & mask_z
-                triggered_voxels = (mask==True).nonzero()
-                level_triggered_voxels = torch.cat((level_triggered_voxels, triggered_voxels), 0)
-            event_triggered_voxels.append(torch.unique(level_triggered_voxels, dim=0))
-            level_triggered_voxels = tensor(())
-        print('\nVoxel triggering: DONE')
-
-        return event_triggered_voxels
-
-
+    def find_triggered_voxels(self)->None:
         
-    
-    
+        def compute_xy_min_max(X_discrete,Y_discrete):
+        
+            mask_x = X_discrete[0,:]>X_discrete[1,:]
+            mask_y = Y_discrete[0,:]>Y_discrete[1,:]
+
+            X_max = torch.where(mask_x,X_discrete[:-1,:],X_discrete[1:,:])
+            X_min = torch.where(mask_x,X_discrete[1:,:],X_discrete[:-1,:])
+
+            Y_max = torch.where(mask_y,Y_discrete[:-1,:],Y_discrete[1:,:])
+            Y_min = torch.where(mask_y,Y_discrete[1:,:],Y_discrete[:-1,:])
+
+            return X_max,X_min,Y_max,Y_min
+            
+        X_max,X_min,Y_max,Y_min = compute_xy_min_max(self.tracks[0],
+                                                    self.tracks[1])
+
+        hit_voxels_indices = []
+
+        for ev in range(self.events):
+
+            mask_x = (self.voi.voxel_edges[:,:,:,1,0]>=X_min[:,ev]) & ((self.voi.voxel_edges[:,:,:,0,0]<=X_max[:,ev]))
+            mask_y = (self.voi.voxel_edges[:,:,:,1,1]>=Y_min[:,ev]) & ((self.voi.voxel_edges[:,:,:,0,1]<=Y_max[:,ev]))
+
+            mask = mask_x & mask_y
+
+            hit_voxels_indices.append(((mask==True).nonzero()))
+
+
+        self.triggered_voxels =  hit_voxels_indices
