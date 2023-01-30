@@ -99,4 +99,4 @@ class Tracking:
             hit_voxels_indices.append(((mask==True).nonzero()))
 
 
-        self.triggered_voxels =  hit_voxels_indices
+        return  hit_voxels_indices
