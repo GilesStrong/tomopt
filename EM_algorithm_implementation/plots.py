@@ -22,20 +22,20 @@ def plot_muon_track(VOI:VolumeOfInterest, event:int=0, tracking:Tracking=None)->
     ax = ax.ravel()
 
     for i in range(VOI.n_vox_xyz[0]):
-        ax[0].axvline(x = VOI.voxel_edges[i,0,0,0,0],ymin=VOI.xyz_min[2],ymax=VOI.xyz_max[2])
-        ax[0].axvline(x = VOI.voxel_edges[i,0,0,1,0],ymin=VOI.xyz_min[2],ymax=VOI.xyz_max[2])
+        ax[0].axvline(x = VOI.voxel_edges[i,0,0,0,0],ymin=VOI.xyz_min[2],ymax=VOI.xyz_max[2],color='lightgrey')
+        ax[0].axvline(x = VOI.voxel_edges[i,0,0,1,0],ymin=VOI.xyz_min[2],ymax=VOI.xyz_max[2],color='lightgrey')
     
     for i in range(VOI.n_vox_xyz[1]):
-        ax[1].axvline(x = VOI.voxel_edges[i,0,0,0,0],ymin=VOI.xyz_min[2],ymax=VOI.xyz_max[2])
-        ax[1].axvline(x = VOI.voxel_edges[i,0,0,1,0],ymin=VOI.xyz_min[2],ymax=VOI.xyz_max[2])
+        ax[1].axvline(x = VOI.voxel_edges[i,0,0,0,0],ymin=VOI.xyz_min[2],ymax=VOI.xyz_max[2],color='lightgrey')
+        ax[1].axvline(x = VOI.voxel_edges[i,0,0,1,0],ymin=VOI.xyz_min[2],ymax=VOI.xyz_max[2],color='lightgrey')
 
 
     for z in range(VOI.n_vox_xyz[2]):
-        ax[0].axhline(y = VOI.voxel_edges[0,0,z,0,2],xmin=VOI.xyz_min[0],xmax=VOI.xyz_max[0])
-        ax[0].axhline(y = VOI.voxel_edges[0,0,z,1,2],xmin=VOI.xyz_min[0],xmax=VOI.xyz_max[0])
+        ax[0].axhline(y = VOI.voxel_edges[0,0,z,0,2],xmin=VOI.xyz_min[0],xmax=VOI.xyz_max[0],color='lightgrey')
+        ax[0].axhline(y = VOI.voxel_edges[0,0,z,1,2],xmin=VOI.xyz_min[0],xmax=VOI.xyz_max[0],color='lightgrey')
 
-        ax[1].axhline(y = VOI.voxel_edges[0,0,z,0,2],xmin=VOI.xyz_min[0],xmax=VOI.xyz_max[0])
-        ax[1].axhline(y = VOI.voxel_edges[0,0,z,1,2],xmin=VOI.xyz_min[0],xmax=VOI.xyz_max[0]) 
+        ax[1].axhline(y = VOI.voxel_edges[0,0,z,0,2],xmin=VOI.xyz_min[0],xmax=VOI.xyz_max[0],color='lightgrey')
+        ax[1].axhline(y = VOI.voxel_edges[0,0,z,1,2],xmin=VOI.xyz_min[0],xmax=VOI.xyz_max[0],color='lightgrey')
 
     ax[0].set_title('XZ view')
     ax[0].set_aspect('equal')
@@ -55,15 +55,15 @@ def plot_muon_track(VOI:VolumeOfInterest, event:int=0, tracking:Tracking=None)->
 
         fig.suptitle('Tracking for event = {}'.format(event))
         # plot tracks
-        ax[0].plot(tracking.tracks[0,:,event],tracking.tracks[2,:,event],color='red',label='Muon track')
-        ax[1].plot(tracking.tracks[1,:,event],tracking.tracks[2,:,event],color='red',label='Muon track')
+        ax[0].plot(tracking.tracks[0,:,event],tracking.tracks[2,:,event],color='maroon',label='Muon track')
+        ax[1].plot(tracking.tracks[1,:,event],tracking.tracks[2,:,event],color='maroon',label='Muon track')
 
         #plot xy_in and xy_out
-        ax[0].scatter(tracking.data['xyz_in_x'][event],tracking.data['xyz_in_z'][event],color='blue',label='Entry point')
-        ax[0].scatter(tracking.data['xyz_out_x'][event],tracking.data['xyz_out_z'][event],color='red',label='Exit point')
+        ax[0].scatter(tracking.data['xyz_in_x'][event],tracking.data['xyz_in_z'][event],marker='v',color='darkgreen',label='Entry point')
+        ax[0].scatter(tracking.data['xyz_out_x'][event],tracking.data['xyz_out_z'][event],marker='v',color='blue',label='Exit point')
 
-        ax[1].scatter(tracking.data['xyz_in_y'][event],tracking.data['xyz_in_z'][event],color='blue',label='Entry point')
-        ax[1].scatter(tracking.data['xyz_out_y'][event],tracking.data['xyz_out_z'][event],color='red',label='Exit point')
+        ax[1].scatter(tracking.data['xyz_in_y'][event],tracking.data['xyz_in_z'][event],marker='v',color='darkgreen',label='Entry point')
+        ax[1].scatter(tracking.data['xyz_out_y'][event],tracking.data['xyz_out_z'][event],marker='v',color='blue',label='Exit point')
 
         ax[0].legend()
         ax[1].legend()
@@ -85,19 +85,19 @@ def plot_specific_discrete_track_2d(triggered_voxels,VOI:VolumeOfInterest, event
 
         # draw blank voxels
         for i in range(N_voxels[0]):
-            ax[0].axvline(x = VOI.voxel_edges[i,0,0,0,0],ymin=xyz_min[2],ymax=xyz_max[2])
-            ax[0].axvline(x = VOI.voxel_edges[i,0,0,1,0],ymin=xyz_min[2],ymax=xyz_max[2])
+            ax[0].axvline(x = VOI.voxel_edges[i,0,0,0,0],ymin=xyz_min[2],ymax=xyz_max[2],color='lightgrey')
+            ax[0].axvline(x = VOI.voxel_edges[i,0,0,1,0],ymin=xyz_min[2],ymax=xyz_max[2],color='lightgrey')
 
-            ax[1].axvline(x = VOI.voxel_edges[i,0,0,0,0],ymin=xyz_min[2],ymax=xyz_max[2])
-            ax[1].axvline(x = VOI.voxel_edges[i,0,0,1,0],ymin=xyz_min[2],ymax=xyz_max[2])
+            ax[1].axvline(x = VOI.voxel_edges[i,0,0,0,0],ymin=xyz_min[2],ymax=xyz_max[2],color='lightgrey')
+            ax[1].axvline(x = VOI.voxel_edges[i,0,0,1,0],ymin=xyz_min[2],ymax=xyz_max[2],color='lightgrey')
 
 
         for z in range(N_voxels[2]):
-            ax[0].axhline(y = VOI.voxel_edges[0,0,z,0,2],xmin=xyz_min[0],xmax=xyz_max[0])
-            ax[0].axhline(y = VOI.voxel_edges[0,0,z,1,2],xmin=xyz_min[0],xmax=xyz_max[0])
+            ax[0].axhline(y = VOI.voxel_edges[0,0,z,0,2],xmin=xyz_min[0],xmax=xyz_max[0],color='lightgrey')
+            ax[0].axhline(y = VOI.voxel_edges[0,0,z,1,2],xmin=xyz_min[0],xmax=xyz_max[0],color='lightgrey')
 
-            ax[1].axhline(y = VOI.voxel_edges[0,0,z,0,2],xmin=xyz_min[0],xmax=xyz_max[0])
-            ax[1].axhline(y = VOI.voxel_edges[0,0,z,1,2],xmin=xyz_min[0],xmax=xyz_max[0]) 
+            ax[1].axhline(y = VOI.voxel_edges[0,0,z,0,2],xmin=xyz_min[0],xmax=xyz_max[0],color='lightgrey')
+            ax[1].axhline(y = VOI.voxel_edges[0,0,z,1,2],xmin=xyz_min[0],xmax=xyz_max[0],color='lightgrey')
 
         ax[0].set_aspect('equal')
         ax[0].set_xlim([0,1])
@@ -113,17 +113,17 @@ def plot_specific_discrete_track_2d(triggered_voxels,VOI:VolumeOfInterest, event
         ax[1].set_ylabel('z [m]')
 
         # plot tracks
-        ax[0].plot(tracking.tracks[0,:,event],tracking.tracks[2,:,event],color='red',label='Muon track')
-        ax[1].plot(tracking.tracks[1,:,event],tracking.tracks[2,:,event],color='red',label='Muon track')
+        ax[0].plot(tracking.tracks[0,:,event],tracking.tracks[2,:,event],color='maroon',label='Muon track')
+        ax[1].plot(tracking.tracks[1,:,event],tracking.tracks[2,:,event],color='maroon',label='Muon track')
 
         #plot xy_in and xy_out
-        ax[0].scatter(tracking.data['xyz_in_x'][event],tracking.data['xyz_in_z'][event],color='blue',label='Entry point')
-        ax[0].scatter(tracking.data['xyz_out_x'][event],tracking.data['xyz_out_z'][event],color='red',label='Exit point')
+        ax[0].scatter(tracking.data['xyz_in_x'][event],tracking.data['xyz_in_z'][event],marker='v',color='darkgreen',label='Entry point')
+        ax[0].scatter(tracking.data['xyz_out_x'][event],tracking.data['xyz_out_z'][event],marker='v',color='blue',label='Exit point')
         ax[0].scatter(tracking.tracks[0,1:-1,event],tracking.tracks[2,1:-1,event],marker='x',label='muon entering layer')
 
 
-        ax[1].scatter(tracking.data['xyz_in_y'][event],tracking.data['xyz_in_z'][event],color='blue',label='Entry point')
-        ax[1].scatter(tracking.data['xyz_out_y'][event],tracking.data['xyz_out_z'][event],color='red',label='Exit point')
+        ax[1].scatter(tracking.data['xyz_in_y'][event],tracking.data['xyz_in_z'][event],marker='v',color='darkgreen',label='Entry point')
+        ax[1].scatter(tracking.data['xyz_out_y'][event],tracking.data['xyz_out_z'][event],marker='v',color='blue',label='Exit point')
         ax[1].scatter(tracking.tracks[1,1:-1,event],tracking.tracks[2,1:-1,event],marker='x',label='muon entering layer')
 
 
@@ -136,14 +136,14 @@ def plot_specific_discrete_track_2d(triggered_voxels,VOI:VolumeOfInterest, event
             iz = int(vox[2])
 
             if(i==0):
-                ax[0].scatter(VOI.voxel_centers[ix,iy,iz,0],VOI.voxel_centers[ix,iy,iz,2],label='Triggered voxel',color='green')
-                ax[1].scatter(VOI.voxel_centers[ix,iy,iz,1],VOI.voxel_centers[ix,iy,iz,2],label='Triggered voxel',color='green')        
+                ax[0].scatter(VOI.voxel_centers[ix,iy,iz,0],VOI.voxel_centers[ix,iy,iz,2],label='triggered voxel',color='yellowgreen')
+                ax[1].scatter(VOI.voxel_centers[ix,iy,iz,1],VOI.voxel_centers[ix,iy,iz,2],label='triggered voxel',color='yellowgreen')        
 
             # XZ view
-            ax[0].scatter(VOI.voxel_centers[ix,iy,iz,0],VOI.voxel_centers[ix,iy,iz,2],color='green')
+            ax[0].scatter(VOI.voxel_centers[ix,iy,iz,0],VOI.voxel_centers[ix,iy,iz,2],color='yellowgreen')
 
             # YZ view
-            ax[1].scatter(VOI.voxel_centers[ix,iy,iz,1],VOI.voxel_centers[ix,iy,iz,2],color='green')        
+            ax[1].scatter(VOI.voxel_centers[ix,iy,iz,1],VOI.voxel_centers[ix,iy,iz,2],color='yellowgreen')        
             i+=1
         ax[0].legend()
         ax[1].legend()
@@ -164,19 +164,19 @@ def plot_discrete_track_2d(VOI:VolumeOfInterest, event:int=0, tracking:Tracking=
     
     # draw blank voxels
     for i in range(N_voxels[0]):
-        ax[0].axvline(x = VOI.voxel_edges[i,0,0,0,0],ymin=xyz_min[2],ymax=xyz_max[2])
-        ax[0].axvline(x = VOI.voxel_edges[i,0,0,1,0],ymin=xyz_min[2],ymax=xyz_max[2])
+        ax[0].axvline(x = VOI.voxel_edges[i,0,0,0,0],ymin=xyz_min[2],ymax=xyz_max[2],color='lightgrey')
+        ax[0].axvline(x = VOI.voxel_edges[i,0,0,1,0],ymin=xyz_min[2],ymax=xyz_max[2],color='lightgrey')
 
-        ax[1].axvline(x = VOI.voxel_edges[i,0,0,0,0],ymin=xyz_min[2],ymax=xyz_max[2])
-        ax[1].axvline(x = VOI.voxel_edges[i,0,0,1,0],ymin=xyz_min[2],ymax=xyz_max[2])
+        ax[1].axvline(x = VOI.voxel_edges[i,0,0,0,0],ymin=xyz_min[2],ymax=xyz_max[2],color='lightgrey')
+        ax[1].axvline(x = VOI.voxel_edges[i,0,0,1,0],ymin=xyz_min[2],ymax=xyz_max[2],color='lightgrey')
 
 
     for z in range(N_voxels[2]):
-        ax[0].axhline(y = VOI.voxel_edges[0,0,z,0,2],xmin=xyz_min[0],xmax=xyz_max[0])
-        ax[0].axhline(y = VOI.voxel_edges[0,0,z,1,2],xmin=xyz_min[0],xmax=xyz_max[0])
+        ax[0].axhline(y = VOI.voxel_edges[0,0,z,0,2],xmin=xyz_min[0],xmax=xyz_max[0],color='lightgrey')
+        ax[0].axhline(y = VOI.voxel_edges[0,0,z,1,2],xmin=xyz_min[0],xmax=xyz_max[0],color='lightgrey')
 
-        ax[1].axhline(y = VOI.voxel_edges[0,0,z,0,2],xmin=xyz_min[0],xmax=xyz_max[0])
-        ax[1].axhline(y = VOI.voxel_edges[0,0,z,1,2],xmin=xyz_min[0],xmax=xyz_max[0]) 
+        ax[1].axhline(y = VOI.voxel_edges[0,0,z,0,2],xmin=xyz_min[0],xmax=xyz_max[0],color='lightgrey')
+        ax[1].axhline(y = VOI.voxel_edges[0,0,z,1,2],xmin=xyz_min[0],xmax=xyz_max[0],color='lightgrey')
         
     x_intersec=[]
     y_intersec=[]
@@ -202,20 +202,20 @@ def plot_discrete_track_2d(VOI:VolumeOfInterest, event:int=0, tracking:Tracking=
     ax[1].set_ylabel('z [m]')
 
     # plot tracks
-    ax[0].plot(tracking.tracks[0,:,event],tracking.tracks[2,:,event],color='red',label='Muon track')
-    ax[1].plot(tracking.tracks[1,:,event],tracking.tracks[2,:,event],color='red',label='Muon track')
+    ax[0].plot(tracking.tracks[0,:,event],tracking.tracks[2,:,event],color='maroon',label='Muon track')
+    ax[1].plot(tracking.tracks[1,:,event],tracking.tracks[2,:,event],color='maroon',label='Muon track')
 
     #plot xy_in and xy_out
-    ax[0].scatter(tracking.data['xyz_in_x'][event],tracking.data['xyz_in_z'][event],color='blue',label='Entry point')
-    ax[0].scatter(tracking.data['xyz_out_x'][event],tracking.data['xyz_out_z'][event],color='red',label='Exit point')
+    ax[0].scatter(tracking.data['xyz_in_x'][event],tracking.data['xyz_in_z'][event],marker='v',color='darkgreen',label='Entry point')
+    ax[0].scatter(tracking.data['xyz_out_x'][event],tracking.data['xyz_out_z'][event],marker='v',color='blue',label='Exit point')
     ax[0].scatter(tracking.tracks[0,1:-1,event],tracking.tracks[2,1:-1,event],marker='x',label='muon entering layer')
-    ax[0].scatter(x_intersec,z_intersec,marker='*',color='gold',label='muon layer intersect')
+    ax[0].scatter(x_intersec,z_intersec,marker='*',color='orange',label='muon layer intersect')
     
     
-    ax[1].scatter(tracking.data['xyz_in_y'][event],tracking.data['xyz_in_z'][event],color='blue',label='Entry point')
-    ax[1].scatter(tracking.data['xyz_out_y'][event],tracking.data['xyz_out_z'][event],color='red',label='Exit point')
+    ax[1].scatter(tracking.data['xyz_in_y'][event],tracking.data['xyz_in_z'][event],marker='v',color='darkgreen',label='Entry point')
+    ax[1].scatter(tracking.data['xyz_out_y'][event],tracking.data['xyz_out_z'][event],marker='v',color='blue',label='Exit point')
     ax[1].scatter(tracking.tracks[1,1:-1,event],tracking.tracks[2,1:-1,event],marker='x',label='muon entering layer')
-    ax[1].scatter(y_intersec,z_intersec,marker='*',color='gold',label='muon layer intersect')
+    ax[1].scatter(y_intersec,z_intersec,marker='*',color='orange',label='muon layer intersect')
     
     
     # Plot trigger voxels
@@ -227,14 +227,14 @@ def plot_discrete_track_2d(VOI:VolumeOfInterest, event:int=0, tracking:Tracking=
         iz = int(vox[2])
         
         if(i==0):
-            ax[0].scatter(VOI.voxel_centers[ix,iy,iz,0],VOI.voxel_centers[ix,iy,iz,2],label='Triggered voxel',color='green')
-            ax[1].scatter(VOI.voxel_centers[ix,iy,iz,1],VOI.voxel_centers[ix,iy,iz,2],label='Triggered voxel',color='green')        
+            ax[0].scatter(VOI.voxel_centers[ix,iy,iz,0],VOI.voxel_centers[ix,iy,iz,2],label='triggered voxel',color='yellowgreen')
+            ax[1].scatter(VOI.voxel_centers[ix,iy,iz,1],VOI.voxel_centers[ix,iy,iz,2],label='triggered voxel',color='yellowgreen')        
             
         # XZ view
-        ax[0].scatter(VOI.voxel_centers[ix,iy,iz,0],VOI.voxel_centers[ix,iy,iz,2],color='green')
+        ax[0].scatter(VOI.voxel_centers[ix,iy,iz,0],VOI.voxel_centers[ix,iy,iz,2],color='yellowgreen')
         
         # YZ view
-        ax[1].scatter(VOI.voxel_centers[ix,iy,iz,1],VOI.voxel_centers[ix,iy,iz,2],color='green')        
+        ax[1].scatter(VOI.voxel_centers[ix,iy,iz,1],VOI.voxel_centers[ix,iy,iz,2],color='yellowgreen')        
         i+=1
     ax[0].legend()
     ax[1].legend()
@@ -253,18 +253,18 @@ def plot_discrete_track_3d(VOI:VolumeOfInterest, event:int=0, tracking:Tracking=
     colors = np.zeros(voxelarray.shape, dtype=object)
     
     for i in tracking.triggered_voxels[event]:
-        ix,iy,iz = i[0].item(),i[1].item(),i[2].item()
+        ix,iy,iz = i[0],i[1],i[2]
         triggered_voxels_mask.append((x==ix) & (y==iy)& ((z)==(5-iz)))
         
     for i in triggered_voxels_mask:
-        colors[i] = 'red'
-    colors = np.where((colors==0),'white','red')
+        colors[i] = 'yellowgreen'
+    colors = np.where((colors==0),'white','yellowgreen')
     
     fig = plt.figure(figsize=(10,10))
     fig.suptitle('Tracking for event = {}'.format(event),y=0.95)
     ax = fig.add_subplot(projection='3d')
     
-    ax.plot3D(tracking.tracks[0,:,event].numpy()*10,tracking.tracks[1,:,event].numpy()*10,(tracking.tracks[2,:,event].numpy()-0.2)*10,color='navy',label='Muon track')
+    ax.plot3D(tracking.tracks[0,:,event].numpy()*10,tracking.tracks[1,:,event].numpy()*10,(tracking.tracks[2,:,event].numpy()-0.2)*10,color='maroon',label='Muon track')
     
     ax.set_xlim3d(0, Nvox_X)
     ax.set_ylim3d(0, Nvox_Y)
@@ -274,14 +274,14 @@ def plot_discrete_track_3d(VOI:VolumeOfInterest, event:int=0, tracking:Tracking=
     ax.set_ylabel('Voxel indice along y')
     ax.set_zlabel('Voxel indice along z')
     
-    ax.voxels(voxelarray,alpha=0.001,edgecolors='yellow')
+    ax.voxels(voxelarray,alpha=0.0001,edgecolors='whitesmoke')
     
     j=0
     for i in triggered_voxels_mask:
         if(j==0):
-            ax.voxels(i, edgecolor='k',color='lightcoral',alpha=.05,label='hit voxels')
+            ax.voxels(i, edgecolor='k',color='yellowgreen',alpha=.01,label='hit voxels')
         j+1
-        ax.voxels(i, edgecolor='k',color='lightcoral',alpha=.01)
+        ax.voxels(i, edgecolor='k',color='yellowgreen',alpha=.01)
     
     x_intersec=[]
     y_intersec=[]
@@ -291,8 +291,9 @@ def plot_discrete_track_3d(VOI:VolumeOfInterest, event:int=0, tracking:Tracking=
         y_intersec.append(voxel[1]*10)
         z_intersec.append((voxel[2]-0.2)*10)
     
-    ax.scatter(x_intersec,y_intersec,z_intersec,marker='*',color='aqua',label='muon layer intersect')
-
+    ax.scatter(x_intersec,y_intersec,z_intersec,marker='*',color='orange',label='muon layer intersect')
+    ax.scatter(tracking.data['xyz_in_x'][event]*10,tracking.data['xyz_in_y'][event]*10,(tracking.data['xyz_in_z'][event]-0.2)*10,marker='v',color='darkgreen',label='Entry point')
+    ax.scatter(tracking.data['xyz_out_x'][event]*10,tracking.data['xyz_out_y'][event]*10,(tracking.data['xyz_out_z'][event]-0.2)*10,marker='v',color='blue',label='Exit point')
     
     plt.show()
     
@@ -313,14 +314,14 @@ def plot_specific_discrete_track_3d(triggered_voxels, VOI:VolumeOfInterest, even
         triggered_voxels_mask.append((x==ix) & (y==iy)& ((z)==(5-iz)))
         
     for i in triggered_voxels_mask:
-        colors[i] = 'red'
-    colors = np.where((colors==0),'white','red')
+        colors[i] = 'yellowgreen'
+    colors = np.where((colors==0),'white','yellowgreen')
     
     fig = plt.figure(figsize=(10,10))
     fig.suptitle('Tracking for event = {}'.format(event),y=0.95)
     ax = fig.add_subplot(projection='3d')
     
-    ax.plot3D(tracking.tracks[0,:,event].numpy()*10,tracking.tracks[1,:,event].numpy()*10,(tracking.tracks[2,:,event].numpy()-0.2)*10,color='navy',label='Muon track')
+    ax.plot3D(tracking.tracks[0,:,event].numpy()*10,tracking.tracks[1,:,event].numpy()*10,(tracking.tracks[2,:,event].numpy()-0.2)*10,color='maroon',label='Muon track')
     
     ax.set_xlim3d(0, Nvox_X)
     ax.set_ylim3d(0, Nvox_Y)
@@ -330,14 +331,14 @@ def plot_specific_discrete_track_3d(triggered_voxels, VOI:VolumeOfInterest, even
     ax.set_ylabel('Voxel indice along y')
     ax.set_zlabel('Voxel indice along z')
     
-    ax.voxels(voxelarray,alpha=0.001,edgecolors='yellow')
+    ax.voxels(voxelarray,alpha=0.0001,edgecolors='whitesmoke')
     
     j=0
     for i in triggered_voxels_mask:
         if(j==0):
-            ax.voxels(i, edgecolor='k',color='lightcoral',alpha=.05,label='hit voxels')
+            ax.voxels(i, edgecolor='k',color='yellowgreen',alpha=.01,label='hit voxels')
         j+1
-        ax.voxels(i, edgecolor='k',color='lightcoral',alpha=.01)
+        ax.voxels(i, edgecolor='k',color='yellowgreen',alpha=.01)
 
     
     plt.show()
