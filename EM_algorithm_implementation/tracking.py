@@ -20,7 +20,7 @@ class Tracking:
         self.events=len(self.data)
 
         self.tracks = self.compute_discrete_tracks()
-        self.triggered_voxels = self.find_triggered_voxels_old()
+        self.triggered_voxels = self.find_triggered_voxels()
             
         # determining the overall length of straight line from incoming point to outgoing point
         self.path_length= np.sqrt((data['xyz_in_x'] - data['xyz_out_x'])**2 + (data['xyz_in_y'] - data['xyz_out_y'])**2 + (data['xyz_in_z'] - data['xyz_out_z'])**2)
@@ -114,12 +114,12 @@ class Tracking:
             Y_max = torch.where(mask_y,Y_discrete[:-1,:],Y_discrete[1:,:])
             Y_min = torch.where(mask_y,Y_discrete[1:,:],Y_discrete[:-1,:])
             
-#             Z_max = torch.where(mask_z,Z_discrete[:-1,:],Z_discrete[1:,:])
-#             Z_min = torch.where(mask_z,Z_discrete[1:,:],Z_discrete[:-1,:])
+            Z_max = torch.where(mask_z,Z_discrete[:-1,:],Z_discrete[1:,:])
+            Z_min = torch.where(mask_z,Z_discrete[1:,:],Z_discrete[:-1,:])
 
-            return X_max,X_min,Y_max,Y_min#,Z_max,Z_min
+            return X_max,X_min,Y_max,Y_min,Z_max,Z_min
             
-        X_max,X_min,Y_max,Y_min = compute_xy_min_max(self.tracks[0], self.tracks[1], self.tracks[2])
+        X_max,X_min,Y_max,Y_min,Z_max,Z_min = compute_xy_min_max(self.tracks[0], self.tracks[1], self.tracks[2])
 
         hit_voxels_indices = []
 
@@ -127,9 +127,9 @@ class Tracking:
 
             mask_x = (self.voi.voxel_edges[:,:,:,1,0]>=X_min[:,ev]) & ((self.voi.voxel_edges[:,:,:,0,0]<=X_max[:,ev]))
             mask_y = (self.voi.voxel_edges[:,:,:,1,1]>=Y_min[:,ev]) & ((self.voi.voxel_edges[:,:,:,0,1]<=Y_max[:,ev]))
-            #mask_z = (self.voi.voxel_edges[:,:,:,1,2]>=Z_min[:,ev]) & ((self.voi.voxel_edges[:,:,:,0,2]<=Z_max[:,ev]))
+            mask_z = (self.voi.voxel_edges[:,:,:,1,2]>=Z_min[:,ev]) & ((self.voi.voxel_edges[:,:,:,0,2]<=Z_max[:,ev]))
 
-            mask = mask_x & mask_y #& mask_z
+            mask = mask_x & mask_y & mask_z
 
             hit_voxels_indices.append(((mask==True).nonzero()))
         
@@ -224,9 +224,9 @@ class Tracking:
             edge = edge.expand(10,10,6,2,len(xyz),3)
             maskx = (edge[:,:,:,0,:,0]<xyz[:,0]) & (edge[:,:,:,1,:,0]>xyz[:,0])
             masky = (edge[:,:,:,0,:,1]<xyz[:,1]) & (edge[:,:,:,1,:,1]>xyz[:,1])
-            #maskz = (edge[:,:,:,0,:,2]<xyz[:,2]) & (edge[:,:,:,1,:,2]>xyz[:,2])
+            maskz = (edge[:,:,:,0,:,2]<xyz[:,2]) & (edge[:,:,:,1,:,2]>xyz[:,2])
 
-            mask = maskx&masky#&maskz
+            mask = maskx&masky&maskz
             indices = (mask==True).nonzero()
 
             indices = indices[:,:-1]
@@ -234,7 +234,7 @@ class Tracking:
             triggered_voxels.append(indices)
         return triggered_voxels
 
-#fake trajectory to confirm output of the program ---> test logic 
+
     def axis_Indices(self):
         '''
         ordered lists of indices {Ix}, {Iy} and {Iz}, containing:
@@ -244,11 +244,14 @@ class Tracking:
         Iy=[]
         Iz=[]
         for event in self.triggered_voxels:
+            sorter = lambda x: (x[2], x[0], x[1])
+            sorted_vox = sorted(event, key=sorter, reverse=True)
+            
             Ix_ev=[]
             Iy_ev=[]
             Iz_ev=[]
 
-            for vox in event:
+            for vox in sorted_vox:
                 Ix_ev.append(vox[0])
                 Iy_ev.append(vox[1])
                 Iz_ev.append(vox[2])
@@ -336,9 +339,9 @@ class Tracking:
         # parametric equation of a line given coordinate of one point in space and associated cosine director
         def trajectory(alpha, index):
             return (
-            self.data['xyz_in_x'][index] + self.cos_theta_x[index] * alpha, 
-            self.data['xyz_in_y'][index] + self.cos_theta_y[index] * alpha, 
-            self.data['xyz_in_z'][index] + self.cos_theta_z[index] * alpha
+            round(self.data['xyz_in_x'][index] + self.cos_theta_x[index] * alpha.numpy(),4), 
+            round(self.data['xyz_in_y'][index] + self.cos_theta_y[index] * alpha.numpy(),4), 
+            round(self.data['xyz_in_z'][index] + self.cos_theta_z[index] * alpha.numpy(),4)
             )
         
         coordinates=[]
@@ -358,27 +361,29 @@ class Tracking:
             
             z_in=self.data['xyz_in_z'][ev]
             z_out=self.data['xyz_out_z'][ev]
+            ev_coord=[]
             
             if len(self.triggered_voxels[ev])>1: #event has more than one triggered voxels 
                 
-                ev_coord=[]
+                
                 ev_coord.append((0,0,0))
                 
                 for hit_vox in range(0, len(self.triggered_voxels[ev])-1): 
+                    vox=(self.Ix[ev][hit_vox],self.Iy[ev][hit_vox],self.Iz[ev][hit_vox])
                     
-                    if hit_vox<len(self.triggered_voxels[ev])-1 and self.Iz[ev][hit_vox] != self.Iz[ev][hit_vox+1]: #checking if muon changed layer
+                    if self.Iz[ev][hit_vox] != self.Iz[ev][hit_vox+1]: #checking if muon changed layer
                         coord=trajectory(self.alpha_z_l[ev][hit_vox+1],ev)
 
-                    elif hit_vox<len(self.triggered_voxels[ev])-1 and self.Iy[ev][hit_vox] > self.Iy[ev][hit_vox+1]: #particle is moving from right to left
+                    elif self.Iy[ev][hit_vox] > self.Iy[ev][hit_vox+1]: #particle is moving from right to left
                         coord=trajectory(self.alpha_y_l[ev][hit_vox],ev)
 
-                    elif hit_vox<len(self.triggered_voxels[ev])-1 and self.Iy[ev][hit_vox] < self.Iy[ev][hit_vox+1]: #particle is moving from left to right in y dir
+                    elif self.Iy[ev][hit_vox] < self.Iy[ev][hit_vox+1]: #particle is moving from left to right in y dir
                         coord=trajectory(self.alpha_y_r[ev][hit_vox],ev)
                     
                     #particle has crossed two or more cubes belonging to the same layer along the z axis
                     #and at the same time two or more cubes with the same index for the y dimension
                     
-                    elif hit_vox<len(self.triggered_voxels[ev])-1 and self.Ix[ev][hit_vox] > self.Ix[ev][hit_vox+1]:
+                    elif self.Ix[ev][hit_vox] > self.Ix[ev][hit_vox+1]:
                         coord=trajectory(self.alpha_x_l[ev][hit_vox],ev)
 
                     else:
@@ -392,11 +397,12 @@ class Tracking:
             else:
                 ev_coord.append((0,0,0))
             
+            
             #if the measured incoming point lies on the upper face of volume, then substitute the first element of list of coordinates determined
             #before by the true coordinates of incoming point from the dataset; else the coordinates remain zeros
             
             if len(self.triggered_voxels[ev])>0:
-            
+                
                 if x_in >= 0 and x_in <= 1 and y_in >= 0 and y_in <= 1:
                     ev_coord[0] = (x_in, y_in, z_in)
 
@@ -438,6 +444,7 @@ class Tracking:
 
 
                 elif ev_coord[-1][0]==0 and y_out <0 and x_out < 0 and len(self.alpha_x_r[ev])>0:
+                    
                     if abs(x_out - exit_vox_x.numpy()) > abs(y_out - exit_vox_y.numpy()):
                         ev_coord[-1] = trajectory(self.alpha_x_l[ev][-1], ev)
                     else:
@@ -497,9 +504,7 @@ class Tracking:
                     else:
                         ev_coord[0] = trajectory(self.alpha_y_r[ev][0], ev)
             
-                
             coordinates.append(ev_coord)
         
         return coordinates
     
-  
