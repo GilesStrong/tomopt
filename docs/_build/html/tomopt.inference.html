@@ -372,6 +372,10 @@ This assumption has been tested and found to be good.</p>
 This computation uses the triangle of the error matrix and does not assume zero-valued off-diagonal elements.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
+<p>This computation assumes un-correlated uncertainties, which is probably ok.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
 <p>Behaviour tested only</p>
 </div>
 <dl class="field-list simple">
@@ -1643,8 +1647,12 @@ These are then indexed to retrieve the scatter variables.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.inference.volume.AbsX0Inferrer._get_voxel_zxy_x0_pred_uncs">
 <span class="sig-name descname"><span class="pre">_get_voxel_zxy_x0_pred_uncs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/inference/volume.html#AbsX0Inferrer._get_voxel_zxy_x0_pred_uncs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.inference.volume.AbsX0Inferrer._get_voxel_zxy_x0_pred_uncs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes the uncertainty on the predicted voxelwise X0s, via gradient-based error propagation.
-This computation uses the triangle of the error matrix and does not assume zero-valued off-diagonal elements.</p>
+<dd><p>Computes the uncertainty on the predicted voxelwise X0s, via gradient-based error propagation.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This computation assumes un-correlated uncertainties, which is probably incorrect.
+TODO: correct this to consider correlated uncertainties</p>
+</div>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>This method is incredibly slow and not recommended for use</p>
@@ -2217,7 +2225,7 @@ as the probability of at least two hits above and below the passive volume.</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2021-2022, TomOpt Authors.
+        &copy; Copyright 2021-2023, TomOpt Authors.
 
     </p>
   </div>

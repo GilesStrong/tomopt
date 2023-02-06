@@ -513,6 +513,9 @@ class ScatterBatch:
         This computation uses the triangle of the error matrix and does not assume zero-valued off-diagonal elements.
 
         .. warning::
+            This computation assumes un-correlated uncertainties, which is probably ok.
+
+        .. warning::
             Behaviour tested only
 
         Arguments:

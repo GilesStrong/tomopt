@@ -273,7 +273,10 @@ class AbsX0Inferrer(AbsVolumeInferrer):
     def _get_voxel_zxy_x0_pred_uncs(self) -> Tensor:
         r"""
         Computes the uncertainty on the predicted voxelwise X0s, via gradient-based error propagation.
-        This computation uses the triangle of the error matrix and does not assume zero-valued off-diagonal elements.
+
+        .. warning::
+            This computation assumes un-correlated uncertainties, which is probably incorrect.
+            TODO: correct this to consider correlated uncertainties
 
         .. warning::
             This method is incredibly slow and not recommended for use
