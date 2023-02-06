@@ -527,10 +527,9 @@ class ScatterBatch:
         unc = torch.where(torch.isinf(self.hit_uncs), torch.tensor([0], device=self.device).type(self.hit_uncs.type()), self.hit_uncs)[:, None]
         jac, unc = jac.reshape(jac.shape[0], jac.shape[1], -1), unc.reshape(unc.shape[0], unc.shape[1], -1)
 
-        # Compute unc^2 = unc_x*unc_y*dvar/dhit_x*dvar/dhit_y summing over all x,y inclusive combinations
-        idxs = torch.combinations(torch.arange(0, unc.shape[-1]), with_replacement=True)
-        unc_2 = (jac[:, :, idxs] * unc[:, :, idxs]).prod(-1)
-        return unc_2.sum(-1).sqrt()
+        # Compute unc^2 = sum[(unc_x*dvar/dhit_x)^2], summing over all n hits inclusive combinations
+        unc_2 = (jac * unc).square()  # (mu,var,N)
+        return unc_2.sum(-1).sqrt()  # (mu,var)
 
     def _set_dtheta_dphi_scatter(self) -> None:
         r"""

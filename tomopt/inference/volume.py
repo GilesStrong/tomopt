@@ -287,9 +287,8 @@ class AbsX0Inferrer(AbsVolumeInferrer):
         unc = torch.where(torch.isinf(unc), torch.tensor([0]).type(unc.type()), unc)[None, None, None]  # (1,1,1,mu,var)
         jac, unc = jac.reshape(jac.shape[0], jac.shape[1], jac.shape[2], -1), unc.reshape(unc.shape[0], unc.shape[1], unc.shape[2], -1)  # (z,x,y,mu*var)
 
-        # Compute unc^2 = unc_x*unc_y*dx0/dx*dx0/dy summing over all x,y inclusive combinations
-        idxs = torch.combinations(torch.arange(0, unc.shape[-1]), with_replacement=True)
-        unc_2 = (jac[:, :, :, idxs] * unc[:, :, :, idxs]).prod(-1)  # (z,x,y,N)
+        # Compute unc^2 = sum[(unc_x*dx0/dx)^2] summing over all n hits
+        unc_2 = (jac * unc).square()  # (z,x,y,N)
 
         pred_unc = unc_2.sum(-1).sqrt()  # (z,x,y)
         return pred_unc
