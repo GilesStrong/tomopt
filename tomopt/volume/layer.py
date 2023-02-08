@@ -12,6 +12,48 @@ from ..muon import MuonBatch
 from tomopt.volume.panel import DetectorPanel
 from tomopt.volume.heatmap import DetectorHeatMap
 
+import matplotlib.pyplot as plt
+
+def check_muon_batch(mu:MuonBatch,figtitle:str,mask=None)->None:
+    if mask is None:
+        mask = torch.ones_like(mu.theta,dtype=bool)
+        isnone=True
+
+    fig,ax = plt.subplots(ncols=2,nrows=3,figsize=(8,10))
+    fig.suptitle(figtitle)
+    ax = ax.ravel()
+    ax[0].hist(mu.x[mask],bins=100,label='in propagation',alpha=.3)
+    ax[0].hist(mu.x[mask==False],bins=100,label='at rest',alpha=.3)
+    ax[0].set_xlabel('x')
+    ax[0].legend()
+
+    ax[1].hist(mu.y[mask],bins=100,label='in propagation',alpha=.3)
+    ax[1].hist(mu.y[mask==False],bins=100,label='at rest',alpha=.3)
+    ax[1].set_xlabel('y')
+    ax[1].legend()
+
+    ax[2].hist(mu.theta_x[mask],bins=100,label='in propagation',alpha=.3)
+    ax[2].hist(mu.theta_x[mask==False],bins=100,label='at rest',alpha=.3)
+    ax[2].set_xlabel('tethat_x')
+    ax[2].legend()
+
+    ax[3].hist(mu.theta_y[mask],bins=100,label='in propagation',alpha=.3)
+    ax[3].hist(mu.theta_y[mask==False],bins=100,label='at rest',alpha=.3)
+    ax[3].set_xlabel('tethat_y')
+    ax[3].legend()
+
+    ax[4].hist(mu.z[mask],bins=100,label='in propagation',alpha=.3)
+    ax[4].hist(mu.z[mask==False],bins=100,label='at rest',alpha=.3)
+    ax[4].set_xlabel('z')
+    ax[4].legend()
+
+    ax[5].hist(mu.phi[mask],bins=100,label='in propagation',alpha=.3)
+    ax[5].hist(mu.phi[mask==False],bins=100,label='at rest',alpha=.3)
+    ax[5].set_xlabel('phi')
+    ax[5].legend()
+    plt.tight_layout()
+    plt.show()
+
 r"""
 Provides implementations of the layers in z, which are used to construct volumes, both the passive scattering layers, and the active detection layers.
 """
@@ -192,6 +234,7 @@ class PassiveLayer(AbsLayer):
             mu.scatter_dxyz(dx_vol=scatterings["dx_vol"], dy_vol=scatterings["dy_vol"], dz_vol=scatterings["dz_vol"], mask=scatter_mask)
             mu.propagate_d(self.step_sz, mask)  # Still propagate muons that weren't scattered
             # Muons exiting the layer will be moved back to the bottom of the layer. Perform this here BEFORE their trajectories are updated.
+            dz = mu.z - (self.z - self.size)
             exit_mask = (dz < 0) & mask
             mu.propagate_dz(dz[exit_mask], mask=exit_mask)
             mu.scatter_dtheta_xy(dtheta_x_vol=scatterings["dtheta_x_vol"], dtheta_y_vol=scatterings["dtheta_y_vol"], mask=scatter_mask)
@@ -273,7 +316,6 @@ class PassiveLayer(AbsLayer):
         Returns:
             A dictionary of muon scattering variables in the volume reference frame: dtheta_x_vol, dtheta_y_vol, dx_vol, dy_vol and dz_vol
         """
-
         n_x0 = step_sz / x0
 
         n = len(n_x0)
@@ -283,7 +325,9 @@ class PassiveLayer(AbsLayer):
         if log_term:
             theta0 = theta0 * (1 + (SCATTER_COEF_B * torch.log(n_x0)))
         # These are in the muons' reference frames NOT the volume's!!!
-        dtheta_xy_mu = z1 * theta0
+        # Make sure that scattering angle in the muon reference frame < pi/2
+        # to ensure conversion into the volume reference frame
+        dtheta_xy_mu = torch.clamp(z1 * theta0, max=math.pi/2.2)
         dxy_mu = step_sz * theta0 * ((z1 / math.sqrt(12)) + (z2 / 2))
 
         # Note that if a track incides on a layer
@@ -291,9 +335,9 @@ class PassiveLayer(AbsLayer):
         # (generation of MSC formulas are oblivious of angle of incidence) so we need
         # to decompose them into displacements in x,y,z in the volume frame
         phi_defined = theta != 0  # If theta is a zero, there is no phi defined
-        dx_vol = torch.where(phi_defined, -dxy_mu[0] * torch.sin(phi) - dxy_mu[1] * torch.cos(theta) * torch.cos(phi), dxy_mu[0])
-        dy_vol = torch.where(phi_defined, dxy_mu[0] * torch.cos(phi) - dxy_mu[1] * torch.cos(theta) * torch.sin(phi), dxy_mu[1])
-        dz_vol = torch.where(phi_defined, dxy_mu[1] * torch.sin(theta), torch.zeros_like(dxy_mu[1]))
+        dx_vol = torch.where(phi_defined, -dxy_mu[0] * torch.sin(phi) - dxy_mu[1] * torch.cos(-theta) * torch.cos(phi), dxy_mu[0])
+        dy_vol = torch.where(phi_defined, dxy_mu[0] * torch.cos(phi) - dxy_mu[1] * torch.cos(-theta) * torch.sin(phi), dxy_mu[1])
+        dz_vol = torch.where(phi_defined, dxy_mu[1] * torch.sin(-theta), theta.new_zeros(dxy_mu[1].shape))
 
         # We need to convert deflection in the muon reference frame (dtheta_x_m and dtheta_y_m)
         # into deflection in the volume reference frame (dtheta_x_vol and dtheta_y_vol)
@@ -309,11 +353,11 @@ class PassiveLayer(AbsLayer):
         dtheta_x_m = dtheta_xy_mu[0]
         dtheta_y_m = dtheta_xy_mu[1]
 
-        M = torch.zeros([3, len(theta)], dtype=torch.double)
-        M[0] = torch.tan(theta_x)
-        M[1] = torch.tan(theta_y)
-        M[2] = 1.0
-        r = torch.sqrt(M[0] ** 2 + M[1] ** 2 + M[2] ** 2)
+        ref_point = theta.new_ones([3, len(theta)])
+        ref_point[0] = torch.tan(theta_x)
+        ref_point[1] = torch.tan(theta_y)
+
+        r = torch.sqrt(ref_point[0]**2+ref_point[1]**2+ref_point[2]**2)
         # 1 -
         dx_m = r * torch.tan(dtheta_x_m)
         dy_m = r * torch.tan(dtheta_y_m)
@@ -322,10 +366,10 @@ class PassiveLayer(AbsLayer):
         dy_vol_angle = torch.where(phi_defined, dx_m * torch.cos(phi) - dy_m * torch.cos(theta) * torch.sin(phi), dy_m)
         dz_vol_angle = torch.where(phi_defined, dy_m * torch.sin(theta), torch.zeros_like(dxy_mu[1]))
         # 3 -
-        d_out = -M
-        d_out[0] += dx_vol_angle
-        d_out[1] += dy_vol_angle
-        d_out[2] += dz_vol_angle
+        d_out = -ref_point
+        d_out[0] = d_out[0] + dx_vol_angle
+        d_out[1] = d_out[1] + dy_vol_angle
+        d_out[2] = d_out[2] + dz_vol_angle
         dtheta_x_vol = torch.arctan(d_out[0] / d_out[2]) - theta_x
         dtheta_y_vol = torch.arctan(d_out[1] / d_out[2]) - theta_y
 
