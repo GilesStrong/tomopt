@@ -70,7 +70,7 @@ def test_lead_beryllium(mock_show):
         return rad_length
 
     tmr = default_timer()
-    preds = wrapper.predict(PassiveYielder([arb_rad_length]), n_mu_per_volume=10000, mu_bs=100, cbs=[MuonResampler()])[0]
+    preds = wrapper.predict(PassiveYielder([arb_rad_length]), n_mu_per_volume=10000, mu_bs=250, cbs=[MuonResampler()])[0]
     time = default_timer() - tmr
     assert time <= 60  # 2018 MacBook Pro: ~20s, but GitHub CI is slower
 

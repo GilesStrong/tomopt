@@ -1,4 +1,5 @@
 # User requirements
+functorch
 torch>=1.10.0
 seaborn ~= 0.11.0
 matplotlib >= 3.1
