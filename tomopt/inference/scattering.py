@@ -251,17 +251,17 @@ class ScatterBatch:
         axs[2].plot(
             [
                 track_start_in[0],
-                track_start_in[0] + np.cos(phi_in),
+                track_start_in[0] + np.cos(phi_in)[0],
             ],
-            [track_start_in[1], track_start_in[1] + np.sin(phi_in)],
+            [track_start_in[1], track_start_in[1] + np.sin(phi_in)[0]],
             label=r"$\phi_{in}=" + f"{phi_in[0]:.3}$",
         )
         axs[2].plot(
             [
                 track_start_out[0],
-                track_start_out[0] - np.cos(phi_out),
+                track_start_out[0] - np.cos(phi_out)[0],
             ],
-            [track_start_out[1], track_start_out[1] - np.sin(phi_out)],
+            [track_start_out[1], track_start_out[1] - np.sin(phi_out)[0]],
             label=r"$\phi_{out}=" + f"{phi_out[0]:.3}$",
         )
         axs[2].scatter(xin, yin)
