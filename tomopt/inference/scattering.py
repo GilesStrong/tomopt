@@ -251,17 +251,17 @@ class ScatterBatch:
         axs[2].plot(
             [
                 track_start_in[0],
-                track_start_in[0] + np.cos(phi_in),
+                track_start_in[0] + np.cos(phi_in)[0],
             ],
-            [track_start_in[1], track_start_in[1] + np.sin(phi_in)],
+            [track_start_in[1], track_start_in[1] + np.sin(phi_in)[0]],
             label=r"$\phi_{in}=" + f"{phi_in[0]:.3}$",
         )
         axs[2].plot(
             [
                 track_start_out[0],
-                track_start_out[0] - np.cos(phi_out),
+                track_start_out[0] - np.cos(phi_out)[0],
             ],
-            [track_start_out[1], track_start_out[1] - np.sin(phi_out)],
+            [track_start_out[1], track_start_out[1] - np.sin(phi_out)[0]],
             label=r"$\phi_{out}=" + f"{phi_out[0]:.3}$",
         )
         axs[2].scatter(xin, yin)
@@ -513,6 +513,9 @@ class ScatterBatch:
         This computation uses the triangle of the error matrix and does not assume zero-valued off-diagonal elements.
 
         .. warning::
+            This computation assumes un-correlated uncertainties, which is probably ok.
+
+        .. warning::
             Behaviour tested only
 
         Arguments:
@@ -527,10 +530,9 @@ class ScatterBatch:
         unc = torch.where(torch.isinf(self.hit_uncs), torch.tensor([0], device=self.device).type(self.hit_uncs.type()), self.hit_uncs)[:, None]
         jac, unc = jac.reshape(jac.shape[0], jac.shape[1], -1), unc.reshape(unc.shape[0], unc.shape[1], -1)
 
-        # Compute unc^2 = unc_x*unc_y*dvar/dhit_x*dvar/dhit_y summing over all x,y inclusive combinations
-        idxs = torch.combinations(torch.arange(0, unc.shape[-1]), with_replacement=True)
-        unc_2 = (jac[:, :, idxs] * unc[:, :, idxs]).prod(-1)
-        return unc_2.sum(-1).sqrt()
+        # Compute unc^2 = sum[(unc_x*dvar/dhit_x)^2], summing over all n hits inclusive combinations
+        unc_2 = (jac * unc).square()  # (mu,var,N)
+        return unc_2.sum(-1).sqrt()  # (mu,var)
 
     def _set_dtheta_dphi_scatter(self) -> None:
         r"""
