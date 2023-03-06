@@ -12,48 +12,6 @@ from ..muon import MuonBatch
 from tomopt.volume.panel import DetectorPanel
 from tomopt.volume.heatmap import DetectorHeatMap
 
-import matplotlib.pyplot as plt
-
-def check_muon_batch(mu:MuonBatch,figtitle:str,mask=None)->None:
-    if mask is None:
-        mask = torch.ones_like(mu.theta,dtype=bool)
-        isnone=True
-
-    fig,ax = plt.subplots(ncols=2,nrows=3,figsize=(8,10))
-    fig.suptitle(figtitle)
-    ax = ax.ravel()
-    ax[0].hist(mu.x[mask],bins=100,label='in propagation',alpha=.3)
-    ax[0].hist(mu.x[mask==False],bins=100,label='at rest',alpha=.3)
-    ax[0].set_xlabel('x')
-    ax[0].legend()
-
-    ax[1].hist(mu.y[mask],bins=100,label='in propagation',alpha=.3)
-    ax[1].hist(mu.y[mask==False],bins=100,label='at rest',alpha=.3)
-    ax[1].set_xlabel('y')
-    ax[1].legend()
-
-    ax[2].hist(mu.theta_x[mask],bins=100,label='in propagation',alpha=.3)
-    ax[2].hist(mu.theta_x[mask==False],bins=100,label='at rest',alpha=.3)
-    ax[2].set_xlabel('tethat_x')
-    ax[2].legend()
-
-    ax[3].hist(mu.theta_y[mask],bins=100,label='in propagation',alpha=.3)
-    ax[3].hist(mu.theta_y[mask==False],bins=100,label='at rest',alpha=.3)
-    ax[3].set_xlabel('tethat_y')
-    ax[3].legend()
-
-    ax[4].hist(mu.z[mask],bins=100,label='in propagation',alpha=.3)
-    ax[4].hist(mu.z[mask==False],bins=100,label='at rest',alpha=.3)
-    ax[4].set_xlabel('z')
-    ax[4].legend()
-
-    ax[5].hist(mu.phi[mask],bins=100,label='in propagation',alpha=.3)
-    ax[5].hist(mu.phi[mask==False],bins=100,label='at rest',alpha=.3)
-    ax[5].set_xlabel('phi')
-    ax[5].legend()
-    plt.tight_layout()
-    plt.show()
-
 r"""
 Provides implementations of the layers in z, which are used to construct volumes, both the passive scattering layers, and the active detection layers.
 """
@@ -327,7 +285,7 @@ class PassiveLayer(AbsLayer):
         # These are in the muons' reference frames NOT the volume's!!!
         # Make sure that scattering angle in the muon reference frame < pi/2
         # to ensure conversion into the volume reference frame
-        dtheta_xy_mu = torch.clamp(z1 * theta0, max=math.pi/2.2)
+        dtheta_xy_mu = torch.clamp(z1 * theta0, max=math.pi / 2.2)
         dxy_mu = step_sz * theta0 * ((z1 / math.sqrt(12)) + (z2 / 2))
 
         # Note that if a track incides on a layer
@@ -357,7 +315,7 @@ class PassiveLayer(AbsLayer):
         ref_point[0] = torch.tan(theta_x)
         ref_point[1] = torch.tan(theta_y)
 
-        r = torch.sqrt(ref_point[0]**2+ref_point[1]**2+ref_point[2]**2)
+        r = torch.sqrt(ref_point[0] ** 2 + ref_point[1] ** 2 + ref_point[2] ** 2)
         # 1 -
         dx_m = r * torch.tan(dtheta_x_m)
         dy_m = r * torch.tan(dtheta_y_m)
