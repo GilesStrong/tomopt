@@ -87,6 +87,7 @@ In order to start time, the TomOpt authors/contributors are: Giles Strong, Tomma
 
 ### Code contributions:
 
+- Passive and active volume 3D visualization
 - Conceptual planning, implementation, and investigation of maximum likelihood estimate for X0 inference
 - Conceptual planning for:
   - ULorry benchmark
