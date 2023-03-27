@@ -19,24 +19,19 @@ __all__ = ["ScatterBatch", "GenScatterBatch"]
 class ScatterBatch:
     r"""
     Class for computing scattering information from the hits via incoming/outgoing trajectory fitting.
-
     Linear fits are performed separately to all hits associated with layer groups, as indicated by the `pos` attribute of the layers which recorded hits.
     Currently, the inference methods expect detectors above the passive layer to have `pos=='above'`,
     and those below the passive volume to have `pos=='below'`.
     Trajectory fitting is performed using an analytic likelihood minimisation, which considers uncertainties and efficiencies on the hits in x and y.
-
     .. important::
         The current separation of hits into above and below groups does not allow for e.g. a third set of detectors,
         since this split is based on the value of the `n_hits_above` attribute.
-
     One instance of this class should created for each :class:`~tomopt.muon.muon_batch.MuonBatch`.
     As part of the initialisation, muons will be filtered using :meth:`~tomopt.inference.ScatterBatch._filter_scatters`
     in order to avoid NaN/Inf gradients or values. This results in direct, in-place changes to the :class:`~tomopt.muon.muon_batch.MuonBatch`.
-
     Since many variables of the scattering can be inferred, but not all are required for further inference downstream,
     variables, and their uncertainties, are computed on a lazy basis, with memoisation: the values are only computed on the first request (if at all)
     and then stored in case of further requests.
-
     The dtheta, dphi, and total scattering variables are computed under the assumption of small angular scatterings.
     An assumption is necessary here, since there is a loss of information in the when the muons undergo scattering in theta and phi:
     since theta is [0,pi] a negative scattering in theta will always results in a positive theta, but phi can become phi+pi.
@@ -44,7 +39,6 @@ class ScatterBatch:
     The total scattering (`total_scatter`) is the quadrature sum of dtheta and dphi, and all three are computed under both hypotheses.
     The final values of these are chosen using the hypothesis which minimises the total amount of scattering.
     This assumption has been tested and found to be good.
-
     Arguments:
         mu: muons with hits to infer on
         volume: volume through which the muons travelled
@@ -93,6 +87,10 @@ class ScatterBatch:
     _xyz_out_unc: Optional[Tensor] = None
     _dxy: Optional[Tensor] = None  # (muons,xy) distances in x & y from PoCA to incoming|outgoing muons
     _dxy_unc: Optional[Tensor] = None
+    _theta_msc: Optional[
+        Tensor
+    ] = None  # (muons,1) angle computed via the cosine dot-product rule between the incoming & outgoing muons; better to use _total_scatter
+    _theta_msc_unc: Optional[Tensor] = None
 
     def __init__(self, mu: MuonBatch, volume: Volume):
         r"""
@@ -116,16 +114,12 @@ class ScatterBatch:
         Fits a linear trajectory to a group of hits, whilst considering their uncertainties on their xy positions.
         No uncertainty is considered for z positions of hits.
         The fit is performed via an analytical likelihood-maximisation.
-
-
         .. important::
             Muons with <2 hits have NaN trajectory
-
         Arguments:
             hits: (muons,hits,xyz) tensor of hit positions
             uncs: (muons,hits,(unc x,unc y,0)) tensor of hit uncertainties
             lw: length and width of the passive layers of the volume
-
         Returns:
             vec: (muons,xyz) fitted-vector directions
             start: (muons,xyz) initial point of fitted-vector
@@ -179,7 +173,6 @@ class ScatterBatch:
     def plot_scatter(self, idx: int) -> None:
         r"""
         Plots representation of hits and fitted trajectories for a single muon.
-
         Arguments:
             idx: index of muon to plot
         """
@@ -244,20 +237,21 @@ class ScatterBatch:
         axs[1].set_ylabel("z")
         axs[1].legend()
 
+        # test scattering modification
         axs[2].plot(
             [
                 track_start_in[0],
-                track_start_in[0] + np.cos(phi_in[0]),
+                track_start_in[0] + np.cos(phi_in)[0],
             ],
-            [track_start_in[1], track_start_in[1] + np.sin(phi_in[0])],
+            [track_start_in[1], track_start_in[1] + np.sin(phi_in)[0]],
             label=r"$\phi_{in}=" + f"{phi_in[0]:.3}$",
         )
         axs[2].plot(
             [
                 track_start_out[0],
-                track_start_out[0] - np.cos(phi_out[0]),
+                track_start_out[0] - np.cos(phi_out)[0],
             ],
-            [track_start_out[1], track_start_out[1] - np.sin(phi_out[0])],
+            [track_start_out[1], track_start_out[1] - np.sin(phi_out)[0]],
             label=r"$\phi_{out}=" + f"{phi_out[0]:.3}$",
         )
         axs[2].scatter(xin, yin)
@@ -272,11 +266,12 @@ class ScatterBatch:
     def _compute_theta_msc(p: Tensor, q: Tensor) -> Tensor:
         r"""
         Computes the angle between sets of vectors p and q via the cosine dot-product.
-
+        .. warning::
+            This angle is NOT the total amount of scattering; please use `total_scatter`.
+            This code is kept in case the angle is still useful for inference.
         Arguments:
             p: (N,xyz) vectors 1
             q: (N,xyz) vectors 2
-
         Returns:
            (N,1) angles between vectors
         """
@@ -287,10 +282,8 @@ class ScatterBatch:
     def _compute_theta(track: Tensor) -> Tensor:
         r"""
         Computes the theta angles of vectors
-
         Arguments:
             track: (N,xyz) components of the vectors
-
         Returns:
             (N,1) theta angles of the vectors
         """
@@ -307,11 +300,9 @@ class ScatterBatch:
     def _compute_phi(x: Tensor, y: Tensor) -> Tensor:
         r"""
         Computes the phi angles from the xy components of vectors
-
         Arguments:
             x: (N,1) x components of the vectors
             y: (N,1) y components of the vectors
-
         Returns:
             (N,1) phi angles of the vectors
         """
@@ -335,22 +326,20 @@ class ScatterBatch:
     @staticmethod
     def _compute_dtheta_dphi_scatter(theta_in: Tensor, phi_in: Tensor, theta_out: Tensor, phi_out: Tensor) -> Dict[str, Tensor]:
         r"""
-        Computes dtheta and dphi variables under the assumption of small angular scatterings.
+        Computes dtheta, dphi, and total scattering variables under the assumption of small angular scatterings.
         An assumption is necessary here, since there is a loss of information in the when the muons undergo scattering in theta and phi:
         since theta is [0,pi] a negative scattering in theta will always results in a positive theta, but phi can become phi+pi.
         When inferring the angular scattering, one cannot precisely tell whether instead a large scattering in phi occurred.
         The total scattering (`total_scatter`) is the quadrature sum of dtheta and dphi, and all three are computed under both hypotheses.
         The final values of these are chosen using the hypothesis which minimises the total amount of scattering.
         This assumption has been tested and found to be good.
-
         Arguments:
             theta_in: (N,1) theta angle of incoming muons
             phi_in: (N,1) phi angle of incoming muons
             theta_out: (N,1) theta angle of outgoing muons
             phi_out: (N,1) phi angle of outgoing muons
-
         Returns:
-            Dictionary of (N,1) tensors for "dtheta", "dphi"
+            Dictionary of (N,1) tensors for "dtheta", "dphi", & "total_scatter"
         """
 
         theta_in = theta_in.squeeze(-1)
@@ -375,7 +364,7 @@ class ScatterBatch:
         # Pick set with smallest scattering
         hypo = total_scatter.argmin(-1)
         i = np.arange(len(total_scatter))
-        return {"dtheta": dtheta[i, hypo, None], "dphi": dphi[i, hypo, None]}
+        return {"dtheta": dtheta[i, hypo, None], "dphi": dphi[i, hypo, None], "total_scatter": total_scatter[i, hypo, None]}
 
     def _extract_hits(self) -> None:
         r"""
@@ -403,12 +392,10 @@ class ScatterBatch:
         r"""
         Filters muons to avoid NaN/Inf gradients or values. This results in direct, in-place changes to the :class:`~tomopt.muon.muon_batch.MuonBatch`.
         This might seem heavy-handed, but tracks with invalid/extreme parameters can have NaN gradients, which can spoil the grads of all other muons.
-
         .. important::
             This method will remove any muon with at least one high-uncertainty hit, even if all the others are ok.
             This can mean that for some detector configurations with, e.g. one tiny detector, it might be best to manually remove the unneeded detector
             in order to gain an increase in the number of muons available for inference.
-
         The removal criteria are any of:
             total scattering is zero, NaN, or Inf
             incoming or outgoing tracks are parallel to the passive volume
@@ -419,9 +406,14 @@ class ScatterBatch:
         # Only include muons that scatter
         theta_in = self._compute_theta(self.track_in)
         theta_out = self._compute_theta(self.track_out)
+        phi_in = self._compute_phi(x=self.track_in[:, 0:1], y=self.track_in[:, 1:2])
+        phi_out = self._compute_phi(x=self.track_out[:, 0:1], y=self.track_out[:, 1:2])
+
+        total_scatter = self._compute_dtheta_dphi_scatter(theta_in=theta_in, phi_in=phi_in, theta_out=theta_out, phi_out=phi_out)["total_scatter"]
+        keep_mask = (total_scatter != 0) * (~total_scatter.isnan()) * (~total_scatter.isinf())
 
         theta_msc = self._compute_theta_msc(self.track_in, self.track_out)
-        keep_mask = (theta_msc != 0) * (~theta_msc.isnan()) * (~theta_msc.isinf())
+        keep_mask *= (theta_msc != 0) * (~theta_msc.isnan()) * (~theta_msc.isinf())
 
         # Remove muons with tracks parallel to volume
         keep_mask *= (theta_in - (torch.pi / 2) < -1e-5) * (theta_out - (torch.pi / 2) < -1e-5)
@@ -449,10 +441,8 @@ class ScatterBatch:
     def _compute_scatters(self) -> None:
         r"""
         Computes incoming and outgoing vectors, and the vector normal to them, from hits extracted from filtered muons.
-
         .. important::
             Currently only handles detectors above and below passive volume
-
         Scatter locations adapted from:
         @MISC {3334866,
             TITLE = {Closest points between two lines},
@@ -498,13 +488,12 @@ class ScatterBatch:
         r"""
         Computes the uncertainty on variable computed from the recorded hits due to the uncertainties on the hits, via gradient-based error propagation.
         This computation uses the triangle of the error matrix and does not assume zero-valued off-diagonal elements.
-
+        .. warning::
+            This computation assumes un-correlated uncertainties, which is probably ok.
         .. warning::
             Behaviour tested only
-
         Arguments:
             var: (muons,*) tensor of variables computed from the recorded hits
-
         Returns:
             (muons,*) tensor of uncertainties on var
         """
@@ -514,25 +503,24 @@ class ScatterBatch:
         unc = torch.where(torch.isinf(self.hit_uncs), torch.tensor([0], device=self.device).type(self.hit_uncs.type()), self.hit_uncs)[:, None]
         jac, unc = jac.reshape(jac.shape[0], jac.shape[1], -1), unc.reshape(unc.shape[0], unc.shape[1], -1)
 
-        # Compute unc^2 = unc_x*unc_y*dvar/dhit_x*dvar/dhit_y summing over all x,y inclusive combinations
-        idxs = torch.combinations(torch.arange(0, unc.shape[-1]), with_replacement=True)
-        unc_2 = (jac[:, :, idxs] * unc[:, :, idxs]).prod(-1)
-        return unc_2.sum(-1).sqrt()
+        # Compute unc^2 = sum[(unc_x*dvar/dhit_x)^2], summing over all n hits inclusive combinations
+        unc_2 = (jac * unc).square()  # (mu,var,N)
+        return unc_2.sum(-1).sqrt()  # (mu,var)
 
     def _set_dtheta_dphi_scatter(self) -> None:
         r"""
-        Simultaneously sets dtheta and dphi scattering variables under the assumption of small angular scatterings.
+        Simultaneously sets dtheta, dphi, and total scattering variables under the assumption of small angular scatterings.
         An assumption is necessary here, since there is a loss of information in the when the muons undergo scattering in theta and phi:
         since theta is [0,pi] a negative scattering in theta will always results in a positive theta, but phi can become phi+pi.
         When inferring the angular scattering, one cannot precisely tell whether instead a large scattering in phi occurred.
-        The total scattering is computed as the (only) angle between incoming and outgoing tracks. Computation is done by the _compute_theta_msc() method.
+        The total scattering (`total_scatter`) is the quadrature sum of dtheta and dphi, and all three are computed under both hypotheses.
         The final values of these are chosen using the hypothesis which minimises the total amount of scattering.
         This assumption has been tested and found to be good.
         """
 
         values = self._compute_dtheta_dphi_scatter(theta_in=self.theta_in, phi_in=self.phi_in, theta_out=self.theta_out, phi_out=self.phi_out)
-        self._dtheta, self._dphi = values["dtheta"], values["dphi"]
-        self._dtheta_unc, self._dphi_unc = None, None
+        self._dtheta, self._dphi, self._total_scatter = values["dtheta"], values["dphi"], values["total_scatter"]
+        self._dtheta_unc, self._dphi_unc, self._total_scatter_unc = None, None, None
 
     @property
     def hits(self) -> Dict[str, Dict[str, Tensor]]:
@@ -916,12 +904,11 @@ class ScatterBatch:
     def total_scatter(self) -> Tensor:
         r"""
         Returns:
-            (muons,1) theta_msc; the total amount of angular scattering
+            (muons,1) quadrature sum of dtheta and dphi; the total amount of angular scattering fot phi_in != phi_out != 0
         """
 
         if self._total_scatter is None:
-            self._total_scatter = self._compute_theta_msc(self.track_in, self.track_out)
-            self._total_scatter_unc = None
+            self._set_dtheta_dphi_scatter()
         return self._total_scatter
 
     @property
@@ -934,23 +921,6 @@ class ScatterBatch:
         if self._total_scatter_unc is None:
             self._total_scatter_unc = self._compute_out_var_unc(self.total_scatter)
         return self._total_scatter_unc
-
-    @property
-    def theta_msc(self) -> Tensor:
-        r"""
-        Returns:
-            (muons,1) theta_msc; the total amount of angular scattering
-        """
-
-        return self.total_scatter
-
-    @property
-    def theta_msc_unc(self) -> Tensor:
-        r"""
-        Returns:
-            (muons,1) uncertainty on total_scatter
-        """
-        return self.total_scatter_unc
 
     @property
     def theta_xy_in(self) -> Tensor:
@@ -1067,32 +1037,49 @@ class ScatterBatch:
             self._xyz_out_unc = self._compute_out_var_unc(self.xyz_out)
         return self._xyz_out_unc
 
+    @property
+    def theta_msc(self) -> Tensor:
+        r"""
+        Returns:
+            (muons,1) angle computed via the cosine dot-product rule between the incoming & outgoing muons; better to use _total_scatter
+        """
+
+        if self._theta_msc is None:
+            self._theta_msc = self._compute_theta_msc(self.track_in, self.track_out)
+            self._theta_msc_unc = None
+        return self._theta_msc
+
+    @property
+    def theta_msc_unc(self) -> Tensor:
+        r"""
+        Returns:
+            (muons,1) uncertainty on theta_msc
+        """
+
+        if self._theta_msc_unc is None:
+            self._theta_msc_unc = self._compute_out_var_unc(self.theta_msc)
+        return self._theta_msc_unc
+
 
 class GenScatterBatch(ScatterBatch):
     r"""
     Class for computing scattering information from the true hits via incoming/outgoing trajectory fitting.
-
     .. warning::
         This class is intended for diagnostic purposes only.
         The tracks and scatter variables carry no gradient w.r.t. detector parameters (except z position).
-
     Linear fits are performed separately to all hits associated with layer groups, as indicated by the `pos` attribute of the layers which recorded hits.
     Currently, the inference methods expect detectors above the passive layer to have `pos=='above'`,
     and those below the passive volume to have `pos=='below'`.
     Trajectory fitting is performed using an analytic likelihood minimisation, but no uncertainties on the hits are considered.
-
     .. important::
         The current separation of hits into above and below groups does not allow for e.g. a third set of detectors,
         since this split is based on the value of the `n_hits_above` attribute.
-
     One instance of this class should created for each :class:`~tomopt.muon.muon_batch.MuonBatch`.
     As part of the initialisation, muons will be filtered using :meth:`~tomopt.inference.ScatterBatch._filter_scatters`
     in order to avoid NaN/Inf values. This results in direct, in-place changes to the :class:`~tomopt.muon.muon_batch.MuonBatch`.
-
     Since many variables of the scattering can be inferred, but not all are required for further inference downstream,
     variables, and their uncertainties, are computed on a lazy basis, with memoisation: the values are only computed on the first request (if at all)
     and then stored in case of further requests.
-
     The dtheta, dphi, and total scattering variables are computed under the assumption of small angular scatterings.
     An assumption is necessary here, since there is a loss of information in the when the muons undergo scattering in theta and phi:
     since theta is [0,pi] a negative scattering in theta will always results in a positive theta, but phi can become phi+pi.
@@ -1100,7 +1087,6 @@ class GenScatterBatch(ScatterBatch):
     The total scattering (`total_scatter`) is the quadrature sum of dtheta and dphi, and all three are computed under both hypotheses.
     The final values of these are chosen using the hypothesis which minimises the total amount of scattering.
     This assumption has been tested and found to be good.
-
     Arguments:
         mu: muons with hits to infer on
         volume: volume through which the muons travelled
