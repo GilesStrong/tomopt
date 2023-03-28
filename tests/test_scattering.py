@@ -22,10 +22,8 @@ PKG_DIR = Path(os.path.dirname(os.path.abspath(__file__)))  # How robust is this
 
 
 def cut_tail(distrib, cut: float):
-
     Q1 = (100 - cut) / 2
     Q2 = 100 - Q1
-
     q1 = np.percentile(distrib, Q1)
     q2 = np.percentile(distrib, Q2)
     return distrib[(distrib > q1) & (distrib < q2)]
