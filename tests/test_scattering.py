@@ -90,7 +90,6 @@ def get_scatters(grp: h5py.Group, n_steps: int, plots: bool, verbose: bool) -> D
 def make_comparison(
     geant_df: pd.DataFrame, pdg_scattering: Dict[str, Tensor], pgeant_scattering: Optional[Dict[str, Tensor]] = None, plots: bool = True, verbose: bool = True
 ) -> Dict[str, Dict[str, float]]:
-
     # Make plots and tests
     tests = defaultdict(lambda: defaultdict(dict))
     var = "dangle_vol"
