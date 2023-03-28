@@ -246,13 +246,11 @@ def test_muon_batch_scatter_dxyz():
     assert (batch.y == start.y).all()
     assert (batch.z == start.z).all()
 
-
     batch = start.copy()
     batch.scatter_dxyz(dy_vol=Tensor([1, -1]))
     assert (batch.y != start.y).all()
     assert (batch.x == start.x).all()
     assert (batch.z == start.z).all()
-
 
     batch = start.copy()
     batch.scatter_dxyz(dx_vol=Tensor([1, -1]), dy_vol=Tensor([1, -1]), dz_vol=Tensor([1, -1]))
