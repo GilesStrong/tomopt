@@ -119,7 +119,7 @@ class AbsX0Inferrer(AbsVolumeInferrer):
     _muon_efficiency: Tensor = None  # (mu, eff)
     _vox_zxy_x0_preds: Optional[Tensor] = None  # (z,x,y)
     _vox_zxy_x0_pred_uncs: Optional[Tensor] = None  # (z,x,y)
-    _var_order_szs = [("poca", 3), ("tot_scatter", 1), ("scatter_msc", 1), ("theta_in", 1), ("theta_out", 1), ("mom", 1)]
+    _var_order_szs = [("poca", 3), ("tot_scatter", 1), ("theta_in", 1), ("theta_out", 1), ("mom", 1)]
 
     def __init__(self, volume: Volume):
         r"""
@@ -228,7 +228,6 @@ class AbsX0Inferrer(AbsVolumeInferrer):
             i += sz
         self._poca_dim = dims["poca"]
         self._tot_scatter_dim = dims["tot_scatter"]
-        self._scatter_msc_dim = dims["scatter_msc"]
         self._theta_in_dim = dims["theta_in"]
         self._theta_out_dim = dims["theta_out"]
         self._mom_dim = dims["mom"]
@@ -252,8 +251,6 @@ class AbsX0Inferrer(AbsVolumeInferrer):
         uncs["poca"] = torch.cat([sb.poca_xyz_unc for sb in self.scatter_batches], dim=0)
         vals["tot_scatter"] = torch.cat([sb.total_scatter for sb in self.scatter_batches], dim=0)
         uncs["tot_scatter"] = torch.cat([sb.total_scatter_unc for sb in self.scatter_batches], dim=0)
-        vals["scatter_msc"] = torch.cat([sb.theta_msc for sb in self.scatter_batches], dim=0)
-        uncs["scatter_msc"] = torch.cat([sb.theta_msc_unc for sb in self.scatter_batches], dim=0)
         vals["theta_in"] = torch.cat([sb.theta_in for sb in self.scatter_batches], dim=0)
         uncs["theta_in"] = torch.cat([sb.theta_in_unc for sb in self.scatter_batches], dim=0)
         vals["theta_out"] = torch.cat([sb.theta_out for sb in self.scatter_batches], dim=0)
@@ -310,15 +307,14 @@ class AbsX0Inferrer(AbsVolumeInferrer):
         # Compute variable weights per voxel per muon, variable weights applied to squared variables, therefore use error propagation
         vox_prob_eff_wgt = self.muon_efficiency.reshape(self.n_mu, 1, 1, 1) * self.muon_probs_per_voxel_zxy  # (mu,z,x,y)
 
-        mu_tot_scatter2_var = ((2 * self.muon_scatter_msc * self.muon_scatter_msc_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
-
+        mu_tot_scatter2_var = ((2 * self.muon_total_scatter * self.muon_total_scatter_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
         mu_theta_in2_var = ((2 * self.muon_theta_in * self.muon_theta_in_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
         mu_theta_out2_var = ((2 * self.muon_theta_out * self.muon_theta_out_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
         mu_mom2_var = ((2 * self.muon_mom * self.muon_mom_unc) ** 2).reshape(self.n_mu, 1, 1, 1)
 
         # Compute weighted RMS of scatter variables per voxel
         vox_tot_total_scatter = self._weighted_rms(
-            self.muon_scatter_msc.reshape(self.n_mu, 1, 1, 1), torch.nan_to_num(vox_prob_eff_wgt / mu_tot_scatter2_var)
+            self.muon_total_scatter.reshape(self.n_mu, 1, 1, 1), torch.nan_to_num(vox_prob_eff_wgt / mu_tot_scatter2_var)
         )  # (z,x,y)
         vox_theta_in = self._weighted_rms(self.muon_theta_in.reshape(self.n_mu, 1, 1, 1), torch.nan_to_num(vox_prob_eff_wgt / mu_theta_in2_var))
         vox_theta_out = self._weighted_rms(self.muon_theta_out.reshape(self.n_mu, 1, 1, 1), torch.nan_to_num(vox_prob_eff_wgt / mu_theta_out2_var))
@@ -453,28 +449,6 @@ class AbsX0Inferrer(AbsVolumeInferrer):
         if self._muon_scatter_vars is None or self._muon_scatter_var_uncs is None:
             self._combine_scatters()
         return self._muon_scatter_var_uncs[:, self._tot_scatter_dim]
-
-    @property
-    def muon_scatter_msc(self) -> Tensor:
-        r"""
-        Returns:
-            (muons, 1) tensor of multiple Coulomb scattering angle
-        """
-
-        if self._muon_scatter_vars is None or self._muon_scatter_var_uncs is None:
-            self._combine_scatters()
-        return self._muon_scatter_vars[:, self._scatter_msc_dim]
-
-    @property
-    def muon_scatter_msc_unc(self) -> Tensor:
-        r"""
-        Returns:
-            (muons, 1) tensor of uncertainites on multiple Coulomb scattering angle
-        """
-
-        if self._muon_scatter_vars is None or self._muon_scatter_var_uncs is None:
-            self._combine_scatters()
-        return self._muon_scatter_var_uncs[:, self._scatter_msc_dim]
 
     @property
     def muon_theta_in(self) -> Tensor:
