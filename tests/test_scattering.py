@@ -29,11 +29,7 @@ def cut_tail(distrib, cut: float):
     return distrib[(distrib > q1) & (distrib < q2)]
 
 
-def get_scatters(grp: h5py.Group, n_steps: int, plots: bool, verbose: bool) -> Dict[str, Any]:
-    r"""
-    file example Fe_1cm_5GeV_normal.txt
-    """
-
+def get_scatters(grp: h5py.Group, n_steps: int, plots: bool, name: str, verbose: bool) -> Dict[str, Any]:
     # Get data & settings
     settings = json.loads(grp["settings"][()])
     df = pd.DataFrame(grp["data"][()], columns=settings["columns"])
@@ -65,7 +61,7 @@ def get_scatters(grp: h5py.Group, n_steps: int, plots: bool, verbose: bool) -> D
     muons = MuonBatch(xy_m_t_p, init_z=1)
     start = muons.copy()
 
-    # # New param model
+    # # New param model -- ignore for now
     # pgeant_scattering = layer._pgeant_scatter(x0=x0, theta=muons.theta, theta_x=muons.theta_x, theta_y=muons.theta_y, mom=muons.mom)
     # pgeant_scattering["dangle_vol"] = np.sqrt((pgeant_scattering["dtheta_vol"] ** 2) + (pgeant_scattering["dphi_vol"] ** 2))
     # pgeant_scattering["dspace_vol"] = np.sqrt((pgeant_scattering["dx_vol"] ** 2) + (pgeant_scattering["dy_vol"] ** 2))
@@ -80,16 +76,24 @@ def get_scatters(grp: h5py.Group, n_steps: int, plots: bool, verbose: bool) -> D
     pdg_scattering["dangle_vol"] = np.sqrt((pdg_scattering["dtheta_x_vol"] ** 2) + (pdg_scattering["dtheta_y_vol"] ** 2))
     pdg_scattering["dspace_vol"] = np.sqrt((pdg_scattering["dx_vol"] ** 2) + (pdg_scattering["dy_vol"] ** 2))
 
-    tests = make_comparison(df, pdg_scattering, pgeant_scattering=None, plots=plots, verbose=verbose)
+    tests = make_comparison(name, df, pdg_scattering, pgeant_scattering=None, plots=plots, verbose=verbose)
 
     return {"data": {"df": df, "pdg": pdg_scattering}, "tests": tests}
 
 
 def make_comparison(
-    geant_df: pd.DataFrame, pdg_scattering: Dict[str, Tensor], pgeant_scattering: Optional[Dict[str, Tensor]] = None, plots: bool = True, verbose: bool = True
+    name: str,
+    geant_df: pd.DataFrame,
+    pdg_scattering: Dict[str, Tensor],
+    pgeant_scattering: Optional[Dict[str, Tensor]] = None,
+    plots: bool = True,
+    verbose: bool = True,
 ) -> Dict[str, Dict[str, float]]:
     # Make plots and tests
     tests = defaultdict(lambda: defaultdict(dict))
+    path = PKG_DIR / f"scaatter_tests/{name}"
+    path.mkdir(exist_ok=True, parents=True)
+
     var = "dangle_vol"
     if verbose:
         print("\n\n", var)
@@ -112,25 +116,30 @@ def make_comparison(
             tab = PrettyTable(["Sim"] + [f for f in tests[var][name]])
         tab.add_row([name] + [v for k, v in tests[var][name].items()])
 
+    plt.figure(figsize=(12, 10))
+    sns.distplot(geant_df[var], label="True GEANT")
+    if pgeant_scattering is not None:
+        sns.distplot(pgeant_scattering[var], label="Param GEANT")
+    sns.distplot(pdg_scattering[var], label="PDG")
+    cut99 = np.percentile(geant_df[var], 99.9)
+    plt.xlim([-cut99, cut99])
+    plt.xlabel(var)
+    plt.legend()
+    plt.savefig(path / f"{var}.png")
     if plots:
-        sns.distplot(geant_df[var], label="True GEANT")
-        if pgeant_scattering is not None:
-            sns.distplot(pgeant_scattering[var], label="Param GEANT")
-        sns.distplot(pdg_scattering[var], label="PDG")
-        cut99 = np.percentile(geant_df[var], 99.9)
-        plt.xlim([-cut99, cut99])
-        plt.xlabel(var)
-        plt.legend()
         plt.show()
 
-        sns.distplot(geant_df.loc[geant_df[var].abs() > cut68, var].abs(), label="True GEANT")
-        if pgeant_scattering is not None:
-            sns.distplot(pgeant_scattering[var][pgeant_scattering[var].abs() > cut68].abs(), label="Param GEANT")
-        sns.distplot(pdg_scattering[var][pdg_scattering[var].abs() > cut68].abs(), label="PDG")
-        plt.xlabel(f"|{var}|")
-        plt.legend()
-        plt.yscale("log")
-        plt.ylim(1e-3, 1e4)
+    plt.figure(figsize=(12, 10))
+    sns.distplot(geant_df.loc[geant_df[var].abs() > cut68, var].abs(), label="True GEANT")
+    if pgeant_scattering is not None:
+        sns.distplot(pgeant_scattering[var][pgeant_scattering[var].abs() > cut68].abs(), label="Param GEANT")
+    sns.distplot(pdg_scattering[var][pdg_scattering[var].abs() > cut68].abs(), label="PDG")
+    plt.xlabel(f"|{var}|")
+    plt.legend()
+    plt.yscale("log")
+    plt.ylim(1e-3, 1e4)
+    plt.savefig(path / f"{var}_cut.png")
+    if plots:
         plt.show()
 
     if verbose:
@@ -153,25 +162,30 @@ def make_comparison(
             tab = PrettyTable(["Sim"] + [f for f in tests[var][name]])
         tab.add_row([name] + [v for k, v in tests[var][name].items()])
 
+    plt.figure(figsize=(12, 10))
+    sns.distplot(geant_df[var], label="True GEANT")
+    if pgeant_scattering is not None:
+        sns.distplot(pgeant_scattering[var], label="Param GEANT")
+    sns.distplot(pdg_scattering[var], label="PDG")
+    cut99 = np.percentile(geant_df[var], 99.9)
+    plt.xlim([-cut99, cut99])
+    plt.xlabel(var)
+    plt.legend()
+    plt.savefig(path / f"{var}.png")
     if plots:
-        sns.distplot(geant_df[var], label="True GEANT")
-        if pgeant_scattering is not None:
-            sns.distplot(pgeant_scattering[var], label="Param GEANT")
-        sns.distplot(pdg_scattering[var], label="PDG")
-        cut99 = np.percentile(geant_df[var], 99.9)
-        plt.xlim([-cut99, cut99])
-        plt.xlabel(var)
-        plt.legend()
         plt.show()
 
-        sns.distplot(geant_df.loc[geant_df[var].abs() > cut68, var].abs(), label="True GEANT")
-        if pgeant_scattering is not None:
-            sns.distplot(pgeant_scattering[var][pgeant_scattering[var].abs() > cut68].abs(), label="Param GEANT")
-        sns.distplot(pdg_scattering[var][pdg_scattering[var].abs() > cut68].abs(), label="PDG")
-        plt.xlabel(f"|{var}|")
-        plt.legend()
-        plt.yscale("log")
-        plt.ylim(1e-3, 1e4)
+    plt.figure(figsize=(12, 10))
+    sns.distplot(geant_df.loc[geant_df[var].abs() > cut68, var].abs(), label="True GEANT")
+    if pgeant_scattering is not None:
+        sns.distplot(pgeant_scattering[var][pgeant_scattering[var].abs() > cut68].abs(), label="Param GEANT")
+    sns.distplot(pdg_scattering[var][pdg_scattering[var].abs() > cut68].abs(), label="PDG")
+    plt.xlabel(f"|{var}|")
+    plt.legend()
+    plt.yscale("log")
+    plt.ylim(1e-3, 1e4)
+    plt.savefig(path / f"{var}_cut.png")
+    if plots:
         plt.show()
 
     if verbose:
@@ -194,25 +208,30 @@ def make_comparison(
             tab = PrettyTable(["Sim"] + [f for f in tests[var][name]])
         tab.add_row([name] + [v for k, v in tests[var][name].items()])
 
+    plt.figure(figsize=(12, 10))
+    sns.distplot(geant_df[var], label="True GEANT")
+    if pgeant_scattering is not None:
+        sns.distplot(pgeant_scattering[var], label="Param GEANT")
+    sns.distplot(pdg_scattering[var], label="PDG")
+    cut99 = np.percentile(geant_df[var], 99.9)
+    plt.xlim([-cut99, cut99])
+    plt.xlabel(var)
+    plt.legend()
+    plt.savefig(path / f"{var}.png")
     if plots:
-        sns.distplot(geant_df[var], label="True GEANT")
-        if pgeant_scattering is not None:
-            sns.distplot(pgeant_scattering[var], label="Param GEANT")
-        sns.distplot(pdg_scattering[var], label="PDG")
-        cut99 = np.percentile(geant_df[var], 99.9)
-        plt.xlim([-cut99, cut99])
-        plt.xlabel(var)
-        plt.legend()
         plt.show()
 
-        sns.distplot(geant_df.loc[geant_df[var].abs() > cut68, var].abs(), label="True GEANT")
-        if pgeant_scattering is not None:
-            sns.distplot(pgeant_scattering[var][pgeant_scattering[var].abs() > cut68].abs(), label="Param GEANT")
-        sns.distplot(pdg_scattering[var][pdg_scattering[var].abs() > cut68].abs(), label="PDG")
-        plt.xlabel(f"|{var}|")
-        plt.legend()
-        plt.yscale("log")
-        plt.ylim(1e-3, 1e4)
+    plt.figure(figsize=(12, 10))
+    sns.distplot(geant_df.loc[geant_df[var].abs() > cut68, var].abs(), label="True GEANT")
+    if pgeant_scattering is not None:
+        sns.distplot(pgeant_scattering[var][pgeant_scattering[var].abs() > cut68].abs(), label="Param GEANT")
+    sns.distplot(pdg_scattering[var][pdg_scattering[var].abs() > cut68].abs(), label="PDG")
+    plt.xlabel(f"|{var}|")
+    plt.legend()
+    plt.yscale("log")
+    plt.ylim(1e-3, 1e4)
+    plt.savefig(path / f"{var}.png")
+    if plots:
         plt.show()
 
     if verbose:
@@ -240,25 +259,30 @@ def make_comparison(
             tab = PrettyTable(["Sim"] + [f for f in tests[var][name]])
         tab.add_row([name] + [v for k, v in tests[var][name].items()])
 
+    plt.figure(figsize=(12, 10))
+    sns.distplot(geant_df[var], label="True GEANT")
+    if pgeant_scattering is not None:
+        sns.distplot(pgeant_scattering[var], label="Param GEANT")
+    sns.distplot(pdg_scattering[var], label="PDG")
+    cut99 = np.percentile(geant_df[var], 99.9)
+    plt.xlim([0, cut99])
+    plt.xlabel(var)
+    plt.legend()
+    plt.savefig(path / f"{var}.png")
     if plots:
-        sns.distplot(geant_df[var], label="True GEANT")
-        if pgeant_scattering is not None:
-            sns.distplot(pgeant_scattering[var], label="Param GEANT")
-        sns.distplot(pdg_scattering[var], label="PDG")
-        cut99 = np.percentile(geant_df[var], 99.9)
-        plt.xlim([0, cut99])
-        plt.xlabel(var)
-        plt.legend()
         plt.show()
 
-        sns.distplot(geant_df.loc[geant_df[var].abs() > cut68, var].abs(), label="True GEANT")
-        if pgeant_scattering is not None:
-            sns.distplot(pgeant_scattering[var][pgeant_scattering[var].abs() > cut68].abs(), label="Param GEANT")
-        sns.distplot(pdg_scattering[var][pdg_scattering[var].abs() > cut68].abs(), label="PDG")
-        plt.xlabel(f"|{var}|")
-        plt.legend()
-        plt.yscale("log")
-        plt.ylim(1e-1, 1e6)
+    plt.figure(figsize=(12, 10))
+    sns.distplot(geant_df.loc[geant_df[var].abs() > cut68, var].abs(), label="True GEANT")
+    if pgeant_scattering is not None:
+        sns.distplot(pgeant_scattering[var][pgeant_scattering[var].abs() > cut68].abs(), label="Param GEANT")
+    sns.distplot(pdg_scattering[var][pdg_scattering[var].abs() > cut68].abs(), label="PDG")
+    plt.xlabel(f"|{var}|")
+    plt.legend()
+    plt.yscale("log")
+    plt.ylim(1e-1, 1e6)
+    plt.savefig(path / f"{var}_cut.png")
+    if plots:
         plt.show()
 
     if verbose:
@@ -281,25 +305,30 @@ def make_comparison(
             tab = PrettyTable(["Sim"] + [f for f in tests[var][name]])
         tab.add_row([name] + [v for k, v in tests[var][name].items()])
 
+    plt.figure(figsize=(12, 10))
+    sns.distplot(geant_df[var], label="True GEANT")
+    if pgeant_scattering is not None:
+        sns.distplot(pgeant_scattering[var], label="Param GEANT")
+    sns.distplot(pdg_scattering[var], label="PDG")
+    cut99 = np.percentile(geant_df[var], 99.9)
+    plt.xlim([-cut99, cut99])
+    plt.xlabel(var)
+    plt.legend()
+    plt.savefig(path / f"{var}.png")
     if plots:
-        sns.distplot(geant_df[var], label="True GEANT")
-        if pgeant_scattering is not None:
-            sns.distplot(pgeant_scattering[var], label="Param GEANT")
-        sns.distplot(pdg_scattering[var], label="PDG")
-        cut99 = np.percentile(geant_df[var], 99.9)
-        plt.xlim([-cut99, cut99])
-        plt.xlabel(var)
-        plt.legend()
         plt.show()
 
-        sns.distplot(geant_df.loc[geant_df[var].abs() > cut68, var].abs(), label="True GEANT")
-        if pgeant_scattering is not None:
-            sns.distplot(pgeant_scattering[var][pgeant_scattering[var].abs() > cut68].abs(), label="Param GEANT")
-        sns.distplot(pdg_scattering[var][pdg_scattering[var].abs() > cut68].abs(), label="PDG")
-        plt.xlabel(f"|{var}|")
-        plt.legend()
-        plt.yscale("log")
-        plt.ylim(1e-1, 1e6)
+    plt.figure(figsize=(12, 10))
+    sns.distplot(geant_df.loc[geant_df[var].abs() > cut68, var].abs(), label="True GEANT")
+    if pgeant_scattering is not None:
+        sns.distplot(pgeant_scattering[var][pgeant_scattering[var].abs() > cut68].abs(), label="Param GEANT")
+    sns.distplot(pdg_scattering[var][pdg_scattering[var].abs() > cut68].abs(), label="PDG")
+    plt.xlabel(f"|{var}|")
+    plt.legend()
+    plt.yscale("log")
+    plt.ylim(1e-1, 1e6)
+    plt.savefig(path / f"{var}_cut.png")
+    if plots:
         plt.show()
 
     if verbose:
@@ -322,25 +351,30 @@ def make_comparison(
             tab = PrettyTable(["Sim"] + [f for f in tests[var][name]])
         tab.add_row([name] + [v for k, v in tests[var][name].items()])
 
+    plt.figure(figsize=(12, 10))
+    sns.distplot(geant_df[var], label="True GEANT")
+    if pgeant_scattering is not None:
+        sns.distplot(pgeant_scattering[var], label="Param GEANT")
+    sns.distplot(pdg_scattering[var], label="PDG")
+    cut99 = np.percentile(geant_df[var], 99.9)
+    plt.xlim([-cut99, cut99])
+    plt.xlabel(var)
+    plt.legend()
+    plt.savefig(path / f"{var}.png")
     if plots:
-        sns.distplot(geant_df[var], label="True GEANT")
-        if pgeant_scattering is not None:
-            sns.distplot(pgeant_scattering[var], label="Param GEANT")
-        sns.distplot(pdg_scattering[var], label="PDG")
-        cut99 = np.percentile(geant_df[var], 99.9)
-        plt.xlim([-cut99, cut99])
-        plt.xlabel(var)
-        plt.legend()
         plt.show()
 
-        sns.distplot(geant_df.loc[geant_df[var].abs() > cut68, var].abs(), label="True GEANT")
-        if pgeant_scattering is not None:
-            sns.distplot(pgeant_scattering[var][pgeant_scattering[var].abs() > cut68].abs(), label="Param GEANT")
-        sns.distplot(pdg_scattering[var][pdg_scattering[var].abs() > cut68].abs(), label="PDG")
-        plt.xlabel(f"|{var}|")
-        plt.legend()
-        plt.yscale("log")
-        plt.ylim(1e-1, 1e6)
+    plt.figure(figsize=(12, 10))
+    sns.distplot(geant_df.loc[geant_df[var].abs() > cut68, var].abs(), label="True GEANT")
+    if pgeant_scattering is not None:
+        sns.distplot(pgeant_scattering[var][pgeant_scattering[var].abs() > cut68].abs(), label="Param GEANT")
+    sns.distplot(pdg_scattering[var][pdg_scattering[var].abs() > cut68].abs(), label="PDG")
+    plt.xlabel(f"|{var}|")
+    plt.legend()
+    plt.yscale("log")
+    plt.ylim(1e-1, 1e6)
+    plt.savefig(path / f"{var}_cut.png")
+    if plots:
         plt.show()
 
     if verbose:
@@ -376,7 +410,8 @@ def check_scatter_tests(
 @pytest.mark.flaky(max_runs=5, min_passes=1)
 def test_scatter_models_Al_1cm_1GeV_normal():
     with h5py.File(PKG_DIR / "data/geant_scatter_validation.hdf5", "r") as geant_data:
-        results = get_scatters(geant_data["Al_1cm_1GeV_normal"], plots=False, verbose=True, n_steps=1)
+        name = "Al_1cm_1GeV_normal"
+        results = get_scatters(geant_data[name], plots=False, name=name, verbose=True, n_steps=1)
         assert check_scatter_tests(results["tests"], pdg_pmin=0.20, pgeant_pmin=None, ignore_vars=["dspace_vol", "dangle_vol"])
         assert check_scatter_tests(
             results["tests"], pdg_pmin=0.15, pgeant_pmin=None, test="bulk95_mean_fdiff", ignore_vars=["dx_vol", "dy_vol", "dtheta_x_vol", "dtheta_y_vol"]
@@ -386,7 +421,8 @@ def test_scatter_models_Al_1cm_1GeV_normal():
 @pytest.mark.flaky(max_runs=5, min_passes=1)
 def test_scatter_models_Fe_1cm_1GeV_normal():
     with h5py.File(PKG_DIR / "data/geant_scatter_validation.hdf5", "r") as geant_data:
-        results = get_scatters(geant_data["Fe_1cm_1GeV_normal"], plots=False, verbose=True, n_steps=1)
+        name = "Fe_1cm_1GeV_normal"
+        results = get_scatters(geant_data[name], plots=False, name=name, verbose=True, n_steps=1)
         assert check_scatter_tests(results["tests"], pdg_pmin=0.15, pgeant_pmin=None, ignore_vars=["dspace_vol", "dangle_vol"])
         assert check_scatter_tests(
             results["tests"], pdg_pmin=0.1, pgeant_pmin=None, test="bulk95_mean_fdiff", ignore_vars=["dx_vol", "dy_vol", "dtheta_x_vol", "dtheta_y_vol"]
@@ -396,7 +432,8 @@ def test_scatter_models_Fe_1cm_1GeV_normal():
 @pytest.mark.flaky(max_runs=5, min_passes=1)
 def test_scatter_models_Pb_1cm_1GeV_normal():
     with h5py.File(PKG_DIR / "data/geant_scatter_validation.hdf5", "r") as geant_data:
-        results = get_scatters(geant_data["Pb_1cm_1GeV_normal"], plots=False, verbose=True, n_steps=1)
+        name = "Pb_1cm_1GeV_normal"
+        results = get_scatters(geant_data[name], plots=False, name=name, verbose=True, n_steps=1)
         assert check_scatter_tests(results["tests"], pdg_pmin=0.15, pgeant_pmin=None, ignore_vars=["dspace_vol", "dangle_vol"])
         assert check_scatter_tests(
             results["tests"], pdg_pmin=0.1, pgeant_pmin=None, test="bulk95_mean_fdiff", ignore_vars=["dx_vol", "dy_vol", "dtheta_x_vol", "dtheta_y_vol"]
@@ -406,7 +443,8 @@ def test_scatter_models_Pb_1cm_1GeV_normal():
 @pytest.mark.flaky(max_runs=5, min_passes=1)
 def test_scatter_models_Cu_1cm_1GeV_normal():
     with h5py.File(PKG_DIR / "data/geant_scatter_validation.hdf5", "r") as geant_data:
-        results = get_scatters(geant_data["Cu_1cm_1GeV_normal"], plots=False, verbose=True, n_steps=1)
+        name = "Cu_1cm_1GeV_normal"
+        results = get_scatters(geant_data[name], plots=False, name=name, verbose=True, n_steps=1)
         assert check_scatter_tests(results["tests"], pdg_pmin=0.15, pgeant_pmin=None, ignore_vars=["dspace_vol", "dangle_vol"])
         assert check_scatter_tests(
             results["tests"], pdg_pmin=0.1, pgeant_pmin=None, test="bulk95_mean_fdiff", ignore_vars=["dx_vol", "dy_vol", "dtheta_x_vol", "dtheta_y_vol"]
@@ -416,7 +454,8 @@ def test_scatter_models_Cu_1cm_1GeV_normal():
 @pytest.mark.flaky(max_runs=5, min_passes=1)
 def test_scatter_models_U_1cm_1GeV_normal():
     with h5py.File(PKG_DIR / "data/geant_scatter_validation.hdf5", "r") as geant_data:
-        results = get_scatters(geant_data["U_1cm_1GeV_normal"], plots=False, verbose=True, n_steps=1)
+        name = "U_1cm_1GeV_normal"
+        results = get_scatters(geant_data[name], plots=False, name=name, verbose=True, n_steps=1)
         assert check_scatter_tests(results["tests"], pdg_pmin=0.15, pgeant_pmin=None, ignore_vars=["dspace_vol", "dangle_vol"])
         assert check_scatter_tests(
             results["tests"], pdg_pmin=0.1, pgeant_pmin=None, test="bulk95_mean_fdiff", ignore_vars=["dx_vol", "dy_vol", "dtheta_x_vol", "dtheta_y_vol"]
@@ -427,7 +466,8 @@ def test_scatter_models_U_1cm_1GeV_normal():
 @pytest.mark.flaky(max_runs=5, min_passes=1)
 def test_scatter_models_Al_1cm_1GeV_theta_x_pi4():
     with h5py.File(PKG_DIR / "data/geant_scatter_validation.hdf5", "r") as geant_data:
-        results = get_scatters(geant_data["Al_1cm_1GeV_ZenithAngle=pi4"], plots=False, verbose=True, n_steps=1)
+        name = "Al_1cm_1GeV_ZenithAngle=pi4"
+        results = get_scatters(geant_data[name], name=name, plots=False, verbose=True, n_steps=1)
         assert check_scatter_tests(results["tests"], pdg_pmin=0.20, pgeant_pmin=None, ignore_vars=["dspace_vol", "dangle_vol"])
         assert check_scatter_tests(
             results["tests"], pdg_pmin=0.15, pgeant_pmin=None, test="bulk95_mean_fdiff", ignore_vars=["dx_vol", "dy_vol", "dtheta_x_vol", "dtheta_y_vol"]
@@ -437,7 +477,8 @@ def test_scatter_models_Al_1cm_1GeV_theta_x_pi4():
 @pytest.mark.flaky(max_runs=5, min_passes=1)
 def test_scatter_models_Fe_1cm_1GeV_theta_x_pi4():
     with h5py.File(PKG_DIR / "data/geant_scatter_validation.hdf5", "r") as geant_data:
-        results = get_scatters(geant_data["Fe_1cm_1GeV_ZenithAngle=pi4"], plots=False, verbose=True, n_steps=1)
+        name = "Fe_1cm_1GeV_ZenithAngle=pi4"
+        results = get_scatters(geant_data[name], plots=False, name=name, verbose=True, n_steps=1)
         assert check_scatter_tests(results["tests"], pdg_pmin=0.15, pgeant_pmin=None, ignore_vars=["dspace_vol", "dangle_vol"])
         assert check_scatter_tests(
             results["tests"], pdg_pmin=0.1, pgeant_pmin=None, test="bulk95_mean_fdiff", ignore_vars=["dx_vol", "dy_vol", "dtheta_x_vol", "dtheta_y_vol"]
@@ -447,7 +488,8 @@ def test_scatter_models_Fe_1cm_1GeV_theta_x_pi4():
 @pytest.mark.flaky(max_runs=5, min_passes=1)
 def test_scatter_models_Pb_1cm_1GeV_theta_x_pi4():
     with h5py.File(PKG_DIR / "data/geant_scatter_validation.hdf5", "r") as geant_data:
-        results = get_scatters(geant_data["Pb_1cm_1GeV_ZenithAngle=pi4"], plots=False, verbose=True, n_steps=1)
+        name = "Pb_1cm_1GeV_ZenithAngle=pi4"
+        results = get_scatters(geant_data[name], name=name, plots=False, verbose=True, n_steps=1)
         assert check_scatter_tests(results["tests"], pdg_pmin=0.15, pgeant_pmin=None, ignore_vars=["dspace_vol", "dangle_vol"])
         assert check_scatter_tests(
             results["tests"], pdg_pmin=0.1, pgeant_pmin=None, test="bulk95_mean_fdiff", ignore_vars=["dx_vol", "dy_vol", "dtheta_x_vol", "dtheta_y_vol"]
@@ -457,7 +499,8 @@ def test_scatter_models_Pb_1cm_1GeV_theta_x_pi4():
 @pytest.mark.flaky(max_runs=5, min_passes=1)
 def test_scatter_models_Cu_1cm_1GeV_theta_x_pi4():
     with h5py.File(PKG_DIR / "data/geant_scatter_validation.hdf5", "r") as geant_data:
-        results = get_scatters(geant_data["Cu_1cm_1GeV_ZenithAngle=pi4"], plots=False, verbose=True, n_steps=1)
+        name = "Cu_1cm_1GeV_ZenithAngle=pi4"
+        results = get_scatters(geant_data[name], name=name, plots=False, verbose=True, n_steps=1)
         assert check_scatter_tests(results["tests"], pdg_pmin=0.15, pgeant_pmin=None, ignore_vars=["dspace_vol", "dangle_vol"])
         assert check_scatter_tests(
             results["tests"], pdg_pmin=0.1, pgeant_pmin=None, test="bulk95_mean_fdiff", ignore_vars=["dx_vol", "dy_vol", "dtheta_x_vol", "dtheta_y_vol"]
@@ -467,7 +510,8 @@ def test_scatter_models_Cu_1cm_1GeV_theta_x_pi4():
 @pytest.mark.flaky(max_runs=5, min_passes=1)
 def test_scatter_models_U_1cm_1GeV_theta_x_pi4():
     with h5py.File(PKG_DIR / "data/geant_scatter_validation.hdf5", "r") as geant_data:
-        results = get_scatters(geant_data["U_1cm_1GeV_ZenithAngle=pi4"], plots=False, verbose=True, n_steps=1)
+        name = "U_1cm_1GeV_ZenithAngle=pi4"
+        results = get_scatters(geant_data[name], name=name, plots=False, verbose=True, n_steps=1)
         assert check_scatter_tests(results["tests"], pdg_pmin=0.15, pgeant_pmin=None, ignore_vars=["dspace_vol", "dangle_vol"])
         assert check_scatter_tests(
             results["tests"], pdg_pmin=0.1, pgeant_pmin=None, test="bulk95_mean_fdiff", ignore_vars=["dx_vol", "dy_vol", "dtheta_x_vol", "dtheta_y_vol"]
@@ -478,7 +522,8 @@ def test_scatter_models_U_1cm_1GeV_theta_x_pi4():
 @pytest.mark.flaky(max_runs=5, min_passes=1)
 def test_scatter_models_Al_50cm_50GeV_theta_x_pi4():
     with h5py.File(PKG_DIR / "data/geant_scatter_validation.hdf5", "r") as geant_data:
-        results = get_scatters(geant_data["Al_50cm_50GeV_ZenithAngle=pi4"], plots=False, verbose=True, n_steps=50)
+        name = "Al_50cm_50GeV_ZenithAngle=pi4"
+        results = get_scatters(geant_data[name], name=name, plots=False, verbose=True, n_steps=50)
         assert check_scatter_tests(results["tests"], pdg_pmin=0.20, pgeant_pmin=None, ignore_vars=["dspace_vol", "dangle_vol"])
         assert check_scatter_tests(
             results["tests"], pdg_pmin=0.15, pgeant_pmin=None, test="bulk95_mean_fdiff", ignore_vars=["dx_vol", "dy_vol", "dtheta_x_vol", "dtheta_y_vol"]
@@ -488,7 +533,8 @@ def test_scatter_models_Al_50cm_50GeV_theta_x_pi4():
 @pytest.mark.flaky(max_runs=5, min_passes=1)
 def test_scatter_models_Fe_50cm_50GeV_theta_x_pi4():
     with h5py.File(PKG_DIR / "data/geant_scatter_validation.hdf5", "r") as geant_data:
-        results = get_scatters(geant_data["Fe_50cm_50GeV_ZenithAngle=pi4"], plots=False, verbose=True, n_steps=50)
+        name = "Fe_50cm_50GeV_ZenithAngle=pi4"
+        results = get_scatters(geant_data[name], name=name, plots=False, verbose=True, n_steps=50)
         assert check_scatter_tests(results["tests"], pdg_pmin=0.15, pgeant_pmin=None, ignore_vars=["dspace_vol", "dangle_vol"])
         assert check_scatter_tests(
             results["tests"], pdg_pmin=0.1, pgeant_pmin=None, test="bulk95_mean_fdiff", ignore_vars=["dx_vol", "dy_vol", "dtheta_x_vol", "dtheta_y_vol"]
@@ -498,7 +544,8 @@ def test_scatter_models_Fe_50cm_50GeV_theta_x_pi4():
 @pytest.mark.flaky(max_runs=5, min_passes=1)
 def test_scatter_models_Pb_50cm_50GeV_theta_x_pi4():
     with h5py.File(PKG_DIR / "data/geant_scatter_validation.hdf5", "r") as geant_data:
-        results = get_scatters(geant_data["Pb_50cm_50GeV_ZenithAngle=pi4"], plots=False, verbose=True, n_steps=50)
+        name = "Pb_50cm_50GeV_ZenithAngle=pi4"
+        results = get_scatters(geant_data[name], name=name, plots=False, verbose=True, n_steps=50)
         assert check_scatter_tests(results["tests"], pdg_pmin=0.15, pgeant_pmin=None, ignore_vars=["dspace_vol", "dangle_vol"])
         assert check_scatter_tests(
             results["tests"], pdg_pmin=0.15, pgeant_pmin=None, test="bulk95_mean_fdiff", ignore_vars=["dx_vol", "dy_vol", "dtheta_x_vol", "dtheta_y_vol"]
@@ -508,7 +555,8 @@ def test_scatter_models_Pb_50cm_50GeV_theta_x_pi4():
 @pytest.mark.flaky(max_runs=5, min_passes=1)
 def test_scatter_models_Cu_50cm_50GeV_theta_x_pi4():
     with h5py.File(PKG_DIR / "data/geant_scatter_validation.hdf5", "r") as geant_data:
-        results = get_scatters(geant_data["Cu_50cm_50GeV_ZenithAngle=pi4"], plots=False, verbose=True, n_steps=50)
+        name = "Cu_50cm_50GeV_ZenithAngle=pi4"
+        results = get_scatters(geant_data[name], name=name, plots=False, verbose=True, n_steps=50)
         assert check_scatter_tests(results["tests"], pdg_pmin=0.15, pgeant_pmin=None, ignore_vars=["dspace_vol", "dangle_vol"])
         assert check_scatter_tests(
             results["tests"], pdg_pmin=0.1, pgeant_pmin=None, test="bulk95_mean_fdiff", ignore_vars=["dx_vol", "dy_vol", "dtheta_x_vol", "dtheta_y_vol"]
