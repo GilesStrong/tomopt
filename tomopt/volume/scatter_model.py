@@ -3,7 +3,6 @@ import h5py
 import os
 from fastcore.all import Path
 import json
-from warnings import warn
 
 import torch
 from torch import Tensor
@@ -121,7 +120,7 @@ class PGeantScatterModel:
             A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, & dy_vol
         """
 
-        warn("PGeant is not recommended as it needs to be updated for the new muon scattering treatment")
+        raise NotImplementedError("PGeant is not recommended as it needs to be updated for the new muon scattering treatment")
 
         if not self.initialised:
             self.load_data()  # Delay loading until required
