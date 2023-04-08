@@ -618,7 +618,7 @@ def test_x0_inferrer_scatter_inversion_via_scatter_batch():
 
     pred = inferrer.x0_from_scatters(
         deltaz=dz,
-        total_scatter=(sb.theta_msc).square().mean().sqrt() / math.sqrt(2),
+        total_scatter=(sb.total_scatter).square().mean().sqrt() / math.sqrt(2),
         theta_in=sb.theta_in.square().mean().sqrt(),
         theta_out=sb.theta_out.square().mean().sqrt(),
         mom=sb.mu.mom[:, None].square().mean().sqrt(),
