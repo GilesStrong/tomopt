@@ -236,6 +236,24 @@ In order to start time, the TomOpt authors/contributors are: Giles Strong, Tomma
 
 - Meeting attendance
 
+-
+
+## Mariam Safieldin (@mariamheikal)
+
+### 2023.01-2023.04. American University of Beirut, Lebanon.
+
+<img src="docs/source/_static/imgs/authors/mariam.png" style="width:auto;height:100px" />
+
+### Code contributions:
+
+- Python/pytorch reimplementation of the expectation maximization algorithm, and further detailed study of its performance
+- ...
+
+### Other roles:
+
+- Meeting attendance
+- Full report on EM algorithm
+
 ## Name Surname (@Github_name)
 
 ### start year - end year / present. Institute, Country.
