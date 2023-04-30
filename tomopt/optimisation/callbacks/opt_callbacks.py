@@ -60,6 +60,31 @@ class AbsOptSchedule(PostWarmupCallback, metaclass=ABCMeta):
 
 
 class OneCycle(AbsOptSchedule):
+    r"""
+    Callback implementing Smith 1-cycle evolution for lr and momentum (beta_1) https://arxiv.org/abs/1803.09820
+
+    In the warmup phase:
+        Learning rate is increased from `init_lr` to `mid_lr`,
+        Momentum is decreased from `init_mom` to `mid_mom`, to stabilise the use of high LRs
+
+    In the convergence phase:
+        Learning rate is decreased from `mid_lr` to `final_lr`,
+        Momentum is increased from `mid_mom` to `final_mom`
+
+    Setting the learning rate or momentum here will override the values specified when instantiating the `VolumeWrapper`.
+    learning rate or momentum arguments can be `None` to avoid annealing or overriding their values.
+
+    Arguments:
+        opt_name: name of optimiser that should be affected by the scheduler
+        warmup_length: number of epochs to use for the warmup phase
+        init_lr: initial learning rate (low)
+        init_mom: initial momentum (high)
+        mid_lr: nominal learning rate (high),
+        mid_mom: nominal momentum (moderate),
+        final_lr: final learning rate (low),
+        final_mom: final momentum (high)
+    """
+
     def __init__(
         self,
         opt_name: str,
