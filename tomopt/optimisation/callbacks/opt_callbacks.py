@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Optional, Tuple
 from abc import ABCMeta, abstractmethod
 import numpy as np
 
@@ -14,16 +14,17 @@ __all__ = ["OneCycle"]
 class AbsOptSchedule(PostWarmupCallback, metaclass=ABCMeta):
     def __init__(
         self,
-        lr_range: Optional[Union[Tuple[float, float], Tuple[float, float, float]]],
-        mom_range: Optional[Union[Tuple[float, float], Tuple[float, float, float]]],
         opt_name: str,
+        init_lr: Optional[float] = None,
+        init_mom: Optional[float] = None,
     ) -> None:
-        self.lr_range = lr_range
-        self.mom_range = mom_range
+        self.init_lr = init_lr
+        self.init_mom = init_mom
         self.opt_name = opt_name
 
     def set_wrapper(self, wrapper: AbsVolumeWrapper) -> None:
         super().set_wrapper(wrapper)
+        print(self.wrapper)
         if self.opt_name not in self.wrapper.opts:
             raise ValueError(f"{self.opt_name} not found in VolumeWrapper")
 
@@ -42,34 +43,40 @@ class AbsOptSchedule(PostWarmupCallback, metaclass=ABCMeta):
 
     def on_train_begin(self) -> None:
         super().on_train_begin()
-        if self.lr_range is not None:
-            self.wrapper.set_opt_lr(self.lr_range[0], self.opt_name)
-        if self.mom_range is not None:
-            self.wrapper.set_opt_mom(self.mom_range[0], self.opt_name)
+        if self.init_lr is not None:
+            self.wrapper.set_opt_lr(self.init_lr, self.opt_name)
+        if self.init_mom is not None:
+            self.wrapper.set_opt_mom(self.init_mom, self.opt_name)
         self.iter_cnt = 0
 
     def on_step_end(self) -> None:
         if self.active:
             self.iter_cnt += 1
             lr, mom = self.schedule()
-            if self.lr_range is not None:
+            if lr is not None:
                 self.wrapper.set_opt_lr(lr, self.opt_name)
-            if self.mom_range is not None:
+            if mom is not None:
                 self.wrapper.set_opt_mom(mom, self.opt_name)
 
 
 class OneCycle(AbsOptSchedule):
     def __init__(
         self,
-        warmup_length: int,
-        lr_range: Optional[Union[Tuple[float, float], Tuple[float, float, float]]],
-        mom_range: Optional[Union[Tuple[float, float], Tuple[float, float, float]]],
         opt_name: str,
+        warmup_length: int,
+        init_lr: Optional[float] = None,
+        init_mom: Optional[float] = None,
+        mid_lr: Optional[float] = None,
+        mid_mom: Optional[float] = None,
+        final_lr: Optional[float] = None,
+        final_mom: Optional[float] = None,
     ) -> None:
+        super().__init__(opt_name=opt_name, init_lr=init_lr, init_mom=init_mom)
         self.warmup_length = warmup_length
-        self.lr_range = lr_range
-        self.mom_range = mom_range
-        self.opt_name = opt_name
+        self.mid_lr = mid_lr
+        self.mid_mom = mid_mom
+        self.final_lr = final_lr if final_lr is not None else init_lr
+        self.final_mom = final_mom if final_mom is not None else init_mom
 
     def on_epoch_end(self) -> None:
         if self.wrapper.fit_params.epoch - 1 == self.warmup_length:
@@ -78,35 +85,30 @@ class OneCycle(AbsOptSchedule):
             self.length = self.n_epochs_expected - self.wrapper.fit_params.epoch + 1
             self.scale = self.length * self.n_iters_per_epoch
             print("scale", self.scale)
-            print(self.wrapper.fit_params.epoch, self.warmup_length, "reset")
 
     def _activate(self) -> None:
         super()._activate()
         self.warming_up = True
         self.length = self.warmup_length
         self.scale = self.length * self.n_iters_per_epoch
-        print("scale", self.scale)
 
     def schedule(self) -> Tuple[Optional[float], Optional[float]]:
         x = np.cos(np.pi * (self.iter_cnt) / self.scale) + 1
 
-        def get_param(param_range: Union[Tuple[float, float], Tuple[float, float, float]]) -> float:
+        def get_param(init: float, mid: float, final: float) -> float:
             if self.warming_up:
-                params = (param_range[0], param_range[1])
+                params = (init, mid)
             else:
-                if len(param_range) == 3:
-                    params = (param_range[1], param_range[0])
-                else:
-                    params = (param_range[1], param_range[0])
+                params = (final, mid)
             dx = (params[1] - params[0]) * x / 2
             return params[1] - dx
 
-        if self.lr_range is None:
+        if self.init_lr is None:
             lr = None
         else:
-            lr = get_param(self.lr_range)
-        if self.mom_range is None:
+            lr = get_param(self.init_lr, self.mid_lr, self.final_lr)
+        if self.init_mom is None:
             mom = None
         else:
-            mom = get_param(self.mom_range)
+            mom = get_param(self.init_mom, self.mid_mom, self.final_mom)
         return lr, mom
