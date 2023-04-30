@@ -262,7 +262,6 @@
 
     <span class="k">def</span> <span class="nf">set_wrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wrapper</span><span class="p">:</span> <span class="n">AbsVolumeWrapper</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">set_wrapper</span><span class="p">(</span><span class="n">wrapper</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wrapper</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrapper</span><span class="o">.</span><span class="n">opts</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">opt_name</span><span class="si">}</span><span class="s2"> not found in VolumeWrapper&quot;</span><span class="p">)</span>
 
@@ -298,20 +297,20 @@
 
 
 <div class="viewcode-block" id="OneCycle"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.opt_callbacks.OneCycle">[docs]</a><span class="k">class</span> <span class="nc">OneCycle</span><span class="p">(</span><span class="n">AbsOptSchedule</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&#39;&#39;&#39;</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Callback implementing Smith 1-cycle evolution for lr and momentum (beta_1) https://arxiv.org/abs/1803.09820</span>
-<span class="sd">    </span>
+
 <span class="sd">    In the warmup phase:</span>
 <span class="sd">        Learning rate is increased from `init_lr` to `mid_lr`,</span>
 <span class="sd">        Momentum is decreased from `init_mom` to `mid_mom`, to stabilise the use of high LRs</span>
-<span class="sd">    </span>
+
 <span class="sd">    In the convergence phase:</span>
 <span class="sd">        Learning rate is decreased from `mid_lr` to `final_lr`,</span>
 <span class="sd">        Momentum is increased from `mid_mom` to `final_mom`</span>
-<span class="sd">    </span>
+
 <span class="sd">    Setting the learning rate or momentum here will override the values specified when instantiating the `VolumeWrapper`.</span>
 <span class="sd">    learning rate or momentum arguments can be `None` to avoid annealing or overriding their values.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Arguments:</span>
 <span class="sd">        opt_name: name of optimiser that should be affected by the scheduler</span>
 <span class="sd">        warmup_length: number of epochs to use for the warmup phase</span>
@@ -321,7 +320,7 @@
 <span class="sd">        mid_mom: nominal momentum (moderate),</span>
 <span class="sd">        final_lr: final learning rate (low),</span>
 <span class="sd">        final_mom: final momentum (high)</span>
-<span class="sd">    &#39;&#39;&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -346,8 +345,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">iter_cnt</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">warming_up</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_epochs_expected</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrapper</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">epoch</span> <span class="o">+</span> <span class="mi">1</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_iters_per_epoch</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;scale&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_iters_per_epoch</span></div>
 
 <div class="viewcode-block" id="OneCycle._activate"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.opt_callbacks.OneCycle._activate">[docs]</a>    <span class="k">def</span> <span class="nf">_activate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_activate</span><span class="p">()</span>

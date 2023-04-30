@@ -2,7 +2,7 @@
 
 The TomOpt project, and its continued development and support, is the result of the combined work of many people, whose contributions are summarised below.
 
-In order to start time, the TomOpt authors/contributors are: Giles Strong, Tommaso Dorigo, Andrea Giammanco, Pietro Vischia, Jan Kieseler, Maxime Lagrange, Federico Nardi, Haitham Zaraket, Max Lamparth, Federica Fanzago, Oleg Savchenko, Nitesh Sharma, Anna Bordignon.
+In order to start time, the TomOpt authors/contributors are: Giles Strong, Tommaso Dorigo, Andrea Giammanco, Pietro Vischia, Jan Kieseler, Maxime Lagrange, Federico Nardi, Haitham Zaraket, Max Lamparth, Federica Fanzago, Oleg Savchenko, Nitesh Sharma, Anna Bordignon, Mariam Safieldin.
 
 ## Giles Chatham Strong (@GilesStrong)
 
@@ -87,6 +87,7 @@ In order to start time, the TomOpt authors/contributors are: Giles Strong, Tomma
 
 ### Code contributions:
 
+- Passive and active volume 3D visualization
 - Conceptual planning, implementation, and investigation of maximum likelihood estimate for X0 inference
 - Conceptual planning for:
   - ULorry benchmark
@@ -234,6 +235,24 @@ In order to start time, the TomOpt authors/contributors are: Giles Strong, Tomma
 ### Other roles:
 
 - Meeting attendance
+
+-
+
+## Mariam Safieldin (@mariamheikal)
+
+### 2023.01-2023.04. American University of Beirut, Lebanon.
+
+<img src="docs/source/_static/imgs/authors/mariam.png" style="width:auto;height:100px" />
+
+### Code contributions:
+
+- Python/pytorch reimplementation of the expectation maximization algorithm, and further detailed study of its performance
+- ...
+
+### Other roles:
+
+- Meeting attendance
+- Full report on EM algorithm
 
 ## Name Surname (@Github_name)
 

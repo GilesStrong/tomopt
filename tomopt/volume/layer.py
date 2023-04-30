@@ -166,17 +166,36 @@ class PassiveLayer(AbsLayer):
 
         if self.rad_length is not None:
             scatter_mask = mu.get_xy_mask((0, 0), self.lw) & mask  # Only scatter muons inside volume
-            xy_idx = self.mu_abs2idx(mu, scatter_mask)
 
+            xy_idx = self.mu_abs2idx(mu, scatter_mask)
             x0 = self.rad_length[xy_idx[:, 0], xy_idx[:, 1]]
+
+            # Ensure that scattering steps don't extend outside the layer
+            # TODO extend this to consider transverse voxel boundaries
+            step_sz = torch.ones_like(x0) * self.step_sz
+            dz = mu.z - (self.z - self.size)
+            r_out = dz[scatter_mask] / mu.theta[scatter_mask].cos()
+            m = r_out < step_sz
+            step_sz[m] = r_out[m]
+
             scatterings = self._compute_scattering(
-                x0=x0, theta=mu.theta[scatter_mask], theta_x=mu.theta_x[scatter_mask], theta_y=mu.theta_y[scatter_mask], mom=mu.mom[scatter_mask]
+                x0=x0,
+                theta=mu.theta[scatter_mask],
+                phi=mu.phi[scatter_mask],
+                theta_x=mu.theta_x[scatter_mask],
+                theta_y=mu.theta_y[scatter_mask],
+                mom=mu.mom[scatter_mask],
+                step_sz=step_sz,
             )
 
             # Update to position at scattering.
-            mu.scatter_dxy(dx_vol=scatterings["dx_vol"], dy_vol=scatterings["dy_vol"], mask=scatter_mask)
+            mu.scatter_dxyz(dx_vol=scatterings["dx_vol"], dy_vol=scatterings["dy_vol"], dz_vol=scatterings["dz_vol"], mask=scatter_mask)
             mu.propagate_d(self.step_sz, mask)  # Still propagate muons that weren't scattered
-            mu.scatter_dtheta_dphi(dtheta_vol=scatterings["dtheta_vol"], dphi_vol=scatterings["dphi_vol"], mask=scatter_mask)
+            # Muons exiting the layer will be moved back to the bottom of the layer. Perform this here BEFORE their trajectories are updated.
+            dz = mu.z - (self.z - self.size)
+            exit_mask = (dz < 0) & mask
+            mu.propagate_dz(dz[exit_mask], mask=exit_mask)
+            mu.scatter_dtheta_xy(dtheta_x_vol=scatterings["dtheta_x_vol"], dtheta_y_vol=scatterings["dtheta_y_vol"], mask=scatter_mask)
         else:
             mu.propagate_d(self.step_sz, mask)
 
@@ -235,22 +254,27 @@ class PassiveLayer(AbsLayer):
 
         return PGEANT_SCATTER_MODEL.compute_scattering(x0=x0, step_sz=self.step_sz, theta=theta, theta_x=theta_x, theta_y=theta_y, mom=mom)
 
-    def _pdg_scatter(self, *, x0: Tensor, theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor, log_term: bool = True) -> Dict[str, Tensor]:
+    def _pdg_scatter(
+        self, *, x0: Tensor, theta: Tensor, phi: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor, step_sz: Tensor, log_term: bool = True
+    ) -> Dict[str, Tensor]:
         r"""
         Computes the scattering of the muons using the PDG model https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf
+        Scattering and displacements are generated in the muon reference frame.
+        They are then converted in the volume reference frame using Euler rotation matrices.
 
         Arguments:
             x0: (N,) tensor of the X0 of the voxel each muon is traversing
-            theta: (N,) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons
+            theta: (N,) tensor of the theta angles of the muons. This is used to proceed to the muon -> volume reference frame conversion
+            phi: (N,) tensor of the phi angles of the muons. This is used to proceed to the muon -> volume reference frame conversion
             theta_x: (N,) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons' frames to the volume's
             theta_y: (N,) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons' frames to the volume's
             mom: (N,) tensor of the absolute value of the momentum of each muon
+            step_sz: (N,) tensor of the scattering step length (x distance in the PDG model).
 
         Returns:
-            A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, & dy_vol
+            A dictionary of muon scattering variables in the volume reference frame: dtheta_x_vol, dtheta_y_vol, dx_vol, dy_vol and dz_vol
         """
-
-        n_x0 = self.step_sz / x0
+        n_x0 = step_sz / x0
 
         n = len(n_x0)
         z1 = torch.randn((2, n), device=self.device)
@@ -259,25 +283,67 @@ class PassiveLayer(AbsLayer):
         if log_term:
             theta0 = theta0 * (1 + (SCATTER_COEF_B * torch.log(n_x0)))
         # These are in the muons' reference frames NOT the volume's!!!
-        dtheta_xy_mu = z1 * theta0
-        dxy_mu = self.step_sz * torch.sin(theta0) * ((z1 / math.sqrt(12)) + (z2 / 2))
+        # Make sure that scattering angle in the muon reference frame < pi/2
+        # to ensure conversion into the volume reference frame
+        dtheta_xy_mu = torch.clamp(z1 * theta0, max=math.pi / 2.2)  # TODO Check this
+        dxy_mu = step_sz * theta0 * ((z1 / math.sqrt(12)) + (z2 / 2))
 
-        # We compute dtheta_xy in muon ref frame, but we're free to rotate the muon,
-        # since dtheta_xy doesn't depend on muon position
-        # Therefore assign theta_x axis (muon ref) to be in the theta direction (vol ref),
-        # and theta_y axis (muon ref) to be in the phi direction (vol ref)
-        dtheta_vol = dtheta_xy_mu[0]  # dtheta_x in muon ref
-        dphi_vol = dtheta_xy_mu[1]  # dtheta_y in muon ref
-
-        # Note that if a track indices on a layer
-        # with angle theta_mu, the dx and dy displacements are relative to zero angle
+        # Note that if a track incides on a layer
+        # with angle theta_mu, the dx and dy displacements are relative to to the muon
         # (generation of MSC formulas are oblivious of angle of incidence) so we need
-        # to rescale them by cos of theta_x and theta_y
-        dx_vol = dxy_mu[0] * torch.cos(theta_x)
-        dy_vol = dxy_mu[1] * torch.cos(theta_y)
-        return {"dtheta_vol": dtheta_vol, "dphi_vol": dphi_vol, "dx_vol": dx_vol, "dy_vol": dy_vol}
+        # to decompose them into displacements in x,y,z in the volume frame
+        phi_defined = theta != 0  # If theta is a zero, there is no phi defined
+        dx_vol = torch.where(phi_defined, -dxy_mu[0] * torch.sin(phi) - dxy_mu[1] * torch.cos(-theta) * torch.cos(phi), dxy_mu[0])
+        dy_vol = torch.where(phi_defined, dxy_mu[0] * torch.cos(phi) - dxy_mu[1] * torch.cos(-theta) * torch.sin(phi), dxy_mu[1])
+        dz_vol = torch.where(phi_defined, dxy_mu[1] * torch.sin(-theta), theta.new_zeros(dxy_mu[1].shape))
 
-    def _compute_scattering(self, *, x0: Tensor, theta: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor) -> Dict[str, Tensor]:
+        # We need to convert deflection in the muon reference frame (dtheta_x_m and dtheta_y_m)
+        # into deflection in the volume reference frame (dtheta_x_vol and dtheta_y_vol)
+        # In order to do so, we will use equations obtained from Euler rotation matrices where the
+        # Muon reference frame (R') is rotated by angle theta (angle between z and z')
+        # and phi (x and x' axis) w.r.t the Volume reference frame (R)
+        # 1 - Convert the deflection dtheta_xy_muon in the muon reference frame to a x and y (xy_muon) distance in the muon reference fr
+        # 2 - We convert that xy_muon distance into the volume reference frame xy_volume
+        # 3 - We convert that xy_volume distance into an angular deflection in the volume reference frame theta_x_vol and theta_y_vol
+        # Currently, we do not compute a deflection but we compute the final angle the muon will have once it exits the volume
+        # define point M used as a reference to compute the original muon direction and the updated one
+
+        dtheta_x_m = dtheta_xy_mu[0]
+        dtheta_y_m = dtheta_xy_mu[1]
+
+        ref_point = theta.new_ones([3, len(theta)])
+        ref_point[0] = torch.tan(theta_x)
+        ref_point[1] = torch.tan(theta_y)
+
+        r = torch.sqrt(ref_point[0] ** 2 + ref_point[1] ** 2 + ref_point[2] ** 2)
+        # 1 -
+        dx_m = r * torch.tan(dtheta_x_m)
+        dy_m = r * torch.tan(dtheta_y_m)
+        # 2 -
+        dx_vol_angle = torch.where(phi_defined, -dx_m * torch.sin(phi) - dy_m * torch.cos(theta) * torch.cos(phi), dx_m)
+        dy_vol_angle = torch.where(phi_defined, dx_m * torch.cos(phi) - dy_m * torch.cos(theta) * torch.sin(phi), dy_m)
+        dz_vol_angle = torch.where(phi_defined, dy_m * torch.sin(theta), torch.zeros_like(dxy_mu[1]))
+        # 3 -
+        d_out = -ref_point
+        d_out[0] = d_out[0] + dx_vol_angle
+        d_out[1] = d_out[1] + dy_vol_angle
+        d_out[2] = d_out[2] + dz_vol_angle
+        dtheta_x_vol = torch.arctan(d_out[0] / d_out[2]) - theta_x
+        dtheta_y_vol = torch.arctan(d_out[1] / d_out[2]) - theta_y
+
+        return {
+            "dtheta_x_vol": dtheta_x_vol,
+            "dtheta_y_vol": dtheta_y_vol,
+            "dx_vol": dx_vol,
+            "dy_vol": dy_vol,
+            "dz_vol": dz_vol,
+            "dtheta_x_m": dtheta_x_m,
+            "dtheta_y_m": dtheta_y_m,
+        }
+
+    def _compute_scattering(
+        self, *, x0: Tensor, theta: Tensor, phi: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor, step_sz: Tensor
+    ) -> Dict[str, Tensor]:
         r"""
         Computes the scattering of the muons using the chosen model
 
@@ -292,7 +358,7 @@ class PassiveLayer(AbsLayer):
             A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, & dy_vol
         """
         if self.scatter_model == "pdg":
-            return self._pdg_scatter(x0=x0, theta=theta, theta_x=theta_x, theta_y=theta_y, mom=mom)
+            return self._pdg_scatter(x0=x0, theta=theta, phi=phi, theta_x=theta_x, theta_y=theta_y, mom=mom, step_sz=step_sz)
         elif self.scatter_model == "pgeant":
             return self._pgeant_scatter(x0=x0, theta=theta, theta_x=theta_x, theta_y=theta_y, mom=mom)
         else:

@@ -129,7 +129,7 @@ class MuonBatch:
         """
 
         theta = (theta_x.tan().square() + theta_y.tan().square()).sqrt().arctan()
-        # theta[(theta_x.abs() >= torch.pi / 2) + (theta_y.abs() >= torch.pi / 2)] = torch.nan
+        theta[(theta_x.abs() >= torch.pi / 2) + (theta_y.abs() >= torch.pi / 2)] = torch.nan
         return theta
 
     @staticmethod
@@ -172,14 +172,17 @@ class MuonBatch:
         ty[(theta >= torch.pi / 2)] = torch.nan
         return ty
 
-    def scatter_dxy(self, dx_vol: Optional[Tensor] = None, dy_vol: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
+    def scatter_dxyz(
+        self, dx_vol: Optional[Tensor] = None, dy_vol: Optional[Tensor] = None, dz_vol: Optional[Tensor] = None, mask: Optional[Tensor] = None
+    ) -> None:
         r"""
-        Displaces the muons in xy by the specified amounts, with no change in their z position.
+        Displaces the muons in xyz by the specified amounts.
         If a mask is supplied, then only muons with True mask elements are displaced.
 
         Arguments:
             dx_vol: (N,) tensor of displacements in x
             dy_vol: (N,) tensor of displacements in y
+            dz_vol: (N,) tensor of displacements in z
             mask: (N,) Boolean tensor. If not None, only muons with True mask elements are displaced.
         """
 
@@ -189,6 +192,8 @@ class MuonBatch:
             self._x[mask] = self._x[mask] + dx_vol
         if dy_vol is not None:
             self._y[mask] = self._y[mask] + dy_vol
+        if dz_vol is not None:
+            self._z[mask] = self._z[mask] + dz_vol
 
     def scatter_dtheta_dphi(self, dtheta_vol: Optional[Tensor] = None, dphi_vol: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
         r"""
@@ -203,6 +208,7 @@ class MuonBatch:
 
         if mask is None:
             mask = torch.ones(len(self._muons), device=self.device).bool()
+
         if dphi_vol is not None:
             self._phi[mask] = (self._phi[mask] + dphi_vol) % (2 * torch.pi)
         if dtheta_vol is not None:
@@ -214,6 +220,30 @@ class MuonBatch:
             theta[m] = (2 * torch.pi) - theta[m]  # theta (0,pi)
             self._phi[mask] = phi
             self._theta[mask] = theta
+        self.remove_upwards_muons()
+
+    def scatter_dtheta_xy(self, dtheta_x_vol: Optional[Tensor] = None, dtheta_y_vol: Optional[Tensor] = None, mask: Optional[Tensor] = None) -> None:
+        r"""
+        Changes the trajectory of the muons in theta-phi by the specified amounts in dtheta_xy, with no change in their x,y,z positions.
+        If a mask is supplied, then only muons with True mask elements are altered.
+
+        Arguments:
+            dtheta_x_vol: (N,) tensor of angular changes in theta_x
+            dtheta_y_vol: (N,) tensor of angular changes in theta_y
+            mask: (N,) Boolean tensor. If not None, only muons with True mask elements are altered.
+        """
+
+        if mask is None:
+            mask = torch.ones(len(self._muons), device=self.device).bool()
+
+        theta_x = self.theta_x_from_theta_phi(self.theta[mask], self.phi[mask])
+        theta_y = self.theta_y_from_theta_phi(self.theta[mask], self.phi[mask])
+        if dtheta_x_vol is not None:
+            theta_x = theta_x + dtheta_x_vol
+        if dtheta_y_vol is not None:
+            theta_y = theta_y + dtheta_y_vol
+        self.theta[mask] = self.theta_from_theta_xy(theta_x, theta_y).type(torch.float)
+        self.phi[mask] = self.phi_from_theta_xy(theta_x, theta_y).type(torch.float)
 
         self.remove_upwards_muons()
 
@@ -223,7 +253,7 @@ class MuonBatch:
         Should be run after any changes to theta, but make sure that references (e.g. masks) to the complete set of muons are no longer required.
         """
 
-        self._keep_mask = self._theta < torch.pi / 2  # To keep
+        self._keep_mask = (self._theta < torch.pi / 2) & (~self._theta.isnan()) & (~self._phi.isnan())  # To keep
         self.filter_muons(self._keep_mask)
 
     def filter_muons(self, keep_mask: Tensor) -> None:
@@ -593,7 +623,7 @@ class MuonBatch:
 
     @property
     def theta_xy(self) -> Tensor:
-        return torch.stack((self.theta_x, self.theta_x), dim=-1)
+        return torch.stack((self.theta_x, self.theta_y), dim=-1)
 
     @theta_xy.setter
     def theta_xy(self, theta_xy: Tensor) -> None:
