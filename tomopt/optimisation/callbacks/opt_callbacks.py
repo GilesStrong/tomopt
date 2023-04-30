@@ -24,7 +24,6 @@ class AbsOptSchedule(PostWarmupCallback, metaclass=ABCMeta):
 
     def set_wrapper(self, wrapper: AbsVolumeWrapper) -> None:
         super().set_wrapper(wrapper)
-        print(self.wrapper)
         if self.opt_name not in self.wrapper.opts:
             raise ValueError(f"{self.opt_name} not found in VolumeWrapper")
 
@@ -109,7 +108,6 @@ class OneCycle(AbsOptSchedule):
             self.warming_up = False
             self.length = self.n_epochs_expected - self.wrapper.fit_params.epoch + 1
             self.scale = self.length * self.n_iters_per_epoch
-            print("scale", self.scale)
 
     def _activate(self) -> None:
         super()._activate()
