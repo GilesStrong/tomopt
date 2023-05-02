@@ -35,7 +35,7 @@ class AbsOptSchedule(PostWarmupCallback, metaclass=ABCMeta):
     @abstractmethod
     def schedule(self) -> Tuple[Optional[float], Optional[float]]:
         r"""
-        Compute LR and momentum as a function of inter_cnt, according to defined ranges.
+        Compute LR and momentum as a function of iter_cnt, according to defined ranges.
         """
 
         pass
