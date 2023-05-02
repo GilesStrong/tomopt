@@ -33,6 +33,7 @@ from tomopt.optimisation.callbacks import (
     PostWarmupCallback,
     SigmoidPanelSmoothnessSchedule,
     PanelUpdateLimiter,
+    OneCycle,
 )
 from tomopt.optimisation.loss import VoxelX0Loss
 from tomopt.optimisation.wrapper.volume_wrapper import AbsVolumeWrapper, FitParams, PanelVolumeWrapper
@@ -822,3 +823,107 @@ def test_panel_update_limiter():
     assert ((cb1.panel_params[0]["xy"] + Tensor([0.0, -0.01]) - panel_det.panels[0].xy).abs() < 1e-5).all()
     assert ((cb1.panel_params[0]["xy_span"] + Tensor([0.02, 0.03]) - panel_det.panels[0].xy_span).abs() < 1e-5).all()
     assert (cb1.panel_params[0]["z"] - 0.005 - panel_det.panels[0].z).abs() < 1e-5
+
+
+def test_one_cycle():
+    cb = OneCycle(warmup_length=2, init_lr=1e-2, mid_lr=1e-1, final_lr=1e-3, init_mom=0.95, mid_mom=0.85, final_mom=0.99, opt_name="xy_pos_opt")
+    assert cb.wrapper is None
+    with pytest.raises(AttributeError):
+        cb.on_pred_begin()
+    with pytest.raises(AttributeError):
+        cb.on_train_begin()
+
+    volume = MockVolume()
+    volume.parameters = []
+    panel_det = get_panel_detector()
+    volume.get_detectors = lambda: [panel_det]
+    vw = PanelVolumeWrapper(
+        volume,
+        xy_pos_opt=partial(torch.optim.SGD, lr=5e4),
+        z_pos_opt=partial(torch.optim.SGD, lr=5e3),
+        xy_span_opt=partial(torch.optim.SGD, lr=1e4),
+        loss_func=VoxelX0Loss(target_budget=0),
+    )
+    vw.fit_params = FitParams(trn_passives=[0, 1, 2, 3], passive_bs=2, n_epochs=10, epoch=1)
+    cb.set_wrapper(vw)
+
+    cb.on_train_begin()
+    cb._activate()
+    lr = [vw.get_opt_lr("xy_pos_opt")]
+    mom = [vw.get_opt_mom("xy_pos_opt")]
+
+    for i in range(1, 21):
+        cb.on_step_end()
+        if i % 2 == 0:
+            vw.fit_params.epoch += 1
+            cb.on_epoch_end()
+        lr.append(vw.get_opt_lr("xy_pos_opt"))
+        mom.append(vw.get_opt_mom("xy_pos_opt"))
+
+    assert (
+        np.abs(
+            (
+                np.array(lr)
+                - np.array(
+                    [
+                        0.001,
+                        0.0154982143312659,
+                        0.0505,
+                        0.0855017856687341,
+                        0.1,
+                        0.09913533761814537,
+                        0.0965745789630079,
+                        0.09241613255361454,
+                        0.08681980515339464,
+                        0.0800006604858821,
+                        0.07222075445642905,
+                        0.06377906449072579,
+                        0.05500000000000001,
+                        0.04622093550927424,
+                        0.03777924554357097,
+                        0.029999339514117915,
+                        0.023180194846605363,
+                        0.01758386744638546,
+                        0.013425421036992097,
+                        0.01086466238185463,
+                        0.01,
+                    ]
+                )
+            )
+        ).all()
+        < 1e-3
+    )
+
+    assert (
+        np.abs(
+            np.array(mom)
+            - np.array(
+                [
+                    [
+                        0.95,
+                        0.9353553390593273,
+                        0.8999999999999999,
+                        0.8646446609406726,
+                        0.85,
+                        0.8513450303717738,
+                        0.8553284327242099,
+                        0.8617971271388218,
+                        0.8705025253169416,
+                        0.8811100836886279,
+                        0.8932121597344437,
+                        0.906343677458871,
+                        0.9199999999999999,
+                        0.933656322541129,
+                        0.9467878402655563,
+                        0.9588899163113721,
+                        0.9694974746830584,
+                        0.9782028728611781,
+                        0.9846715672757901,
+                        0.9886549696282261,
+                        0.99,
+                    ]
+                ]
+            )
+        ).all()
+        < 1e-3
+    )

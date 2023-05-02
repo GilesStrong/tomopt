@@ -1289,8 +1289,76 @@ The savename will be appended to the callback savepath</p></li>
 </dd></dl>
 
 </section>
-<section id="tomopt-optimisation-callbacks-opt-callbacks-module">
-<h2>tomopt.optimisation.callbacks.opt_callbacks module<a class="headerlink" href="#tomopt-optimisation-callbacks-opt-callbacks-module" title="Permalink to this heading">¶</a></h2>
+<section id="module-tomopt.optimisation.callbacks.opt_callbacks">
+<span id="tomopt-optimisation-callbacks-opt-callbacks-module"></span><h2>tomopt.optimisation.callbacks.opt_callbacks module<a class="headerlink" href="#module-tomopt.optimisation.callbacks.opt_callbacks" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.opt_callbacks.OneCycle">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.callbacks.opt_callbacks.</span></span><span class="sig-name descname"><span class="pre">OneCycle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">opt_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warmup_length</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_mom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mid_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mid_mom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final_mom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/opt_callbacks.html#OneCycle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.opt_callbacks.OneCycle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">AbsOptSchedule</span></code></p>
+<p>Callback implementing Smith 1-cycle evolution for lr and momentum (beta_1) <a class="reference external" href="https://arxiv.org/abs/1803.09820">https://arxiv.org/abs/1803.09820</a></p>
+<dl class="simple">
+<dt>In the warmup phase:</dt><dd><p>Learning rate is increased from <cite>init_lr</cite> to <cite>mid_lr</cite>,
+Momentum is decreased from <cite>init_mom</cite> to <cite>mid_mom</cite>, to stabilise the use of high LRs</p>
+</dd>
+<dt>In the convergence phase:</dt><dd><p>Learning rate is decreased from <cite>mid_lr</cite> to <cite>final_lr</cite>,
+Momentum is increased from <cite>mid_mom</cite> to <cite>final_mom</cite></p>
+</dd>
+</dl>
+<p>Setting the learning rate or momentum here will override the values specified when instantiating the <cite>VolumeWrapper</cite>.
+learning rate or momentum arguments can be <cite>None</cite> to avoid annealing or overriding their values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>opt_name</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – name of optimiser that should be affected by the scheduler</p></li>
+<li><p><strong>warmup_length</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – number of epochs to use for the warmup phase</p></li>
+<li><p><strong>init_lr</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – initial learning rate (low)</p></li>
+<li><p><strong>init_mom</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – initial momentum (high)</p></li>
+<li><p><strong>mid_lr</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – nominal learning rate (high),</p></li>
+<li><p><strong>mid_mom</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – nominal momentum (moderate),</p></li>
+<li><p><strong>final_lr</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – final learning rate (low),</p></li>
+<li><p><strong>final_mom</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – final momentum (high)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.opt_callbacks.OneCycle._abc_impl">
+<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#tomopt.optimisation.callbacks.opt_callbacks.OneCycle._abc_impl" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.opt_callbacks.OneCycle._activate">
+<span class="sig-name descname"><span class="pre">_activate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/opt_callbacks.html#OneCycle._activate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.opt_callbacks.OneCycle._activate" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.opt_callbacks.OneCycle.on_epoch_end">
+<span class="sig-name descname"><span class="pre">on_epoch_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/opt_callbacks.html#OneCycle.on_epoch_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.opt_callbacks.OneCycle.on_epoch_end" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs when a training or validations epoch ends.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.opt_callbacks.OneCycle.schedule">
+<span class="sig-name descname"><span class="pre">schedule</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/opt_callbacks.html#OneCycle.schedule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.opt_callbacks.OneCycle.schedule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute LR and momentum as a function of inter_cnt, according to defined ranges.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>], <code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="module-tomopt.optimisation.callbacks.pred_callbacks">
 <span id="tomopt-optimisation-callbacks-pred-callbacks-module"></span><h2>tomopt.optimisation.callbacks.pred_callbacks module<a class="headerlink" href="#module-tomopt.optimisation.callbacks.pred_callbacks" title="Permalink to this heading">¶</a></h2>
@@ -1758,6 +1826,77 @@ A base-10 log schedule used over the number of epochs-total number of warmup epo
 </dd></dl>
 
 </section>
+<section id="id3">
+<h2>tomopt.optimisation.callbacks.opt_callbacks module<a class="headerlink" href="#id3" title="Permalink to this heading">¶</a></h2>
+<span class="target" id="module-0"></span><dl class="py class">
+<dt class="sig sig-object py" id="id0">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.callbacks.opt_callbacks.</span></span><span class="sig-name descname"><span class="pre">OneCycle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">opt_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warmup_length</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_mom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mid_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mid_mom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final_mom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/opt_callbacks.html#OneCycle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">AbsOptSchedule</span></code></p>
+<p>Callback implementing Smith 1-cycle evolution for lr and momentum (beta_1) <a class="reference external" href="https://arxiv.org/abs/1803.09820">https://arxiv.org/abs/1803.09820</a></p>
+<dl class="simple">
+<dt>In the warmup phase:</dt><dd><p>Learning rate is increased from <cite>init_lr</cite> to <cite>mid_lr</cite>,
+Momentum is decreased from <cite>init_mom</cite> to <cite>mid_mom</cite>, to stabilise the use of high LRs</p>
+</dd>
+<dt>In the convergence phase:</dt><dd><p>Learning rate is decreased from <cite>mid_lr</cite> to <cite>final_lr</cite>,
+Momentum is increased from <cite>mid_mom</cite> to <cite>final_mom</cite></p>
+</dd>
+</dl>
+<p>Setting the learning rate or momentum here will override the values specified when instantiating the <cite>VolumeWrapper</cite>.
+learning rate or momentum arguments can be <cite>None</cite> to avoid annealing or overriding their values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>opt_name</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – name of optimiser that should be affected by the scheduler</p></li>
+<li><p><strong>warmup_length</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – number of epochs to use for the warmup phase</p></li>
+<li><p><strong>init_lr</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – initial learning rate (low)</p></li>
+<li><p><strong>init_mom</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – initial momentum (high)</p></li>
+<li><p><strong>mid_lr</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – nominal learning rate (high),</p></li>
+<li><p><strong>mid_mom</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – nominal momentum (moderate),</p></li>
+<li><p><strong>final_lr</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – final learning rate (low),</p></li>
+<li><p><strong>final_mom</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – final momentum (high)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id4">
+<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#id4" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id5">
+<span class="sig-name descname"><span class="pre">_activate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/opt_callbacks.html#OneCycle._activate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id5" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id6">
+<span class="sig-name descname"><span class="pre">on_epoch_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/opt_callbacks.html#OneCycle.on_epoch_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id6" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs when a training or validations epoch ends.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id7">
+<span class="sig-name descname"><span class="pre">schedule</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/opt_callbacks.html#OneCycle.schedule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id7" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute LR and momentum as a function of inter_cnt, according to defined ranges.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>], <code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
 </section>
 
 
@@ -1924,7 +2063,16 @@ A base-10 log schedule used over the number of epochs-total number of warmup epo
 </li>
 </ul>
 </li>
-<li><a class="reference internal" href="#tomopt-optimisation-callbacks-opt-callbacks-module">tomopt.optimisation.callbacks.opt_callbacks module</a></li>
+<li><a class="reference internal" href="#module-tomopt.optimisation.callbacks.opt_callbacks">tomopt.optimisation.callbacks.opt_callbacks module</a><ul>
+<li><a class="reference internal" href="#tomopt.optimisation.callbacks.opt_callbacks.OneCycle"><code class="docutils literal notranslate"><span class="pre">OneCycle</span></code></a><ul>
+<li><a class="reference internal" href="#tomopt.optimisation.callbacks.opt_callbacks.OneCycle._abc_impl"><code class="docutils literal notranslate"><span class="pre">OneCycle._abc_impl</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.callbacks.opt_callbacks.OneCycle._activate"><code class="docutils literal notranslate"><span class="pre">OneCycle._activate()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.callbacks.opt_callbacks.OneCycle.on_epoch_end"><code class="docutils literal notranslate"><span class="pre">OneCycle.on_epoch_end()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.callbacks.opt_callbacks.OneCycle.schedule"><code class="docutils literal notranslate"><span class="pre">OneCycle.schedule()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li><a class="reference internal" href="#module-tomopt.optimisation.callbacks.pred_callbacks">tomopt.optimisation.callbacks.pred_callbacks module</a><ul>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.pred_callbacks.PredHandler"><code class="docutils literal notranslate"><span class="pre">PredHandler</span></code></a><ul>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.pred_callbacks.PredHandler.get_preds"><code class="docutils literal notranslate"><span class="pre">PredHandler.get_preds()</span></code></a></li>
@@ -1985,6 +2133,16 @@ A base-10 log schedule used over the number of epochs-total number of warmup epo
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule._set_smooth"><code class="docutils literal notranslate"><span class="pre">SigmoidPanelSmoothnessSchedule._set_smooth()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule.on_epoch_begin"><code class="docutils literal notranslate"><span class="pre">SigmoidPanelSmoothnessSchedule.on_epoch_begin()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule.on_train_begin"><code class="docutils literal notranslate"><span class="pre">SigmoidPanelSmoothnessSchedule.on_train_begin()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id3">tomopt.optimisation.callbacks.opt_callbacks module</a><ul>
+<li><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">OneCycle</span></code></a><ul>
+<li><a class="reference internal" href="#id4"><code class="docutils literal notranslate"><span class="pre">OneCycle._abc_impl</span></code></a></li>
+<li><a class="reference internal" href="#id5"><code class="docutils literal notranslate"><span class="pre">OneCycle._activate()</span></code></a></li>
+<li><a class="reference internal" href="#id6"><code class="docutils literal notranslate"><span class="pre">OneCycle.on_epoch_end()</span></code></a></li>
+<li><a class="reference internal" href="#id7"><code class="docutils literal notranslate"><span class="pre">OneCycle.schedule()</span></code></a></li>
 </ul>
 </li>
 </ul>
