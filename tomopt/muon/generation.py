@@ -1,10 +1,11 @@
 from __future__ import annotations
-from abc import abstractmethod
-import numpy as np
-from typing import Union, Tuple, Optional, TYPE_CHECKING
-from particle import Particle
 
+from abc import abstractmethod
+from typing import TYPE_CHECKING, Optional, Tuple, Union
+
+import numpy as np
 import torch
+from particle import Particle
 from torch import Tensor
 
 if TYPE_CHECKING:

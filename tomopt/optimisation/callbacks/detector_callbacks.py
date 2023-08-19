@@ -1,12 +1,12 @@
-from typing import Tuple, Dict, List, Optional
-import numpy as np
+from typing import Dict, List, Optional, Tuple
 
+import numpy as np
 import torch
 from torch import Tensor
 
-from .warmup_callbacks import PostWarmupCallback
 from ...volume import PanelDetectorLayer, SigmoidDetectorPanel
 from .callback import Callback
+from .warmup_callbacks import PostWarmupCallback
 
 r"""
 Set of callbacks that affect the detectors during optimisation

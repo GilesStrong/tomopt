@@ -4,7 +4,6 @@ import torch
 from torch import Tensor
 
 from ...inference.scattering import ScatterBatch
-
 from .detector import PhiDetectorPanel
 
 __all__ = ["PhiDetScatterBatch"]

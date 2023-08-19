@@ -1,9 +1,14 @@
-import torch
-from torch import Tensor
 import numpy as np
 import pytest
+import torch
+from torch import Tensor
 
-from tomopt.utils import jacobian, class_to_x0preds, x0targs_to_classtargs, x0_from_mixture
+from tomopt.utils import (
+    class_to_x0preds,
+    jacobian,
+    x0_from_mixture,
+    x0targs_to_classtargs,
+)
 
 
 def test_jacobian():

@@ -1,7 +1,7 @@
+import torch
+
 from ...volume import PanelDetectorLayer
 from .callback import Callback
-
-import torch
 
 r"""
 Provides callbacks for affecting optimisation gradients

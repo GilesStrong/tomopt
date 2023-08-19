@@ -1,11 +1,11 @@
-from typing import Tuple, List
+from typing import List, Tuple
 
 import torch
 from torch import Tensor
 
+from ...core import X0, RadLengthFunc
 from ...optimisation.data.passives import AbsPassiveGenerator
 from ...volume import Volume
-from ...core import X0, RadLengthFunc
 
 __all__ = ["LadleFurnacePassiveGenerator"]
 

@@ -1,12 +1,12 @@
-from typing import Dict, Optional, Union, Callable
-from abc import abstractmethod, ABCMeta
+from abc import ABCMeta, abstractmethod
+from typing import Callable, Dict, Optional, Union
 
 import torch
-from torch import nn, Tensor
+from torch import Tensor, nn
 from torch.nn import functional as F
 
-from .sub_losses import integer_class_loss
 from ...volume import Volume
+from .sub_losses import integer_class_loss
 
 r"""
 Provides loss functions for evaluating the performance of detector and inference configurations

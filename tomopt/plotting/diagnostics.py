@@ -1,6 +1,7 @@
 from typing import Optional
-import pandas as pd
+
 import matplotlib.pyplot as plt
+import pandas as pd
 import seaborn as sns
 
 from .appearance import H_MID, LBL_COL, LBL_SZ

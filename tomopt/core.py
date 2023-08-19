@@ -1,8 +1,8 @@
 from typing import Callable, Iterator
-from mypy_extensions import NamedArg
 
 import torch
-from torch import nn, Tensor
+from mypy_extensions import NamedArg
+from torch import Tensor, nn
 
 r"""
 Common global constants, custom variable types, etc.

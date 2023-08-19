@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 try:
-    from setuptools import setup, find_packages
+    from setuptools import find_packages, setup
 except ImportError:
-    from distutils.core import setup, find_packages
+    from distutils.core import find_packages, setup
 
 with open("README.md", encoding="utf-8") as fin:
     long_description = fin.read()

@@ -3,10 +3,9 @@ from typing import Dict, Optional, Tuple
 import torch
 from torch import Tensor, nn
 
+from ...core import DEVICE
 from ...muon import MuonBatch
 from ...volume.panel import DetectorPanel
-from ...core import DEVICE
-
 
 __all__ = ["PhiDetectorPanel"]
 

@@ -1,25 +1,27 @@
 from __future__ import annotations
-from fastprogress.fastprogress import IN_NOTEBOOK
+
 import math
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-import matplotlib.lines as mlines
-from matplotlib.gridspec import GridSpec
-import seaborn as sns
-import numpy as np
-from typing import List, Dict, Tuple, Optional
-from collections import defaultdict
 import os
+from collections import defaultdict
+from typing import Dict, List, Optional, Tuple
+
 import imageio
+import matplotlib.lines as mlines
+import matplotlib.patches as patches
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
+from fastprogress.fastprogress import IN_NOTEBOOK
+from matplotlib.gridspec import GridSpec
 
 if IN_NOTEBOOK:
     from IPython.display import display
 
 import torch
 
+from ...volume import PanelDetectorLayer, SigmoidDetectorPanel
 from .callback import Callback
 from .eval_metric import EvalMetric
-from ...volume import PanelDetectorLayer, SigmoidDetectorPanel
 
 r"""
 Provides callbacks that produce live feedback of fitting, and record losses and metrics.

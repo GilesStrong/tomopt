@@ -1,20 +1,19 @@
-import pytest
-from pytest_mock import mocker  # noqa F401
-from unittest.mock import patch
-import numpy as np
-from fastcore.all import Path
 import os
+from unittest.mock import patch
 
+import numpy as np
+import pytest
 import torch
+from fastcore.all import Path
+from pytest_mock import mocker  # noqa F401
 from torch import Tensor, nn
 
-from tomopt.volume import PassiveLayer, PanelDetectorLayer, DetectorHeatMap, Volume
-from tomopt.volume.heatmap import GMM
-from tomopt.optimisation import MuonResampler
-from tomopt.muon import MuonBatch, MuonGenerator2016
 from tomopt.core import X0
+from tomopt.muon import MuonBatch, MuonGenerator2016
+from tomopt.optimisation import MuonResampler
 from tomopt.utils import jacobian
-
+from tomopt.volume import DetectorHeatMap, PanelDetectorLayer, PassiveLayer, Volume
+from tomopt.volume.heatmap import GMM
 
 LW = Tensor([1, 1])
 SZ = 0.1

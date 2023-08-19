@@ -22,3 +22,4 @@ mypy
 pytest-mock
 flaky
 pytest-lazy-fixture
+isort

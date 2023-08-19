@@ -1,18 +1,17 @@
 import pytest
-
 import torch
-from torch import nn, Tensor
 import torch.nn.functional as F
+from torch import Tensor, nn
 
 from tomopt.core import X0
 from tomopt.optimisation.data.passives import (
-    PassiveYielder,
-    VoxelPassiveGenerator,
-    RandomBlockPassiveGenerator,
-    BlockPresentPassiveGenerator,
     AbsPassiveGenerator,
+    BlockPresentPassiveGenerator,
+    PassiveYielder,
+    RandomBlockPassiveGenerator,
+    VoxelPassiveGenerator,
 )
-from tomopt.volume import Volume, PassiveLayer, PanelDetectorLayer, DetectorPanel
+from tomopt.volume import DetectorPanel, PanelDetectorLayer, PassiveLayer, Volume
 
 LW = Tensor([1, 1])
 SZ = 0.1

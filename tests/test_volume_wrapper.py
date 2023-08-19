@@ -1,29 +1,39 @@
+import os
 from functools import partial
 from pathlib import Path
-import pytest
-from pytest_mock import mocker  # noqa F401
-import os
 
+import pytest
 import torch
-from torch import nn, Tensor, optim
+from pytest_mock import mocker  # noqa F401
+from torch import Tensor, nn, optim
 
 from tomopt.core import X0
-from tomopt.volume import Volume, PassiveLayer, PanelDetectorLayer, DetectorPanel, DetectorHeatMap
-from tomopt.optimisation.wrapper.volume_wrapper import FitParams, PanelVolumeWrapper, HeatMapVolumeWrapper
-from tomopt.optimisation.data.passives import PassiveYielder
-from tomopt.optimisation.loss import VoxelX0Loss
+from tomopt.muon.generation import MuonGenerator2016
 from tomopt.optimisation.callbacks import (
     Callback,
     CyclicCallback,
-    MetricLogger,
-    ScatterRecord,
-    NoMoreNaNs,
     EvalMetric,
+    MetricLogger,
     MuonResampler,
+    NoMoreNaNs,
     PredHandler,
+    ScatterRecord,
     WarmupCallback,
 )
-from tomopt.muon.generation import MuonGenerator2016
+from tomopt.optimisation.data.passives import PassiveYielder
+from tomopt.optimisation.loss import VoxelX0Loss
+from tomopt.optimisation.wrapper.volume_wrapper import (
+    FitParams,
+    HeatMapVolumeWrapper,
+    PanelVolumeWrapper,
+)
+from tomopt.volume import (
+    DetectorHeatMap,
+    DetectorPanel,
+    PanelDetectorLayer,
+    PassiveLayer,
+    Volume,
+)
 
 LW = Tensor([1, 1])
 SZ = 0.1

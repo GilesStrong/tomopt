@@ -1,19 +1,24 @@
-import pytest
-from pytest_mock import mocker  # noqa F401
-import numpy as np
-import matplotlib.pyplot as plt
 from functools import partial
 
+import matplotlib.pyplot as plt
+import numpy as np
+import pytest
 import torch
-from torch import Tensor, nn
 import torch.nn.functional as F
+from pytest_mock import mocker  # noqa F401
+from torch import Tensor, nn
 
-from tomopt.volume import PassiveLayer, Volume, PanelDetectorLayer, DetectorPanel, SigmoidDetectorPanel
-from tomopt.optimisation import MuonResampler
-from tomopt.muon import MuonBatch, MuonGenerator2016
 from tomopt.core import X0
+from tomopt.muon import MuonBatch, MuonGenerator2016
+from tomopt.optimisation import MuonResampler
 from tomopt.utils import jacobian
-
+from tomopt.volume import (
+    DetectorPanel,
+    PanelDetectorLayer,
+    PassiveLayer,
+    SigmoidDetectorPanel,
+    Volume,
+)
 
 LW = Tensor([1, 1])
 SZ = 0.1

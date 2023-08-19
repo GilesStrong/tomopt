@@ -1,13 +1,12 @@
-import pytest
-from pytest_mock import mocker  # noqa F401
 import numpy as np
-
+import pytest
 import torch
+from pytest_mock import mocker  # noqa F401
 from torch import Tensor, nn
 
-from tomopt.muon import MuonGenerator2016, MuonGenerator2015, MuonBatch
-from tomopt.volume import PassiveLayer, Volume, PanelDetectorLayer, DetectorPanel
 from tomopt.core import X0
+from tomopt.muon import MuonBatch, MuonGenerator2015, MuonGenerator2016
+from tomopt.volume import DetectorPanel, PanelDetectorLayer, PassiveLayer, Volume
 
 N = 3
 LW = Tensor([1, 1])
