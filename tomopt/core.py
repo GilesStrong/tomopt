@@ -39,6 +39,9 @@ X0 = {  # https://pdg.lbl.gov/2022/AtomicNuclearProperties/index.html
     "K2O": 0.08147,
     "Na2O": 0.1285,
     "soft tissue": 0.3763,
+    "steel": 0.01782,
+    "hot liquid steel": 0.01991,
+    "slag": 0.08211,
 }
 
 DENSITIES = {  # https://pdg.lbl.gov/2022/AtomicNuclearProperties/index.html
@@ -55,6 +58,9 @@ DENSITIES = {  # https://pdg.lbl.gov/2022/AtomicNuclearProperties/index.html
     "K2O": 2320.0,
     "Na2O": 2270.0,
     "soft tissue": 1000.0,
+    "steel": 7818.0,
+    "hot liquid steel": 7000.0,
+    "slag": 2700.0,
 }
 
 PartialOpt = Callable[[Iterator[nn.Parameter]], torch.optim.Optimizer]
