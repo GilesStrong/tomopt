@@ -253,9 +253,12 @@ def test_volume_wrapper_scan_volume(state, mocker):  # noqa F811
         assert vw.loss_func.call_count == 0
     else:
         assert vw.loss_func.call_count == 1
-        assert (loss1 := vw.fit_params.loss_val) is not None
+        print("before", vw.fit_params.loss_val)
+        loss1 = vw.fit_params.loss_val.detach().cpu().item()
+        assert loss1 is not None
         vw._scan_volume()
-        assert loss1 < vw.fit_params.loss_val
+        print("after, old", loss1, vw.fit_params.loss_val)
+        assert loss1 < vw.fit_params.loss_val  # Loss should always increase with scanned volume count since the new loss is added to the old one
 
 
 @pytest.mark.flaky(max_runs=2, min_passes=1)
