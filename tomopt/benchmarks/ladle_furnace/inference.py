@@ -6,10 +6,10 @@ from torch import Tensor, nn
 from ...inference.volume import AbsIntClassifierFromX0, AbsX0Inferrer
 from ...volume import Volume
 
-__all__ = ["LadleFurnaceFillLevelInferrer"]
+__all__ = ["EdgeDetLadleFurnaceFillLevelInferrer"]
 
 
-class LadleFurnaceFillLevelInferrer(AbsIntClassifierFromX0):
+class EdgeDetLadleFurnaceFillLevelInferrer(AbsIntClassifierFromX0):
     r"""
     Research tested only: no unit tests
     """
