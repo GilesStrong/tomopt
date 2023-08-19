@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 
 try:
-    from setuptools import setup, find_packages
+    from setuptools import find_packages, setup
 except ImportError:
-    from distutils.core import setup, find_packages
+    from distutils.core import find_packages, setup
 
 with open("README.md", encoding="utf-8") as fin:
     long_description = fin.read()
 
-dev_only = ["pre-commit", "black", "flake8", "mypy", "pytest", "pytest-mock", "flaky", "pytest-lazy-fixture"]
+dev_only = ["pre-commit", "black", "flake8", "mypy", "pytest", "isort", "pytest-mock", "flaky", "pytest-lazy-fixture"]
 with open("requirements.txt", encoding="utf-8") as f:
     requirements = [r for r in f.read().strip().split("\n") if r not in dev_only]
 

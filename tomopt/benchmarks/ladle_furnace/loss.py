@@ -3,9 +3,8 @@ from typing import Optional, Union
 import torch
 from torch import Tensor
 
-from ...volume import Volume
 from ...optimisation.loss import VolumeIntClassLoss
-
+from ...volume import Volume
 
 __all__ = ["LadleFurnaceIntClassLoss"]
 

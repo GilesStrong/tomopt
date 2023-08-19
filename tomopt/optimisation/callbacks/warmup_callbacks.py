@@ -1,9 +1,10 @@
-from prettytable import PrettyTable
-import numpy as np
 from typing import Dict, List, Optional
 
-from .callback import Callback
+import numpy as np
+from prettytable import PrettyTable
+
 from ...volume import PanelDetectorLayer
+from .callback import Callback
 
 r"""
 Provides callbacks that act at the start of training to freeze the optimisation and adjust themselves to the initial state of the detectors

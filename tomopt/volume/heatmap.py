@@ -1,14 +1,14 @@
-from typing import Tuple, Optional, Dict
-import numpy as np
+from typing import Dict, Optional, Tuple
+
 import matplotlib.pyplot as plt
+import numpy as np
 import seaborn as sns
-
 import torch
-from torch import nn, Tensor
 import torch.nn.functional as F
+from torch import Tensor, nn
 
-from ..muon import MuonBatch
 from ..core import DEVICE
+from ..muon import MuonBatch
 
 __all__ = ["DetectorHeatMap"]
 

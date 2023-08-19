@@ -1,19 +1,18 @@
-from typing import Tuple, List, Optional, Any
-import numpy as np
+from typing import Any, List, Optional, Tuple
 
-from matplotlib import pyplot as plt
 import matplotlib.patches as mpatches
-from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-
+import numpy as np
 import torch
-from torch import nn, Tensor
 import torch.nn.functional as F
+from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+from torch import Tensor, nn
 
-from .layer import AbsDetectorLayer, AbsLayer, PassiveLayer, PanelDetectorLayer
-from .panel import DetectorPanel
-from .heatmap import DetectorHeatMap
-from ..muon import MuonBatch
 from ..core import RadLengthFunc
+from ..muon import MuonBatch
+from .heatmap import DetectorHeatMap
+from .layer import AbsDetectorLayer, AbsLayer, PanelDetectorLayer, PassiveLayer
+from .panel import DetectorPanel
 
 r"""
 Provides implementation of wrapper classes for containing multiple passive layers and detector layers, which act as interfaces to them.

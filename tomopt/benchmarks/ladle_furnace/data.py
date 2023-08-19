@@ -1,11 +1,11 @@
-from typing import Tuple, List
+from typing import Tuple
 
 import torch
 from torch import Tensor
 
+from ...core import X0, RadLengthFunc
 from ...optimisation.data.passives import AbsPassiveGenerator
 from ...volume import Volume
-from ...core import X0, RadLengthFunc
 
 __all__ = ["LadleFurnacePassiveGenerator"]
 
@@ -18,14 +18,14 @@ class LadleFurnacePassiveGenerator(AbsPassiveGenerator):
     def __init__(
         self,
         volume: Volume,
-        x0_furnace: float = X0["iron"],
-        fill_materials: List[str] = ["aluminium"],
-        slag_materials: List[str] = ["silicon", "graphite", "beryllium"],
+        x0_furnace: float = X0["steel"],
+        fill_material: str = "hot liquid steel",
+        slag_material: str = "slag",
     ) -> None:
-        self.x0_furnace, self.fill_materials, self.slag_materials = x0_furnace, fill_materials, slag_materials
-        super().__init__(volume=volume, materials=self.fill_materials + self.slag_materials)
-        self.slag_x0s = Tensor([X0[m] for m in self.slag_materials], device=self.volume.device)
-        self.fill_x0s = Tensor([X0[m] for m in self.fill_materials], device=self.volume.device)
+        self.x0_furnace, self.fill_material, self.slag_material = x0_furnace, fill_material, slag_material
+        super().__init__(volume=volume, materials=[self.fill_material, self.slag_material])
+        self.slag_x0 = X0[self.slag_material]
+        self.fill_x0 = X0[self.fill_material]
 
         self.xy_shp = (self.lw / self.size).astype(int).tolist()
         self.fill_z_range = ((self.z_range[0]) + self.size, self.z_range[1])
@@ -35,18 +35,19 @@ class LadleFurnacePassiveGenerator(AbsPassiveGenerator):
         slag_z = mat_z + ((self.z_range[1] - mat_z) * torch.rand(1, device=self.volume.device))
 
         def generator(*, z: Tensor, lw: Tensor, size: float) -> Tensor:
-            if z <= self.fill_z_range[0]:
+            if z <= self.fill_z_range[0]:  # Bottom layer
                 x0 = self.x0_furnace * torch.ones(self.xy_shp)
-            elif z > self.fill_z_range[0] and z <= mat_z:
-                x0 = self.fill_x0s[torch.randint(high=len(self.fill_x0s), size=(self.xy_shp[0] * self.xy_shp[1],), device=self.fill_x0s.device)].reshape(
-                    self.xy_shp
-                )
-            elif z > mat_z and z <= slag_z:
-                x0 = self.slag_x0s[torch.randint(high=len(self.slag_x0s), size=(self.xy_shp[0] * self.xy_shp[1],), device=self.slag_x0s.device)].reshape(
-                    self.xy_shp
-                )
+
+            elif z > self.fill_z_range[0] and z <= mat_z:  # fill material
+                x0 = self.fill_x0 * torch.ones(self.xy_shp)
+
+            elif z > mat_z and z <= slag_z:  # Slag
+                x0 = self.slag_x0 * torch.ones(self.xy_shp)
+
             elif z > slag_z:
                 x0 = X0["air"] * torch.ones(self.xy_shp)
+
+            # Add furnace walls
             x0[0, :] = self.x0_furnace
             x0[-1, :] = self.x0_furnace
             x0[:, 0] = self.x0_furnace

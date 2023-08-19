@@ -1,10 +1,11 @@
-from typing import List, Tuple, Dict, Optional
+from typing import Dict, List, Optional, Tuple
+
+import h5py
 import numpy as np
 from fastcore.all import Path
-import h5py
 
-from .callback import Callback
 from ...utils import x0targs_to_classtargs
+from .callback import Callback
 
 r"""
 Provides callbacks that return predictions during application of the detectors

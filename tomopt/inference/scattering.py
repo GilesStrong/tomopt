@@ -1,13 +1,13 @@
-from typing import Optional, Tuple, Dict
+from typing import Dict, Optional, Tuple
+
 import matplotlib.pyplot as plt
 import numpy as np
-
 import torch
 from torch import Tensor
 
 from ..muon import MuonBatch
-from ..volume import Volume
 from ..utils import jacobian
+from ..volume import Volume
 
 r"""
 Provides implementations of inference algorithms designed to extract variables related to muon scattering from the hits recorded by the detectors

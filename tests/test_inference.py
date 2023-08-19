@@ -1,27 +1,33 @@
-import pytest
-from pytest_mock import mocker  # noqa F401
-import numpy as np
-from unittest.mock import patch
-from typing import Tuple
 import math
-from pytest_lazyfixture import lazy_fixture
+from typing import Tuple
+from unittest.mock import patch
 
+import numpy as np
+import pytest
 import torch
-from torch import Tensor, nn
 import torch.nn.functional as F
+from pytest_lazyfixture import lazy_fixture
+from pytest_mock import mocker  # noqa F401
+from torch import Tensor, nn
 
-from tomopt.volume import PassiveLayer, Volume, PanelDetectorLayer, DetectorPanel, SigmoidDetectorPanel
-from tomopt.muon import MuonBatch, MuonGenerator2016
 from tomopt.core import X0
 from tomopt.inference import (
+    DenseBlockClassifierFromX0s,
+    GenScatterBatch,
     PanelX0Inferrer,
     ScatterBatch,
-    GenScatterBatch,
-    DenseBlockClassifierFromX0s,
 )
 from tomopt.inference.volume import AbsIntClassifierFromX0
+from tomopt.muon import MuonBatch, MuonGenerator2016
 from tomopt.optimisation import MuonResampler
 from tomopt.utils import jacobian
+from tomopt.volume import (
+    DetectorPanel,
+    PanelDetectorLayer,
+    PassiveLayer,
+    SigmoidDetectorPanel,
+    Volume,
+)
 
 LW = Tensor([1, 1])
 SZ = 0.1

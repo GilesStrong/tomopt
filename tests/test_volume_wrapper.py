@@ -1,29 +1,39 @@
+import os
 from functools import partial
 from pathlib import Path
-import pytest
-from pytest_mock import mocker  # noqa F401
-import os
 
+import pytest
 import torch
-from torch import nn, Tensor, optim
+from pytest_mock import mocker  # noqa F401
+from torch import Tensor, nn, optim
 
 from tomopt.core import X0
-from tomopt.volume import Volume, PassiveLayer, PanelDetectorLayer, DetectorPanel, DetectorHeatMap
-from tomopt.optimisation.wrapper.volume_wrapper import FitParams, PanelVolumeWrapper, HeatMapVolumeWrapper
-from tomopt.optimisation.data.passives import PassiveYielder
-from tomopt.optimisation.loss import VoxelX0Loss
+from tomopt.muon.generation import MuonGenerator2016
 from tomopt.optimisation.callbacks import (
     Callback,
     CyclicCallback,
-    MetricLogger,
-    ScatterRecord,
-    NoMoreNaNs,
     EvalMetric,
+    MetricLogger,
     MuonResampler,
+    NoMoreNaNs,
     PredHandler,
+    ScatterRecord,
     WarmupCallback,
 )
-from tomopt.muon.generation import MuonGenerator2016
+from tomopt.optimisation.data.passives import PassiveYielder
+from tomopt.optimisation.loss import VoxelX0Loss
+from tomopt.optimisation.wrapper.volume_wrapper import (
+    FitParams,
+    HeatMapVolumeWrapper,
+    PanelVolumeWrapper,
+)
+from tomopt.volume import (
+    DetectorHeatMap,
+    DetectorPanel,
+    PanelDetectorLayer,
+    PassiveLayer,
+    Volume,
+)
 
 LW = Tensor([1, 1])
 SZ = 0.1
@@ -243,9 +253,12 @@ def test_volume_wrapper_scan_volume(state, mocker):  # noqa F811
         assert vw.loss_func.call_count == 0
     else:
         assert vw.loss_func.call_count == 1
-        assert (loss1 := vw.fit_params.loss_val) is not None
+        print("before", vw.fit_params.loss_val)
+        loss1 = vw.fit_params.loss_val.detach().cpu().item()
+        assert loss1 is not None
         vw._scan_volume()
-        assert loss1 < vw.fit_params.loss_val
+        print("after, old", loss1, vw.fit_params.loss_val)
+        assert loss1 < vw.fit_params.loss_val  # Loss should always increase with scanned volume count since the new loss is added to the old one
 
 
 @pytest.mark.flaky(max_runs=2, min_passes=1)

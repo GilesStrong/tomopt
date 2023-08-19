@@ -1,9 +1,10 @@
 from typing import Optional
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
 import seaborn as sns
 
-from .appearance import H_MID, W_MID, LBL_COL, LBL_SZ
+from .appearance import H_MID, LBL_COL, LBL_SZ, W_MID
 
 __all__ = ["plot_pred_true_x0"]
 

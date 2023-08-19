@@ -1,8 +1,8 @@
-from typing import Tuple, List, Optional, Union, Generator
+from abc import ABCMeta, abstractmethod
 from random import shuffle
-from abc import abstractmethod, ABCMeta
-import numpy as np
+from typing import Generator, List, Optional, Tuple, Union
 
+import numpy as np
 import torch
 from torch import Tensor
 

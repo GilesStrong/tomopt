@@ -3,9 +3,9 @@ from torch import Tensor
 
 from tomopt.volume.volume import Volume
 
-from .callback import Callback
 from ...muon import MuonBatch
 from ...muon.generation import AbsMuonGenerator
+from .callback import Callback
 
 r"""
 Provides callbacks designed to affect the data used during fitting/predictions.

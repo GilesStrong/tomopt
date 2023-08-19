@@ -1,44 +1,53 @@
-import pytest
-import numpy as np
-from pytest_mock import mocker  # noqa F401
 import math
-import pandas as pd
+import os
 from functools import partial
 from glob import glob
-from fastcore.all import Path
-import matplotlib.pyplot as plt
+
 import h5py
-import os
-
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import pytest
 import torch
-from torch import Tensor
 import torch.nn.functional as F
+from fastcore.all import Path
+from pytest_mock import mocker  # noqa F401
+from torch import Tensor
 
+from tomopt.muon import MuonBatch, MuonGenerator2016
+from tomopt.optimisation.callbacks import (
+    CostCoefWarmup,
+    HeatMapGif,
+    HitRecord,
+    MetricLogger,
+    MuonResampler,
+    NoMoreNaNs,
+    OneCycle,
+    PanelMetricLogger,
+    PanelOptConfig,
+    PanelUpdateLimiter,
+    PostWarmupCallback,
+    PredHandler,
+    Save2HDF5PredHandler,
+    ScatterRecord,
+    SigmoidPanelSmoothnessSchedule,
+    VolumeTargetPredHandler,
+    WarmupCallback,
+)
 from tomopt.optimisation.callbacks.callback import Callback
 from tomopt.optimisation.callbacks.eval_metric import EvalMetric
-from tomopt.optimisation.callbacks import (
-    NoMoreNaNs,
-    PredHandler,
-    MetricLogger,
-    PanelMetricLogger,
-    ScatterRecord,
-    HitRecord,
-    CostCoefWarmup,
-    PanelOptConfig,
-    MuonResampler,
-    HeatMapGif,
-    VolumeTargetPredHandler,
-    Save2HDF5PredHandler,
-    WarmupCallback,
-    PostWarmupCallback,
-    SigmoidPanelSmoothnessSchedule,
-    PanelUpdateLimiter,
-    OneCycle,
-)
 from tomopt.optimisation.loss import VoxelX0Loss
-from tomopt.optimisation.wrapper.volume_wrapper import AbsVolumeWrapper, FitParams, PanelVolumeWrapper
-from tomopt.volume import PanelDetectorLayer, DetectorPanel, DetectorHeatMap, SigmoidDetectorPanel
-from tomopt.muon import MuonBatch, MuonGenerator2016
+from tomopt.optimisation.wrapper.volume_wrapper import (
+    AbsVolumeWrapper,
+    FitParams,
+    PanelVolumeWrapper,
+)
+from tomopt.volume import (
+    DetectorHeatMap,
+    DetectorPanel,
+    PanelDetectorLayer,
+    SigmoidDetectorPanel,
+)
 
 LW = Tensor([1, 1])
 SZ = 0.1

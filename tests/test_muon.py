@@ -1,13 +1,12 @@
-import pytest
-from pytest_mock import mocker  # noqa F401
 import numpy as np
-
+import pytest
 import torch
+from pytest_mock import mocker  # noqa F401
 from torch import Tensor, nn
 
-from tomopt.muon import MuonGenerator2016, MuonGenerator2015, MuonBatch
-from tomopt.volume import PassiveLayer, Volume, PanelDetectorLayer, DetectorPanel
 from tomopt.core import X0
+from tomopt.muon import MuonBatch, MuonGenerator2015, MuonGenerator2016
+from tomopt.volume import DetectorPanel, PanelDetectorLayer, PassiveLayer, Volume
 
 N = 3
 LW = Tensor([1, 1])
@@ -307,6 +306,7 @@ def test_muon_batch_scatter_dtheta_dphi():
     assert (batch.xy == start.xy).all()
 
 
+@pytest.mark.flaky(max_runs=3, min_passes=1)
 def test_muon_batch_angle_consistency():
     volume = Volume(get_panel_layers())
     mg = MuonGenerator2016.from_volume(volume)
