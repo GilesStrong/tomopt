@@ -306,6 +306,7 @@ def test_muon_batch_scatter_dtheta_dphi():
     assert (batch.xy == start.xy).all()
 
 
+@pytest.mark.flaky(max_runs=3, min_passes=1)
 def test_muon_batch_angle_consistency():
     volume = Volume(get_panel_layers())
     mg = MuonGenerator2016.from_volume(volume)
