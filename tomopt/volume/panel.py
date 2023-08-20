@@ -440,7 +440,7 @@ class SigmoidDetectorPanel(DetectorPanel):
     @smooth.setter
     def smooth(self, smooth: Union[float, Tensor]) -> None:
         if not smooth > 0:
-            raise ValueError("smooth artgument must be positive and non-zero")
+            raise ValueError("smooth argument must be positive and non-zero")
         if not isinstance(smooth, Tensor):
             smooth = Tensor([smooth], device=self.device)
         if hasattr(self, "_smooth"):

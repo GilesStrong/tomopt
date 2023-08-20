@@ -60,7 +60,7 @@ class Volume(nn.Module):
         self.budget = None if budget is None else torch.tensor(budget, device=self._device)
         self._check_passives()
         self._target: Optional[Tensor] = None
-        self._edges: Optional[Tensor] = None
+        self._xyz_edges: Optional[Tensor] = None
 
         if self.budget is not None:
             self._configure_budget()
@@ -77,9 +77,9 @@ class Volume(nn.Module):
         ps = self.get_passives()
         return ps[-1].z - self.passive_size, ps[0].z
 
-    def build_edges(self) -> Tensor:
+    def build_xyz_edges(self) -> Tensor:
         r"""
-        Computes the zxy locations of low-left-front edges of voxels in the passive layers of the volume.
+        Computes the xyz locations of low-left-front edges of voxels in the passive layers of the volume.
         """
 
         bounds = (
@@ -93,9 +93,7 @@ class Volume(nn.Module):
             ]
         )
         # bounds[2] = np.flip(bounds[2])  # z is reversed
-        return torch.tensor(
-            bounds.reshape(3, -1).transpose(-1, -2), dtype=torch.float32, device=self.device
-        )  # TODO: Check that xyz shape is expected, and not zxy
+        return torch.tensor(bounds.reshape(3, -1).transpose(-1, -2), dtype=torch.float32, device=self.device)
 
     def get_detectors(self) -> List[AbsDetectorLayer]:
         r"""
@@ -391,24 +389,24 @@ class Volume(nn.Module):
         return self.layers[0].z
 
     @property
-    def edges(self) -> Tensor:
+    def xyz_edges(self) -> Tensor:
         r"""
-        zxy locations of low-left-front edges of voxels in the passive layers of the volume.
+        xyz locations of low-left-front edges of voxels in the passive layers of the volume.
         """
 
-        if self._edges is None:
-            self._edges = self.build_edges()
-        return self._edges
+        if self._xyz_edges is None:
+            self._xyz_edges = self.build_xyz_edges()
+        return self._xyz_edges
 
     @property
-    def centres(self) -> Tensor:
+    def xyz_centres(self) -> Tensor:
         r"""
-        zxy locations of the centres of voxels in the passive layers of the volume.
+        xyz locations of the centres of voxels in the passive layers of the volume.
         """
 
-        if self._edges is None:
-            self._edges = self.build_edges()
-        return self._edges + (self.passive_size / 2)
+        if self._xyz_edges is None:
+            self._xyz_edges = self.build_xyz_edges()
+        return self._xyz_edges + (self.passive_size / 2)
 
     @property
     def device(self) -> torch.device:

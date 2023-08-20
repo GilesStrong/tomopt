@@ -46,6 +46,13 @@ class AbsVolumeInferrer(metaclass=ABCMeta):
         self.scatter_batches: List[ScatterBatch] = []
         self.volume = volume
         self.size, self.lw, self.device = self.volume.passive_size, self.volume.lw, self.volume.device
+        # set shapes
+        self.shp_xyz = [
+            round(self.lw.cpu().numpy()[0] / self.size),
+            round(self.lw.cpu().numpy()[1] / self.size),
+            len(self.volume.get_passives()),
+        ]
+        self.shp_zxy = [self.shp_xyz[2], self.shp_xyz[0], self.shp_xyz[1]]
 
     @abstractmethod
     def _reset_vars(self) -> None:
@@ -128,13 +135,6 @@ class AbsX0Inferrer(AbsVolumeInferrer):
 
         super().__init__(volume=volume)
         self._set_var_dimensions()
-        # set shapes
-        self.shp_xyz = [
-            round(self.lw.cpu().numpy()[0] / self.size),
-            round(self.lw.cpu().numpy()[1] / self.size),
-            len(self.volume.get_passives()),
-        ]
-        self.shp_zxy = [self.shp_xyz[2], self.shp_xyz[0], self.shp_xyz[1]]
 
     @staticmethod
     def x0_from_scatters(deltaz: float, total_scatter: Tensor, theta_in: Tensor, theta_out: Tensor, mom: Tensor) -> Tensor:
@@ -298,7 +298,7 @@ class AbsX0Inferrer(AbsVolumeInferrer):
 
     def _get_voxel_zxy_x0_preds(self) -> Tensor:
         r"""
-        Computes the X0 predictions per voxel using the scatter batched added.
+        Computes the X0 predictions per voxel using the scatter batches added.
 
         TODO: Implement differing x0 according to poca_xyz via Gaussian spread
 
@@ -375,21 +375,33 @@ class AbsX0Inferrer(AbsVolumeInferrer):
             Integration tested only
 
         TODO: Don't assume that poca_xyz uncertainties are uncorrelated
-
+        TODO: Improve efficiency: currently CDFs are computed multiple times at the same points; could precompute x,y,z probs once, and combine in triples
         Returns:
             (muons,z,x,y) tensor of probabilities that the muons' PoCAs were located in the given voxels.
         """
         if self._muon_probs_per_voxel_zxy is None:
             # Gaussian spread
-            dists = {}
+            xyz_distributions = {}
             for i, d in enumerate(["x", "y", "z"]):
-                dists[d] = Normal(self.muon_poca_xyz[:, i], self.muon_poca_xyz_unc[:, i] + 1e-7)  # poca_xyz uncertainty is sometimes zero, causing errors
+                xyz_distributions[d] = Normal(
+                    self.muon_poca_xyz[:, i], self.muon_poca_xyz_unc[:, i] + 1e-7
+                )  # poca_xyz uncertainty is sometimes zero, causing errors
 
-            def comp_int(low: Tensor, high: Tensor, dists: Dict[str, Normal]) -> Tensor:
-                return torch.prod(torch.stack([dists[d].cdf(high[i]) - dists[d].cdf(low[i]) for i, d in enumerate(dists)], dim=0), dim=0)
+            def comp_int(low: Tensor, high: Tensor, xyz_distributions: Dict[str, Normal]) -> Tensor:
+                return torch.prod(
+                    torch.stack(
+                        [
+                            dist.cdf(high[i]) - dist.cdf(low[1])
+                            for i, dist in [(0, xyz_distributions["x"]), (1, xyz_distributions["y"]), (2, xyz_distributions["z"])]
+                        ],
+                        dim=0,
+                    ),
+                    dim=0,
+                )
 
+            print()
             probs = (
-                torch.stack([comp_int(l, l + self.volume.passive_size, dists) for l in self.volume.edges.unbind()])
+                torch.stack([comp_int(l, l + self.volume.passive_size, xyz_distributions) for l in self.volume.xyz_edges.unbind()])
                 .transpose(-1, -2)  # prob, mu --> mu, prob
                 .reshape([self.n_mu] + self.shp_xyz)  # mu, x, y, z
                 .permute(0, 3, 1, 2)  # mu, z, x, y
@@ -556,6 +568,8 @@ class PanelX0Inferrer(AbsX0Inferrer):
 
     Arguments:
         volume: volume through which the muons will be passed
+
+    # TODO: refactor this to be provided to volume inference as a callable
     """
 
     def compute_efficiency(self, scatters: ScatterBatch) -> Tensor:
@@ -599,7 +613,7 @@ class PanelX0Inferrer(AbsX0Inferrer):
 #     ):
 #         super().__init__(volume=volume)
 #         self.model, self.base_inferrer, self.include_unc = model, base_inferrer, include_unc
-#         self.voxel_centres = self.volume.centres
+#         self.voxel_centres = self.volume.xyz_centres
 #         self.tomopt_device = self.volume.device
 #         self.model_device = next(self.model.parameters()).device
 
@@ -790,7 +804,7 @@ class DenseBlockClassifierFromX0s(AbsVolumeInferrer):
         super().__init__(volume=volume)
         self.use_avgpool, self.cut_coef, self.ratio_offset, self.ratio_coef = use_avgpool, cut_coef, ratio_offset, ratio_coef
         self.x0_inferrer = partial_x0_inferrer(volume=self.volume)
-        self.frac = n_block_voxels / self.volume.centres.numel()
+        self.frac = n_block_voxels / self.volume.xyz_centres.numel()
 
     def add_scatters(self, scatters: ScatterBatch) -> None:
         r"""
