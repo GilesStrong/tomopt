@@ -370,8 +370,8 @@ class PocaZLadleFurnaceFillLevelInferrer(AbsVolumeInferrer):
             (h) tensor of fill-height prediction [m]
         """
 
-        z_pos = self.muon_poca_xyz[:, :1]
-        z_unc = self.muon_poca_xyz_unc[:, :1]
+        z_pos = self.muon_poca_xyz[:, 2:]
+        z_unc = self.muon_poca_xyz_unc[:, 2:]
         eff = self.muon_efficiency.reshape(self.n_mu, 1)
 
         # Downweight poca near sides to reduce bias
@@ -380,10 +380,10 @@ class PocaZLadleFurnaceFillLevelInferrer(AbsVolumeInferrer):
             -1, keepdim=True
         )  # pixelwise probs in xy  (mu, pixel, prob)
         wgt_probs = probs * self.sigmoid_grid_wgt[None]
-        sig_wgt = wgt_probs.sum(-2)  # (mu, wgt)
+        self.sig_wgt = wgt_probs.sum(-2)  # (mu, wgt)
 
-        wgt = sig_wgt * eff / (z_unc**2)
+        self.wgt = self.sig_wgt * eff / (z_unc**2)  # TODO: Clamp this?, fractional variance?
 
-        mean_z = (wgt * z_pos).sum() / wgt.sum()
+        mean_z = (self.wgt * z_pos).sum() / self.wgt.sum()
 
         return mean_z[None]
