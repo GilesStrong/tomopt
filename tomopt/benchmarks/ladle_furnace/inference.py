@@ -382,7 +382,16 @@ class PocaZLadleFurnaceFillLevelInferrer(AbsVolumeInferrer):
         wgt_probs = probs * self.sigmoid_grid_wgt[None]
         self.sig_wgt = wgt_probs.sum(-2)  # (mu, wgt)
 
-        self.wgt = self.sig_wgt * eff / (z_unc**2)  # TODO: Clamp this?, fractional variance?
+        # Clamp uncertainties in case they're very small/large
+        unc_low = z_unc.view(-1).kthvalue(1 + round(0.15865 * (z_unc.numel() - 1))).values.detach()
+        unc_high = z_unc.view(-1).kthvalue(1 + round(0.84135 * (z_unc.numel() - 1))).values.detach()
+        z_unc = torch.clip(z_unc, unc_low, unc_high)
+
+        wgt = self.sig_wgt * eff / (z_unc**2)
+        # Clmap weight in case some muons dominate
+        wgt_high = wgt.view(-1).kthvalue(1 + round(0.84135 * (wgt.numel() - 1))).values.detach()
+        wgt = torch.clip(wgt, 0.0, wgt_high)
+        self.wgt = wgt
 
         mean_z = (self.wgt * z_pos).sum() / self.wgt.sum()
 
