@@ -388,7 +388,7 @@ class PocaZLadleFurnaceFillLevelInferrer(AbsVolumeInferrer):
         z_unc = torch.clip(z_unc, unc_low, unc_high)
 
         wgt = self.sig_wgt * eff / (z_unc**2)
-        # Clmap weight in case some muons dominate
+        # Clamp weight in case some muons dominate
         wgt_high = wgt.view(-1).kthvalue(1 + round(0.84135 * (wgt.numel() - 1))).values.detach()
         wgt = torch.clip(wgt, 0.0, wgt_high)
         self.wgt = wgt
