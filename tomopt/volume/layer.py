@@ -286,7 +286,7 @@ class PassiveLayer(AbsLayer):
         # These are in the muons' reference frames NOT the volume's!!!
         # Make sure that scattering angle in the muon reference frame < pi/2
         # to ensure conversion into the volume reference frame
-        dtheta_xy_mu = torch.clamp(z1 * theta0, max=math.pi / 2.2)  # TODO Check this
+        dtheta_xy_mu = torch.clamp(z2 * theta0, max=math.pi / 2.2)  # TODO Check this
         dxy_mu = step_sz * theta0 * ((z1 / math.sqrt(12)) + (z2 / 2))
 
         # Note that if a track incides on a layer
