@@ -2,7 +2,7 @@
 
 The TomOpt project, and its continued development and support, is the result of the combined work of many people, whose contributions are summarised below.
 
-In order to start time, the TomOpt authors/contributors are: Giles Strong, Tommaso Dorigo, Andrea Giammanco, Pietro Vischia, Jan Kieseler, Maxime Lagrange, Federico Nardi, Haitham Zaraket, Max Lamparth, Federica Fanzago, Oleg Savchenko, Nitesh Sharma, Anna Bordignon, Mariam Safieldin.
+In order to start time, the TomOpt authors/contributors are: Giles Strong, Tommaso Dorigo, Andrea Giammanco, Pietro Vischia, Jan Kieseler, Maxime Lagrange, Federico Nardi, Haitham Zaraket, Max Lamparth, Federica Fanzago, Oleg Savchenko, Nitesh Sharma, Anna Bordignon, Mariam Safieldin, Aitor Orio.
 
 ## Giles Chatham Strong (@GilesStrong)
 
