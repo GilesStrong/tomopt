@@ -286,6 +286,8 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
 
         state = torch.load(name, map_location="cuda" if torch.cuda.is_available() else "cpu")
         self.volume.load_state_dict(state["volume"])
+        if "budget_weights" in state:
+            self.volume.assign_budget()
         for k, v in state.items():
             if "_opt" in k:
                 self.opts[k].load_state_dict(v)
