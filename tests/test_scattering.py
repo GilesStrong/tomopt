@@ -14,9 +14,14 @@ from fastcore.all import Path
 import torch
 from torch import Tensor
 
-from tomopt.volume import PGEANT_SCATTER_MODEL, PassiveLayer
-from tomopt.muon import MuonBatch
-from tomopt.core import X0
+import sys
+
+sys.path.append("/home/zzaher/mode_muon_tomography")
+
+from tomopt.volume import PassiveLayer  # noqa E402
+from tomopt.muon import MuonBatch  # noqa E402
+from tomopt.core import *  # noqa E402
+
 
 PKG_DIR = Path(os.path.dirname(os.path.abspath(__file__)))  # How robust is this? Could create hidden dir in home and download resources
 
@@ -45,12 +50,18 @@ def get_scatters(grp: h5py.Group, n_steps: int, plots: bool, name: str, verbose:
     if verbose:
         print(f"Making sims for {mat=}, {dz=}, {mom=}, {theta=}, {phi=}, {n_muons=}")
 
+    def properties(*, z: float, lw: Tensor, size: float) -> Tensor:
+        props = [X0, B, Z, A, DENSITIES, mean_excitation_E]  # noqa F405
+        prop = lw.new_empty((6, int(lw[0].item() / size), int(lw[1].item() / size)))
+        for i, p in enumerate(props):
+            prop[i] = torch.ones(list((lw / size).long())) * p[mat]
+        return prop
+
     # Init layer
     step_sz = dz / (n_steps * np.cos(theta))
-    layer = PassiveLayer(lw=Tensor([dz * 100, dz * 100]), z=1, size=dz, step_sz=step_sz)
-    layer.rad_length = torch.ones(list((layer.lw / layer.size).long())) * X0[mat]
-
-    PGEANT_SCATTER_MODEL.load_data()
+    layer = PassiveLayer(lw=Tensor([dz * 100, dz * 100]), z=1, size=dz, step_sz=step_sz, properties_func=properties)
+    layer2 = PassiveLayer(lw=Tensor([dz * 100, dz * 100]), z=1, size=dz, step_sz=step_sz, scatter_model="kuhn", properties_func=properties)
+    # layer.rad_length = torch.ones(list((layer.lw / layer.size).long())) * X0[mat]
 
     # Get sims
     xy_m_t_p = torch.ones(n_muons, 5)
@@ -59,6 +70,7 @@ def get_scatters(grp: h5py.Group, n_steps: int, plots: bool, name: str, verbose:
     xy_m_t_p[:, 3] = theta
     xy_m_t_p[:, 4] = phi
     muons = MuonBatch(xy_m_t_p, init_z=1)
+    orig_muons = muons.copy()
     start = muons.copy()
 
     # # New param model -- ignore for now
@@ -76,7 +88,19 @@ def get_scatters(grp: h5py.Group, n_steps: int, plots: bool, name: str, verbose:
     pdg_scattering["dangle_vol"] = np.sqrt((pdg_scattering["dtheta_x_vol"] ** 2) + (pdg_scattering["dtheta_y_vol"] ** 2))
     pdg_scattering["dspace_vol"] = np.sqrt((pdg_scattering["dx_vol"] ** 2) + (pdg_scattering["dy_vol"] ** 2))
 
-    tests = make_comparison(name, df, pdg_scattering, pgeant_scattering=None, plots=plots, verbose=verbose)
+    muons = orig_muons
+    start = muons.copy()
+    layer2(muons)
+    start.propagate_dz(dz)  # Propagate without scattering
+    kuhn_scattering = {}
+    kuhn_scattering["dtheta_x_vol"] = muons.theta_x - start.theta_x
+    kuhn_scattering["dtheta_y_vol"] = muons.theta_y - start.theta_y
+    kuhn_scattering["dx_vol"] = muons.x - start.x
+    kuhn_scattering["dy_vol"] = muons.y - start.y
+    kuhn_scattering["dangle_vol"] = np.sqrt((kuhn_scattering["dtheta_x_vol"] ** 2) + (kuhn_scattering["dtheta_y_vol"] ** 2))
+    kuhn_scattering["dspace_vol"] = np.sqrt((kuhn_scattering["dx_vol"] ** 2) + (kuhn_scattering["dy_vol"] ** 2))
+
+    tests = make_comparison(name, df, pdg_scattering, kuhn_scattering, plots=plots, verbose=verbose)
 
     return {"data": {"df": df, "pdg": pdg_scattering}, "tests": tests}
 
@@ -85,7 +109,7 @@ def make_comparison(
     name: str,
     geant_df: pd.DataFrame,
     pdg_scattering: Dict[str, Tensor],
-    pgeant_scattering: Optional[Dict[str, Tensor]] = None,
+    kuhn_scattering: Optional[Dict[str, Tensor]] = None,
     plots: bool = True,
     verbose: bool = True,
 ) -> Dict[str, Dict[str, float]]:
@@ -98,7 +122,7 @@ def make_comparison(
     if verbose:
         print("\n\n", var)
     tab: PrettyTable = None
-    for name, sim in (("pdg", pdg_scattering), ("param_geant", pgeant_scattering)):
+    for name, sim in (("pdg", pdg_scattering), ("kuhn", kuhn_scattering)):
         if sim is None:
             continue
         tests[var][name]["mean"] = sim[var].mean()
@@ -118,8 +142,8 @@ def make_comparison(
 
     plt.figure(figsize=(12, 10))
     sns.distplot(geant_df[var], label="True GEANT")
-    if pgeant_scattering is not None:
-        sns.distplot(pgeant_scattering[var], label="Param GEANT")
+    if kuhn_scattering is not None:
+        sns.distplot(kuhn_scattering[var], label="Kuhn")
     sns.distplot(pdg_scattering[var], label="PDG")
     cut99 = np.percentile(geant_df[var], 99.9)
     plt.xlim([-cut99, cut99])
@@ -131,8 +155,8 @@ def make_comparison(
 
     plt.figure(figsize=(12, 10))
     sns.distplot(geant_df.loc[geant_df[var].abs() > cut68, var].abs(), label="True GEANT")
-    if pgeant_scattering is not None:
-        sns.distplot(pgeant_scattering[var][pgeant_scattering[var].abs() > cut68].abs(), label="Param GEANT")
+    if kuhn_scattering is not None:
+        sns.distplot(kuhn_scattering[var][kuhn_scattering[var].abs() > cut68].abs(), label="Kuhn")
     sns.distplot(pdg_scattering[var][pdg_scattering[var].abs() > cut68].abs(), label="PDG")
     plt.xlabel(f"|{var}|")
     plt.legend()
@@ -149,7 +173,7 @@ def make_comparison(
     if verbose:
         print("\n\n", var)
     tab: PrettyTable = None
-    for name, sim in (("pdg", pdg_scattering), ("param_geant", pgeant_scattering)):
+    for name, sim in (("pdg", pdg_scattering), ("kuhn", kuhn_scattering)):
         if sim is None:
             continue
         tests[var][name]["mean"] = sim[var].mean()
@@ -164,8 +188,8 @@ def make_comparison(
 
     plt.figure(figsize=(12, 10))
     sns.distplot(geant_df[var], label="True GEANT")
-    if pgeant_scattering is not None:
-        sns.distplot(pgeant_scattering[var], label="Param GEANT")
+    if kuhn_scattering is not None:
+        sns.distplot(kuhn_scattering[var], label="Kuhn")
     sns.distplot(pdg_scattering[var], label="PDG")
     cut99 = np.percentile(geant_df[var], 99.9)
     plt.xlim([-cut99, cut99])
@@ -177,8 +201,8 @@ def make_comparison(
 
     plt.figure(figsize=(12, 10))
     sns.distplot(geant_df.loc[geant_df[var].abs() > cut68, var].abs(), label="True GEANT")
-    if pgeant_scattering is not None:
-        sns.distplot(pgeant_scattering[var][pgeant_scattering[var].abs() > cut68].abs(), label="Param GEANT")
+    if kuhn_scattering is not None:
+        sns.distplot(kuhn_scattering[var][kuhn_scattering[var].abs() > cut68].abs(), label="Kuhn")
     sns.distplot(pdg_scattering[var][pdg_scattering[var].abs() > cut68].abs(), label="PDG")
     plt.xlabel(f"|{var}|")
     plt.legend()
@@ -195,7 +219,7 @@ def make_comparison(
     if verbose:
         print("\n\n", var)
     tab: PrettyTable = None
-    for name, sim in (("pdg", pdg_scattering), ("param_geant", pgeant_scattering)):
+    for name, sim in (("pdg", pdg_scattering), ("kuhn", kuhn_scattering)):
         if sim is None:
             continue
         tests[var][name]["mean"] = sim[var].mean()
@@ -210,8 +234,8 @@ def make_comparison(
 
     plt.figure(figsize=(12, 10))
     sns.distplot(geant_df[var], label="True GEANT")
-    if pgeant_scattering is not None:
-        sns.distplot(pgeant_scattering[var], label="Param GEANT")
+    if kuhn_scattering is not None:
+        sns.distplot(kuhn_scattering[var], label="Kuhn")
     sns.distplot(pdg_scattering[var], label="PDG")
     cut99 = np.percentile(geant_df[var], 99.9)
     plt.xlim([-cut99, cut99])
@@ -223,8 +247,8 @@ def make_comparison(
 
     plt.figure(figsize=(12, 10))
     sns.distplot(geant_df.loc[geant_df[var].abs() > cut68, var].abs(), label="True GEANT")
-    if pgeant_scattering is not None:
-        sns.distplot(pgeant_scattering[var][pgeant_scattering[var].abs() > cut68].abs(), label="Param GEANT")
+    if kuhn_scattering is not None:
+        sns.distplot(kuhn_scattering[var][kuhn_scattering[var].abs() > cut68].abs(), label="Kuhn")
     sns.distplot(pdg_scattering[var][pdg_scattering[var].abs() > cut68].abs(), label="PDG")
     plt.xlabel(f"|{var}|")
     plt.legend()
@@ -241,7 +265,7 @@ def make_comparison(
     if verbose:
         print("\n\n", var)
     tab: PrettyTable = None
-    for name, sim in (("pdg", pdg_scattering), ("param_geant", pgeant_scattering)):
+    for name, sim in (("pdg", pdg_scattering), ("kuhn", kuhn_scattering)):
         if sim is None:
             continue
         tests[var][name]["mean_fdiff"] = np.abs(sim[var].mean() - geant_df[var].mean()) / geant_df[var].mean()
@@ -261,8 +285,8 @@ def make_comparison(
 
     plt.figure(figsize=(12, 10))
     sns.distplot(geant_df[var], label="True GEANT")
-    if pgeant_scattering is not None:
-        sns.distplot(pgeant_scattering[var], label="Param GEANT")
+    if kuhn_scattering is not None:
+        sns.distplot(kuhn_scattering[var], label="Kuhn")
     sns.distplot(pdg_scattering[var], label="PDG")
     cut99 = np.percentile(geant_df[var], 99.9)
     plt.xlim([0, cut99])
@@ -274,8 +298,8 @@ def make_comparison(
 
     plt.figure(figsize=(12, 10))
     sns.distplot(geant_df.loc[geant_df[var].abs() > cut68, var].abs(), label="True GEANT")
-    if pgeant_scattering is not None:
-        sns.distplot(pgeant_scattering[var][pgeant_scattering[var].abs() > cut68].abs(), label="Param GEANT")
+    if kuhn_scattering is not None:
+        sns.distplot(kuhn_scattering[var][kuhn_scattering[var].abs() > cut68].abs(), label="Kuhn")
     sns.distplot(pdg_scattering[var][pdg_scattering[var].abs() > cut68].abs(), label="PDG")
     plt.xlabel(f"|{var}|")
     plt.legend()
@@ -292,7 +316,7 @@ def make_comparison(
     if verbose:
         print("\n\n", var)
     tab: PrettyTable = None
-    for name, sim in (("pdg", pdg_scattering), ("param_geant", pgeant_scattering)):
+    for name, sim in (("pdg", pdg_scattering), ("kuhn", kuhn_scattering)):
         if sim is None:
             continue
         tests[var][name]["mean"] = sim[var].mean()
@@ -307,8 +331,8 @@ def make_comparison(
 
     plt.figure(figsize=(12, 10))
     sns.distplot(geant_df[var], label="True GEANT")
-    if pgeant_scattering is not None:
-        sns.distplot(pgeant_scattering[var], label="Param GEANT")
+    if kuhn_scattering is not None:
+        sns.distplot(kuhn_scattering[var], label="Kuhn")
     sns.distplot(pdg_scattering[var], label="PDG")
     cut99 = np.percentile(geant_df[var], 99.9)
     plt.xlim([-cut99, cut99])
@@ -320,8 +344,8 @@ def make_comparison(
 
     plt.figure(figsize=(12, 10))
     sns.distplot(geant_df.loc[geant_df[var].abs() > cut68, var].abs(), label="True GEANT")
-    if pgeant_scattering is not None:
-        sns.distplot(pgeant_scattering[var][pgeant_scattering[var].abs() > cut68].abs(), label="Param GEANT")
+    if kuhn_scattering is not None:
+        sns.distplot(kuhn_scattering[var][kuhn_scattering[var].abs() > cut68].abs(), label="Kuhn")
     sns.distplot(pdg_scattering[var][pdg_scattering[var].abs() > cut68].abs(), label="PDG")
     plt.xlabel(f"|{var}|")
     plt.legend()
@@ -338,7 +362,7 @@ def make_comparison(
     if verbose:
         print("\n\n", var)
     tab: PrettyTable = None
-    for name, sim in (("pdg", pdg_scattering), ("param_geant", pgeant_scattering)):
+    for name, sim in (("pdg", pdg_scattering), ("kuhn", kuhn_scattering)):
         if sim is None:
             continue
         tests[var][name]["mean"] = sim[var].mean()
@@ -353,8 +377,8 @@ def make_comparison(
 
     plt.figure(figsize=(12, 10))
     sns.distplot(geant_df[var], label="True GEANT")
-    if pgeant_scattering is not None:
-        sns.distplot(pgeant_scattering[var], label="Param GEANT")
+    if kuhn_scattering is not None:
+        sns.distplot(kuhn_scattering[var], label="Kuhn")
     sns.distplot(pdg_scattering[var], label="PDG")
     cut99 = np.percentile(geant_df[var], 99.9)
     plt.xlim([-cut99, cut99])
@@ -366,8 +390,8 @@ def make_comparison(
 
     plt.figure(figsize=(12, 10))
     sns.distplot(geant_df.loc[geant_df[var].abs() > cut68, var].abs(), label="True GEANT")
-    if pgeant_scattering is not None:
-        sns.distplot(pgeant_scattering[var][pgeant_scattering[var].abs() > cut68].abs(), label="Param GEANT")
+    if kuhn_scattering is not None:
+        sns.distplot(kuhn_scattering[var][kuhn_scattering[var].abs() > cut68].abs(), label="Kuhn")
     sns.distplot(pdg_scattering[var][pdg_scattering[var].abs() > cut68].abs(), label="PDG")
     plt.xlabel(f"|{var}|")
     plt.legend()

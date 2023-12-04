@@ -13,7 +13,7 @@ from .layer import AbsDetectorLayer, AbsLayer, PassiveLayer, PanelDetectorLayer
 from .panel import DetectorPanel
 from .heatmap import DetectorHeatMap
 from ..muon import MuonBatch
-from ..core import RadLengthFunc
+from ..core import PropertiesFunc
 
 r"""
 Provides implementation of wrapper classes for containing multiple passive layers and detector layers, which act as interfaces to them.
@@ -123,11 +123,11 @@ class Volume(nn.Module):
         vols = list(reversed(self.get_passives()))  # reversed to match lookup_xyz_coords: layer zero = bottom layer
         if len(vols) == 0:
             raise ValueError("self.layers contains no passive layers")
-        rads = [v.rad_length for v in vols if v.rad_length is not None]
+        rads = [v.properties[0] for v in vols if v.properties[0] is not None]
         if len(rads) > 0:
-            return torch.stack([v.rad_length for v in vols if v.rad_length is not None], dim=0)
+            return torch.stack([v.properties[0] for v in vols if v.properties[0] is not None], dim=0)
         else:
-            raise AttributeError("None of volume layers have a non-None rad_length attribute")
+            raise AttributeError("None of volume layers have a non-None properties attribute")
 
     def lookup_passive_xyz_coords(self, xyz: Tensor) -> Tensor:
         r"""
@@ -153,21 +153,21 @@ class Volume(nn.Module):
         xyz[:, 2] = xyz[:, 2] - self.get_passive_z_range()[0]
         return torch.floor(xyz / self.passive_size).long()
 
-    def load_rad_length(self, rad_length_func: RadLengthFunc, target: Optional[Tensor] = None) -> None:
+    def load_properties(self, properties_func: PropertiesFunc, target: Optional[Tensor] = None) -> None:
         r"""
         Loads a new passive-volume configuration.
         Optionally, a "target" for the configuration may also be supplied.
-        This could be e.g. the class ID of the passive-volume configuration which is currently loaded.
+        Tmuohis could be e.g. the class ID of the passive-volume configuration which is currently loaded.
         See e.g. :class:`~tomopt.optimisation.loss.VolumeClassLoss`.
 
         Arguments:
-            rad_length_func: lookup function that returns an (n_x,n_y) tensor of voxel X0 values for the layer.
+            properties_func: lookup function that returns an (6,n_x,n_y) tensor of voxel X0 values for the layer.
             target: optional target for the new layout
         """
 
         self._target = target
         for p in self.get_passives():
-            p.load_rad_length(rad_length_func)
+            p.load_properties(properties_func)
 
     def assign_budget(self) -> None:
         r"""

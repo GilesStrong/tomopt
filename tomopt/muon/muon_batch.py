@@ -256,6 +256,15 @@ class MuonBatch:
         self._keep_mask = (self._theta < torch.pi / 2) & (~self._theta.isnan()) & (~self._phi.isnan())  # To keep
         self.filter_muons(self._keep_mask)
 
+    def remove_negative_momentum_muons(self) -> None:
+        r"""
+        Removes muons, and their hits, if their momentum is negative when energy loss is applied to their energies.
+        Should be run after any changes to muon momenta, but make sure that references (e.g. masks) to the complete set of muons are no longer required.
+        """
+
+        self._keep_mask = self._mom > 0  # To keep
+        self.filter_muons(self._keep_mask)
+
     def filter_muons(self, keep_mask: Tensor) -> None:
         r"""
         Removes all muons, and their associated hits, except for muons specified as True in `keep_mask`.

@@ -12,6 +12,7 @@ from ..volume import Volume
 from ..core import SCATTER_COEF_A
 from ..utils import jacobian
 
+
 r"""
 Provides implementations of classes designed to infer targets of passive volumes
 using the variables computed by e.g. :class:`~tomopt.inference.scattering.ScatterBatch`.

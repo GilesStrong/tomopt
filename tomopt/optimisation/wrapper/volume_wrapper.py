@@ -544,7 +544,7 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
                 for c in self.fit_params.cbs:
                     c.on_volume_batch_begin()
 
-            self.volume.load_rad_length(passive, target)
+            self.volume.load_properties(passive, target)
             for c in self.fit_params.cbs:
                 c.on_volume_begin()
             self._scan_volume()

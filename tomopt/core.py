@@ -8,7 +8,7 @@ r"""
 Common global constants, custom variable types, etc.
 """
 
-__all__ = ["DEVICE", "SCATTER_COEF_A", "SCATTER_COEF_B", "X0", "DENSITIES", "PartialOpt"]
+__all__ = ["DEVICE", "SCATTER_COEF_A", "SCATTER_COEF_B", "X0", "DENSITIES", "Z", "A", "mean_excitation_E", "PartialOpt", "B", "PropertiesFunc", "RadLengthFunc"]
 
 
 DEVICE = torch.device("cpu")  # Set to CPU even if CUDA available due to issue #53  torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
@@ -42,6 +42,11 @@ X0 = {  # https://pdg.lbl.gov/2022/AtomicNuclearProperties/index.html
 }
 
 DENSITIES = {  # https://pdg.lbl.gov/2022/AtomicNuclearProperties/index.html
+    "iron": 7.87,  # g*cm^-3
+    "aluminium": 2.699,
+    "copper": 8.960,
+    "lead": 11.35,
+    "uranium": 19,
     "water": 1000.0,  # kg/m^3
     "SiO2": 2200.0,
     "Al2O3": 3970.0,
@@ -57,5 +62,21 @@ DENSITIES = {  # https://pdg.lbl.gov/2022/AtomicNuclearProperties/index.html
     "soft tissue": 1000.0,
 }
 
+A = {"iron": 55.845, "aluminium": 26.9815385, "copper": 63.546, "lead": 207.2, "uranium": 238.02891}
+
+Z = {"iron": 26, "aluminium": 13, "copper": 29, "lead": 82, "uranium": 92}
+
+B = {  # B parameter in Kuhn scattering model
+    "iron": 9.669761283357756,
+    "aluminium": 8.360943658395296,
+    "copper": 9.800963860872987,
+    "lead": 9.542446057727844,
+    "uranium": 9.990760245428246,
+}
+
+mean_excitation_E = {"iron": 286.0, "aluminium": 166.0, "copper": 322.0, "lead": 823.0, "uranium": 890.0}  # eV
+
+
 PartialOpt = Callable[[Iterator[nn.Parameter]], torch.optim.Optimizer]
 RadLengthFunc = Callable[[NamedArg(Tensor, "z"), NamedArg(Tensor, "lw"), NamedArg(float, "size")], Tensor]  # noqa F821
+PropertiesFunc = Callable[[NamedArg(Tensor, "z"), NamedArg(Tensor, "lw"), NamedArg(float, "size")], Tensor]  # noqa F405

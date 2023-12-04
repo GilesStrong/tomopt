@@ -7,7 +7,8 @@ import torch
 from torch import nn, Tensor
 
 from .scatter_model import PGEANT_SCATTER_MODEL
-from ..core import DEVICE, SCATTER_COEF_A, SCATTER_COEF_B, RadLengthFunc
+from .kuhn_scatter_model import KUHN_SCATTER_MODEL
+from ..core import DEVICE, SCATTER_COEF_A, SCATTER_COEF_B, PropertiesFunc
 from ..muon import MuonBatch
 from tomopt.volume.panel import DetectorPanel
 from tomopt.volume.heatmap import DetectorHeatMap
@@ -44,7 +45,8 @@ class AbsLayer(nn.Module, metaclass=ABCMeta):
             size,
             device,
         )
-        self.rad_length: Optional[Tensor] = None
+        self.properties: Optional[Tensor] = None
+        self.energy_loss: bool = False
 
     @abstractmethod
     def forward(self, mu: MuonBatch) -> None:
@@ -75,31 +77,47 @@ class PassiveLayer(AbsLayer):
     .. important::
         Users must ensure that both the length and width of the layer are divisible by size
 
-    If the layer is set to scatter muons (`rad_length` is not None), then two scattering models are available:
+    If the layer is set to scatter muons (`properties` is not None), then three scattering models are available:
         - 'pdg': The default and currently recommended model based on the Gaussian scattering model described in https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf
+        - 'kuhn': A scattering model which accounts for non-Gaussian tails, based on the Kuhn algorithm described in https://doi.org/10.1016/0168-9002(92)90361-7
         - 'pgeant': An under-development model based on a parameterised fit to data sampled from GEANT 4
 
-    The X0 values of each voxel is defined via a "radiation-length function", which should return an (n_x,n_y) tensor of voxel X0 values,
-    when called with the `z`, `lw`, and `size` of the layer. For example:
+    The 'properties_func' defines the properties of the materials assigned to each voxel. When called with the `z`, `lw`, and `size` of the layer, it returns a (6, n_x, n_y) tensor
+    of the following properties:
+        -radiation length 'X0' (properties[0]). This property is only initalized for voxels if the scattering model is set to 'pdg'
+        -a constant B (properties[1]), which is a parameter of the 'kuhn' scattering model, and is initialized only if it is the selected model
+        -atomic number Z, mass number A, and density (properties[2:5]), initialized when 'kuhn' model is used. If 'energy_loss' is True, then these
+        properties are initialized for both 'pdg' and 'kuhn' models.
+        -mean_excitation_E (properties[5]), the mean excitation energy, initialized when 'energy_loss' is True.
+
+
 
     .. code-block:: python
 
-        def arb_rad_length(*, z: float, lw: Tensor, size: float) -> float:
-            rad_length = torch.ones(list((lw / size).long())) * X0["lead"]
-            if z < 0.5:
-                rad_length[...] = X0["beryllium"]
-            return rad_length
+        def arb_properties(*, z: float, lw: Tensor, size: float) -> Tensor:
+            props=[X0, B, Z, A, DENSITIES, mean_excitation_E]
+            prop=lw.new_empty((6,int(lw[0].item()/size),int(lw[1].item()/size)))
 
-    This function can either be supplied during initialisation, or later via the `load_rad_length` method.
+            for i,p in enumerate(props):
+                prop[i]= torch.ones(list((lw / size).long())) * p[lead]
+
+                if z < 0.5:
+                    prop[i]= torch.ones(list((lw / size).long())) * p[beryllium]
+
+            return prop
+
+    This function can either be supplied during initialisation, or later via the `load_properties` method.
+
+
 
     Arguments:
         lw: the length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0).
         z: the z position of the top of layer in metres. The bottom of the layer will be located at z-size
         size: the voxel size in metres. Must be such that lw is divisible by the specified size.
-        rad_length_func: lookup function that returns an (n_x,n_y) tensor of voxel X0 values for the layer.
-            After initialisation, the `load_rad_length` method may be used to load X0 layouts.
+        properties_func: lookup function that returns a (6, n_x, n_y) tensor of voxel X0, B, Z, A, density and mean_excitation_E values for the layer.
+            After initialisation, the `load_properties` method may be used to load properties layouts.
         step_sz: The step size in metres over which to compute muon propagation and scattering.
-        scatter_model: String selection for the scattering model to use. Currently either 'pdg' or 'pgeant'.
+        scatter_model: String selection for the scattering model to use. Currently either 'pdg', 'kuhn' or 'pgeant'.
         device: device on which to place tensors
     """
 
@@ -108,34 +126,38 @@ class PassiveLayer(AbsLayer):
         lw: Tensor,
         z: float,
         size: float,
-        rad_length_func: Optional[RadLengthFunc] = None,
+        properties_func: Optional[PropertiesFunc] = None,
         step_sz: float = 0.01,
         scatter_model: str = "pdg",
+        energy_loss: bool = False,
         device: torch.device = DEVICE,
     ):
         super().__init__(lw=lw, z=z, size=size, device=device)
         self.step_sz = step_sz
         self.scatter_model = scatter_model
-        if rad_length_func is not None:
-            self.load_rad_length(rad_length_func)
+
+        if properties_func is not None:
+            self.load_properties(properties_func)
+
+        self.energy_loss = energy_loss
 
     def __repr__(self) -> str:
         return f"""PassiveLayer located at z={self.z}"""
 
-    def load_rad_length(self, rad_length_func: RadLengthFunc) -> None:
+    def load_properties(self, properties_func: PropertiesFunc) -> None:
         r"""
-        Loads a new X0 layout into the layer voxels.
+        Loads a new 'X0', 'B', 'Z', 'A', 'density', and 'mean excitaion energy' constants layout into the layer voxels.
 
         Arguments:
-            rad_length_func: lookup function that returns an (n_x,n_y) tensor of voxel X0 values for the layer.
+            properties_func: lookup function that returns an (6, n_x, n_y) tensor of voxel X0, B, Z, A, density and mean excitaion energy values for the layer.
         """
 
-        self.rad_length = rad_length_func(z=self.z, lw=self.lw, size=self.size).to(self.device)
+        self.properties = properties_func(z=self.z, lw=self.lw, size=self.size).to(self.device)
 
     def forward(self, mu: MuonBatch) -> None:
         r"""
         Propagates the muons through the layer to the bottom in a series of scattering steps.
-        If the 'pdg' model is used, then the step size is the `step_sz` of the layer, as supplied during initialisation.
+        If the 'pdg' or 'kuhn' model is used, then the step size is the `step_sz` of the layer, as supplied during initialisation.
         If the 'pgeant' model is used, the the step size specified as part of the fitting of the scattering model.
 
         Arguments:
@@ -144,35 +166,95 @@ class PassiveLayer(AbsLayer):
 
         mu.propagate_dz(mu.z - self.z)  # Move muons to the top of the layer
         mask = torch.ones(len(mu), device=self.device).bool()
+
         while mask.any():
             self.scatter_and_propagate(mu, mask=mask)
+            # mu._mom[mask]= torch.sqrt( (torch.sqrt(mu._mom[mask]**2 + 0.1057**2) - (self.Compute_most_probable_dEdx(mu._mom*1000, iron, self.step_sz*100)[0]/1000)[mask]  )**2 - 0.1057**2)
+
             mask = (mu.z > (self.z - self.size)) & (mu.z <= self.z)  # Only scatter/propagate muons inside the layer
         mu.propagate_dz(mu.z - (self.z - self.size))  # Ensure muons are at the bottom of the layer
 
+    def Compute_most_probable_dEdx(self, p: Tensor, properties: Tensor, travel: float) -> Tensor:
+
+        """
+        Compute the muon most probable dE/dx for a given material in [MeV]
+
+        INPUT:
+        - Momentum p [MeV]
+        - Atomic number (properties[0])
+        - Atomic mass [g.mol-1] (properties[1])
+        - density [g.cm-3] (properties[2])
+        - Mean excitation energy [eV] (properties[3])
+        - Distance traversed in the material [cm]
+
+
+        OUTPUT:
+        - Effective dE/dx [MeV]
+        """
+
+        # Particle propreties
+        M = 105.7  # Muon mass MeV/c2
+        gamma = torch.sqrt(1 + (p / M) ** 2)
+        beta = torch.sqrt(1 - (1 / gamma) ** 2)
+        me = 0.511  # electron mass MeV/c2
+
+        # Material propreties
+        K = 0.307075  # MeV.g-1.cm2
+        A = properties[1]
+        Z = properties[0]
+
+        # Mean excitation energy
+        mean_excitation_E = properties[3]
+
+        # Calculation
+        j = 0.200
+        x = travel * properties[2]  # [g.cm-2]
+        zeta = (K / 2) * (Z / A) * (x / beta**2)
+        log1 = torch.log((2 * me * beta**2 * gamma**2) / (mean_excitation_E * 10 ** (-6)))
+        log2 = torch.log(zeta / (mean_excitation_E * 10 ** (-6)))
+
+        return torch.abs(zeta * (log1 + log2 + j - beta**2))
+
     def scatter_and_propagate(self, mu: MuonBatch, mask: Optional[Tensor] = None) -> None:
+
         r"""
         Propagates the muons through (part of) the layer by the prespecified `step_sz`.
         If the layer is set to scatter muons (`rad_length` is not None),
         then the muons will also undergo scattering (changes in their trajectories and positions) according to the scatter model of the layer.
 
+        If energy_loss is True, a corresponding decrease in muon momentum is applied.
+
         .. warning::
-            When computing scatterings, the X0 used for each muon is that of the starting voxel:
-            If a muon moves into a neighbouring voxel of differing X0, then this will only be accounted for in the next step.
+            When computing scatterings, the properties used for each muon is that of the starting voxel:
+            If a muon moves into a neighbouring voxel of differing properties values, then this will only be accounted for in the next step.
 
         Arguments:
             mu: muons to propagate
             mask: Optional (N,) Boolean mask. Only muons with True values will be scattered and propagated
         """
 
-        if self.rad_length is not None:
-            scatter_mask = mu.get_xy_mask((0, 0), self.lw) & mask  # Only scatter muons inside volume
+        if self.properties is not None:
 
+            scatter_mask = mu.get_xy_mask((0, 0), self.lw) & mask  # Only scatter muons inside volume
             xy_idx = self.mu_abs2idx(mu, scatter_mask)
-            x0 = self.rad_length[xy_idx[:, 0], xy_idx[:, 1]]
+
+            if self.scatter_model == "pdg":
+                x0 = self.properties[0, xy_idx[:, 0], xy_idx[:, 1]]
+                step_sz = torch.ones_like(x0) * self.step_sz
+                b = None
+                Z_A_rho = None
+            elif self.scatter_model == "kuhn":
+                b = self.properties[1, xy_idx[:, 0], xy_idx[:, 1]]
+                Z_A_rho = self.properties[2:5, xy_idx[:, 0], xy_idx[:, 1]]
+                step_sz = torch.ones_like(b) * self.step_sz
+                x0 = None
+
+            if self.energy_loss:
+                Z_A_rho_E = self.properties[2:6, xy_idx[:, 0], xy_idx[:, 1]]
 
             # Ensure that scattering steps don't extend outside the layer
             # TODO extend this to consider transverse voxel boundaries
-            step_sz = torch.ones_like(x0) * self.step_sz
+
             dz = mu.z - (self.z - self.size)
             r_out = dz[scatter_mask] / mu.theta[scatter_mask].cos()
             m = r_out < step_sz
@@ -180,6 +262,8 @@ class PassiveLayer(AbsLayer):
 
             scatterings = self._compute_scattering(
                 x0=x0,
+                b=b,
+                Z_A_rho=Z_A_rho,
                 theta=mu.theta[scatter_mask],
                 phi=mu.phi[scatter_mask],
                 theta_x=mu.theta_x[scatter_mask],
@@ -188,6 +272,16 @@ class PassiveLayer(AbsLayer):
                 step_sz=step_sz,
             )
 
+            # apply energy loss if enabled
+            if self.energy_loss:
+                mu._mom[scatter_mask] = torch.sqrt(
+                    (
+                        torch.sqrt(mu._mom[scatter_mask] ** 2 + 0.1057**2)
+                        - (self.Compute_most_probable_dEdx(mu._mom[scatter_mask] * 1000, Z_A_rho_E, self.step_sz * 100)[0] / 1000)
+                    )
+                    ** 2
+                    - 0.1057**2
+                )
             # Update to position at scattering.
             mu.scatter_dxyz(dx_vol=scatterings["dx_vol"], dy_vol=scatterings["dy_vol"], dz_vol=scatterings["dz_vol"], mask=scatter_mask)
             mu.propagate_d(self.step_sz, mask)  # Still propagate muons that weren't scattered
@@ -196,6 +290,8 @@ class PassiveLayer(AbsLayer):
             exit_mask = (dz < 0) & mask
             mu.propagate_dz(dz[exit_mask], mask=exit_mask)
             mu.scatter_dtheta_xy(dtheta_x_vol=scatterings["dtheta_x_vol"], dtheta_y_vol=scatterings["dtheta_y_vol"], mask=scatter_mask)
+            mu.remove_negative_momentum_muons()
+
         else:
             mu.propagate_d(self.step_sz, mask)
 
@@ -254,6 +350,23 @@ class PassiveLayer(AbsLayer):
 
         return PGEANT_SCATTER_MODEL.compute_scattering(x0=x0, step_sz=self.step_sz, theta=theta, theta_x=theta_x, theta_y=theta_y, mom=mom)
 
+    def _kuhn_scatter(self, *, b: Tensor, Z_A_rho: Tensor, theta: Tensor, phi: Tensor, mom: Tensor) -> Dict[str, Tensor]:
+        r"""
+        Computes the scattering of the muons using the Kuhn scattering model.
+
+        Arguments:
+            x0: (N,) tensor of the X0 of the voxel each muon is traversing
+            theta: (N,) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons
+            theta_x: (N,) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons' frame to the volume's
+            theta_y: (N,) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons' frame to the volume's
+            mom: (N,) tensor of the absolute value of the momentum of each muon
+
+        Returns:
+            A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, dy_vol and dz_vol
+        """
+
+        return KUHN_SCATTER_MODEL.compute_scattering(mom=mom, b=b, Z_A_rho=Z_A_rho, theta=theta, phi=phi, dz=self.step_sz)
+
     def _pdg_scatter(
         self, *, x0: Tensor, theta: Tensor, phi: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor, step_sz: Tensor, log_term: bool = True
     ) -> Dict[str, Tensor]:
@@ -285,7 +398,7 @@ class PassiveLayer(AbsLayer):
         # These are in the muons' reference frames NOT the volume's!!!
         # Make sure that scattering angle in the muon reference frame < pi/2
         # to ensure conversion into the volume reference frame
-        dtheta_xy_mu = torch.clamp(z1 * theta0, max=math.pi / 2.2)  # TODO Check this
+        dtheta_xy_mu = torch.clamp(z2 * theta0, max=math.pi / 2.2)  # TODO Check this
         dxy_mu = step_sz * theta0 * ((z1 / math.sqrt(12)) + (z2 / 2))
 
         # Note that if a track incides on a layer
@@ -342,7 +455,7 @@ class PassiveLayer(AbsLayer):
         }
 
     def _compute_scattering(
-        self, *, x0: Tensor, theta: Tensor, phi: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor, step_sz: Tensor
+        self, *, x0: Tensor, b: Tensor, Z_A_rho: Tensor, theta: Tensor, phi: Tensor, theta_x: Tensor, theta_y: Tensor, mom: Tensor, step_sz: Tensor
     ) -> Dict[str, Tensor]:
         r"""
         Computes the scattering of the muons using the chosen model
@@ -361,6 +474,8 @@ class PassiveLayer(AbsLayer):
             return self._pdg_scatter(x0=x0, theta=theta, phi=phi, theta_x=theta_x, theta_y=theta_y, mom=mom, step_sz=step_sz)
         elif self.scatter_model == "pgeant":
             return self._pgeant_scatter(x0=x0, theta=theta, theta_x=theta_x, theta_y=theta_y, mom=mom)
+        elif self.scatter_model == "kuhn":
+            return self._kuhn_scatter(b=b, Z_A_rho=Z_A_rho, theta=theta, phi=phi, mom=mom)
         else:
             raise ValueError(f"Scatter model {self.scatter_model} is not currently supported.")
 
