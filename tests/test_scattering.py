@@ -16,7 +16,7 @@ from torch import Tensor
 
 import sys
 
-sys.path.append("/home/zzaher/mode_muon_tomography")
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from tomopt.volume import PassiveLayer  # noqa E402
 from tomopt.muon import MuonBatch  # noqa E402
