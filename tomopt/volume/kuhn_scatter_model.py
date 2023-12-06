@@ -1,10 +1,10 @@
-from typing import Dict, Optional
 import math
-import numpy as np
 import random
+from typing import Dict, Optional
+
+import numpy as np
 import torch
 from torch import Tensor
-
 
 __all__ = ["KUHN_SCATTER_MODEL"]
 
@@ -21,26 +21,8 @@ class KuhnScatterModel:
         if self._device is None:
             self.device = theta.device
 
-        # if (mom.shape[0]<1):
-        #     return {
-        #         "dtheta_m" : Tensor([]),
-        #         "dtheta_x_vol": Tensor([]),
-        #         "dtheta_y_vol": Tensor([]),
-        #         "dx_vol": Tensor([]),
-        #         "dy_vol": Tensor([]),
-        #         "dz_vol": Tensor([]),
-        #         "dtheta_x_m": Tensor([]),
-        #         "dtheta_y_m": Tensor([]),
-        #         "dx_m": Tensor([]),
-        #         "dy_m": Tensor([]),
-        #     }
-
-        # delta_s = dz*100/np.cos(theta)
         delta_s = dz * 100
         mom *= 1000
-        # density = self.getZA_density(x0)[:,0]
-        # Z = self.getZA_density(x0)[:,1]
-        # A = self.getZA_density(x0)[:,2]
 
         Z = Z_A_rho[0]
         A = Z_A_rho[1]
@@ -84,9 +66,7 @@ class KuhnScatterModel:
 
         # dtheta=torch.clamp(dtheta, max=math.pi / 2.2)
         dtheta_x = np.arctan(np.tan(dtheta) * np.cos(dphi))
-        # dtheta_x[(dtheta >= torch.pi / 2)] = torch.nan
         dtheta_y = np.arctan(np.tan(dtheta) * np.sin(dphi))
-        # dtheta_y[(dtheta >= torch.pi / 2)] = torch.nan
 
         z1 = torch.randn((2, dtheta.shape[0]), device=self.device)
         z2 = torch.randn((2, dtheta.shape[0]), device=self.device)
