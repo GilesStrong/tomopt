@@ -1,16 +1,23 @@
 from collections import defaultdict
-import pytest
-from pytest_lazyfixture import lazy_fixture
 
+import pytest
 import torch
-from torch import nn, Tensor
 import torch.nn.functional as F
+from pytest_lazyfixture import lazy_fixture
+from torch import Tensor, nn
 
 from tomopt.core import X0
-from tomopt.volume import Volume, PassiveLayer, PanelDetectorLayer, DetectorPanel, DetectorHeatMap, SigmoidDetectorPanel
+from tomopt.inference import PanelX0Inferrer, ScatterBatch
 from tomopt.muon import MuonBatch, MuonGenerator2016
-from tomopt.inference import ScatterBatch, PanelX0Inferrer
-from tomopt.optimisation import VoxelX0Loss, MuonResampler
+from tomopt.optimisation import MuonResampler, VoxelX0Loss
+from tomopt.volume import (
+    DetectorHeatMap,
+    DetectorPanel,
+    PanelDetectorLayer,
+    PassiveLayer,
+    SigmoidDetectorPanel,
+    Volume,
+)
 
 LW = Tensor([1, 1])
 SZ = 0.1

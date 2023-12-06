@@ -1,27 +1,25 @@
-from typing import Dict, Any, Optional, List
+import json
+import os
+import sys
+from collections import defaultdict
+from typing import Any, Dict, List, Optional
+
+import h5py
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from collections import defaultdict
-from prettytable import PrettyTable
-import h5py
-import json
-import matplotlib.pyplot as plt
-import seaborn as sns
 import pytest
-import os
-from fastcore.all import Path
-
+import seaborn as sns
 import torch
+from fastcore.all import Path
+from prettytable import PrettyTable
 from torch import Tensor
-
-import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from tomopt.volume import PassiveLayer  # noqa E402
-from tomopt.muon import MuonBatch  # noqa E402
 from tomopt.core import *  # noqa E402
-
+from tomopt.muon import MuonBatch  # noqa E402
+from tomopt.volume import PassiveLayer  # noqa E402
 
 PKG_DIR = Path(os.path.dirname(os.path.abspath(__file__)))  # How robust is this? Could create hidden dir in home and download resources
 

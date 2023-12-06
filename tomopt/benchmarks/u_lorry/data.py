@@ -1,12 +1,12 @@
-from typing import Tuple, List
-import numpy as np
+from typing import List, Tuple
 
+import numpy as np
 import torch
 from torch import Tensor
 
+from ...core import X0, RadLengthFunc
 from ...optimisation.data.passives import AbsPassiveGenerator
 from ...volume import Volume
-from ...core import X0, RadLengthFunc
 
 __all__ = ["ULorryPassiveGenerator"]
 

@@ -1,23 +1,31 @@
 from __future__ import annotations
-from fastcore.all import Path
-from typing import Optional, List, Any, Tuple, Union, Dict, Type
-from fastprogress.fastprogress import ConsoleProgressBar, NBProgressBar, ProgressBar
-from fastprogress import master_bar, progress_bar
-import numpy as np
+
 from abc import ABCMeta, abstractmethod
 from collections import defaultdict
+from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
+import numpy as np
 import torch
+from fastcore.all import Path
+from fastprogress import master_bar, progress_bar
+from fastprogress.fastprogress import ConsoleProgressBar, NBProgressBar, ProgressBar
 from torch import Tensor
 from torch.optim.optimizer import Optimizer
 
-from ..data import PassiveYielder
-from ..callbacks import MetricLogger, PredHandler, WarmupCallback, Callback, CyclicCallback, EvalMetric
+from ...core import DEVICE, PartialOpt
+from ...inference import AbsVolumeInferrer, PanelX0Inferrer, ScatterBatch
+from ...muon import AbsMuonGenerator, MuonBatch, MuonGenerator2016
 from ...optimisation.loss.loss import AbsDetectorLoss
-from ...volume import Volume, PanelDetectorLayer, AbsDetectorLayer
-from ...core import PartialOpt, DEVICE
-from ...muon import MuonGenerator2016, MuonBatch, AbsMuonGenerator
-from ...inference import ScatterBatch, AbsVolumeInferrer, PanelX0Inferrer
+from ...volume import AbsDetectorLayer, PanelDetectorLayer, Volume
+from ..callbacks import (
+    Callback,
+    CyclicCallback,
+    EvalMetric,
+    MetricLogger,
+    PredHandler,
+    WarmupCallback,
+)
+from ..data import PassiveYielder
 
 __all__ = ["FitParams", "AbsVolumeWrapper", "PanelVolumeWrapper", "HeatMapVolumeWrapper"]
 

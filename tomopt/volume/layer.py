@@ -1,17 +1,18 @@
-from typing import Iterator, Optional, Dict, List, Union, Tuple
-import numpy as np
-from abc import ABCMeta, abstractmethod
 import math
+from abc import ABCMeta, abstractmethod
+from typing import Dict, Iterator, List, Optional, Tuple, Union
 
+import numpy as np
 import torch
-from torch import nn, Tensor
+from torch import Tensor, nn
 
-from .scatter_model import PGEANT_SCATTER_MODEL
-from .kuhn_scatter_model import KUHN_SCATTER_MODEL
+from tomopt.volume.heatmap import DetectorHeatMap
+from tomopt.volume.panel import DetectorPanel
+
 from ..core import DEVICE, SCATTER_COEF_A, SCATTER_COEF_B, PropertiesFunc
 from ..muon import MuonBatch
-from tomopt.volume.panel import DetectorPanel
-from tomopt.volume.heatmap import DetectorHeatMap
+from .kuhn_scatter_model import KUHN_SCATTER_MODEL
+from .scatter_model import PGEANT_SCATTER_MODEL
 
 r"""
 Provides implementations of the layers in z, which are used to construct volumes, both the passive scattering layers, and the active detection layers.

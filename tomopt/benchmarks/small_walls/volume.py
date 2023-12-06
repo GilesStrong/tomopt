@@ -1,14 +1,14 @@
-from typing import List
-import numpy as np
 from functools import partial
+from typing import List
 
+import numpy as np
 import torch
 from torch import Tensor, nn
 
-from ...volume import Volume, PanelDetectorLayer, PassiveLayer, DetectorPanel
-from ...volume.layer import AbsLayer
-from ...optimisation.wrapper import PanelVolumeWrapper
 from ...muon import MuonGenerator2016
+from ...optimisation.wrapper import PanelVolumeWrapper
+from ...volume import DetectorPanel, PanelDetectorLayer, PassiveLayer, Volume
+from ...volume.layer import AbsLayer
 
 __all__ = ["get_small_walls_volume", "get_small_walls_volume_wrapper"]
 

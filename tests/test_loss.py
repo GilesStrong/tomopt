@@ -1,11 +1,16 @@
-from pytest_mock import mocker  # noqa F401
 import numpy as np
-
 import torch
-from torch import nn, Tensor
 import torch.nn.functional as F
+from pytest_mock import mocker  # noqa F401
+from torch import Tensor, nn
 
-from tomopt.optimisation import VoxelX0Loss, VoxelClassLoss, VolumeClassLoss, VolumeIntClassLoss, integer_class_loss
+from tomopt.optimisation import (
+    VolumeClassLoss,
+    VolumeIntClassLoss,
+    VoxelClassLoss,
+    VoxelX0Loss,
+    integer_class_loss,
+)
 from tomopt.optimisation.loss.loss import AbsDetectorLoss
 from tomopt.volume import Volume
 

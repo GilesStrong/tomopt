@@ -1,6 +1,7 @@
 import os
-import imageio
 from typing import List
+
+import imageio
 
 from ...volume import PanelDetectorLayer
 from .callback import Callback

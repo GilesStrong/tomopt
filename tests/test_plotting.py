@@ -4,13 +4,13 @@ from unittest.mock import patch
 import torch
 from torch import Tensor, nn
 
-from tomopt.optimisation.data.passives import PassiveYielder
-from tomopt.volume import PassiveLayer, Volume, PanelDetectorLayer, DetectorPanel
-from tomopt.optimisation.wrapper import PanelVolumeWrapper
-from tomopt.optimisation import VoxelX0Loss
-from tomopt.plotting import plot_pred_true_x0, plot_scatter_density, plot_hit_density
-from tomopt.optimisation.callbacks.diagnostic_callbacks import ScatterRecord, HitRecord
 from tomopt.core import X0
+from tomopt.optimisation import VoxelX0Loss
+from tomopt.optimisation.callbacks.diagnostic_callbacks import HitRecord, ScatterRecord
+from tomopt.optimisation.data.passives import PassiveYielder
+from tomopt.optimisation.wrapper import PanelVolumeWrapper
+from tomopt.plotting import plot_hit_density, plot_pred_true_x0, plot_scatter_density
+from tomopt.volume import DetectorPanel, PanelDetectorLayer, PassiveLayer, Volume
 
 LW = Tensor([1, 1])
 SZ = 0.1

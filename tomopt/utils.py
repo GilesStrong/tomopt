@@ -1,10 +1,9 @@
+from typing import Dict, List, Optional, Union
+
 import numpy as np
-from typing import Dict, Union, List, Optional
-
 import torch
-from torch import Tensor
-
 from functorch import vmap
+from torch import Tensor
 
 r"""
 Common utility functions

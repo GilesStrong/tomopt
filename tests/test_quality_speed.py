@@ -1,18 +1,18 @@
-from pathlib import Path
-import numpy as np
-from timeit import default_timer
 import os
-from unittest.mock import patch
 from functools import partial
-import pytest
+from pathlib import Path
+from timeit import default_timer
+from unittest.mock import patch
 
+import numpy as np
+import pytest
 import torch
 from torch import Tensor, nn
 
-from tomopt.volume import Volume, PanelDetectorLayer, DetectorPanel, PassiveLayer
-from tomopt.optimisation import PanelVolumeWrapper, PassiveYielder, MuonResampler
-from tomopt.plotting import plot_pred_true_x0
 from tomopt.core import X0
+from tomopt.optimisation import MuonResampler, PanelVolumeWrapper, PassiveYielder
+from tomopt.plotting import plot_pred_true_x0
+from tomopt.volume import DetectorPanel, PanelDetectorLayer, PassiveLayer, Volume
 
 DEVICE = torch.device("cpu")
 PKG_DIR = Path(os.path.dirname(os.path.abspath(__file__)))

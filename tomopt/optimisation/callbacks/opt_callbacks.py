@@ -1,6 +1,8 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Tuple
+
 from abc import ABCMeta, abstractmethod
+from typing import TYPE_CHECKING, Optional, Tuple
+
 import numpy as np
 
 from .warmup_callbacks import PostWarmupCallback

@@ -1,17 +1,16 @@
-from abc import ABCMeta, abstractmethod
-from typing import Tuple, Optional, Dict, List, Type, Callable
 import math
+from abc import ABCMeta, abstractmethod
+from typing import Callable, Dict, List, Optional, Tuple, Type
 
 import torch
-from torch import Tensor
 import torch.nn.functional as F
+from torch import Tensor
 from torch.distributions import Normal
 
-from .scattering import ScatterBatch
-from ..volume import Volume
 from ..core import SCATTER_COEF_A
 from ..utils import jacobian
-
+from ..volume import Volume
+from .scattering import ScatterBatch
 
 r"""
 Provides implementations of classes designed to infer targets of passive volumes

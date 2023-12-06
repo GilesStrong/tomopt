@@ -1,12 +1,12 @@
-from typing import Tuple, Optional, Dict, Union
+from typing import Dict, Optional, Tuple, Union
+
 import numpy as np
-
 import torch
-from torch import nn, Tensor
 import torch.nn.functional as F
+from torch import Tensor, nn
 
-from ..muon import MuonBatch
 from ..core import DEVICE
+from ..muon import MuonBatch
 
 r"""
 Provides implementations of class simulating panel-style detectors with learnable positions and xy sizes.
