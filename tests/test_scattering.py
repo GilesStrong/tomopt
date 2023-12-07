@@ -1,6 +1,5 @@
 import json
 import os
-import sys
 from collections import defaultdict
 from typing import Any, Dict, List, Optional
 
@@ -15,9 +14,7 @@ from fastcore.all import Path
 from prettytable import PrettyTable
 from torch import Tensor
 
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-
-from tomopt.core import *  # noqa E402
+from tomopt.core import props
 from tomopt.muon import MuonBatch  # noqa E402
 from tomopt.volume import PassiveLayer  # noqa E402
 
@@ -48,8 +45,7 @@ def get_scatters(grp: h5py.Group, n_steps: int, plots: bool, name: str, verbose:
     if verbose:
         print(f"Making sims for {mat=}, {dz=}, {mom=}, {theta=}, {phi=}, {n_muons=}")
 
-    def properties(*, z: float, lw: Tensor, size: float) -> Tensor:
-        props = [X0, B, Z, A, DENSITIES, mean_excitation_E]  # noqa F405
+    def arb_properties(*, z: float, lw: Tensor, size: float) -> Tensor:
         prop = lw.new_empty((6, int(lw[0].item() / size), int(lw[1].item() / size)))
         for i, p in enumerate(props):
             prop[i] = torch.ones(list((lw / size).long())) * p[mat]
@@ -57,8 +53,8 @@ def get_scatters(grp: h5py.Group, n_steps: int, plots: bool, name: str, verbose:
 
     # Init layer
     step_sz = dz / (n_steps * np.cos(theta))
-    layer = PassiveLayer(lw=Tensor([dz * 100, dz * 100]), z=1, size=dz, step_sz=step_sz, properties_func=properties)
-    layer2 = PassiveLayer(lw=Tensor([dz * 100, dz * 100]), z=1, size=dz, step_sz=step_sz, scatter_model="kuhn", properties_func=properties)
+    layer = PassiveLayer(lw=Tensor([dz * 100, dz * 100]), z=1, size=dz, step_sz=step_sz, properties_func=arb_properties)
+    layer2 = PassiveLayer(lw=Tensor([dz * 100, dz * 100]), z=1, size=dz, step_sz=step_sz, scatter_model="kuhn", properties_func=arb_properties)
     # layer.rad_length = torch.ones(list((layer.lw / layer.size).long())) * X0[mat]
 
     # Get sims

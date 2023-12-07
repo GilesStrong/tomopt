@@ -50,27 +50,28 @@ DENSITIES = {  # https://pdg.lbl.gov/2022/AtomicNuclearProperties/index.html
     "copper": 8.960,
     "lead": 11.35,
     "uranium": 19,
-    "water": 1000.0,  # kg/m^3
-    "SiO2": 2200.0,
-    "Al2O3": 3970.0,
-    "Fe2O3": 5200.0,
-    "MgO": 3580.0,
-    "CaO": 3300.0,
-    "graphite": 2210.0,
-    "air": 1.205,
-    "toluene": 866.9,
-    "benzene": 878.7,
-    "K2O": 2320.0,
-    "Na2O": 2270.0,
-    "soft tissue": 1000.0,
-    "steel": 7818.0,
-    "hot liquid steel": 7000.0,
-    "slag": 2700.0,
+    "beryllium": 1.848,
+    # "water": 1000.0,  # kg/m^3
+    # "SiO2": 2200.0,
+    # "Al2O3": 3970.0,
+    # "Fe2O3": 5200.0,
+    # "MgO": 3580.0,
+    # "CaO": 3300.0,
+    # "graphite": 2210.0,
+    # "air": 1.205,
+    # "toluene": 866.9,
+    # "benzene": 878.7,
+    # "K2O": 2320.0,
+    # "Na2O": 2270.0,
+    # "soft tissue": 1000.0,
+    # "steel": 7818.0,
+    # "hot liquid steel": 7000.0,
+    # "slag": 2700.0,
 }
 
-A = {"iron": 55.845, "aluminium": 26.9815385, "copper": 63.546, "lead": 207.2, "uranium": 238.02891}
+A = {"iron": 55.845, "aluminium": 26.9815385, "copper": 63.546, "lead": 207.2, "uranium": 238.02891, "beryllium": 4}
 
-Z = {"iron": 26, "aluminium": 13, "copper": 29, "lead": 82, "uranium": 92}
+Z = {"iron": 26, "aluminium": 13, "copper": 29, "lead": 82, "uranium": 92, "beryllium": 9}
 
 B = {  # B parameter in Kuhn scattering model
     "iron": 9.669761283357756,
@@ -78,10 +79,12 @@ B = {  # B parameter in Kuhn scattering model
     "copper": 9.800963860872987,
     "lead": 9.542446057727844,
     "uranium": 9.990760245428246,
+    "beryllium": 9.60390753204349,
 }
 
-mean_excitation_E = {"iron": 286.0, "aluminium": 166.0, "copper": 322.0, "lead": 823.0, "uranium": 890.0}  # eV
+mean_excitation_E = {"iron": 286.0, "aluminium": 166.0, "copper": 322.0, "lead": 823.0, "uranium": 890.0, "beryllium": 63.7}  # eV
 
+props = [X0, B, Z, A, DENSITIES, mean_excitation_E]
 
 PartialOpt = Callable[[Iterator[nn.Parameter]], torch.optim.Optimizer]
 RadLengthFunc = Callable[[NamedArg(Tensor, "z"), NamedArg(Tensor, "lw"), NamedArg(float, "size")], Tensor]  # noqa F821

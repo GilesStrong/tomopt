@@ -8,7 +8,7 @@ import torch.nn.functional as F
 from pytest_mock import mocker  # noqa F401
 from torch import Tensor, nn
 
-from tomopt.core import DENSITIES, X0, A, B, Z, mean_excitation_E
+from tomopt.core import props
 from tomopt.muon import MuonBatch, MuonGenerator2016
 from tomopt.optimisation import MuonResampler
 from tomopt.utils import jacobian
@@ -23,7 +23,7 @@ from tomopt.volume import (
 LW = Tensor([1, 1])
 SZ = 0.1
 N = 1000
-# Z = 1
+Z = 1
 
 
 def get_panel_layers(init_res: float = 1e4, init_eff: float = 0.5, n_panels: int = 4) -> nn.ModuleList:
@@ -95,8 +95,7 @@ def batch():
     return MuonBatch(mg(N), init_z=1)
 
 
-def arb_properties(*, z: float, lw: Tensor, size: float) -> float:
-    props = [X0, B, Z, A, DENSITIES, mean_excitation_E]  # noqa F405
+def arb_properties(*, z: float, lw: Tensor, size: float) -> Tensor:
     prop = lw.new_empty((6, int(lw[0].item() / size), int(lw[1].item() / size)))
     for i, p in enumerate(props):
         prop[i] = torch.ones(list((lw / size).long())) * p["lead"]
@@ -320,8 +319,8 @@ def test_volume_methods(mocker):  # noqa F811
 
     cube = volume.get_rad_cube()
     assert cube.shape == torch.Size([6] + list((LW / SZ).long()))
-    assert torch.all(cube[0] == arb_properties[0](z=SZ, lw=LW, size=SZ))  # cube reversed to match lookup_passive_xyz_coords: layer zero = bottom layer
-    assert torch.all(cube[-1] == arb_properties[0](z=Z, lw=LW, size=SZ))
+    assert torch.all(cube[0] == arb_properties(z=SZ, lw=LW, size=SZ)[0])  # cube reversed to match lookup_passive_xyz_coords: layer zero = bottom layer
+    assert torch.all(cube[-1] == arb_properties(z=Z, lw=LW, size=SZ)[0])
 
     assert torch.all(volume.lookup_passive_xyz_coords(Tensor([0.55, 0.63, 0.31])) == Tensor([[5, 6, 1]]))
     assert torch.all(volume.lookup_passive_xyz_coords(Tensor([[0.55, 0.63, 0.31], [0.12, 0.86, 0.45]])) == Tensor([[5, 6, 1], [1, 8, 2]]))
@@ -340,8 +339,7 @@ def test_volume_methods(mocker):  # noqa F811
     with pytest.raises(ValueError):
         volume.lookup_passive_xyz_coords(Tensor([0.55, 0.63, 1]))
 
-    def arb_properties2(*, z: float, lw: Tensor, size: float) -> float:
-        props = [X0, B, Z, A, DENSITIES, mean_excitation_E]  # noqa F405
+    def arb_properties2(*, z: float, lw: Tensor, size: float) -> Tensor:
         prop = lw.new_empty((6, int(lw[0].item() / size), int(lw[1].item() / size)))
         for i, p in enumerate(props):
             prop[i] = torch.ones(list((lw / size).long())) * p["aluminium"]
@@ -352,8 +350,8 @@ def test_volume_methods(mocker):  # noqa F811
     volume.load_properties(arb_properties2)
     cube = volume.get_rad_cube()
     assert cube.shape == torch.Size([6] + list((LW / SZ).long()))
-    assert torch.all(cube[0] == arb_properties2[0](z=SZ, lw=LW, size=SZ))  # cube reversed to match lookup_passive_xyz_coords: layer zero = bottom layer
-    assert torch.all(cube[-1] == arb_properties2[0](z=Z, lw=LW, size=SZ))
+    assert torch.all(cube[0] == arb_properties2(z=SZ, lw=LW, size=SZ)[0])  # cube reversed to match lookup_passive_xyz_coords: layer zero = bottom layer
+    assert torch.all(cube[-1] == arb_properties2(z=Z, lw=LW, size=SZ)[0])
 
     edges = volume.edges
     assert edges.shape == torch.Size((600, 3))

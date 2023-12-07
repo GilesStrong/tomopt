@@ -4,7 +4,7 @@ from unittest.mock import patch
 import torch
 from torch import Tensor, nn
 
-from tomopt.core import DENSITIES, X0, A, B, Z, mean_excitation_E
+from tomopt.core import props
 from tomopt.optimisation import VoxelX0Loss
 from tomopt.optimisation.callbacks.diagnostic_callbacks import HitRecord, ScatterRecord
 from tomopt.optimisation.data.passives import PassiveYielder
@@ -19,7 +19,6 @@ N = 100
 
 
 def arb_properties(*, z: float, lw: Tensor, size: float) -> Tensor:
-    props = [X0, B, Z, A, DENSITIES, mean_excitation_E]  # noqa F405
     prop = lw.new_empty((6, int(lw[0].item() / size), int(lw[1].item() / size)))
     for i, p in enumerate(props):
         prop[i] = torch.ones(list((lw / size).long())) * p["beryllium"]

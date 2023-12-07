@@ -7,7 +7,7 @@ import torch
 from pytest_mock import mocker  # noqa F401
 from torch import Tensor, nn, optim
 
-from tomopt.core import DENSITIES, X0, A, B, Z, mean_excitation_E
+from tomopt.core import props
 from tomopt.muon.generation import MuonGenerator2016
 from tomopt.optimisation.callbacks import (
     Callback,
@@ -38,12 +38,11 @@ from tomopt.volume import (
 LW = Tensor([1, 1])
 SZ = 0.1
 N = 100
-# Z = 1
+Z = 1
 PKG_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
 
 
 def arb_properties(*, z: float, lw: Tensor, size: float) -> Tensor:
-    props = [X0, B, Z, A, DENSITIES, mean_excitation_E]  # noqa F405
     prop = lw.new_empty((6, int(lw[0].item() / size), int(lw[1].item() / size)))
     for i, p in enumerate(props):
         prop[i] = torch.ones(list((lw / size).long())) * p["beryllium"]
@@ -347,7 +346,7 @@ def test_volume_wrapper_scan_volumes(state, mocker):  # noqa F811
     cb = Callback()
     cb.set_wrapper(vw)
     vw.fit_params = FitParams(n_mu_per_volume=100, mu_bs=10, cbs=[cb], state=state, passive_bs=2)
-    py = PassiveYielder([arb_properties[0], arb_properties[0], arb_properties[0], arb_properties[0], arb_properties[0]])
+    py = PassiveYielder([arb_properties, arb_properties, arb_properties, arb_properties, arb_properties])
     mocker.spy(vw, "_scan_volume")
     mocker.spy(cb, "on_volume_begin")
     mocker.spy(cb, "on_volume_end")
@@ -416,7 +415,7 @@ def test_volume_wrapper_opt_skip_step(mocker):  # noqa F811
         loss_func=VoxelX0Loss(target_budget=None),
     )
     vw.fit_params = FitParams(n_mu_per_volume=100, mu_bs=10, skip_opt_step=True, cbs=[], state="train", passive_bs=2)
-    py = PassiveYielder([arb_properties[0], arb_properties[0], arb_properties[0], arb_properties[0], arb_properties[0]])
+    py = PassiveYielder([arb_properties, arb_properties, arb_properties, arb_properties, arb_properties])
     mocker.spy(vw.opts["xy_pos_opt"], "step")
     mocker.spy(vw.opts["z_pos_opt"], "step")
     mocker.spy(vw.opts["xy_span_opt"], "step")
@@ -443,8 +442,8 @@ def test_volume_wrapper_fit_epoch(mocker):  # noqa F811
     )
     cb = NoMoreNaNs()
     cb.set_wrapper(vw)
-    trn_py = PassiveYielder([arb_properties[0], arb_properties[0], arb_properties[0]])
-    val_py = PassiveYielder([arb_properties[0], arb_properties[0]])
+    trn_py = PassiveYielder([arb_properties, arb_properties, arb_properties])
+    val_py = PassiveYielder([arb_properties, arb_properties])
     vw.fit_params = FitParams(n_mu_per_volume=100, mu_bs=100, cbs=[cb], trn_passives=trn_py, val_passives=val_py, passive_bs=1)
     mocker.spy(cb, "on_epoch_begin")
     mocker.spy(cb, "on_epoch_end")
@@ -490,8 +489,8 @@ def test_volume_wrapper_fit(mocker):  # noqa F811
         xy_span_opt=partial(optim.SGD, lr=0),
         loss_func=VoxelX0Loss(target_budget=None),
     )
-    trn_py = PassiveYielder([arb_properties[0], arb_properties[0], arb_properties[0]])
-    val_py = PassiveYielder([arb_properties[0], arb_properties[0]])
+    trn_py = PassiveYielder([arb_properties, arb_properties, arb_properties])
+    val_py = PassiveYielder([arb_properties, arb_properties])
     cb = NoMoreNaNs()
     mocker.spy(cb, "set_wrapper")
     mocker.spy(cb, "on_train_begin")
@@ -516,7 +515,7 @@ def test_volume_wrapper_predict(mocker):  # noqa F811
         xy_span_opt=partial(optim.Adam, lr=2e-0),
         loss_func=VoxelX0Loss(target_budget=1, cost_coef=0.15),
     )
-    py = PassiveYielder([arb_properties[0], arb_properties[0], arb_properties[0]])
+    py = PassiveYielder([arb_properties, arb_properties, arb_properties])
     cbs = [Callback()]
     pred_cb = PredHandler()
     for c in [cbs[0], pred_cb]:

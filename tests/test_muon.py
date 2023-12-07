@@ -4,21 +4,20 @@ import torch
 from pytest_mock import mocker  # noqa F401
 from torch import Tensor, nn
 
-from tomopt.core import DENSITIES, X0, A, B, Z, mean_excitation_E
+from tomopt.core import props
 from tomopt.muon import MuonBatch, MuonGenerator2015, MuonGenerator2016
 from tomopt.volume import DetectorPanel, PanelDetectorLayer, PassiveLayer, Volume
 
 N = 3
 LW = Tensor([1, 1])
 SZ = 0.1
-# Z = 1
+Z = 1
 
 
 def arb_properties(*, z: float, lw: Tensor, size: float) -> Tensor:
-    props = [X0, B, Z, A, DENSITIES, mean_excitation_E]  # noqa F405
     prop = lw.new_empty((6, int(lw[0].item() / size), int(lw[1].item() / size)))
     for i, p in enumerate(props):
-        prop[i] = torch.ones(list((lw / size).long())) * p["alumnium"]
+        prop[i] = torch.ones(list((lw / size).long())) * p["aluminium"]
         if z >= 0.5:
             prop[i][3:7, 3:7] = p["lead"]
     return prop
