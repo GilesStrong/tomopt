@@ -6,7 +6,7 @@ import torch.nn.functional as F
 from pytest_lazyfixture import lazy_fixture
 from torch import Tensor, nn
 
-from tomopt.core import X0
+from tomopt.core import DENSITIES, X0, A, B, Z, mean_excitation_E
 from tomopt.inference import PanelX0Inferrer, ScatterBatch
 from tomopt.muon import MuonBatch, MuonGenerator2016
 from tomopt.optimisation import MuonResampler, VoxelX0Loss
@@ -22,17 +22,20 @@ from tomopt.volume import (
 LW = Tensor([1, 1])
 SZ = 0.1
 N = 100
-Z = 1
+# Z = 1
 INIT_RES = 1e4
 INIT_EFF = 0.5
 N_PANELS = 4
 
 
-def arb_rad_length(*, z: float, lw: Tensor, size: float) -> float:
-    rad_length = torch.ones(list((lw / size).long())) * X0["aluminium"]
-    if z >= 0.5:
-        rad_length[3:7, 3:7] = X0["lead"]
-    return rad_length
+def arb_properties(*, z: float, lw: Tensor, size: float) -> Tensor:
+    props = [X0, B, Z, A, DENSITIES, mean_excitation_E]
+    prop = lw.new_empty((6, int(lw[0].item() / size), int(lw[1].item() / size)))
+    for i, p in enumerate(props):
+        prop[i] = torch.ones(list((lw / size).long())) * p["alumnium"]
+        if z >= 0.5:
+            prop[i][3:7, 3:7] = p["lead"]
+    return prop
 
 
 def eff_cost(x: Tensor) -> Tensor:
@@ -57,7 +60,7 @@ def get_panel_layers() -> nn.ModuleList:
         )
     )
     for z in [0.8, 0.7, 0.6, 0.5, 0.4, 0.3]:
-        layers.append(PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=z, size=SZ))
+        layers.append(PassiveLayer(properties_func=arb_properties, lw=LW, z=z, size=SZ))
     layers.append(
         PanelDetectorLayer(
             pos="below",
@@ -89,7 +92,7 @@ def get_sigmoid_panel_layers(smooth=1.0, init_res: float = INIT_RES, init_eff: f
         )
     )
     for z in [0.8, 0.7, 0.6, 0.5, 0.4, 0.3]:
-        layers.append(PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=z, size=SZ))
+        layers.append(PassiveLayer(properties_func=arb_properties, lw=LW, z=z, size=SZ))
     layers.append(
         PanelDetectorLayer(
             pos="below",
@@ -121,7 +124,7 @@ def get_heatmap_layers() -> nn.ModuleList:
         )
     )
     for z in [0.8, 0.7, 0.6, 0.5, 0.4, 0.3]:
-        layers.append(PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=z, size=SZ))
+        layers.append(PassiveLayer(properties_func=arb_properties, lw=LW, z=z, size=SZ))
     layers.append(
         PanelDetectorLayer(
             pos="below",

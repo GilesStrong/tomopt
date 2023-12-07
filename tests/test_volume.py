@@ -8,7 +8,7 @@ import torch.nn.functional as F
 from pytest_mock import mocker  # noqa F401
 from torch import Tensor, nn
 
-from tomopt.core import X0
+from tomopt.core import DENSITIES, X0, A, B, Z, mean_excitation_E
 from tomopt.muon import MuonBatch, MuonGenerator2016
 from tomopt.optimisation import MuonResampler
 from tomopt.utils import jacobian
@@ -23,7 +23,7 @@ from tomopt.volume import (
 LW = Tensor([1, 1])
 SZ = 0.1
 N = 1000
-Z = 1
+# Z = 1
 
 
 def get_panel_layers(init_res: float = 1e4, init_eff: float = 0.5, n_panels: int = 4) -> nn.ModuleList:
@@ -40,7 +40,7 @@ def get_panel_layers(init_res: float = 1e4, init_eff: float = 0.5, n_panels: int
         )
     )
     for z in [0.8, 0.7, 0.6, 0.5, 0.4, 0.3]:
-        layers.append(PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=z, size=SZ))
+        layers.append(PassiveLayer(properties_func=arb_properties, lw=LW, z=z, size=SZ))
     layers.append(
         PanelDetectorLayer(
             pos="below",
@@ -72,7 +72,7 @@ def get_sigmoid_panel_layers(smooth=Tensor([1.0]), init_res: float = 1e4, init_e
         )
     )
     for z in [0.8, 0.7, 0.6, 0.5, 0.4, 0.3]:
-        layers.append(PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=z, size=SZ))
+        layers.append(PassiveLayer(properties_func=arb_properties, lw=LW, z=z, size=SZ))
     layers.append(
         PanelDetectorLayer(
             pos="below",
@@ -95,11 +95,14 @@ def batch():
     return MuonBatch(mg(N), init_z=1)
 
 
-def arb_rad_length(*, z: float, lw: Tensor, size: float) -> float:
-    rad_length = torch.ones(list((lw / size).long())) * X0["lead"]
-    if z < 0.5:
-        rad_length[...] = X0["beryllium"]
-    return rad_length
+def arb_properties(*, z: float, lw: Tensor, size: float) -> float:
+    props = [X0, B, Z, A, DENSITIES, mean_excitation_E]  # noqa F405
+    prop = lw.new_empty((6, int(lw[0].item() / size), int(lw[1].item() / size)))
+    for i, p in enumerate(props):
+        prop[i] = torch.ones(list((lw / size).long())) * p["lead"]
+        if z < 0.5:
+            prop[i] = p["beryllium"]
+    return prop
 
 
 def test_layer(batch):
@@ -111,15 +114,15 @@ def test_layer(batch):
 
 def test_passive_layer_methods():
     pl = PassiveLayer(lw=LW, z=Z, size=SZ)
-    assert pl.rad_length is None
+    assert pl.properties is None
 
-    pl.load_rad_length(arb_rad_length)
-    assert torch.all(pl.rad_length == arb_rad_length(z=Z, lw=LW, size=SZ))
+    pl.load_properties(arb_properties)
+    assert torch.all(pl.properties == arb_properties(z=Z, lw=LW, size=SZ))
 
 
 def test_passive_layer_forwards(batch):
     # Normal scattering
-    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=Z, size=SZ, step_sz=SZ / 10)
+    pl = PassiveLayer(properties_func=arb_properties, lw=LW, z=Z, size=SZ, step_sz=SZ / 10)
     start = batch.copy()
     pl(batch)
     assert (torch.abs(batch.z - Tensor([Z - SZ])) < 1e-5).all()
@@ -127,13 +130,13 @@ def test_passive_layer_forwards(batch):
     assert torch.all(batch.xy != start.xy[batch._keep_mask])
 
     # X0 affects scattering
-    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=0, size=SZ, step_sz=SZ / 10)
+    pl = PassiveLayer(properties_func=arb_properties, lw=LW, z=0, size=SZ, step_sz=SZ / 10)
     batch2 = start.copy()
     pl(batch2)
     assert batch2.dtheta(start.theta[batch._keep_mask]).mean() < batch.dtheta(start.theta[batch._keep_mask]).mean()
 
     # Small scattering
-    pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=Z, size=1e-4, step_sz=SZ / 10)
+    pl = PassiveLayer(properties_func=arb_properties, lw=LW, z=Z, size=1e-4, step_sz=SZ / 10)
     batch = start.copy()
     pl(batch)
     assert (torch.abs(batch.z - Tensor([Z - 1e-4])) <= 1e-3).all()
@@ -151,7 +154,7 @@ def test_passive_layer_scatter_and_propagate(mocker):  # noqa: F811
         for m in ["propagate_d", "get_xy_mask", "scatter_dxyz", "scatter_dtheta_dphi"]:
             mocker.spy(batch, m)
 
-        pl = PassiveLayer(rad_length_func=arb_rad_length, lw=LW, size=SZ, z=Z, scatter_model="pdg", step_sz=SZ / n)
+        pl = PassiveLayer(properties_func=arb_properties, lw=LW, size=SZ, z=Z, scatter_model="pdg", step_sz=SZ / n)
         pl(batch)
         curr_count = batch.propagate_d.call_count
         assert curr_count > prev_count
@@ -317,8 +320,8 @@ def test_volume_methods(mocker):  # noqa F811
 
     cube = volume.get_rad_cube()
     assert cube.shape == torch.Size([6] + list((LW / SZ).long()))
-    assert torch.all(cube[0] == arb_rad_length(z=SZ, lw=LW, size=SZ))  # cube reversed to match lookup_passive_xyz_coords: layer zero = bottom layer
-    assert torch.all(cube[-1] == arb_rad_length(z=Z, lw=LW, size=SZ))
+    assert torch.all(cube[0] == arb_properties[0](z=SZ, lw=LW, size=SZ))  # cube reversed to match lookup_passive_xyz_coords: layer zero = bottom layer
+    assert torch.all(cube[-1] == arb_properties[0](z=Z, lw=LW, size=SZ))
 
     assert torch.all(volume.lookup_passive_xyz_coords(Tensor([0.55, 0.63, 0.31])) == Tensor([[5, 6, 1]]))
     assert torch.all(volume.lookup_passive_xyz_coords(Tensor([[0.55, 0.63, 0.31], [0.12, 0.86, 0.45]])) == Tensor([[5, 6, 1], [1, 8, 2]]))
@@ -337,17 +340,20 @@ def test_volume_methods(mocker):  # noqa F811
     with pytest.raises(ValueError):
         volume.lookup_passive_xyz_coords(Tensor([0.55, 0.63, 1]))
 
-    def arb_rad_length2(*, z: float, lw: Tensor, size: float) -> float:
-        rad_length = torch.ones(list((lw / size).long())) * X0["aluminium"]
-        if z < 0.5:
-            rad_length[...] = X0["lead"]
-        return rad_length
+    def arb_properties2(*, z: float, lw: Tensor, size: float) -> float:
+        props = [X0, B, Z, A, DENSITIES, mean_excitation_E]  # noqa F405
+        prop = lw.new_empty((6, int(lw[0].item() / size), int(lw[1].item() / size)))
+        for i, p in enumerate(props):
+            prop[i] = torch.ones(list((lw / size).long())) * p["aluminium"]
+            if z < 0.5:
+                prop[i] = p["lead"]
+        return prop
 
-    volume.load_rad_length(arb_rad_length2)
+    volume.load_properties(arb_properties2)
     cube = volume.get_rad_cube()
     assert cube.shape == torch.Size([6] + list((LW / SZ).long()))
-    assert torch.all(cube[0] == arb_rad_length2(z=SZ, lw=LW, size=SZ))  # cube reversed to match lookup_passive_xyz_coords: layer zero = bottom layer
-    assert torch.all(cube[-1] == arb_rad_length2(z=Z, lw=LW, size=SZ))
+    assert torch.all(cube[0] == arb_properties2[0](z=SZ, lw=LW, size=SZ))  # cube reversed to match lookup_passive_xyz_coords: layer zero = bottom layer
+    assert torch.all(cube[-1] == arb_properties2[0](z=Z, lw=LW, size=SZ))
 
     edges = volume.edges
     assert edges.shape == torch.Size((600, 3))

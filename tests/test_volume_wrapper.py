@@ -7,7 +7,7 @@ import torch
 from pytest_mock import mocker  # noqa F401
 from torch import Tensor, nn, optim
 
-from tomopt.core import X0
+from tomopt.core import DENSITIES, X0, A, B, Z, mean_excitation_E
 from tomopt.muon.generation import MuonGenerator2016
 from tomopt.optimisation.callbacks import (
     Callback,
@@ -38,15 +38,18 @@ from tomopt.volume import (
 LW = Tensor([1, 1])
 SZ = 0.1
 N = 100
-Z = 1
+# Z = 1
 PKG_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
 
 
-def arb_rad_length(*, z: float, lw: Tensor, size: float) -> float:
-    rad_length = torch.ones(list((lw / size).long())) * X0["beryllium"]
-    if z >= 0.4 and z <= 0.5:
-        rad_length[5:, 5:] = X0["lead"]
-    return rad_length
+def arb_properties(*, z: float, lw: Tensor, size: float) -> Tensor:
+    props = [X0, B, Z, A, DENSITIES, mean_excitation_E]  # noqa F405
+    prop = lw.new_empty((6, int(lw[0].item() / size), int(lw[1].item() / size)))
+    for i, p in enumerate(props):
+        prop[i] = torch.ones(list((lw / size).long())) * p["beryllium"]
+        if z >= 0.4 and z <= 0.5:
+            prop[i][5:, 5:] = p["lead"]
+    return prop
 
 
 def get_panel_layers(init_res: float = 1e3) -> nn.ModuleList:
@@ -65,7 +68,7 @@ def get_panel_layers(init_res: float = 1e3) -> nn.ModuleList:
         )
     )
     for z in [0.8, 0.7, 0.6, 0.5, 0.4, 0.3]:
-        layers.append(PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=z, size=SZ))
+        layers.append(PassiveLayer(properties_func=arb_properties, lw=LW, z=z, size=SZ))
     layers.append(
         PanelDetectorLayer(
             pos="below",
@@ -216,7 +219,7 @@ def test_volume_wrapper_parameters():
 @pytest.mark.parametrize("state", ["train", "valid", "test"])
 def test_volume_wrapper_scan_volume(state, mocker):  # noqa F811
     volume = Volume(get_panel_layers())
-    volume.load_rad_length(arb_rad_length)
+    volume.load_properties(arb_properties)
     vw = PanelVolumeWrapper(
         volume,
         xy_pos_opt=partial(optim.SGD, lr=2e0, momentum=0.95),
@@ -264,7 +267,7 @@ def test_volume_wrapper_scan_volume(state, mocker):  # noqa F811
 @pytest.mark.flaky(max_runs=2, min_passes=1)
 def test_volume_wrapper_scan_volume_mu_batch(mocker):  # noqa F811
     volume = Volume(get_panel_layers())
-    volume.load_rad_length(arb_rad_length)
+    volume.load_properties(arb_properties)
     vw = PanelVolumeWrapper(
         volume,
         xy_pos_opt=partial(optim.SGD, lr=2e0, momentum=0.95),
@@ -344,7 +347,7 @@ def test_volume_wrapper_scan_volumes(state, mocker):  # noqa F811
     cb = Callback()
     cb.set_wrapper(vw)
     vw.fit_params = FitParams(n_mu_per_volume=100, mu_bs=10, cbs=[cb], state=state, passive_bs=2)
-    py = PassiveYielder([arb_rad_length, arb_rad_length, arb_rad_length, arb_rad_length, arb_rad_length])
+    py = PassiveYielder([arb_properties[0], arb_properties[0], arb_properties[0], arb_properties[0], arb_properties[0]])
     mocker.spy(vw, "_scan_volume")
     mocker.spy(cb, "on_volume_begin")
     mocker.spy(cb, "on_volume_end")
@@ -413,7 +416,7 @@ def test_volume_wrapper_opt_skip_step(mocker):  # noqa F811
         loss_func=VoxelX0Loss(target_budget=None),
     )
     vw.fit_params = FitParams(n_mu_per_volume=100, mu_bs=10, skip_opt_step=True, cbs=[], state="train", passive_bs=2)
-    py = PassiveYielder([arb_rad_length, arb_rad_length, arb_rad_length, arb_rad_length, arb_rad_length])
+    py = PassiveYielder([arb_properties[0], arb_properties[0], arb_properties[0], arb_properties[0], arb_properties[0]])
     mocker.spy(vw.opts["xy_pos_opt"], "step")
     mocker.spy(vw.opts["z_pos_opt"], "step")
     mocker.spy(vw.opts["xy_span_opt"], "step")
@@ -440,8 +443,8 @@ def test_volume_wrapper_fit_epoch(mocker):  # noqa F811
     )
     cb = NoMoreNaNs()
     cb.set_wrapper(vw)
-    trn_py = PassiveYielder([arb_rad_length, arb_rad_length, arb_rad_length])
-    val_py = PassiveYielder([arb_rad_length, arb_rad_length])
+    trn_py = PassiveYielder([arb_properties[0], arb_properties[0], arb_properties[0]])
+    val_py = PassiveYielder([arb_properties[0], arb_properties[0]])
     vw.fit_params = FitParams(n_mu_per_volume=100, mu_bs=100, cbs=[cb], trn_passives=trn_py, val_passives=val_py, passive_bs=1)
     mocker.spy(cb, "on_epoch_begin")
     mocker.spy(cb, "on_epoch_end")
@@ -487,8 +490,8 @@ def test_volume_wrapper_fit(mocker):  # noqa F811
         xy_span_opt=partial(optim.SGD, lr=0),
         loss_func=VoxelX0Loss(target_budget=None),
     )
-    trn_py = PassiveYielder([arb_rad_length, arb_rad_length, arb_rad_length])
-    val_py = PassiveYielder([arb_rad_length, arb_rad_length])
+    trn_py = PassiveYielder([arb_properties[0], arb_properties[0], arb_properties[0]])
+    val_py = PassiveYielder([arb_properties[0], arb_properties[0]])
     cb = NoMoreNaNs()
     mocker.spy(cb, "set_wrapper")
     mocker.spy(cb, "on_train_begin")
@@ -513,7 +516,7 @@ def test_volume_wrapper_predict(mocker):  # noqa F811
         xy_span_opt=partial(optim.Adam, lr=2e-0),
         loss_func=VoxelX0Loss(target_budget=1, cost_coef=0.15),
     )
-    py = PassiveYielder([arb_rad_length, arb_rad_length, arb_rad_length])
+    py = PassiveYielder([arb_properties[0], arb_properties[0], arb_properties[0]])
     cbs = [Callback()]
     pred_cb = PredHandler()
     for c in [cbs[0], pred_cb]:
@@ -559,7 +562,7 @@ def get_heatmap_layers(init_res: float = 1e3) -> nn.ModuleList:
         )
     )
     for z in [0.8, 0.7, 0.6, 0.5, 0.4, 0.3]:
-        layers.append(PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=z, size=SZ))
+        layers.append(PassiveLayer(properties_func=arb_properties, lw=LW, z=z, size=SZ))
     layers.append(
         PanelDetectorLayer(
             pos="below",

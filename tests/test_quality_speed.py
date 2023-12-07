@@ -9,7 +9,7 @@ import pytest
 import torch
 from torch import Tensor, nn
 
-from tomopt.core import X0
+from tomopt.core import DENSITIES, X0, A, B, Z, mean_excitation_E
 from tomopt.optimisation import MuonResampler, PanelVolumeWrapper, PassiveYielder
 from tomopt.plotting import plot_pred_true_x0
 from tomopt.volume import DetectorPanel, PanelDetectorLayer, PassiveLayer, Volume
@@ -63,14 +63,17 @@ def test_lead_beryllium(mock_show):
         volume, xy_pos_opt=partial(torch.optim.SGD, lr=5e4), z_pos_opt=partial(torch.optim.SGD, lr=5e3), xy_span_opt=partial(torch.optim.SGD, lr=1e4)
     )
 
-    def arb_rad_length(*, z: float, lw: Tensor, size: float) -> Tensor:
-        rad_length = torch.ones(list((lw / size).long())) * X0["beryllium"]
-        if z >= 0.4 and z <= 0.5:
-            rad_length[5:, 5:] = X0["lead"]
-        return rad_length
+    def arb_properties(*, z: float, lw: Tensor, size: float) -> Tensor:
+        props = [X0, B, Z, A, DENSITIES, mean_excitation_E]  # noqa F405
+        prop = lw.new_empty((6, int(lw[0].item() / size), int(lw[1].item() / size)))
+        for i, p in enumerate(props):
+            prop[i] = torch.ones(list((lw / size).long())) * p["beryllium"]
+            if z >= 0.4 and z <= 0.5:
+                prop[i][5:, 5:] = p["lead"]
+        return prop
 
     tmr = default_timer()
-    preds = wrapper.predict(PassiveYielder([arb_rad_length]), n_mu_per_volume=10000, mu_bs=250, cbs=[MuonResampler()])[0]
+    preds = wrapper.predict(PassiveYielder([arb_properties]), n_mu_per_volume=10000, mu_bs=250, cbs=[MuonResampler()])[0]
     time = default_timer() - tmr
     assert time <= 60  # 2018 MacBook Pro: ~20s, but GitHub CI is slower
 

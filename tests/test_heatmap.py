@@ -8,7 +8,7 @@ from fastcore.all import Path
 from pytest_mock import mocker  # noqa F401
 from torch import Tensor, nn
 
-from tomopt.core import X0
+from tomopt.core import DENSITIES, X0, A, B, Z, mean_excitation_E
 from tomopt.muon import MuonBatch, MuonGenerator2016
 from tomopt.optimisation import MuonResampler
 from tomopt.utils import jacobian
@@ -18,7 +18,7 @@ from tomopt.volume.heatmap import GMM
 LW = Tensor([1, 1])
 SZ = 0.1
 N = 1000
-Z = 1
+# Z = 1
 PKG_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -28,11 +28,14 @@ def batch():
     return MuonBatch(mg(N), init_z=1)
 
 
-def arb_rad_length(*, z: float, lw: Tensor, size: float) -> float:
-    rad_length = torch.ones(list((lw / size).long())) * X0["lead"]
-    if z < 0.5:
-        rad_length[...] = X0["beryllium"]
-    return rad_length
+def arb_properties(*, z: float, lw: Tensor, size: float) -> Tensor:
+    props = [X0, B, Z, A, DENSITIES, mean_excitation_E]
+    prop = lw.new_empty((6, int(lw[0].item() / size), int(lw[1].item() / size)))
+    for i, p in enumerate(props):
+        prop[i] = torch.ones(list((lw / size).long())) * p["lead"]
+        if z < 0.5:
+            prop[i][...] = p["beryllium"]
+    return prop
 
 
 def test_heatmap_detector_layer(batch):
@@ -196,7 +199,7 @@ def get_panel_layers(init_res: float = 1e4, init_eff: float = 0.5, n_panels: int
         )
     )
     for z in [0.8, 0.7, 0.6, 0.5, 0.4, 0.3]:
-        layers.append(PassiveLayer(rad_length_func=arb_rad_length, lw=LW, z=z, size=SZ))
+        layers.append(PassiveLayer(properties_func=arb_properties, lw=LW, z=z, size=SZ))
     layers.append(
         PanelDetectorLayer(
             pos="below",
