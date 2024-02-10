@@ -1,3 +1,5 @@
+__all__ = ["TK_SZ", "TK_COL", "LBL_SZ", "LBL_COL", "LEG_SZ", "CAT_PALETTE", "STYLE", "H_MID", "W_MID"]
+
 r"""
 Defines global constants for producing consistently styled plots
 """
