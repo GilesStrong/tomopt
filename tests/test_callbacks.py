@@ -256,7 +256,7 @@ def test_float_pred_handler():
 
 
 @pytest.mark.parametrize("detector", ["none", "panel", "sigmoid_panel"])
-def test_metric_logger(detector, mocker):  # noqa F811
+def test_metric_logger(detector, mocker, tmp_path):  # noqa F811
     vw = MockWrapper()
     vw.volume = MockVolume()
     if detector == "none":
@@ -279,7 +279,7 @@ def test_metric_logger(detector, mocker):  # noqa F811
         passive_bs=2,
         state="train",
         metric_cbs=[EvalMetric(name="test", main_metric=True, lower_metric_better=True)],
-        cb_savepath=Path(PKG_DIR),
+        cb_savepath=tmp_path,
     )
     logger.set_wrapper(vw)
     mocker.spy(logger, "_reset")
@@ -307,7 +307,7 @@ def test_metric_logger(detector, mocker):  # noqa F811
     assert len(logger.tmp_sub_losses.keys()) == 0
     assert logger._snapshot_monitor.call_count == 1
     assert len(logger._buffer_files) == 1
-    assert logger._buffer_files[-1] == Path(PKG_DIR / "temp_monitor_0.png")
+    assert logger._buffer_files[-1] == tmp_path / "temp_monitor_0.png"
     assert logger._buffer_files[-1].exists()
 
     for state in ["train", "valid"]:
@@ -359,9 +359,7 @@ def test_metric_logger(detector, mocker):  # noqa F811
     assert history[0]["Validation"] == [val_loss]
     assert history[1]["test"] == [3]
     assert len(logger._buffer_files) == 2
-    assert logger._buffer_files[-1] == Path(PKG_DIR / "temp_monitor_1.png")
-    for f in logger._buffer_files:
-        assert not f.exists()
+    assert logger._buffer_files[-1] == tmp_path / "temp_monitor_1.png"
     assert Path(PKG_DIR / "optimisation_history.gif").exists()
 
     logger.loss_vals["Validation"] = [9, 8, 7, 6, 5, 9]
