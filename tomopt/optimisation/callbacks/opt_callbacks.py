@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Optional, Tuple
 
 import numpy as np
 
+from .callback import Callback
 from .warmup_callbacks import PostWarmupCallback
 
 if TYPE_CHECKING:
@@ -137,3 +138,14 @@ class OneCycle(AbsOptSchedule):
         else:
             mom = get_param(self.init_mom, self.mid_mom, self.final_mom)
         return lr, mom
+
+
+class EpochSave(Callback):
+    r"""
+    Saves the state of the volume at the end of each training epoch to a unique file.
+    This can be used to load a specifc state to either be used, or to resume training.
+    """
+
+    def on_epoch_end(self) -> None:
+        if self.wrapper.fit_params.state == "train":
+            self.wrapper.save(self.wrapper.fit_params.cb_savepath / f"volume_state_{self.wrapper.fit_params.epoch}.pt")
