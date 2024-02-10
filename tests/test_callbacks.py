@@ -23,6 +23,7 @@ from tomopt.optimisation.callbacks import (
     MuonResampler,
     NoMoreNaNs,
     OneCycle,
+    PanelCentring,
     PanelMetricLogger,
     PanelOptConfig,
     PanelUpdateLimiter,
@@ -934,3 +935,49 @@ def test_one_cycle():
         ).all()
         < 1e-3
     )
+
+
+def test_panel_centring_callback():
+    # Create a mock volume with PanelDetectorLayer objects
+    vw = MockWrapper()
+    vw.device = "cpu"
+    vw.volume = MockVolume()
+    panel_det1 = PanelDetectorLayer(
+        pos="above",
+        lw=LW,
+        z=1,
+        size=2 * SZ,
+        panels=[
+            DetectorPanel(res=1, eff=1, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[1.0, 1.0]),
+            DetectorPanel(res=1, eff=1, init_xyz=[0.0, 1.0, 0.7], init_xy_span=[1.0, 1.0]),
+        ],
+    )
+    panel_det2 = PanelDetectorLayer(
+        pos="below",
+        lw=LW,
+        z=1,
+        size=2 * SZ,
+        panels=[
+            DetectorPanel(res=1, eff=1, init_xyz=[-0.5, -0.5, 0.2], init_xy_span=[1.0, 1.0]),
+            DetectorPanel(res=1, eff=1, init_xyz=[0.0, -1.0, 0.1], init_xy_span=[1.0, 1.0]),
+        ],
+    )
+
+    vw.volume.get_detectors = lambda: [panel_det1, panel_det2]
+
+    # Create an instance of the PanelCentring callback
+    cb = PanelCentring()
+    cb.set_wrapper(vw)
+
+    # Call the on_step_end method of the callback
+    cb.on_step_end()
+
+    # Check that the xy coordinates of the panels have been updated to the mean xy position
+    assert torch.allclose(panel_det1.panels[0].xy, torch.tensor([0.25, 0.75]))
+    assert torch.allclose(panel_det1.panels[0].z, torch.tensor([0.9]))
+    assert torch.allclose(panel_det1.panels[1].xy, torch.tensor([0.25, 0.75]))
+    assert torch.allclose(panel_det1.panels[1].z, torch.tensor([0.7]))
+    assert torch.allclose(panel_det2.panels[0].xy, torch.tensor([-0.25, -0.75]))
+    assert torch.allclose(panel_det2.panels[0].z, torch.tensor([0.2]))
+    assert torch.allclose(panel_det2.panels[1].xy, torch.tensor([-0.25, -0.75]))
+    assert torch.allclose(panel_det2.panels[1].z, torch.tensor([0.1]))

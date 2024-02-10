@@ -12,7 +12,7 @@ r"""
 Set of callbacks that affect the detectors during optimisation
 """
 
-__all__ = ["PanelUpdateLimiter", "SigmoidPanelSmoothnessSchedule"]
+__all__ = ["PanelUpdateLimiter", "SigmoidPanelSmoothnessSchedule", "PanelCentring"]
 
 
 class SigmoidPanelSmoothnessSchedule(PostWarmupCallback):
