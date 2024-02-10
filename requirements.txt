@@ -17,7 +17,7 @@ h5py
 pre-commit
 black==24.1.1
 flake8
-pytest
+pytest<8.0.0
 mypy
 pytest-mock
 flaky
