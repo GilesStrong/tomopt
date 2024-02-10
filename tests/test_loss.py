@@ -41,14 +41,14 @@ def test_abs_detector_loss(mocker):  # noqa F811
     assert loss_func.cost_coef == Tensor([2])
     assert loss_func._get_cost_loss(volume) == Tensor([0])
 
-    val = loss_func(pred, None, volume)
+    val = loss_func(pred, volume)
     assert val == Tensor([3])
     assert loss_func.sub_losses["error"] == 3
     assert loss_func.sub_losses["cost"] == Tensor([0])
 
     # With target budget
     loss_func = DetectorLoss(target_budget=cost)
-    val = loss_func(pred, None, volume)
+    val = loss_func(pred, volume)
     assert val == Tensor([6])
     assert loss_func.sub_losses["error"] == 3
     assert loss_func.sub_losses["cost"] == Tensor([3])
@@ -65,20 +65,12 @@ def test_voxel_X0_loss(mocker):  # noqa F811
     loss_func = VoxelX0Loss(target_budget=None, cost_coef=0, debug=True)
 
     # Loss goes to zero
-    loss_val = loss_func(true, torch.ones_like(pred), volume)
+    loss_val = loss_func(true, volume)
     assert loss_val == 0
-
-    # Decreasing variance improves loss
-    loss_val = loss_func(pred, torch.ones_like(pred), volume)
-    assert loss_val.shape == torch.Size([1])
-    assert loss_val == (pred - true).pow(2).mean()
-
-    new_loss_val = loss_func(pred, 10 * torch.ones_like(pred), volume)
-    assert new_loss_val < loss_val
 
     # Include cost
     loss_func = VoxelX0Loss(target_budget=1, cost_coef=1, debug=True, steep_budget=True)
-    loss_val = loss_func(pred, torch.ones_like(pred), volume)
+    loss_val = loss_func(pred, volume)
     assert loss_val.shape == torch.Size([1])
     assert loss_val == (pred - true).pow(2).mean() + cost
     assert loss_val > 0
@@ -88,17 +80,17 @@ def test_voxel_X0_loss(mocker):  # noqa F811
 
     with torch.no_grad():
         cost += 1
-    loss_val = loss_func(pred, torch.ones_like(pred), volume)
+    loss_val = loss_func(pred, volume)
     assert torch.autograd.grad(loss_val, cost)[0].abs().sum() == grad_at_budget
     with torch.no_grad():
         cost /= 4
-    loss_val = loss_func(pred, torch.ones_like(pred), volume)
+    loss_val = loss_func(pred, volume)
     assert torch.autograd.grad(loss_val, cost)[0].abs().sum() < grad_at_budget
 
     with torch.no_grad():
         cost /= cost
     loss_func = VoxelX0Loss(target_budget=1, cost_coef=1, debug=True, steep_budget=False)
-    loss_val = loss_func(pred, torch.ones_like(pred), volume)
+    loss_val = loss_func(pred, volume)
     assert loss_val.shape == torch.Size([1])
     assert loss_val == (pred - true).pow(2).mean() + cost
     assert loss_val > 0
@@ -108,11 +100,11 @@ def test_voxel_X0_loss(mocker):  # noqa F811
 
     with torch.no_grad():
         cost += 1
-    loss_val = loss_func(pred, torch.ones_like(pred), volume)
+    loss_val = loss_func(pred, volume)
     assert torch.autograd.grad(loss_val, cost)[0].abs().sum() < grad_at_budget
     with torch.no_grad():
         cost /= 4
-    loss_val = loss_func(pred, torch.ones_like(pred), volume)
+    loss_val = loss_func(pred, volume)
     assert torch.autograd.grad(loss_val, cost)[0].abs().sum() < grad_at_budget
 
 
@@ -131,20 +123,16 @@ def test_voxel_class_loss(mocker):  # noqa F811
     correct = 10 * torch.ones((1, 2, np.prod(SHP)))
     correct[:, 0] = -10
     correct = F.log_softmax(correct, dim=1)
-    loss_val = loss_func(correct, 1, volume)
+    loss_val = loss_func(correct, volume)
     assert loss_val <= 1e-5
 
-    # Decreasing variance improves loss
-    loss_val = loss_func(pred, torch.ones_like(pred), volume)
+    loss_val = loss_func(pred, volume)
     assert loss_val.shape == torch.Size([1])
     assert loss_val == F.nll_loss(pred, true.flatten()[None].long())
 
-    new_loss_val = loss_func(pred, 10, volume)
-    assert new_loss_val < loss_val
-
     # Include cost
     loss_func = VoxelClassLoss(target_budget=1, cost_coef=1, debug=True, steep_budget=True, x02id=x02id)
-    loss_val = loss_func(pred, 1, volume)
+    loss_val = loss_func(pred, volume)
     assert loss_val.shape == torch.Size([1])
     assert loss_val == F.nll_loss(pred, true.flatten()[None].long()) + cost
     assert loss_val > 0
@@ -154,17 +142,17 @@ def test_voxel_class_loss(mocker):  # noqa F811
 
     with torch.no_grad():
         cost += 1
-    loss_val = loss_func(pred, 1, volume)
+    loss_val = loss_func(pred, volume)
     assert torch.autograd.grad(loss_val, cost)[0].abs().sum() == grad_at_budget
     with torch.no_grad():
         cost /= 4
-    loss_val = loss_func(pred, 1, volume)
+    loss_val = loss_func(pred, volume)
     assert torch.autograd.grad(loss_val, cost)[0].abs().sum() < grad_at_budget
 
     with torch.no_grad():
         cost /= cost
     loss_func = VoxelClassLoss(target_budget=1, cost_coef=1, debug=True, steep_budget=False, x02id=x02id)
-    loss_val = loss_func(pred, 1, volume)
+    loss_val = loss_func(pred, volume)
     assert loss_val.shape == torch.Size([1])
     assert loss_val == F.nll_loss(pred, true.flatten()[None].long()) + cost
     assert loss_val > 0
@@ -174,11 +162,11 @@ def test_voxel_class_loss(mocker):  # noqa F811
 
     with torch.no_grad():
         cost += 1
-    loss_val = loss_func(pred, 1, volume)
+    loss_val = loss_func(pred, volume)
     assert torch.autograd.grad(loss_val, cost)[0].abs().sum() < grad_at_budget
     with torch.no_grad():
         cost /= 4
-    loss_val = loss_func(pred, 1, volume)
+    loss_val = loss_func(pred, volume)
     assert torch.autograd.grad(loss_val, cost)[0].abs().sum() < grad_at_budget
 
 
@@ -197,20 +185,17 @@ def test_volume_class_loss_multi(mocker):  # noqa F811
     correct = 10 * torch.ones((1, 2))
     correct[:, 0] = -10
     correct = F.log_softmax(correct, dim=1)
-    loss_val = loss_func(correct, 1, volume)
+    loss_val = loss_func(correct, volume)
     assert loss_val <= 1e-5
 
     # Decreasing variance improves loss
-    loss_val = loss_func(pred, torch.ones_like(pred), volume)
+    loss_val = loss_func(pred, volume)
     assert loss_val.shape == torch.Size([1])
     assert loss_val == F.nll_loss(pred, true)
 
-    new_loss_val = loss_func(pred, 10, volume)
-    assert new_loss_val < loss_val
-
     # Include cost
     loss_func = VolumeClassLoss(target_budget=1, cost_coef=1, debug=True, steep_budget=True, x02id=x02id)
-    loss_val = loss_func(pred, 1, volume)
+    loss_val = loss_func(pred, volume)
     assert loss_val.shape == torch.Size([1])
     assert loss_val == F.nll_loss(pred, true) + cost
     assert loss_val > 0
@@ -220,17 +205,17 @@ def test_volume_class_loss_multi(mocker):  # noqa F811
 
     with torch.no_grad():
         cost += 1
-    loss_val = loss_func(pred, 1, volume)
+    loss_val = loss_func(pred, volume)
     assert torch.autograd.grad(loss_val, cost)[0].abs().sum() == grad_at_budget
     with torch.no_grad():
         cost /= 4
-    loss_val = loss_func(pred, 1, volume)
+    loss_val = loss_func(pred, volume)
     assert torch.autograd.grad(loss_val, cost)[0].abs().sum() < grad_at_budget
 
     with torch.no_grad():
         cost /= cost
     loss_func = VolumeClassLoss(target_budget=1, cost_coef=1, debug=True, steep_budget=False, x02id=x02id)
-    loss_val = loss_func(pred, 1, volume)
+    loss_val = loss_func(pred, volume)
     assert loss_val.shape == torch.Size([1])
     assert loss_val == F.nll_loss(pred, true) + cost
     assert loss_val > 0
@@ -240,11 +225,11 @@ def test_volume_class_loss_multi(mocker):  # noqa F811
 
     with torch.no_grad():
         cost += 1
-    loss_val = loss_func(pred, 1, volume)
+    loss_val = loss_func(pred, volume)
     assert torch.autograd.grad(loss_val, cost)[0].abs().sum() < grad_at_budget
     with torch.no_grad():
         cost /= 4
-    loss_val = loss_func(pred, 1, volume)
+    loss_val = loss_func(pred, volume)
     assert torch.autograd.grad(loss_val, cost)[0].abs().sum() < grad_at_budget
 
 
@@ -261,20 +246,12 @@ def test_volume_class_loss_binary(mocker):  # noqa F811
 
     # Loss goes to zero
     correct = torch.ones((1, 1))
-    loss_val = loss_func(correct, 1, volume)
+    loss_val = loss_func(correct, volume)
     assert loss_val == 0
-
-    # Decreasing variance improves loss
-    loss_val = loss_func(pred, torch.ones_like(pred), volume)
-    assert loss_val.shape == torch.Size([1])
-    assert loss_val == F.binary_cross_entropy(pred, true[:, None])
-
-    new_loss_val = loss_func(pred, 10, volume)
-    assert new_loss_val < loss_val
 
     # Include cost
     loss_func = VolumeClassLoss(target_budget=1, cost_coef=1, debug=True, steep_budget=True, x02id=x02id)
-    loss_val = loss_func(pred, 1, volume)
+    loss_val = loss_func(pred, volume)
     assert loss_val.shape == torch.Size([1])
     assert loss_val == F.binary_cross_entropy(pred, true[:, None]) + cost
     assert loss_val > 0
@@ -284,17 +261,17 @@ def test_volume_class_loss_binary(mocker):  # noqa F811
 
     with torch.no_grad():
         cost += 1
-    loss_val = loss_func(pred, 1, volume)
+    loss_val = loss_func(pred, volume)
     assert torch.autograd.grad(loss_val, cost)[0].abs().sum() == grad_at_budget
     with torch.no_grad():
         cost /= 4
-    loss_val = loss_func(pred, 1, volume)
+    loss_val = loss_func(pred, volume)
     assert torch.autograd.grad(loss_val, cost)[0].abs().sum() < grad_at_budget
 
     with torch.no_grad():
         cost /= cost
     loss_func = VolumeClassLoss(target_budget=1, cost_coef=1, debug=True, steep_budget=False, x02id=x02id)
-    loss_val = loss_func(pred, 1, volume)
+    loss_val = loss_func(pred, volume)
     assert loss_val.shape == torch.Size([1])
     assert loss_val == F.binary_cross_entropy(pred, true[:, None]) + cost
     assert loss_val > 0
@@ -304,11 +281,11 @@ def test_volume_class_loss_binary(mocker):  # noqa F811
 
     with torch.no_grad():
         cost += 1
-    loss_val = loss_func(pred, 1, volume)
+    loss_val = loss_func(pred, volume)
     assert torch.autograd.grad(loss_val, cost)[0].abs().sum() < grad_at_budget
     with torch.no_grad():
         cost /= 4
-    loss_val = loss_func(pred, 1, volume)
+    loss_val = loss_func(pred, volume)
     assert torch.autograd.grad(loss_val, cost)[0].abs().sum() < grad_at_budget
 
 
@@ -322,15 +299,9 @@ def test_volume_int_class_loss(mocker):  # noqa F811
 
     loss_func = VolumeIntClassLoss(targ2int=lambda x, v: x.long(), pred_int_start=2, use_mse=False, target_budget=None, cost_coef=0, debug=True)
 
-    # Decreasing variance improves loss
-    loss_val = loss_func(pred, torch.ones_like(pred), volume)
-    assert loss_val.shape == torch.Size([1])
-    new_loss_val = loss_func(pred, 10, volume)
-    assert new_loss_val < loss_val
-
     # Include cost
     loss_func = VolumeIntClassLoss(targ2int=lambda x, v: x.long(), pred_int_start=2, use_mse=False, target_budget=1, cost_coef=1, debug=True, steep_budget=True)
-    loss_val = loss_func(pred, 1, volume)
+    loss_val = loss_func(pred, volume)
     assert loss_val.shape == torch.Size([1])
     assert loss_val > 0
 
@@ -339,11 +310,11 @@ def test_volume_int_class_loss(mocker):  # noqa F811
 
     with torch.no_grad():
         cost += 1
-    loss_val = loss_func(pred, 1, volume)
+    loss_val = loss_func(pred, volume)
     assert torch.autograd.grad(loss_val, cost)[0].abs().sum() == grad_at_budget
     with torch.no_grad():
         cost /= 4
-    loss_val = loss_func(pred, 1, volume)
+    loss_val = loss_func(pred, volume)
     assert torch.autograd.grad(loss_val, cost)[0].abs().sum() < grad_at_budget
 
     with torch.no_grad():
@@ -351,7 +322,7 @@ def test_volume_int_class_loss(mocker):  # noqa F811
     loss_func = VolumeIntClassLoss(
         targ2int=lambda x, v: x.long(), pred_int_start=2, use_mse=False, target_budget=1, cost_coef=1, debug=True, steep_budget=False
     )
-    loss_val = loss_func(pred, 1, volume)
+    loss_val = loss_func(pred, volume)
     assert loss_val.shape == torch.Size([1])
     assert loss_val > 0
 
@@ -360,41 +331,41 @@ def test_volume_int_class_loss(mocker):  # noqa F811
 
     with torch.no_grad():
         cost += 1
-    loss_val = loss_func(pred, 1, volume)
+    loss_val = loss_func(pred, volume)
     assert torch.autograd.grad(loss_val, cost)[0].abs().sum() < grad_at_budget
     with torch.no_grad():
         cost /= 4
-    loss_val = loss_func(pred, 1, volume)
+    loss_val = loss_func(pred, volume)
     assert torch.autograd.grad(loss_val, cost)[0].abs().sum() < grad_at_budget
 
     # Behaviour
     loss_func = VolumeIntClassLoss(targ2int=lambda x, v: x.long(), pred_int_start=2, use_mse=False, target_budget=None, cost_coef=0, debug=True)
     # Good prediction = low loss
     volume._target = Tensor([[0]]).long()
-    good_loss = loss_func(F.softmax(Tensor([[10, 0, 0, 0]]), dim=1), 1, volume)
+    good_loss = loss_func(F.softmax(Tensor([[10, 0, 0, 0]]), dim=1), volume)
     # Close prediction = higher loss
-    close_loss = loss_func(F.softmax(Tensor([[1, 10, 5, 3]]), dim=1), 1, volume)
+    close_loss = loss_func(F.softmax(Tensor([[1, 10, 5, 3]]), dim=1), volume)
     assert close_loss > good_loss
     # Far prediction = highest loss
-    far_loss = loss_func(F.softmax(Tensor([[1, 3, 5, 10]]), dim=1), 1, volume)
+    far_loss = loss_func(F.softmax(Tensor([[1, 3, 5, 10]]), dim=1), volume)
     assert far_loss > close_loss
 
     # MSE affects loss
     loss_func.use_mse = True
-    mse_far_loss = loss_func(F.softmax(Tensor([[1, 3, 5, 10]]), dim=1), 1, volume)
+    mse_far_loss = loss_func(F.softmax(Tensor([[1, 3, 5, 10]]), dim=1), volume)
     assert mse_far_loss > far_loss
 
     # pred int start works
     loss_func.use_mse = False
     volume._target = Tensor([[1]]).long()
-    zero_loss = loss_func(F.softmax(Tensor([[10, 0, 0, 0]]), dim=1), 1, volume)
+    zero_loss = loss_func(F.softmax(Tensor([[10, 0, 0, 0]]), dim=1), volume)
     loss_func.pred_int_start = 1
-    one_loss = loss_func(F.softmax(Tensor([[10, 0, 0, 0]]), dim=1), 1, volume)
+    one_loss = loss_func(F.softmax(Tensor([[10, 0, 0, 0]]), dim=1), volume)
     assert one_loss < zero_loss
 
     # targ2int works
     volume._target = Tensor([1.7])
-    assert loss_func(F.softmax(Tensor([[10, 0, 0, 0]]), dim=1), 1, volume) == one_loss
+    assert loss_func(F.softmax(Tensor([[10, 0, 0, 0]]), dim=1), volume) == one_loss
 
 
 def test_integer_class_loss():
@@ -438,6 +409,7 @@ def test_integer_class_loss():
         int_probs=F.softmax(Tensor([[10, 0, 0, 0], [10, 0, 0, 0]]), dim=1),
         target_int=Tensor([[0], [0]]),
         pred_start_int=0,
+        weight=Tensor([[1], [10]]),
         use_mse=False,
         reduction="none",
     )

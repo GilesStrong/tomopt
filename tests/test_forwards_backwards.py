@@ -245,7 +245,7 @@ def test_forwards_panel(mode, inferrer):
     loss_val = loss_func(pred, inferrer.volume)
 
     if "fixed-budget" in mode:
-        assert torch.autograd.grad(loss_val, retain_graph=True, allow_unused=False)[0].abs().sum() > 0
+        assert torch.autograd.grad(loss_val, inferrer.volume.budget_weights, retain_graph=True, allow_unused=False)[0].abs().sum() > 0
 
     if "panel" in mode:
         for l in inferrer.volume.get_detectors():
