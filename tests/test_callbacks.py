@@ -23,8 +23,9 @@ from tomopt.optimisation.callbacks import (
     MuonResampler,
     NoMoreNaNs,
     OneCycle,
+    OptConfig,
+    PanelCentring,
     PanelMetricLogger,
-    PanelOptConfig,
     PanelUpdateLimiter,
     PostWarmupCallback,
     PredHandler,
@@ -570,7 +571,7 @@ def test_cost_coef_warmup():
                 assert np.abs(loss.cost_coef - np.median(ccw.errors)) < 1e-4
 
 
-def test_panel_opt_config():
+def test_opt_config():
     volume = MockVolume()
     volume.parameters = []
     panel_det = get_panel_detector()
@@ -589,7 +590,7 @@ def test_panel_opt_config():
     xy_pos_mult = 1
     z_pos_mult = -3
     xy_span_mult = 2
-    poc = PanelOptConfig(n_warmup=2, xy_pos_rate=xy_pos_rate, z_pos_rate=z_pos_rate, xy_span_rate=xy_span_rate)
+    poc = OptConfig(n_warmup=2, rates={"xy_pos_opt": xy_pos_rate, "z_pos_opt": z_pos_rate, "xy_span_opt": xy_span_rate})
     assert check_callback_base(poc)
     poc.set_wrapper(vw)
     vw.fit_params.warmup_cbs = [poc]
@@ -934,3 +935,49 @@ def test_one_cycle():
         ).all()
         < 1e-3
     )
+
+
+def test_panel_centring_callback():
+    # Create a mock volume with PanelDetectorLayer objects
+    vw = MockWrapper()
+    vw.device = "cpu"
+    vw.volume = MockVolume()
+    panel_det1 = PanelDetectorLayer(
+        pos="above",
+        lw=LW,
+        z=1,
+        size=2 * SZ,
+        panels=[
+            DetectorPanel(res=1, eff=1, init_xyz=[0.5, 0.5, 0.9], init_xy_span=[1.0, 1.0]),
+            DetectorPanel(res=1, eff=1, init_xyz=[0.0, 1.0, 0.7], init_xy_span=[1.0, 1.0]),
+        ],
+    )
+    panel_det2 = PanelDetectorLayer(
+        pos="below",
+        lw=LW,
+        z=1,
+        size=2 * SZ,
+        panels=[
+            DetectorPanel(res=1, eff=1, init_xyz=[-0.5, -0.5, 0.2], init_xy_span=[1.0, 1.0]),
+            DetectorPanel(res=1, eff=1, init_xyz=[0.0, -1.0, 0.1], init_xy_span=[1.0, 1.0]),
+        ],
+    )
+
+    vw.volume.get_detectors = lambda: [panel_det1, panel_det2]
+
+    # Create an instance of the PanelCentring callback
+    cb = PanelCentring()
+    cb.set_wrapper(vw)
+
+    # Call the on_step_end method of the callback
+    cb.on_step_end()
+
+    # Check that the xy coordinates of the panels have been updated to the mean xy position
+    assert torch.allclose(panel_det1.panels[0].xy, torch.tensor([0.25, 0.75]))
+    assert torch.allclose(panel_det1.panels[0].z, torch.tensor([0.9]))
+    assert torch.allclose(panel_det1.panels[1].xy, torch.tensor([0.25, 0.75]))
+    assert torch.allclose(panel_det1.panels[1].z, torch.tensor([0.7]))
+    assert torch.allclose(panel_det2.panels[0].xy, torch.tensor([-0.25, -0.75]))
+    assert torch.allclose(panel_det2.panels[0].z, torch.tensor([0.2]))
+    assert torch.allclose(panel_det2.panels[1].xy, torch.tensor([-0.25, -0.75]))
+    assert torch.allclose(panel_det2.panels[1].z, torch.tensor([0.1]))

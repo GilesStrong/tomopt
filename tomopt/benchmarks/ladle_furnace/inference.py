@@ -5,8 +5,10 @@ import torch.nn.functional as F
 from torch import Tensor, nn
 from torch.distributions import Normal
 
+from ...core import PartialOpt
 from ...inference.scattering import ScatterBatch
 from ...inference.volume import AbsIntClassifierFromX0, AbsVolumeInferrer, AbsX0Inferrer
+from ...optimisation.callbacks import Callback
 from ...volume import Volume
 
 __all__ = ["EdgeDetLadleFurnaceFillLevelInferrer", "PocaZLadleFurnaceFillLevelInferrer"]
@@ -386,3 +388,40 @@ class PocaZLadleFurnaceFillLevelInferrer(AbsVolumeInferrer):
         mean_z = (self.wgt * z_pos).sum() / self.wgt.sum()
 
         return mean_z[None]
+
+
+class LinearCorrectionCallback(Callback):
+    r"""
+    Research tested only: no unit tests
+    """
+
+    def __init__(self, partial_opt: PartialOpt, init_weight: float = 1.0, init_bias: float = 0.0):
+        self.linear = nn.Linear(1, 1)
+        self.linear.weight.data[0] = init_weight
+        self.linear.bias.data[0] = init_bias
+        self.opt = partial_opt(self.linear.parameters())
+
+    def on_train_begin(self) -> None:
+        self.linear.to(self.wrapper.fit_params.device)
+
+    def on_volume_batch_begin(self) -> None:
+        if self.wrapper.fit_params.state == "train":
+            self._preds: List[Tensor] = []
+            self._targs: List[Tensor] = []
+
+    def on_x0_pred_end(self) -> None:
+        if self.wrapper.fit_params.state == "train":
+            self._preds.append(self.wrapper.fit_params.pred.detach().clone())
+            self._targs.append(self.wrapper.volume.target.detach().clone())
+
+        self.wrapper.fit_params.pred = self.linear(self.wrapper.fit_params.pred)
+
+    def on_backwards_begin(self) -> None:
+        x = torch.stack(self._preds, 0)
+        y = torch.stack(self._targs, 0)
+        for i in range(10000):
+            y_pred = self.linear(x)
+            loss = F.mse_loss(y_pred, y)
+            self.opt.zero_grad()
+            loss.backward()
+            self.opt.step()
