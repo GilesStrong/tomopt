@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Dict, Optional, Tuple
 
 import matplotlib.pyplot as plt
@@ -176,18 +177,23 @@ class ScatterBatch:
             * (self.poca_xyz[:, 2] < z[1])
         )
 
-    def plot_scatter(self, idx: int) -> None:
+    def plot_scatter(self, idx: int, savename: Optional[Path] = None) -> None:
         r"""
         Plots representation of hits and fitted trajectories for a single muon.
 
         Arguments:
             idx: index of muon to plot
+            savename: optional path to save figure to
         """
 
         xin, xout = self.hits["above"]["reco_xyz"][idx, :, 0].detach().cpu().numpy(), self.hits["below"]["reco_xyz"][idx, :, 0].detach().cpu().numpy()
         yin, yout = self.hits["above"]["reco_xyz"][idx, :, 1].detach().cpu().numpy(), self.hits["below"]["reco_xyz"][idx, :, 1].detach().cpu().numpy()
         zin, zout = self.hits["above"]["reco_xyz"][idx, :, 2].detach().cpu().numpy(), self.hits["below"]["reco_xyz"][idx, :, 2].detach().cpu().numpy()
+        xin_unc, xout_unc = self.hits["above"]["unc_xyz"][idx, :, 0].detach().cpu().numpy(), self.hits["below"]["unc_xyz"][idx, :, 0].detach().cpu().numpy()
+        yin_unc, yout_unc = self.hits["above"]["unc_xyz"][idx, :, 1].detach().cpu().numpy(), self.hits["below"]["unc_xyz"][idx, :, 1].detach().cpu().numpy()
         scatter = self.poca_xyz[idx].detach().cpu().numpy()
+        scatter_unc = self.poca_xyz_unc[idx].detach().cpu().numpy()
+
         dtheta_xy = self.dtheta_xy[idx].detach().cpu().numpy()
         dphi = self.dphi[idx].detach().cpu().numpy()
         phi_in = self.phi_in[idx].detach().cpu().numpy()
@@ -217,6 +223,9 @@ class ScatterBatch:
         axs[0].scatter(xin, zin)
         axs[0].scatter(xout, zout)
         axs[0].scatter(scatter[0], scatter[2], label=r"$\Delta\theta_x=" + f"{dtheta_xy[0]:.1e}$")
+        axs[0].errorbar(xin, zin, xerr=xin_unc, color="C0", linestyle="none")
+        axs[0].errorbar(xout, zout, xerr=xout_unc, color="C1", linestyle="none")
+        axs[0].errorbar(scatter[0], scatter[2], xerr=scatter_unc[0], yerr=scatter_unc[2], color="C2", linestyle="none")
         axs[0].set_xlabel("x")
         axs[0].set_ylabel("z")
         axs[0].legend()
@@ -240,6 +249,9 @@ class ScatterBatch:
         axs[1].scatter(yin, zin)
         axs[1].scatter(yout, zout)
         axs[1].scatter(scatter[1], scatter[2], label=r"$\Delta\theta_y=" + f"{dtheta_xy[1]:.1e}$")
+        axs[1].errorbar(yin, zin, xerr=yin_unc, color="C0", linestyle="none")
+        axs[1].errorbar(yout, zout, xerr=yout_unc, color="C1", linestyle="none")
+        axs[1].errorbar(scatter[1], scatter[2], xerr=scatter_unc[1], yerr=scatter_unc[2], color="C2", linestyle="none")
         axs[1].set_xlabel("y")
         axs[1].set_ylabel("z")
         axs[1].legend()
@@ -263,9 +275,15 @@ class ScatterBatch:
         axs[2].scatter(xin, yin)
         axs[2].scatter(xout, yout)
         axs[2].scatter(scatter[0], scatter[1], label=r"$\Delta\phi=" + f"{dphi[0]:.1e}$")
+        axs[2].errorbar(xin, yin, xerr=xin_unc, yerr=yin_unc, color="C0", linestyle="none")
+        axs[2].errorbar(xout, yout, xerr=xout_unc, yerr=yout_unc, color="C1", linestyle="none")
+        axs[2].errorbar(scatter[0], scatter[1], xerr=scatter_unc[0], yerr=scatter_unc[1], color="C2", linestyle="none")
         axs[2].set_xlabel("x")
         axs[2].set_ylabel("y")
         axs[2].legend()
+
+        if savename is not None:
+            plt.savefig(savename, bbox_inches="tight")
         plt.show()
 
     @staticmethod

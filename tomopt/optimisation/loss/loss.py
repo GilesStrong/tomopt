@@ -12,7 +12,7 @@ r"""
 Provides loss functions for evaluating the performance of detector and inference configurations
 """
 
-__all__ = ["AbsDetectorLoss", "AbsMaterialClassLoss", "VoxelX0Loss", "VoxelClassLoss", "VolumeClassLoss", "VolumeIntClassLoss"]
+__all__ = ["AbsDetectorLoss", "AbsMaterialClassLoss", "VoxelX0Loss", "VoxelClassLoss", "VolumeClassLoss", "VolumeIntClassLoss", "VolumeMSELoss"]
 
 
 class AbsDetectorLoss(nn.Module, metaclass=ABCMeta):
@@ -422,4 +422,27 @@ class VolumeIntClassLoss(AbsDetectorLoss):
 
         int_targ = self.targ2int(volume.target.clone(), volume)
         loss = integer_class_loss(pred, int_targ, pred_start_int=self.pred_int_start, use_mse=self.use_mse, reduction="none")
+        return torch.mean(loss / inv_pred_weight)
+
+
+class VolumeMSELoss(AbsDetectorLoss):
+    r"""
+    TODO: Add unit tests and docs
+    """
+
+    def _get_inference_loss(self, pred: Tensor, inv_pred_weight: Tensor, volume: Volume) -> Tensor:
+        r"""
+        Computes the MSE of the preds and targets.
+
+        Arguments:
+            pred: predicted floats
+            inv_pred_weight: weight that divides the unreduced SE loss between the predictions and targets, prior to averaging
+            volume: Volume containing the passive volume that was being predicted
+
+        Returns:
+            The mean MSE for the predictions
+        """
+
+        targ = volume.target.clone()
+        loss = F.mse_loss(pred, targ, reduction="none")
         return torch.mean(loss / inv_pred_weight)

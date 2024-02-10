@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Optional, Tuple
 
 import torch
 from torch import Tensor
@@ -30,9 +30,15 @@ class LadleFurnacePassiveGenerator(AbsPassiveGenerator):
         self.xy_shp = (self.lw / self.size).astype(int).tolist()
         self.fill_z_range = ((self.z_range[0]) + self.size, self.z_range[1])
 
-    def _generate(self) -> Tuple[RadLengthFunc, Tensor]:
-        mat_z = self.size + self.fill_z_range[0] + ((self.fill_z_range[1] - (self.fill_z_range[0] + self.size)) * torch.rand(1, device=self.volume.device))
-        slag_z = mat_z + ((self.z_range[1] - mat_z) * torch.rand(1, device=self.volume.device))
+    def _generate(self, fixed_mat_z: Optional[float] = None, fixed_slag_z: Optional[float] = None) -> Tuple[RadLengthFunc, Tensor]:
+        if fixed_mat_z is None:
+            mat_z = self.size + self.fill_z_range[0] + ((self.fill_z_range[1] - (self.fill_z_range[0] + self.size)) * torch.rand(1, device=self.volume.device))
+        else:
+            mat_z = Tensor([fixed_mat_z], device=self.volume.device)
+        if fixed_slag_z is None:
+            slag_z = mat_z + ((self.z_range[1] - mat_z) * torch.rand(1, device=self.volume.device))
+        else:
+            slag_z = Tensor([fixed_slag_z], device=self.volume.device)
 
         def generator(*, z: Tensor, lw: Tensor, size: float) -> Tensor:
             if z <= self.fill_z_range[0]:  # Bottom layer
