@@ -131,3 +131,29 @@ class PanelUpdateLimiter(Callback):
                                 panel.xy_span,
                             )
                         panel_idx += 1
+
+
+class PanelCentring(Callback):
+    """
+    Callback class for panel centring in the optimisation process.
+
+    This callback is used to centre the panels of PanelDetectorLayer objects
+    by setting their xy coordinates to the mean xy value of all panels in the layer.
+
+    This update takes place after the panel positions have been updated in the optimisation process.
+    """
+
+    def on_step_end(self) -> None:
+        """
+        Updates the xy coordinates of all panels in the PanelDetectorLayer objects after they have be updated, based on their current mean xy position.
+        """
+        for l in self.wrapper.volume.get_detectors():
+            if isinstance(l, PanelDetectorLayer):
+                xy = []
+                for p in l.panels:
+                    xy.append(p.xy.detach().cpu().numpy())
+                mean_xy = Tensor(np.mean(xy, 0), device=self.wrapper.device)
+                for p in l.panels:
+                    p.xy.data = mean_xy
+            else:
+                raise NotImplementedError(f"PanelCentring does not yet support {type(l)}")
