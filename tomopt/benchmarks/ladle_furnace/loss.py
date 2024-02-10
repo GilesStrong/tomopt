@@ -46,6 +46,10 @@ class LadleFurnaceIntClassLoss(VolumeIntClassLoss):
 
 
 class SpreadRangeLoss(Callback):
+    r"""
+    Research tested only: no unit tests
+    """
+
     def on_volume_batch_begin(self) -> None:
         self._preds: Dict[float, List[Tensor]] = defaultdict(list)
 
