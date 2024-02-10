@@ -1,4 +1,5 @@
-from typing import List, Tuple
+from pathlib import Path
+from typing import List, Optional, Tuple
 
 import torch
 from torch import Tensor
@@ -45,7 +46,7 @@ class PhiDetScatterBatch(ScatterBatch):
         self._reco_hits = torch.cat((above_hits, below_hits), dim=1)  # muons, all panels, reco h,phi,z
         self._gen_hits = torch.cat((_above_gen_hits, _below_gen_hits), dim=1)  # muons, all panels, true xyz
 
-    def plot_scatter(self, idx: int) -> None:
+    def plot_scatter(self, idx: int, savename: Optional[Path]) -> None:
         raise NotImplementedError("Ah, I see you've just volunteered to implement this!")
 
     @staticmethod
