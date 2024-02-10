@@ -23,9 +23,9 @@ from tomopt.optimisation.callbacks import (
     MuonResampler,
     NoMoreNaNs,
     OneCycle,
+    OptConfig,
     PanelCentring,
     PanelMetricLogger,
-    PanelOptConfig,
     PanelUpdateLimiter,
     PostWarmupCallback,
     PredHandler,
@@ -571,7 +571,7 @@ def test_cost_coef_warmup():
                 assert np.abs(loss.cost_coef - np.median(ccw.errors)) < 1e-4
 
 
-def test_panel_opt_config():
+def test_opt_config():
     volume = MockVolume()
     volume.parameters = []
     panel_det = get_panel_detector()
@@ -590,7 +590,7 @@ def test_panel_opt_config():
     xy_pos_mult = 1
     z_pos_mult = -3
     xy_span_mult = 2
-    poc = PanelOptConfig(n_warmup=2, xy_pos_rate=xy_pos_rate, z_pos_rate=z_pos_rate, xy_span_rate=xy_span_rate)
+    poc = OptConfig(n_warmup=2, rates={"xy_pos_opt": xy_pos_rate, "z_pos_opt": z_pos_rate, "xy_span_opt": xy_span_rate})
     assert check_callback_base(poc)
     poc.set_wrapper(vw)
     vw.fit_params.warmup_cbs = [poc]
