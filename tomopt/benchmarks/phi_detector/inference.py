@@ -46,7 +46,7 @@ class PhiDetScatterBatch(ScatterBatch):
         self._reco_hits = torch.cat((above_hits, below_hits), dim=1)  # muons, all panels, reco h,phi,z
         self._gen_hits = torch.cat((_above_gen_hits, _below_gen_hits), dim=1)  # muons, all panels, true xyz
 
-    def plot_scatter(self, idx: int, savename: Optional[Path]) -> None:
+    def plot_scatter(self, idx: int, savename: Optional[Path] = None) -> None:
         raise NotImplementedError("Ah, I see you've just volunteered to implement this!")
 
     @staticmethod

@@ -177,7 +177,7 @@ class ScatterBatch:
             * (self.poca_xyz[:, 2] < z[1])
         )
 
-    def plot_scatter(self, idx: int, savename: Optional[Path]) -> None:
+    def plot_scatter(self, idx: int, savename: Optional[Path] = None) -> None:
         r"""
         Plots representation of hits and fitted trajectories for a single muon.
 

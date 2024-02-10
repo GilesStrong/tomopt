@@ -399,7 +399,6 @@ class AbsX0Inferrer(AbsVolumeInferrer):
                     dim=0,
                 )
 
-            print()
             probs = (
                 torch.stack([comp_int(l, l + self.volume.passive_size, xyz_distributions) for l in self.volume.xyz_edges.unbind()])
                 .transpose(-1, -2)  # prob, mu --> mu, prob
