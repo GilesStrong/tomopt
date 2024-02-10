@@ -391,7 +391,7 @@ class AbsX0Inferrer(AbsVolumeInferrer):
                 return torch.prod(
                     torch.stack(
                         [
-                            dist.cdf(high[i]) - dist.cdf(low[1])
+                            dist.cdf(high[i]) - dist.cdf(low[i])
                             for i, dist in [(0, xyz_distributions["x"]), (1, xyz_distributions["y"]), (2, xyz_distributions["z"])]
                         ],
                         dim=0,
