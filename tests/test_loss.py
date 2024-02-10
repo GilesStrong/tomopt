@@ -28,7 +28,7 @@ def test_abs_detector_loss(mocker):  # noqa F811
     volume = Volume(nn.ModuleList([MockLayer()]))
 
     class DetectorLoss(AbsDetectorLoss):
-        def _get_inference_loss(self, pred: Tensor, inv_pred_weight: Tensor, volume: Volume) -> Tensor:
+        def _get_inference_loss(self, pred: Tensor, volume: Volume) -> Tensor:
             return Tensor([3])
 
     # No target budget
@@ -437,7 +437,6 @@ def test_integer_class_loss():
     loss = integer_class_loss(
         int_probs=F.softmax(Tensor([[10, 0, 0, 0], [10, 0, 0, 0]]), dim=1),
         target_int=Tensor([[0], [0]]),
-        weight=Tensor([[1], [10]]),
         pred_start_int=0,
         use_mse=False,
         reduction="none",

@@ -247,7 +247,6 @@ def test_volume_wrapper_scan_volume(state, mocker):  # noqa F811
     assert cb.on_x0_pred_begin.call_count == 1
     assert cb.on_x0_pred_end.call_count == 1
     assert vw.fit_params.pred.shape == torch.Size((6, 10, 10))
-    assert vw.fit_params.inv_weight.shape == torch.Size([])
 
     if state == "test":
         assert vw.loss_func.call_count == 0
@@ -295,13 +294,12 @@ def test_volume_wrapper_scan_volume_mu_batch(mocker):  # noqa F811
     vw.fit_params.cbs = [sr]
     vw.mu_generator = mu_batch_yielder(mu)
     vw._scan_volume()
-    pred_1b, weight_1b = vw.fit_params.pred.detach().clone(), vw.fit_params.inv_weight.detach().clone()
+    pred_1b = vw.fit_params.pred.detach().clone()
     scatters_1b = sr.get_record()
     loss_1b = vw.fit_params.loss_val.detach().clone()
 
     vw.fit_params.loss_val = None
     vw.fit_params.pred = None
-    vw.fit_params.inv_weight = None
 
     sr._reset()
     vw.mu_generator = mu_batch_yielder(mu)
@@ -313,19 +311,10 @@ def test_volume_wrapper_scan_volume_mu_batch(mocker):  # noqa F811
     assert scatters_1b.shape == scatters_10b.shape
     assert torch.all(scatters_1b == scatters_10b)
 
-    pred_10b, weight_10b = vw.fit_params.pred.detach().clone(), vw.fit_params.inv_weight.detach().clone()
-    diff = torch.abs((weight_1b - weight_10b) / weight_1b)
-    mask = diff > 1e-7
-    print("diff", diff[mask])
-    print("1bp", pred_1b[mask])
-    print("10bp", pred_10b[mask])
-    print("1bw", weight_1b[mask])
-    print("10bw", weight_10b[mask])
+    pred_10b = vw.fit_params.pred.detach().clone()
     print("preds", (pred_1b - pred_10b).mean(), pred_1b.mean(), pred_10b.mean())
-    print("weights", (weight_1b - weight_10b).mean(), weight_1b.mean(), weight_10b.mean())
     print("loss", (loss_1b - loss_10b).mean(), loss_1b.mean(), loss_10b.mean())
     assert torch.abs((pred_1b - pred_10b) / pred_1b).sum() < 1e-4
-    assert torch.abs((weight_1b - weight_10b) / weight_1b).sum() < 1e-4
     assert torch.abs((loss_1b - loss_10b) / loss_1b).sum() < 1e-4
 
 

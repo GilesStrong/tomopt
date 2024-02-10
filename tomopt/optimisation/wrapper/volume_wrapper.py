@@ -65,7 +65,6 @@ class FitParams:
     volume_inferrer: Optional[AbsVolumeInferrer] = None
     state: Optional[str] = None
     pred: Optional[Tensor] = None
-    inv_weight: Optional[Tensor] = None
     n_mu_per_volume: Optional[int] = None
     mu_bs: Optional[int] = None
     mu: Optional[MuonBatch] = None
@@ -597,7 +596,7 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
         """
 
         # Scan volume with muon batches
-        self.fit_params.pred, self.fit_params.inv_weight = None, None
+        self.fit_params.pred = None
         if self.fit_params.state != "test":
             muon_bar = progress_bar(range(self.fit_params.n_mu_per_volume // self.fit_params.mu_bs), display=False, leave=False)
         else:
@@ -618,13 +617,13 @@ class AbsVolumeWrapper(metaclass=ABCMeta):
         # Predict volume based on all muon batches
         for c in self.fit_params.cbs:
             c.on_x0_pred_begin()
-        self.fit_params.pred, self.fit_params.inv_weight = self.fit_params.volume_inferrer.get_prediction()
+        self.fit_params.pred = self.fit_params.volume_inferrer.get_prediction()
         for c in self.fit_params.cbs:
             c.on_x0_pred_end()
 
         # Compute loss for volume
         if self.fit_params.state != "test" and self.loss_func is not None and self.fit_params.pred is not None:
-            loss = self.loss_func(pred=self.fit_params.pred, inv_pred_weight=self.fit_params.inv_weight, volume=self.volume)
+            loss = self.loss_func(pred=self.fit_params.pred, volume=self.volume)
             if self.fit_params.loss_val is None:
                 self.fit_params.loss_val = loss
             else:

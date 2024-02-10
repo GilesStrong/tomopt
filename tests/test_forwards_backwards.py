@@ -240,12 +240,12 @@ def fixed_budget_sigmoid_panel_inferrer() -> PanelX0Inferrer:
     ],
 )
 def test_forwards_panel(mode, inferrer):
-    pred, weight = inferrer.get_prediction()
+    pred = inferrer.get_prediction()
     loss_func = VoxelX0Loss(target_budget=None, cost_coef=None)
-    loss_val = loss_func(pred, weight, inferrer.volume)
+    loss_val = loss_func(pred, inferrer.volume)
 
     if "fixed-budget" in mode:
-        assert torch.autograd.grad(loss_val, inferrer.volume.budget_weights, retain_graph=True, allow_unused=False)[0].abs().sum() > 0
+        assert torch.autograd.grad(loss_val, retain_graph=True, allow_unused=False)[0].abs().sum() > 0
 
     if "panel" in mode:
         for l in inferrer.volume.get_detectors():
@@ -263,9 +263,9 @@ def test_forwards_panel(mode, inferrer):
 
 
 # def test_forwards_deep_panel(deep_inferrer):
-#     pred, weight = deep_inferrer.get_prediction()
+#     pred = deep_inferrer.get_prediction()
 #     loss_func = VolumeClassLoss(target_budget=1, cost_coef=1e-5, x02id={1: 1})
-#     loss_val = loss_func(pred, weight, deep_inferrer.volume)
+#     loss_val = loss_func(pred, deep_inferrer.volume)
 
 #     for l in deep_inferrer.volume.get_detectors():
 #         for p in l.panels:
@@ -284,9 +284,9 @@ def test_forwards_panel(mode, inferrer):
     ],
 )
 def test_backwards_panel(mode, inferrer):
-    pred, weight = inferrer.get_prediction()
+    pred = inferrer.get_prediction()
     loss_func = VoxelX0Loss(target_budget=1, cost_coef=0.15)
-    loss_val = loss_func(pred, weight, inferrer.volume)
+    loss_val = loss_func(pred, inferrer.volume)
     opt = torch.optim.SGD(inferrer.volume.parameters(), lr=1)
     opt.zero_grad()
     loss_val.backward()
@@ -310,7 +310,7 @@ def test_backwards_panel(mode, inferrer):
 
 @pytest.mark.flaky(max_runs=3, min_passes=1)
 def test_backwards_heatmap(heatmap_inferrer):
-    pred, weight = heatmap_inferrer.get_prediction()
+    pred = heatmap_inferrer.get_prediction()
     init_params = defaultdict(lambda: defaultdict(dict))
     for i, l in enumerate(heatmap_inferrer.volume.get_detectors()):
         for j, p in enumerate(l.panels):
@@ -318,7 +318,7 @@ def test_backwards_heatmap(heatmap_inferrer):
             init_params[i][j]["sig"] = p.mu.detach().clone()
 
     loss_func = VoxelX0Loss(target_budget=1, cost_coef=0.15)
-    loss_val = loss_func(pred, weight, heatmap_inferrer.volume)
+    loss_val = loss_func(pred, heatmap_inferrer.volume)
     opt = torch.optim.SGD(heatmap_inferrer.volume.parameters(), lr=1)
     opt.zero_grad()
     loss_val.backward()
@@ -339,9 +339,9 @@ def test_backwards_heatmap(heatmap_inferrer):
 
 
 # def test_backwards_deep_panel(deep_inferrer):
-#     pred, weight = deep_inferrer.get_prediction()
+#     pred = deep_inferrer.get_prediction()
 #     loss_func = VolumeClassLoss(target_budget=1, cost_coef=0.15, x02id={1: 1})
-#     loss_val = loss_func(pred, weight, deep_inferrer.volume)
+#     loss_val = loss_func(pred, deep_inferrer.volume)
 #     opt = torch.optim.SGD(deep_inferrer.volume.parameters(), lr=1)
 #     opt.zero_grad()
 #     loss_val.backward()

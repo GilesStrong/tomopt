@@ -1,6 +1,6 @@
 import math
 from abc import ABCMeta, abstractmethod
-from typing import Callable, Dict, List, Optional, Tuple, Type
+from typing import Callable, Dict, List, Optional, Type
 
 import torch
 import torch.nn.functional as F
@@ -71,10 +71,9 @@ class AbsVolumeInferrer(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def get_prediction(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
+    def get_prediction(self) -> Optional[Tensor]:
         r"""
         Inheriting classes must override this method to provide a prediction computed using the added scatter batches.
-        Predictions can be accompanied by an optional "inverse weight" designed to divide the loss of the predictions: loss(pred,targs)/inv_weight
         E.g. the sum of muon efficiencies.
         """
 
@@ -158,19 +157,18 @@ class AbsX0Inferrer(AbsVolumeInferrer):
         cos_theta = (theta_in.cos() + theta_out.cos()) / 2
         return ((SCATTER_COEF_A / mom) ** 2) * deltaz / (total_scatter.pow(2) * cos_theta)
 
-    def get_prediction(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
+    def get_prediction(self) -> Optional[Tensor]:
         r"""
         Computes the predicted X0 per voxel as a (z,x,y) tensor via PDG scatter-model inversion for the provided scatter batches.
 
         Returns:
             pred: (z,x,y) voxelwise X0 predictions
-            inv_weight: sum of muon efficiencies
         """
 
         if len(self.scatter_batches) == 0:
             print("Warning: unable to scan volume with prescribed number of muons.")
-            return None, None
-        return self.vox_zxy_x0_preds, self.inv_weights
+            return None
+        return self.vox_zxy_x0_preds
 
     @staticmethod
     def _weighted_rms(x: Tensor, wgt: Tensor) -> Tensor:
@@ -358,15 +356,6 @@ class AbsX0Inferrer(AbsVolumeInferrer):
         if self._vox_zxy_x0_pred_uncs is None:
             self._vox_zxy_x0_pred_uncs = self._get_voxel_zxy_x0_pred_uncs()
         return self._vox_zxy_x0_pred_uncs
-
-    @property
-    def inv_weights(self) -> Tensor:
-        r"""
-        Returns:
-            Sum of muon efficiencies
-        """
-
-        return self.muon_efficiency.sum()
 
     @property
     def muon_probs_per_voxel_zxy(self) -> Tensor:  # (mu,z,x,y)
@@ -827,17 +816,16 @@ class DenseBlockClassifierFromX0s(AbsVolumeInferrer):
 
         return self.x0_inferrer.compute_efficiency(scatters=scatters)
 
-    def get_prediction(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
+    def get_prediction(self) -> Optional[Tensor]:
         r"""
         Computes the test statistic for the volume, with values near 0 indicating that no relatively dense material is present,
         and values nearer 1 indicating that it is present.
 
         Returns:
             pred: (1,1,1) volume prediction
-            inv_weight: sum of muon efficiencies
         """
 
-        vox_preds, inv_weights = self.x0_inferrer.get_prediction()
+        vox_preds = self.x0_inferrer.get_prediction()
         if self.use_avgpool:
             vox_preds = F.avg_pool3d(vox_preds[None], kernel_size=3, stride=1, padding=1, count_include_pad=False)[0]
 
@@ -853,7 +841,7 @@ class DenseBlockClassifierFromX0s(AbsVolumeInferrer):
         r = 2 * (mean_bkg - mean_blk) / (mean_bkg + mean_blk)
         r = (r + self.ratio_offset) * self.ratio_coef
         pred = torch.sigmoid(r)
-        return pred[None, None], inv_weights
+        return pred[None, None]
 
     def _reset_vars(self) -> None:
         r"""
@@ -929,7 +917,7 @@ class AbsIntClassifierFromX0(AbsVolumeInferrer):
 
         return self.x0_inferrer.compute_efficiency(scatters=scatters)
 
-    def get_prediction(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
+    def get_prediction(self) -> Optional[Tensor]:
         r"""
         Computes the predicions for the volume.
         If class probabilities were requested during initialisation, then these will be returned.
@@ -937,20 +925,19 @@ class AbsIntClassifierFromX0(AbsVolumeInferrer):
 
         Returns:
             pred: (*) volume prediction
-            inv_weight: sum of muon efficiencies
         """
 
-        vox_preds, inv_weights = self.x0_inferrer.get_prediction()
+        vox_preds = self.x0_inferrer.get_prediction()
 
         probs = self.x02probs(vox_preds)
         if self.output_probs:
-            return probs, inv_weights
+            return probs
         else:
             pred = torch.argmax(probs, dim=-1)
             if self.class2float is None:
-                return pred, inv_weights
+                return pred
             else:
-                return self.class2float(pred, self.volume), inv_weights
+                return self.class2float(pred, self.volume)
 
     def _reset_vars(self) -> None:
         r"""

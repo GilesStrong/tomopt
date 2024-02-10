@@ -488,7 +488,7 @@ def test_panel_inferrer_multi_batch():
     # one batch
     inf = PanelX0Inferrer(volume=volume)
     inf.add_scatters(ScatterBatch(mu=mu, volume=volume))
-    pred1, weight1 = inf.get_prediction()
+    pred1 = inf.get_prediction()
 
     # multi-batch
     inf = PanelX0Inferrer(volume=volume)
@@ -503,10 +503,9 @@ def test_panel_inferrer_multi_batch():
                 for xy_pos in mu._hits[pos][var]:
                     mu_batch._hits[pos][var].append(xy_pos[mask])
         inf.add_scatters(ScatterBatch(mu=mu_batch, volume=volume))
-    pred4, weight4 = inf.get_prediction()
+    pred4 = inf.get_prediction()
 
     assert (((pred1 - pred4) / pred1).abs() < 1e-4).all()
-    assert (((weight1 - weight4) / weight1).abs() < 1e-4).all()
 
 
 def test_panel_x0_inferrer_efficiency(mocker, panel_scatter_batch):  # noqa F811
@@ -676,18 +675,14 @@ def test_x0_inferrer_scatter_inversion_via_scatter_batch():
 #     inputs = inferrer._build_inputs(inferrer.in_vars[0])
 #     assert inputs.shape == torch.Size((600, nvalid, n_infeats + 4))  # +4 since voxels and dpoca_r
 
-#     pred, weight = inferrer.get_prediction()
+#     pred = inferrer.get_prediction()
 #     assert pred.shape == torch.Size((1, 1))
-#     assert weight.shape == torch.Size(())
 
 #     for l in volume.get_detectors():
 #         for panel in l.panels:
 #             assert torch.autograd.grad(pred.abs().sum(), panel.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
 #             assert torch.autograd.grad(pred.abs().sum(), panel.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
 #             assert torch.autograd.grad(pred.abs().sum(), panel.z, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-#             assert torch.autograd.grad(weight.abs().sum(), panel.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-#             assert torch.autograd.grad(weight.abs().sum(), panel.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-#             assert torch.autograd.grad(weight.abs().sum(), panel.z, retain_graph=True, allow_unused=True)[0].abs().sum() == 0
 
 
 @pytest.mark.flaky(max_runs=2, min_passes=1)
