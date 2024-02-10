@@ -360,7 +360,7 @@ def test_metric_logger(detector, mocker, tmp_path):  # noqa F811
     assert history[1]["test"] == [3]
     assert len(logger._buffer_files) == 2
     assert logger._buffer_files[-1] == tmp_path / "temp_monitor_1.png"
-    assert Path(PKG_DIR / "optimisation_history.gif").exists()
+    assert (tmp_path / "optimisation_history.gif").exists()
 
     logger.loss_vals["Validation"] = [9, 8, 7, 6, 5, 9]
     logger.metric_vals = [[10, 3, 5, 6, 7, 5]]
