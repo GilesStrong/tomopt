@@ -431,14 +431,13 @@ def test_panel_x0_inferrer_methods(mocker):  # noqa F811
     assert inferrer._combine_scatters.call_count == 1
     assert inferrer._get_voxel_zxy_x0_preds.call_count == 1
 
-    p1, w1 = inferrer.get_prediction()
+    p1 = inferrer.get_prediction()
     assert inferrer._combine_scatters.call_count == 1
     assert inferrer._get_voxel_zxy_x0_preds.call_count == 1
     assert isinstance(inferrer._muon_probs_per_voxel_zxy, Tensor)
 
     true = volume.get_rad_cube()
     assert p1.shape == true.shape
-    assert w1.shape == torch.Size([])
     assert inferrer._muon_probs_per_voxel_zxy.shape == torch.Size([len(sb)]) + true.shape
     assert (p1 != p1).sum() == 0  # No NaNs
     assert (((p1 - true)).abs() / true).mean() < 100
@@ -448,8 +447,6 @@ def test_panel_x0_inferrer_methods(mocker):  # noqa F811
             assert torch.autograd.grad(p1.abs().sum(), panel.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
             assert torch.autograd.grad(p1.abs().sum(), panel.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
             assert torch.autograd.grad(p1.abs().sum(), panel.z, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-            assert torch.autograd.grad(w1.abs().sum(), panel.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-            assert torch.autograd.grad(w1.abs().sum(), panel.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
 
     # Multiple batches
     mus = MuonResampler.resample(gen(N), volume=volume, gen=gen)
@@ -472,9 +469,8 @@ def test_panel_x0_inferrer_methods(mocker):  # noqa F811
     assert inferrer.n_mu == len(sb) + len(sb2)
     assert inferrer._combine_scatters.call_count == 2
 
-    p2, w2 = inferrer.get_prediction()  # Averaged prediction slightly changes with new batch
+    p2 = inferrer.get_prediction()  # Averaged prediction slightly changes with new batch
     assert (p2 - p1).abs().sum() > 1e-2
-    assert (w2 - w1).abs().sum() > 1e-2
     assert inferrer._get_voxel_zxy_x0_preds.call_count == 2
 
 
@@ -488,7 +484,7 @@ def test_panel_inferrer_multi_batch():
     # one batch
     inf = PanelX0Inferrer(volume=volume)
     inf.add_scatters(ScatterBatch(mu=mu, volume=volume))
-    pred1, weight1 = inf.get_prediction()
+    pred1 = inf.get_prediction()
 
     # multi-batch
     inf = PanelX0Inferrer(volume=volume)
@@ -503,10 +499,9 @@ def test_panel_inferrer_multi_batch():
                 for xy_pos in mu._hits[pos][var]:
                     mu_batch._hits[pos][var].append(xy_pos[mask])
         inf.add_scatters(ScatterBatch(mu=mu_batch, volume=volume))
-    pred4, weight4 = inf.get_prediction()
+    pred4 = inf.get_prediction()
 
     assert (((pred1 - pred4) / pred1).abs() < 1e-4).all()
-    assert (((weight1 - weight4) / weight1).abs() < 1e-4).all()
 
 
 def test_panel_x0_inferrer_efficiency(mocker, panel_scatter_batch):  # noqa F811
@@ -676,18 +671,14 @@ def test_x0_inferrer_scatter_inversion_via_scatter_batch():
 #     inputs = inferrer._build_inputs(inferrer.in_vars[0])
 #     assert inputs.shape == torch.Size((600, nvalid, n_infeats + 4))  # +4 since voxels and dpoca_r
 
-#     pred, weight = inferrer.get_prediction()
+#     pred = inferrer.get_prediction()
 #     assert pred.shape == torch.Size((1, 1))
-#     assert weight.shape == torch.Size(())
 
 #     for l in volume.get_detectors():
 #         for panel in l.panels:
 #             assert torch.autograd.grad(pred.abs().sum(), panel.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
 #             assert torch.autograd.grad(pred.abs().sum(), panel.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
 #             assert torch.autograd.grad(pred.abs().sum(), panel.z, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-#             assert torch.autograd.grad(weight.abs().sum(), panel.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-#             assert torch.autograd.grad(weight.abs().sum(), panel.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-#             assert torch.autograd.grad(weight.abs().sum(), panel.z, retain_graph=True, allow_unused=True)[0].abs().sum() == 0
 
 
 @pytest.mark.flaky(max_runs=2, min_passes=1)
@@ -709,14 +700,12 @@ def test_dense_block_classifier_from_x0s():
     inferrer = DenseBlockClassifierFromX0s(12, PanelX0Inferrer, volume=volume)
     inferrer.add_scatters(sb)
 
-    p, w = inferrer.get_prediction()
+    p = inferrer.get_prediction()
     for l in volume.get_detectors():
         for panel in l.panels:
             assert torch.autograd.grad(p.abs().sum(), panel.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
             assert torch.autograd.grad(p.abs().sum(), panel.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
             assert torch.autograd.grad(p.abs().sum(), panel.z, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-            assert torch.autograd.grad(w.abs().sum(), panel.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-            assert torch.autograd.grad(w.abs().sum(), panel.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
 
 
 def test_abs_int_classifier_from_x0():
@@ -735,30 +724,25 @@ def test_abs_int_classifier_from_x0():
     inferrer = Inf(partial_x0_inferrer=PanelX0Inferrer, volume=volume, output_probs=True)
     inferrer.add_scatters(sb)
 
-    p, w = inferrer.get_prediction()
+    p = inferrer.get_prediction()
     assert p.shape == torch.Size([6])
-    assert w.shape == torch.Size([])
 
     for l in volume.get_detectors():
         for panel in l.panels:
             assert jacobian(p, panel.xy_span).abs().sum() > 0
             assert jacobian(p, panel.xy).abs().sum() > 0
             assert jacobian(p, panel.z).abs().sum() > 0
-            assert torch.autograd.grad(w.abs().sum(), panel.xy_span, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
-            assert torch.autograd.grad(w.abs().sum(), panel.xy, retain_graph=True, allow_unused=True)[0].abs().sum() > 0
 
     # Single prediction
     inferrer = Inf(partial_x0_inferrer=PanelX0Inferrer, volume=volume, output_probs=False)
     inferrer.add_scatters(sb)
-    p, w = inferrer.get_prediction()
+    p = inferrer.get_prediction()
     assert p.type() == "torch.LongTensor"
     assert p.shape == torch.Size([])
-    assert w.shape == torch.Size([])
 
     # Single float prediction
     inferrer = Inf(partial_x0_inferrer=PanelX0Inferrer, volume=volume, output_probs=False, class2float=lambda x, v: 3.5 * x)
     inferrer.add_scatters(sb)
-    p, w = inferrer.get_prediction()
+    p = inferrer.get_prediction()
     assert p.type() == "torch.FloatTensor"
     assert p.shape == torch.Size([])
-    assert w.shape == torch.Size([])

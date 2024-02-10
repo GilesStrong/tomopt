@@ -234,19 +234,18 @@ class PocaZLadleFurnaceFillLevelInferrer(AbsVolumeInferrer):
                 eff = eff * leff  # Muons detected above & below passive volume
         return eff
 
-    def get_prediction(self) -> Tuple[Optional[Tensor], Optional[Tensor]]:
+    def get_prediction(self) -> Optional[Tensor]:
         r"""
         Computes the predicted fill level via a weighted average of POCA locations.
 
         Returns:
             pred: fill-height prediction [m]
-            inv_weight: sum of muon efficiencies
         """
 
         if len(self.scatter_batches) == 0:
             print("Warning: unable to scan volume with prescribed number of muons.")
-            return None, None
-        return self.pred_height, self.inv_weights
+            return None
+        return self.pred_height
 
     @property
     def pred_height(self) -> Tensor:
@@ -311,15 +310,6 @@ class PocaZLadleFurnaceFillLevelInferrer(AbsVolumeInferrer):
         self._muon_scatter_var_uncs = torch.cat([uncs[var_sz[0]][mask] for var_sz in self._var_order_szs], dim=1)  # (mu, vars)
         self._muon_efficiency = torch.cat([self.compute_efficiency(scatters=sb) for sb in self.scatter_batches], dim=0)[mask]  # (mu, eff)
         self._n_mu = len(self._muon_scatter_vars)
-
-    @property
-    def inv_weights(self) -> Tensor:
-        r"""
-        Returns:
-            Sum of muon efficiencies
-        """
-
-        return self.muon_efficiency.sum()
 
     @property
     def muon_efficiency(self) -> Tensor:

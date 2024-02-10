@@ -63,14 +63,13 @@ class AbsDetectorLoss(nn.Module, metaclass=ABCMeta):
         self.sub_losses: Dict[str, Tensor] = {}  # Store subcomponents in dict for telemetry
 
     @abstractmethod
-    def _get_inference_loss(self, pred: Tensor, inv_pred_weight: Tensor, volume: Volume) -> Tensor:
+    def _get_inference_loss(self, pred: Tensor, volume: Volume) -> Tensor:
         r"""
         Inheriting classes must override this to compute the inference-error component of the loss.
         The target for the predictions should be extracted from the volume; whether this be the voxelwise X0s or the value of the `target` attribute.
 
         Arguments:
             pred: the predictions from the inference
-            inv_pred_weight: weight(s) that should divide the (unreduced) loss between the predictions and targets
             volume: Volume containing the passive volume that was being predicted
 
         Returns:
@@ -79,13 +78,12 @@ class AbsDetectorLoss(nn.Module, metaclass=ABCMeta):
 
         pass
 
-    def forward(self, pred: Tensor, inv_pred_weight: Tensor, volume: Volume) -> Tensor:
+    def forward(self, pred: Tensor, volume: Volume) -> Tensor:
         r"""
         Computes the loss for the predictions of a single volume using the current state of the detector
 
         Arguments:
             pred: the predictions from the inference
-            inv_pred_weight: weight(s) that should divide the (unreduced) loss between the predictions and targets
             volume: Volume containing the passive volume that was being predicted and the detector being optimised
 
         Returns:
@@ -93,7 +91,7 @@ class AbsDetectorLoss(nn.Module, metaclass=ABCMeta):
         """
 
         self.sub_losses = {}
-        self.sub_losses["error"] = self._get_inference_loss(pred, inv_pred_weight, volume)
+        self.sub_losses["error"] = self._get_inference_loss(pred, volume)
         self.sub_losses["cost"] = self._get_cost_loss(volume)
         return self.sub_losses["error"] + self.sub_losses["cost"]
 
@@ -181,13 +179,12 @@ class VoxelX0Loss(AbsDetectorLoss):
         debug: If True, will print out information about the loss whenever it is evaluated
     """
 
-    def _get_inference_loss(self, pred: Tensor, inv_pred_weight: Tensor, volume: Volume) -> Tensor:
+    def _get_inference_loss(self, pred: Tensor, volume: Volume) -> Tensor:
         r"""
         Computes the MSE of the predictions against the true voxelwise X0s.
 
         Arguments:
             pred: (z,x,y) voxelwise X0 predictions from the inference
-            inv_pred_weight: weight that divides the unreduced squared error loss between the predictions and targets, prior to averaging
             volume: Volume containing the passive volume that was being predicted
 
         Returns:
@@ -195,7 +192,7 @@ class VoxelX0Loss(AbsDetectorLoss):
         """
 
         true_x0 = volume.get_rad_cube()
-        return torch.mean(F.mse_loss(pred, true_x0, reduction="none") / inv_pred_weight)
+        return F.mse_loss(pred, true_x0, reduction="mean")
 
 
 class AbsMaterialClassLoss(AbsDetectorLoss):
@@ -274,13 +271,12 @@ class VoxelClassLoss(AbsMaterialClassLoss):
         debug: If True, will print out information about the loss whenever it is evaluated
     """
 
-    def _get_inference_loss(self, pred: Tensor, inv_pred_weight: Tensor, volume: Volume) -> Tensor:
+    def _get_inference_loss(self, pred: Tensor, volume: Volume) -> Tensor:
         r"""
         Computes the NLL of the log-probabilities against the true voxelwise classes.
 
         Arguments:
             pred: (1,classes,voxels) log probabilities for voxel class IDs
-            inv_pred_weight: weight that divides the unreduced NLL loss between the predictions and targets, prior to averaging
             volume: Volume containing the passive volume that was being predicted
 
         Returns:
@@ -291,7 +287,7 @@ class VoxelClassLoss(AbsMaterialClassLoss):
         for x0 in true_x0.unique():
             true_x0[true_x0 == x0] = self.x02id[min(self.x02id, key=lambda x: abs(x - x0))]
         true_x0 = true_x0.long().flatten()[None]
-        return torch.mean(F.nll_loss(pred, true_x0, reduction="none") / inv_pred_weight)
+        return F.nll_loss(pred, true_x0, reduction="mean")
 
 
 class VolumeClassLoss(AbsMaterialClassLoss):
@@ -327,13 +323,12 @@ class VolumeClassLoss(AbsMaterialClassLoss):
         debug: If True, will print out information about the loss whenever it is evaluated
     """
 
-    def _get_inference_loss(self, pred: Tensor, inv_pred_weight: Tensor, volume: Volume) -> Tensor:
+    def _get_inference_loss(self, pred: Tensor, volume: Volume) -> Tensor:
         r"""
         Computes the NLL of the log-probabilities against the true voxelwise classes.
 
         Arguments:
             pred: (1,classes,voxels) log probabilities for voxel class IDs, or (1,1,voxels) probabilities for voxels being of class 1
-            inv_pred_weight: weight that divides the unreduced NLL|BCE loss between the predictions and targets, prior to averaging
             volume: Volume containing the passive volume that was being predicted
 
         Returns:
@@ -343,8 +338,7 @@ class VolumeClassLoss(AbsMaterialClassLoss):
         targ = volume.target.clone()
         for x0 in targ.unique():
             targ[targ == x0] = self.x02id[min(self.x02id, key=lambda x: abs(x - x0))]
-        loss = F.nll_loss(pred, targ.long(), reduction="none") if pred.shape[1] > 1 else F.binary_cross_entropy(pred, targ[:, None].float(), reduction="none")
-        return torch.mean(loss / inv_pred_weight)
+        return F.nll_loss(pred, targ.long(), reduction="mean") if pred.shape[1] > 1 else F.binary_cross_entropy(pred, targ[:, None].float(), reduction="mean")
 
 
 class VolumeIntClassLoss(AbsDetectorLoss):
@@ -407,13 +401,12 @@ class VolumeIntClassLoss(AbsDetectorLoss):
         super().__init__(target_budget=target_budget, budget_smoothing=budget_smoothing, cost_coef=cost_coef, steep_budget=steep_budget, debug=debug)
         self.targ2int, self.pred_int_start, self.use_mse = targ2int, pred_int_start, use_mse
 
-    def _get_inference_loss(self, pred: Tensor, inv_pred_weight: Tensor, volume: Volume) -> Tensor:
+    def _get_inference_loss(self, pred: Tensor, volume: Volume) -> Tensor:
         r"""
         Computes the ICL of the integer probabilities against the true target integer.
 
         Arguments:
             pred: (1,*,integers) integer probabilities
-            inv_pred_weight: weight that divides the unreduced ICL between the predictions and targets, prior to averaging
             volume: Volume containing the passive volume that was being predicted
 
         Returns:
@@ -421,8 +414,7 @@ class VolumeIntClassLoss(AbsDetectorLoss):
         """
 
         int_targ = self.targ2int(volume.target.clone(), volume)
-        loss = integer_class_loss(pred, int_targ, pred_start_int=self.pred_int_start, use_mse=self.use_mse, reduction="none")
-        return torch.mean(loss / inv_pred_weight)
+        return integer_class_loss(pred, int_targ, pred_start_int=self.pred_int_start, use_mse=self.use_mse, reduction="mean")
 
 
 class VolumeMSELoss(AbsDetectorLoss):
@@ -430,13 +422,12 @@ class VolumeMSELoss(AbsDetectorLoss):
     TODO: Add unit tests and docs
     """
 
-    def _get_inference_loss(self, pred: Tensor, inv_pred_weight: Tensor, volume: Volume) -> Tensor:
+    def _get_inference_loss(self, pred: Tensor, volume: Volume) -> Tensor:
         r"""
         Computes the MSE of the preds and targets.
 
         Arguments:
             pred: predicted floats
-            inv_pred_weight: weight that divides the unreduced SE loss between the predictions and targets, prior to averaging
             volume: Volume containing the passive volume that was being predicted
 
         Returns:
@@ -444,5 +435,4 @@ class VolumeMSELoss(AbsDetectorLoss):
         """
 
         targ = volume.target.clone()
-        loss = F.mse_loss(pred, targ, reduction="none")
-        return torch.mean(loss / inv_pred_weight)
+        return F.mse_loss(pred, targ, reduction="mean")
