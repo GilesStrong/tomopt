@@ -188,9 +188,7 @@ class MuonGenerator2015(AbsMuonGenerator):
         """
 
         cosTheta = np.cos(theta)
-        cosine = np.sqrt(
-            (cosTheta**2 + self.P1**2 + self.P2 * cosTheta**self.P3 + self.P4 * cosTheta**self.P5) / (1 + self.P1**2 + self.P2 + self.P4)
-        )
+        cosine = np.sqrt((cosTheta**2 + self.P1**2 + self.P2 * cosTheta**self.P3 + self.P4 * cosTheta**self.P5) / (1 + self.P1**2 + self.P2 + self.P4))
         flux = (
             0.14
             * (energy * (1 + 3.64 / (energy * cosine**1.29))) ** (-2.7)

@@ -15,9 +15,9 @@ h5py
 
 # Dev requirements
 pre-commit
-black==22.3.0
+black==24.1.1
 flake8
-pytest
+pytest<8.0.0
 mypy
 pytest-mock
 flaky

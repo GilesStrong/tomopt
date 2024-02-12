@@ -7,7 +7,7 @@ import torch
 from torch import Tensor, nn
 
 from tomopt.volume.heatmap import DetectorHeatMap
-from tomopt.volume.panel import DetectorPanel
+from tomopt.volume.panel import DetectorPanel, SigmoidDetectorPanel
 
 from ..core import DEVICE, SCATTER_COEF_A, SCATTER_COEF_B, RadLengthFunc
 from ..muon import MuonBatch
@@ -286,7 +286,7 @@ class PassiveLayer(AbsLayer):
         # These are in the muons' reference frames NOT the volume's!!!
         # Make sure that scattering angle in the muon reference frame < pi/2
         # to ensure conversion into the volume reference frame
-        dtheta_xy_mu = torch.clamp(z1 * theta0, max=math.pi / 2.2)  # TODO Check this
+        dtheta_xy_mu = torch.clamp(z2 * theta0, max=math.pi / 2.2)  # TODO Check this
         dxy_mu = step_sz * theta0 * ((z1 / math.sqrt(12)) + (z2 / 2))
 
         # Note that if a track incides on a layer
@@ -484,7 +484,15 @@ class PanelDetectorLayer(AbsDetectorLayer):
         panels: The set of initialised panels to contain in the detector layer
     """
 
-    def __init__(self, pos: str, *, lw: Tensor, z: float, size: float, panels: Union[List[DetectorPanel], List[DetectorHeatMap], nn.ModuleList]):
+    def __init__(
+        self,
+        pos: str,
+        *,
+        lw: Tensor,
+        z: float,
+        size: float,
+        panels: Union[List[DetectorPanel], List[DetectorHeatMap], List[SigmoidDetectorPanel], nn.ModuleList],
+    ):
         if isinstance(panels, list):
             panels = nn.ModuleList(panels)
         super().__init__(pos=pos, lw=lw, z=z, size=size, device=self.get_device(panels))

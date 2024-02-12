@@ -1,16 +1,15 @@
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 import numpy as np
 from prettytable import PrettyTable
 
-from ...volume import PanelDetectorLayer
 from .callback import Callback
 
 r"""
 Provides callbacks that act at the start of training to freeze the optimisation and adjust themselves to the initial state of the detectors
 """
 
-__all__ = ["WarmupCallback", "CostCoefWarmup", "PanelOptConfig", "PostWarmupCallback"]
+__all__ = ["WarmupCallback", "CostCoefWarmup", "OptConfig", "PostWarmupCallback"]
 
 
 class WarmupCallback(Callback):
@@ -123,38 +122,35 @@ class CostCoefWarmup(WarmupCallback):
                 self.wrapper.loss_func.cost_coef = avg
 
 
-class PanelOptConfig(WarmupCallback):
+class OptConfig(WarmupCallback):
     r"""
-    Allows the user to specify the desired update steps for :class:`~tomopt.volume.layer.PanelDetectorLayer` s in physical units.
-    Over the course of several warm-up epochs the gradients on the parameters are monitored, after which suitable learning rates for the optimisation are set.
+    Allows the user to specify the desired update steps for parameters in physical units.
+    Over the course of several warm-up epochs the gradients on the parameters are monitored, after which suitable learning rates for the optimisers are set,
+    such that the parameters will move by the desired amount every update.
     During the warm-up, the detectors will not be updated as optimiser learning rates will be set to zero.
+
+    The calculation here does not account for the effect of the optimiser's momentum, nor scheduling and adaption of learning rates, and so the actual update rates may be different from the desired ones.
 
     Arguments:
         n_warmup: number of training epochs to wait before setting learning rates
-        xy_pos_rate: desired distance in metres the panels should move in xy every update
-        z_pos_rate: desired distance in metres the panels should move in z every update
-        xy_span_rate: desired distance in metres the panels should expand in xy every update
-        budget_rate: desired rate at which the fractional budget assignments should change every update
+        rates: dictionary of desired update rates for the parameters
+            The keys are the names of the optimisers specified in the optimiser dictionary of the wrapper.
+            The values are the desired update rates for the parameters in physical units.
+            For example, if the optimiser is SGD, and the parameter is the xy position of a panel, then the update rate should be in metres.
+            The parameters that are being optimisered are expected to be found in the zeroth parameter group of the optimiser, i.e. `wrapper.opts[opt].param_groups[0]['params']`.
+            This implies that the optimiser is expected to have only one parameter group.
+
+    Example::
+        >>> OptConfig(n_warmup=2, rates={'xy_pos_opt':xy_pos_rate, 'z_pos_opt':z_pos_rate, 'xy_span_opt':xy_span_rate})
     """
 
     def __init__(
         self,
         n_warmup: int,
-        xy_pos_rate: Optional[float] = None,
-        z_pos_rate: Optional[float] = None,
-        xy_span_rate: Optional[float] = None,
-        budget_rate: Optional[float] = None,
+        rates: Dict[str, float],
     ):
         super().__init__(n_warmup=n_warmup)
-        self.rates: Dict[str, float] = {}
-        if xy_pos_rate is not None and xy_pos_rate != 0:
-            self.rates["xy_pos_opt"] = xy_pos_rate
-        if z_pos_rate is not None and z_pos_rate != 0:
-            self.rates["z_pos_opt"] = z_pos_rate
-        if xy_span_rate is not None and xy_span_rate != 0:
-            self.rates["xy_span_opt"] = xy_span_rate
-        if budget_rate is not None and budget_rate != 0:
-            self.rates["budget_opt"] = budget_rate
+        self.rates = rates
 
     def on_backwards_end(self) -> None:
         r"""
@@ -164,17 +160,9 @@ class PanelOptConfig(WarmupCallback):
         if not self.warmup_active:
             return
         if self.wrapper.fit_params.state == "train":
-            if "budget_opt" in self.rates:
-                self.stats["budget_opt"].append(self.wrapper.volume.budget_weights.grad.abs().cpu().numpy())
-            for l in self.wrapper.volume.get_detectors():
-                if isinstance(l, PanelDetectorLayer):
-                    for p in l.panels:
-                        if "xy_pos_opt" in self.rates:
-                            self.stats["xy_pos_opt"].append(p.xy.grad.abs().cpu().numpy())
-                        if "z_pos_opt" in self.rates:
-                            self.stats["z_pos_opt"].append(p.z.grad.abs().cpu().numpy())
-                        if "xy_span_opt" in self.rates:
-                            self.stats["xy_span_opt"].append(p.xy_span.grad.abs().cpu().numpy())
+            for opt in self.rates:
+                for param in self.wrapper.opts[opt].param_groups[0]["params"]:
+                    self.stats[opt].append(param.grad.abs().cpu().numpy())
 
     def on_epoch_end(self) -> None:
         r"""
@@ -186,6 +174,7 @@ class PanelOptConfig(WarmupCallback):
         super().on_epoch_end()
         if self.wrapper.fit_params.state == "train":
             if self.epoch_cnt >= self.n_warmup:
+                self.lrs = {}
                 print(f"{type(self).__name__}: Optimiser warm-up completed")
                 pt = PrettyTable(["Param", "Median Grad", "LR"])
                 for k, v in self.stats.items():  # Allow optimisation
@@ -193,6 +182,7 @@ class PanelOptConfig(WarmupCallback):
                     lr = self.rates[k] / avg
                     pt.add_row([k, avg, lr])
                     self.wrapper.set_opt_lr(lr, k)
+                    self.lrs[k] = lr
                 print(pt)
 
     def _reset(self) -> None:

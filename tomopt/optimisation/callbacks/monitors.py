@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import math
-import os
 from collections import defaultdict
 from typing import Dict, List, Optional, Tuple
 
@@ -337,9 +336,6 @@ class MetricLogger(Callback):
             for filename in self._buffer_files:
                 image = imageio.imread(filename)
                 writer.append_data(image)
-
-        for filename in set(self._buffer_files):
-            os.remove(filename)
 
 
 class PanelMetricLogger(MetricLogger):
