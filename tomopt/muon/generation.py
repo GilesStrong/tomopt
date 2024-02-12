@@ -193,6 +193,8 @@ class MuonGenerator2015(AbsMuonGenerator):
             0.14
             * (energy * (1 + 3.64 / (energy * cosine**1.29))) ** (-2.7)
             * ((1 / (1 + (1.1 * energy * cosine) / 115)) + (0.054 / (1 + (1.1 * energy * cosine) / 850)))
+            * cosTheta  # horizontal generaion surface
+            * np.sin(theta)  # dN / d\Omega -> dN / d\theta
         )
         return flux
 
@@ -235,5 +237,5 @@ class MuonGenerator2016(AbsMuonGenerator):
         """
 
         Cosine = (np.sqrt(self.Rod**2 * np.cos(theta) ** 2 + 2 * self.Rod + 1) - self.Rod * np.cos(theta)) ** (-(self.n - 1))
-        flux = self.I_0 * self.N * (self.E_0 + energy) ** (-self.n) * (1 + energy * self.epinv) ** (-1) * Cosine
+        flux = self.I_0 * self.N * (self.E_0 + energy) ** (-self.n) * (1 + energy * self.epinv) ** (-1) * Cosine * np.cos(theta) * np.sin(theta)
         return flux
