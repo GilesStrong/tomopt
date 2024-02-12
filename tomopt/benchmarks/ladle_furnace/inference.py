@@ -11,7 +11,7 @@ from ...inference.volume import AbsIntClassifierFromX0, AbsVolumeInferrer, AbsX0
 from ...optimisation.callbacks import Callback
 from ...volume import Volume
 
-__all__ = ["EdgeDetLadleFurnaceFillLevelInferrer", "PocaZLadleFurnaceFillLevelInferrer"]
+__all__ = ["EdgeDetLadleFurnaceFillLevelInferrer", "PocaZLadleFurnaceFillLevelInferrer", "LinearCorrectionCallback"]
 
 
 class EdgeDetLadleFurnaceFillLevelInferrer(AbsIntClassifierFromX0):
@@ -416,7 +416,7 @@ class LinearCorrectionCallback(Callback):
 
         self.wrapper.fit_params.pred = self.linear(self.wrapper.fit_params.pred)
 
-    def on_backwards_begin(self) -> None:
+    def on_backwards_end(self) -> None:
         x = torch.stack(self._preds, 0)
         y = torch.stack(self._targs, 0)
         for i in range(10000):

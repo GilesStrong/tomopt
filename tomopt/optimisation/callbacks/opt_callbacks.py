@@ -11,7 +11,7 @@ from .warmup_callbacks import PostWarmupCallback
 if TYPE_CHECKING:
     from ...optimisation.wrapper import AbsVolumeWrapper
 
-__all__ = ["OneCycle"]
+__all__ = ["OneCycle", "EpochSave"]
 
 
 class AbsOptSchedule(PostWarmupCallback, metaclass=ABCMeta):
