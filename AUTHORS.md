@@ -254,6 +254,23 @@ In order to start time, the TomOpt authors/contributors are: Giles Strong, Tomma
 - Meeting attendance
 - Full report on EM algorithm
 
+## Aitor Orio Alonso (@Tortxu10)
+
+### 2018 - present. Muon Tomography Systems, Spain.
+
+<img src="docs/source/_static/imgs/authors/AitorOrioAlonso.JPG" style="width:auto;height:100px" />
+
+### Code contributions:
+
+- Conceptual planning, & investigation for:
+  - Ladle furnace benchmark: inference method design. Performance and loss function assessment.
+- Assistance, advice, and information for various aspects of muon tomography
+
+### Other roles:
+
+- Meeting presentations
+- Meeting attendance
+  
 ## Name Surname (@Github_name)
 
 ### start year - end year / present. Institute, Country.
