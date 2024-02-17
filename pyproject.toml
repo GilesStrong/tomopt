@@ -19,7 +19,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.10"
-torch = "2.1.0"
+torch = "^2.2.0"
 seaborn = ">=0.11.0,<0.12.0"
 matplotlib = ">=3.7.0,<3.8.0"
 numpy = "^1.26.4"
