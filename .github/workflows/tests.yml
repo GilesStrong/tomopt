@@ -17,8 +17,7 @@ jobs:
           python-version: "3.8"
       - name: Install Dependencies
         run: |
-          pip install -r requirements.txt
-          pip install -e .
-          # pip install 
+          curl -sSL https://install.python-poetry.org | python3 -
+          poetry install
       - name: pytest
         run: pytest tests
