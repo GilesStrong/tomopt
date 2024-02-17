@@ -19,7 +19,7 @@ exec(open("tomopt/version.py").read())
 setup(
     name="tomopt",
     version=__version__,  # noqa
-    author="MODE Collaboration",
+    author="Giles Strong, et al.",
     author_email="https://mode-collaboration.github.io/",
     description="TomOpt: Differential Muon Tomography Optimization",
     long_description=long_description,
@@ -40,6 +40,6 @@ setup(
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
         "Natural Language :: English",
-        "Development Status :: 1 - Planning",
+        "Development Status :: 3 - Alpha",
     ],
 )

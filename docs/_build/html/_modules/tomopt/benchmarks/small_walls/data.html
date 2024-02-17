@@ -14,6 +14,8 @@
 
   
   
+    <link rel="shortcut icon" href="../../../../_static/tomopt_logo.png"/>
+  
   
   
 
@@ -235,15 +237,15 @@
               
   <h1>Source code for tomopt.benchmarks.small_walls.data</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
 
+<span class="kn">from</span> <span class="nn">...core</span> <span class="kn">import</span> <span class="n">DENSITIES</span><span class="p">,</span> <span class="n">X0</span><span class="p">,</span> <span class="n">RadLengthFunc</span>
 <span class="kn">from</span> <span class="nn">...optimisation.data.passives</span> <span class="kn">import</span> <span class="n">AbsPassiveGenerator</span>
-<span class="kn">from</span> <span class="nn">...volume</span> <span class="kn">import</span> <span class="n">Volume</span>
-<span class="kn">from</span> <span class="nn">...core</span> <span class="kn">import</span> <span class="n">X0</span><span class="p">,</span> <span class="n">DENSITIES</span><span class="p">,</span> <span class="n">RadLengthFunc</span>
 <span class="kn">from</span> <span class="nn">...utils</span> <span class="kn">import</span> <span class="n">x0_from_mixture</span>
+<span class="kn">from</span> <span class="nn">...volume</span> <span class="kn">import</span> <span class="n">Volume</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;SmallWallsPassiveGenerator&quot;</span><span class="p">]</span>
 
@@ -276,7 +278,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">zxy_shp</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">z_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_range</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">))]</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lw</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">wall_z_range</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z_range</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>  <span class="c1"># At least top layer is soil</span>
 
-<div class="viewcode-block" id="SmallWallsPassiveGenerator._generate"><a class="viewcode-back" href="../../../../tomopt.benchmarks.small_walls.html#tomopt.benchmarks.small_walls.data.SmallWallsPassiveGenerator._generate">[docs]</a>    <span class="k">def</span> <span class="nf">_generate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">RadLengthFunc</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">_generate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">RadLengthFunc</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
         <span class="n">n_walls</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
         <span class="n">zxy_map</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zxy_shp</span><span class="p">)</span>
         <span class="n">ground_z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zxy_shp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
@@ -330,7 +332,7 @@
         <span class="k">def</span> <span class="nf">generator</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">lw</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">x0_map</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">((</span><span class="nb">float</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_range</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
 
-        <span class="k">return</span> <span class="n">generator</span><span class="p">,</span> <span class="n">zxy_map</span></div></div>
+        <span class="k">return</span> <span class="n">generator</span><span class="p">,</span> <span class="n">zxy_map</span></div>
 </pre></div>
 
              </article>
@@ -343,7 +345,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2021-2022, TomOpt Authors.
+        &copy; Copyright 2021-2024, TomOpt Authors.
 
     </p>
   </div>

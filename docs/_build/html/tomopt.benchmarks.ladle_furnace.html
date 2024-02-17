@@ -34,7 +34,7 @@
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="tomopt.benchmarks.phi_detector package" href="tomopt.benchmarks.phi_detector.html" />
+    <link rel="next" title="tomopt.benchmarks.small_walls package" href="tomopt.benchmarks.small_walls.html" />
     <link rel="prev" title="tomopt.benchmarks package" href="tomopt.benchmarks.html" /> 
 
   
@@ -253,47 +253,22 @@
 <span id="tomopt-benchmarks-ladle-furnace-data-module"></span><h2>tomopt.benchmarks.ladle_furnace.data module<a class="headerlink" href="#module-tomopt.benchmarks.ladle_furnace.data" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.data.LadleFurnacePassiveGenerator">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.benchmarks.ladle_furnace.data.</span></span><span class="sig-name descname"><span class="pre">LadleFurnacePassiveGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0_furnace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01757</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_materials</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['aluminium']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slag_materials</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['silicon',</span> <span class="pre">'graphite',</span> <span class="pre">'beryllium']</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/data.html#LadleFurnacePassiveGenerator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.data.LadleFurnacePassiveGenerator" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.benchmarks.ladle_furnace.data.</span></span><span class="sig-name descname"><span class="pre">LadleFurnacePassiveGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0_furnace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01782</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_material</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'hot</span> <span class="pre">liquid</span> <span class="pre">steel'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slag_material</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'slag'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/data.html#LadleFurnacePassiveGenerator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.data.LadleFurnacePassiveGenerator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tomopt.optimisation.data.html#tomopt.optimisation.data.passives.AbsPassiveGenerator" title="tomopt.optimisation.data.passives.AbsPassiveGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsPassiveGenerator</span></code></a></p>
 <p>Research tested only: no unit tests</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.data.LadleFurnacePassiveGenerator._abc_impl">
-<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.data.LadleFurnacePassiveGenerator._abc_impl" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.data.LadleFurnacePassiveGenerator._generate">
-<span class="sig-name descname"><span class="pre">_generate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/data.html#LadleFurnacePassiveGenerator._generate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.data.LadleFurnacePassiveGenerator._generate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Inheriting classes should override this.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A function that provides an xy tensor for a given layer when called with its z position, length and width, and size.
-Target: An optional “target” value for the layout</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>RadLengthFunc</p>
-</dd>
-</dl>
-</dd></dl>
-
 </dd></dl>
 
 </section>
 <section id="module-tomopt.benchmarks.ladle_furnace.inference">
 <span id="tomopt-benchmarks-ladle-furnace-inference-module"></span><h2>tomopt.benchmarks.ladle_furnace.inference module<a class="headerlink" href="#module-tomopt.benchmarks.ladle_furnace.inference" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
-<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.benchmarks.ladle_furnace.inference.</span></span><span class="sig-name descname"><span class="pre">LadleFurnaceFillLevelInferrer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">partial_x0_inferrer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pipeline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['remove_ladle',</span> <span class="pre">'avg_3d',</span> <span class="pre">'avg_layers',</span> <span class="pre">'avg_1d',</span> <span class="pre">'ridge_1d_0',</span> <span class="pre">'negative',</span> <span class="pre">'max_div_min']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_batch_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_probs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#LadleFurnaceFillLevelInferrer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.benchmarks.ladle_furnace.inference.</span></span><span class="sig-name descname"><span class="pre">EdgeDetLadleFurnaceFillLevelInferrer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">partial_x0_inferrer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pipeline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['remove_ladle',</span> <span class="pre">'avg_3d',</span> <span class="pre">'avg_layers',</span> <span class="pre">'avg_1d',</span> <span class="pre">'ridge_1d_0',</span> <span class="pre">'negative',</span> <span class="pre">'max_div_min']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_batch_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_probs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#EdgeDetLadleFurnaceFillLevelInferrer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tomopt.inference.html#tomopt.inference.volume.AbsIntClassifierFromX0" title="tomopt.inference.volume.AbsIntClassifierFromX0"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsIntClassifierFromX0</span></code></a></p>
 <p>Research tested only: no unit tests</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer._abc_impl">
-<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer._abc_impl" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="py method">
-<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer._class2float">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_class2float</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">preds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#LadleFurnaceFillLevelInferrer._class2float"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer._class2float" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.avg_1d">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">avg_1d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#EdgeDetLadleFurnaceFillLevelInferrer.avg_1d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.avg_1d" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
@@ -302,8 +277,8 @@ Target: An optional “target” value for the layout</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.avg_1d">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">avg_1d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#LadleFurnaceFillLevelInferrer.avg_1d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.avg_1d" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.avg_3d">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">avg_3d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#EdgeDetLadleFurnaceFillLevelInferrer.avg_3d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.avg_3d" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
@@ -312,8 +287,8 @@ Target: An optional “target” value for the layout</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.avg_3d">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">avg_3d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#LadleFurnaceFillLevelInferrer.avg_3d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.avg_3d" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.avg_layers">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">avg_layers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#EdgeDetLadleFurnaceFillLevelInferrer.avg_layers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.avg_layers" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
@@ -322,8 +297,8 @@ Target: An optional “target” value for the layout</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.avg_layers">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">avg_layers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#LadleFurnaceFillLevelInferrer.avg_layers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.avg_layers" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.edge_det">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">edge_det</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#EdgeDetLadleFurnaceFillLevelInferrer.edge_det"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.edge_det" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
@@ -332,8 +307,8 @@ Target: An optional “target” value for the layout</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.edge_det">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">edge_det</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#LadleFurnaceFillLevelInferrer.edge_det"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.edge_det" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.gauss_1d">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">gauss_1d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#EdgeDetLadleFurnaceFillLevelInferrer.gauss_1d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.gauss_1d" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
@@ -342,8 +317,8 @@ Target: An optional “target” value for the layout</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.gauss_1d">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">gauss_1d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#LadleFurnaceFillLevelInferrer.gauss_1d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.gauss_1d" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.gauss_3d">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">gauss_3d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#EdgeDetLadleFurnaceFillLevelInferrer.gauss_3d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.gauss_3d" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
@@ -352,8 +327,8 @@ Target: An optional “target” value for the layout</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.gauss_3d">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">gauss_3d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#LadleFurnaceFillLevelInferrer.gauss_3d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.gauss_3d" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.laplacian_1d">
+<span class="sig-name descname"><span class="pre">laplacian_1d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#EdgeDetLadleFurnaceFillLevelInferrer.laplacian_1d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.laplacian_1d" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
@@ -362,8 +337,8 @@ Target: An optional “target” value for the layout</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.laplacian_1d">
-<span class="sig-name descname"><span class="pre">laplacian_1d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#LadleFurnaceFillLevelInferrer.laplacian_1d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.laplacian_1d" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.max_div_min">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max_div_min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#EdgeDetLadleFurnaceFillLevelInferrer.max_div_min"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.max_div_min" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
@@ -372,8 +347,8 @@ Target: An optional “target” value for the layout</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.max_div_min">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max_div_min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#LadleFurnaceFillLevelInferrer.max_div_min"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.max_div_min" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.max_sub_min">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max_sub_min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#EdgeDetLadleFurnaceFillLevelInferrer.max_sub_min"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.max_sub_min" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
@@ -382,8 +357,8 @@ Target: An optional “target” value for the layout</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.max_sub_min">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max_sub_min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#LadleFurnaceFillLevelInferrer.max_sub_min"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.max_sub_min" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.negative">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">negative</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#EdgeDetLadleFurnaceFillLevelInferrer.negative"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.negative" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
@@ -392,8 +367,8 @@ Target: An optional “target” value for the layout</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.negative">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">negative</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#LadleFurnaceFillLevelInferrer.negative"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.negative" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.prewit_1d">
+<span class="sig-name descname"><span class="pre">prewit_1d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#EdgeDetLadleFurnaceFillLevelInferrer.prewit_1d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.prewit_1d" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
@@ -402,18 +377,8 @@ Target: An optional “target” value for the layout</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.prewit_1d">
-<span class="sig-name descname"><span class="pre">prewit_1d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#LadleFurnaceFillLevelInferrer.prewit_1d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.prewit_1d" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.remove_ladle">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">remove_ladle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#LadleFurnaceFillLevelInferrer.remove_ladle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.remove_ladle" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.remove_ladle">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">remove_ladle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#EdgeDetLadleFurnaceFillLevelInferrer.remove_ladle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.remove_ladle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Assumes ladle is 1 voxel thick</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -423,8 +388,8 @@ Target: An optional “target” value for the layout</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.ridge_1d_0">
-<span class="sig-name descname"><span class="pre">ridge_1d_0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#LadleFurnaceFillLevelInferrer.ridge_1d_0"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.ridge_1d_0" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.ridge_1d_0">
+<span class="sig-name descname"><span class="pre">ridge_1d_0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#EdgeDetLadleFurnaceFillLevelInferrer.ridge_1d_0"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.ridge_1d_0" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
@@ -433,8 +398,8 @@ Target: An optional “target” value for the layout</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.ridge_1d_2">
-<span class="sig-name descname"><span class="pre">ridge_1d_2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#LadleFurnaceFillLevelInferrer.ridge_1d_2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.ridge_1d_2" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.ridge_1d_2">
+<span class="sig-name descname"><span class="pre">ridge_1d_2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#EdgeDetLadleFurnaceFillLevelInferrer.ridge_1d_2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.ridge_1d_2" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
@@ -443,8 +408,8 @@ Target: An optional “target” value for the layout</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.ridge_1d_4">
-<span class="sig-name descname"><span class="pre">ridge_1d_4</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#LadleFurnaceFillLevelInferrer.ridge_1d_4"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.ridge_1d_4" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.ridge_1d_4">
+<span class="sig-name descname"><span class="pre">ridge_1d_4</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#EdgeDetLadleFurnaceFillLevelInferrer.ridge_1d_4"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.ridge_1d_4" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
@@ -453,8 +418,8 @@ Target: An optional “target” value for the layout</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.ridge_1d_8">
-<span class="sig-name descname"><span class="pre">ridge_1d_8</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#LadleFurnaceFillLevelInferrer.ridge_1d_8"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.ridge_1d_8" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.ridge_1d_8">
+<span class="sig-name descname"><span class="pre">ridge_1d_8</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#EdgeDetLadleFurnaceFillLevelInferrer.ridge_1d_8"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.ridge_1d_8" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
@@ -463,8 +428,8 @@ Target: An optional “target” value for the layout</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.x02probs">
-<span class="sig-name descname"><span class="pre">x02probs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vox_preds</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#LadleFurnaceFillLevelInferrer.x02probs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.x02probs" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.x02probs">
+<span class="sig-name descname"><span class="pre">x02probs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vox_preds</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#EdgeDetLadleFurnaceFillLevelInferrer.x02probs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.x02probs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Inheriting classes must override this method to convert voxelwise X0 predictions to class probabilities</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -481,6 +446,167 @@ Target: An optional “target” value for the layout</p>
 
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.LinearCorrectionCallback">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.benchmarks.ladle_furnace.inference.</span></span><span class="sig-name descname"><span class="pre">LinearCorrectionCallback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">partial_opt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_bias</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#LinearCorrectionCallback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.LinearCorrectionCallback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.callback.Callback" title="tomopt.optimisation.callbacks.callback.Callback"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callback</span></code></a></p>
+<p>Research tested only: no unit tests</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.LinearCorrectionCallback.on_backwards_end">
+<span class="sig-name descname"><span class="pre">on_backwards_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#LinearCorrectionCallback.on_backwards_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.LinearCorrectionCallback.on_backwards_end" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs when the loss for a batch of passive volumes has been backpropagated, but parameters have not yet been updated.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.LinearCorrectionCallback.on_train_begin">
+<span class="sig-name descname"><span class="pre">on_train_begin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#LinearCorrectionCallback.on_train_begin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.LinearCorrectionCallback.on_train_begin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs when detector fitting begins.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.LinearCorrectionCallback.on_volume_batch_begin">
+<span class="sig-name descname"><span class="pre">on_volume_batch_begin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#LinearCorrectionCallback.on_volume_batch_begin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.LinearCorrectionCallback.on_volume_batch_begin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs when a new batch of passive volume layouts is begins.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.LinearCorrectionCallback.on_x0_pred_end">
+<span class="sig-name descname"><span class="pre">on_x0_pred_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#LinearCorrectionCallback.on_x0_pred_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.LinearCorrectionCallback.on_x0_pred_end" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs after the volume inferrer has made its final prediction, but before the loss is computed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.benchmarks.ladle_furnace.inference.</span></span><span class="sig-name descname"><span class="pre">PocaZLadleFurnaceFillLevelInferrer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smooth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#PocaZLadleFurnaceFillLevelInferrer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="tomopt.inference.html#tomopt.inference.volume.AbsVolumeInferrer" title="tomopt.inference.volume.AbsVolumeInferrer"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsVolumeInferrer</span></code></a></p>
+<p>Research tested only: no unit tests</p>
+<p>Computes fill heigh based on weighted average of z of POCAs</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer.compute_efficiency">
+<span class="sig-name descname"><span class="pre">compute_efficiency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scatters</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#PocaZLadleFurnaceFillLevelInferrer.compute_efficiency"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer.compute_efficiency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the per-muon efficiency, given the individual muon hit efficiencies,
+as the probability of at least two hits above and below the passive volume.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>scatters</strong> (<a class="reference internal" href="tomopt.inference.html#tomopt.inference.scattering.ScatterBatch" title="tomopt.inference.scattering.ScatterBatch"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScatterBatch</span></code></a>) – scatter batch containing muons whose efficiency should be computed</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(muons) tensor of muon efficiencies</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer.get_prediction">
+<span class="sig-name descname"><span class="pre">get_prediction</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/inference.html#PocaZLadleFurnaceFillLevelInferrer.get_prediction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer.get_prediction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the predicted fill level via a weighted average of POCA locations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>fill-height prediction [m]</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>pred</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer.muon_efficiency">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">muon_efficiency</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer.muon_efficiency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns:
+(muons,1) tensor of the efficiencies of the muons</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer.muon_poca_xyz">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">muon_poca_xyz</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer.muon_poca_xyz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns:
+(muons,xyz) tensor of PoCA locations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer.muon_poca_xyz_unc">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">muon_poca_xyz_unc</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer.muon_poca_xyz_unc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns:
+(muons,xyz) tensor of PoCA location uncertainties</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer.n_mu">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n_mu</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer.n_mu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns:
+Total number muons included in the inference</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer.pred_height">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pred_height</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer.pred_height" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns:
+(h) tensor of fill-height prediction</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer.smooth">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">smooth</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer.smooth" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="module-tomopt.benchmarks.ladle_furnace.loss">
 <span id="tomopt-benchmarks-ladle-furnace-loss-module"></span><h2>tomopt.benchmarks.ladle_furnace.loss module<a class="headerlink" href="#module-tomopt.benchmarks.ladle_furnace.loss" title="Permalink to this heading">¶</a></h2>
@@ -490,30 +616,126 @@ Target: An optional “target” value for the layout</p>
 <dd><p>Bases: <a class="reference internal" href="tomopt.optimisation.loss.html#tomopt.optimisation.loss.loss.VolumeIntClassLoss" title="tomopt.optimisation.loss.loss.VolumeIntClassLoss"><code class="xref py py-class docutils literal notranslate"><span class="pre">VolumeIntClassLoss</span></code></a></p>
 <p>Research tested only: no unit tests</p>
 <dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.loss.LadleFurnaceIntClassLoss._abc_impl">
-<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.loss.LadleFurnaceIntClassLoss._abc_impl" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.loss.LadleFurnaceIntClassLoss._is_full_backward_hook">
-<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.loss.LadleFurnaceIntClassLoss._is_full_backward_hook" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.loss.LadleFurnaceIntClassLoss._targ2int">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_targ2int</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">targs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volume</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/loss.html#LadleFurnaceIntClassLoss._targ2int"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.loss.LadleFurnaceIntClassLoss._targ2int" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
 <dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.loss.LadleFurnaceIntClassLoss.training">
 <span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.loss.LadleFurnaceIntClassLoss.training" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.loss.SpreadRangeLoss">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.benchmarks.ladle_furnace.loss.</span></span><span class="sig-name descname"><span class="pre">SpreadRangeLoss</span></span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/loss.html#SpreadRangeLoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.loss.SpreadRangeLoss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.callback.Callback" title="tomopt.optimisation.callbacks.callback.Callback"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callback</span></code></a></p>
+<p>Research tested only: no unit tests</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.loss.SpreadRangeLoss.on_volume_batch_begin">
+<span class="sig-name descname"><span class="pre">on_volume_batch_begin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/loss.html#SpreadRangeLoss.on_volume_batch_begin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.loss.SpreadRangeLoss.on_volume_batch_begin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs when a new batch of passive volume layouts is begins.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.loss.SpreadRangeLoss.on_volume_batch_end">
+<span class="sig-name descname"><span class="pre">on_volume_batch_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/loss.html#SpreadRangeLoss.on_volume_batch_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.loss.SpreadRangeLoss.on_volume_batch_end" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs when a batch of passive volume layouts is ends.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.loss.SpreadRangeLoss.on_x0_pred_end">
+<span class="sig-name descname"><span class="pre">on_x0_pred_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/loss.html#SpreadRangeLoss.on_x0_pred_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.loss.SpreadRangeLoss.on_x0_pred_end" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs after the volume inferrer has made its final prediction, but before the loss is computed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-tomopt.benchmarks.ladle_furnace.plotting">
+<span id="tomopt-benchmarks-ladle-furnace-plotting-module"></span><h2>tomopt.benchmarks.ladle_furnace.plotting module<a class="headerlink" href="#module-tomopt.benchmarks.ladle_furnace.plotting" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.plotting.compare_init_optimised_2">
+<span class="sig-prename descclassname"><span class="pre">tomopt.benchmarks.ladle_furnace.plotting.</span></span><span class="sig-name descname"><span class="pre">compare_init_optimised_2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df_start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df_opt_2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NAME</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/plotting.html#compare_init_optimised_2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.plotting.compare_init_optimised_2" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.plotting.compare_init_to_optimised">
+<span class="sig-prename descclassname"><span class="pre">tomopt.benchmarks.ladle_furnace.plotting.</span></span><span class="sig-name descname"><span class="pre">compare_init_to_optimised</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df_start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df_opt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NAME</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/plotting.html#compare_init_to_optimised"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.plotting.compare_init_to_optimised" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.plotting.compare_optimised_to_baselines">
+<span class="sig-prename descclassname"><span class="pre">tomopt.benchmarks.ladle_furnace.plotting.</span></span><span class="sig-name descname"><span class="pre">compare_optimised_to_baselines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df_bl_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df_bl_2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df_opt_2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NAME</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/plotting.html#compare_optimised_to_baselines"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.plotting.compare_optimised_to_baselines" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.plotting.compare_raw_init_to_bias_corrected_init">
+<span class="sig-prename descclassname"><span class="pre">tomopt.benchmarks.ladle_furnace.plotting.</span></span><span class="sig-name descname"><span class="pre">compare_raw_init_to_bias_corrected_init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df_start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NAME</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/plotting.html#compare_raw_init_to_bias_corrected_init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.plotting.compare_raw_init_to_bias_corrected_init" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-tomopt.benchmarks.ladle_furnace.volume">
+<span id="tomopt-benchmarks-ladle-furnace-volume-module"></span><h2>tomopt.benchmarks.ladle_furnace.volume module<a class="headerlink" href="#module-tomopt.benchmarks.ladle_furnace.volume" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.volume.get_baseline_detector_1">
+<span class="sig-prename descclassname"><span class="pre">tomopt.benchmarks.ladle_furnace.volume.</span></span><span class="sig-name descname"><span class="pre">get_baseline_detector_1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">span</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">device(type='cpu')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/volume.html#get_baseline_detector_1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.volume.get_baseline_detector_1" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ModuleList</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.volume.get_baseline_detector_2">
+<span class="sig-prename descclassname"><span class="pre">tomopt.benchmarks.ladle_furnace.volume.</span></span><span class="sig-name descname"><span class="pre">get_baseline_detector_2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">span</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">device(type='cpu')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/volume.html#get_baseline_detector_2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.volume.get_baseline_detector_2" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ModuleList</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.volume.get_initial_detector">
+<span class="sig-prename descclassname"><span class="pre">tomopt.benchmarks.ladle_furnace.volume.</span></span><span class="sig-name descname"><span class="pre">get_initial_detector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">span</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">device(type='cpu')</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/volume.html#get_initial_detector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.volume.get_initial_detector" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ModuleList</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>
@@ -527,7 +749,7 @@ Target: An optional “target” value for the layout</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="tomopt.benchmarks.phi_detector.html" class="btn btn-neutral float-right" title="tomopt.benchmarks.phi_detector package" accesskey="n" rel="next">Next <img src="_static/images/chevron-right-orange.svg" class="next-page"></a>
+        <a href="tomopt.benchmarks.small_walls.html" class="btn btn-neutral float-right" title="tomopt.benchmarks.small_walls package" accesskey="n" rel="next">Next <img src="_static/images/chevron-right-orange.svg" class="next-page"></a>
       
       
         <a href="tomopt.benchmarks.html" class="btn btn-neutral" title="tomopt.benchmarks package" accesskey="p" rel="prev"><img src="_static/images/chevron-right-orange.svg" class="previous-page"> Previous</a>
@@ -539,7 +761,7 @@ Target: An optional “target” value for the layout</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2021-2023, TomOpt Authors.
+        &copy; Copyright 2021-2024, TomOpt Authors.
 
     </p>
   </div>
@@ -561,46 +783,74 @@ Target: An optional “target” value for the layout</p>
 <li><a class="reference internal" href="#">tomopt.benchmarks.ladle_furnace package</a><ul>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#module-tomopt.benchmarks.ladle_furnace.data">tomopt.benchmarks.ladle_furnace.data module</a><ul>
-<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.data.LadleFurnacePassiveGenerator"><code class="docutils literal notranslate"><span class="pre">LadleFurnacePassiveGenerator</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.data.LadleFurnacePassiveGenerator._abc_impl"><code class="docutils literal notranslate"><span class="pre">LadleFurnacePassiveGenerator._abc_impl</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.data.LadleFurnacePassiveGenerator._generate"><code class="docutils literal notranslate"><span class="pre">LadleFurnacePassiveGenerator._generate()</span></code></a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.data.LadleFurnacePassiveGenerator"><code class="docutils literal notranslate"><span class="pre">LadleFurnacePassiveGenerator</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-tomopt.benchmarks.ladle_furnace.inference">tomopt.benchmarks.ladle_furnace.inference module</a><ul>
-<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer"><code class="docutils literal notranslate"><span class="pre">LadleFurnaceFillLevelInferrer</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer._abc_impl"><code class="docutils literal notranslate"><span class="pre">LadleFurnaceFillLevelInferrer._abc_impl</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer._class2float"><code class="docutils literal notranslate"><span class="pre">LadleFurnaceFillLevelInferrer._class2float()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.avg_1d"><code class="docutils literal notranslate"><span class="pre">LadleFurnaceFillLevelInferrer.avg_1d()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.avg_3d"><code class="docutils literal notranslate"><span class="pre">LadleFurnaceFillLevelInferrer.avg_3d()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.avg_layers"><code class="docutils literal notranslate"><span class="pre">LadleFurnaceFillLevelInferrer.avg_layers()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.edge_det"><code class="docutils literal notranslate"><span class="pre">LadleFurnaceFillLevelInferrer.edge_det()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.gauss_1d"><code class="docutils literal notranslate"><span class="pre">LadleFurnaceFillLevelInferrer.gauss_1d()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.gauss_3d"><code class="docutils literal notranslate"><span class="pre">LadleFurnaceFillLevelInferrer.gauss_3d()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.laplacian_1d"><code class="docutils literal notranslate"><span class="pre">LadleFurnaceFillLevelInferrer.laplacian_1d()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.max_div_min"><code class="docutils literal notranslate"><span class="pre">LadleFurnaceFillLevelInferrer.max_div_min()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.max_sub_min"><code class="docutils literal notranslate"><span class="pre">LadleFurnaceFillLevelInferrer.max_sub_min()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.negative"><code class="docutils literal notranslate"><span class="pre">LadleFurnaceFillLevelInferrer.negative()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.prewit_1d"><code class="docutils literal notranslate"><span class="pre">LadleFurnaceFillLevelInferrer.prewit_1d()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.remove_ladle"><code class="docutils literal notranslate"><span class="pre">LadleFurnaceFillLevelInferrer.remove_ladle()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.ridge_1d_0"><code class="docutils literal notranslate"><span class="pre">LadleFurnaceFillLevelInferrer.ridge_1d_0()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.ridge_1d_2"><code class="docutils literal notranslate"><span class="pre">LadleFurnaceFillLevelInferrer.ridge_1d_2()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.ridge_1d_4"><code class="docutils literal notranslate"><span class="pre">LadleFurnaceFillLevelInferrer.ridge_1d_4()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.ridge_1d_8"><code class="docutils literal notranslate"><span class="pre">LadleFurnaceFillLevelInferrer.ridge_1d_8()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.LadleFurnaceFillLevelInferrer.x02probs"><code class="docutils literal notranslate"><span class="pre">LadleFurnaceFillLevelInferrer.x02probs()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer"><code class="docutils literal notranslate"><span class="pre">EdgeDetLadleFurnaceFillLevelInferrer</span></code></a><ul>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.avg_1d"><code class="docutils literal notranslate"><span class="pre">EdgeDetLadleFurnaceFillLevelInferrer.avg_1d()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.avg_3d"><code class="docutils literal notranslate"><span class="pre">EdgeDetLadleFurnaceFillLevelInferrer.avg_3d()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.avg_layers"><code class="docutils literal notranslate"><span class="pre">EdgeDetLadleFurnaceFillLevelInferrer.avg_layers()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.edge_det"><code class="docutils literal notranslate"><span class="pre">EdgeDetLadleFurnaceFillLevelInferrer.edge_det()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.gauss_1d"><code class="docutils literal notranslate"><span class="pre">EdgeDetLadleFurnaceFillLevelInferrer.gauss_1d()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.gauss_3d"><code class="docutils literal notranslate"><span class="pre">EdgeDetLadleFurnaceFillLevelInferrer.gauss_3d()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.laplacian_1d"><code class="docutils literal notranslate"><span class="pre">EdgeDetLadleFurnaceFillLevelInferrer.laplacian_1d()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.max_div_min"><code class="docutils literal notranslate"><span class="pre">EdgeDetLadleFurnaceFillLevelInferrer.max_div_min()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.max_sub_min"><code class="docutils literal notranslate"><span class="pre">EdgeDetLadleFurnaceFillLevelInferrer.max_sub_min()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.negative"><code class="docutils literal notranslate"><span class="pre">EdgeDetLadleFurnaceFillLevelInferrer.negative()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.prewit_1d"><code class="docutils literal notranslate"><span class="pre">EdgeDetLadleFurnaceFillLevelInferrer.prewit_1d()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.remove_ladle"><code class="docutils literal notranslate"><span class="pre">EdgeDetLadleFurnaceFillLevelInferrer.remove_ladle()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.ridge_1d_0"><code class="docutils literal notranslate"><span class="pre">EdgeDetLadleFurnaceFillLevelInferrer.ridge_1d_0()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.ridge_1d_2"><code class="docutils literal notranslate"><span class="pre">EdgeDetLadleFurnaceFillLevelInferrer.ridge_1d_2()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.ridge_1d_4"><code class="docutils literal notranslate"><span class="pre">EdgeDetLadleFurnaceFillLevelInferrer.ridge_1d_4()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.ridge_1d_8"><code class="docutils literal notranslate"><span class="pre">EdgeDetLadleFurnaceFillLevelInferrer.ridge_1d_8()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.EdgeDetLadleFurnaceFillLevelInferrer.x02probs"><code class="docutils literal notranslate"><span class="pre">EdgeDetLadleFurnaceFillLevelInferrer.x02probs()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.LinearCorrectionCallback"><code class="docutils literal notranslate"><span class="pre">LinearCorrectionCallback</span></code></a><ul>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.LinearCorrectionCallback.on_backwards_end"><code class="docutils literal notranslate"><span class="pre">LinearCorrectionCallback.on_backwards_end()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.LinearCorrectionCallback.on_train_begin"><code class="docutils literal notranslate"><span class="pre">LinearCorrectionCallback.on_train_begin()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.LinearCorrectionCallback.on_volume_batch_begin"><code class="docutils literal notranslate"><span class="pre">LinearCorrectionCallback.on_volume_batch_begin()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.LinearCorrectionCallback.on_x0_pred_end"><code class="docutils literal notranslate"><span class="pre">LinearCorrectionCallback.on_x0_pred_end()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer"><code class="docutils literal notranslate"><span class="pre">PocaZLadleFurnaceFillLevelInferrer</span></code></a><ul>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer.compute_efficiency"><code class="docutils literal notranslate"><span class="pre">PocaZLadleFurnaceFillLevelInferrer.compute_efficiency()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer.get_prediction"><code class="docutils literal notranslate"><span class="pre">PocaZLadleFurnaceFillLevelInferrer.get_prediction()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer.muon_efficiency"><code class="docutils literal notranslate"><span class="pre">PocaZLadleFurnaceFillLevelInferrer.muon_efficiency</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer.muon_poca_xyz"><code class="docutils literal notranslate"><span class="pre">PocaZLadleFurnaceFillLevelInferrer.muon_poca_xyz</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer.muon_poca_xyz_unc"><code class="docutils literal notranslate"><span class="pre">PocaZLadleFurnaceFillLevelInferrer.muon_poca_xyz_unc</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer.n_mu"><code class="docutils literal notranslate"><span class="pre">PocaZLadleFurnaceFillLevelInferrer.n_mu</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer.pred_height"><code class="docutils literal notranslate"><span class="pre">PocaZLadleFurnaceFillLevelInferrer.pred_height</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer.smooth"><code class="docutils literal notranslate"><span class="pre">PocaZLadleFurnaceFillLevelInferrer.smooth</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-tomopt.benchmarks.ladle_furnace.loss">tomopt.benchmarks.ladle_furnace.loss module</a><ul>
 <li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.loss.LadleFurnaceIntClassLoss"><code class="docutils literal notranslate"><span class="pre">LadleFurnaceIntClassLoss</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.loss.LadleFurnaceIntClassLoss._abc_impl"><code class="docutils literal notranslate"><span class="pre">LadleFurnaceIntClassLoss._abc_impl</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.loss.LadleFurnaceIntClassLoss._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">LadleFurnaceIntClassLoss._is_full_backward_hook</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.loss.LadleFurnaceIntClassLoss._targ2int"><code class="docutils literal notranslate"><span class="pre">LadleFurnaceIntClassLoss._targ2int()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.loss.LadleFurnaceIntClassLoss.training"><code class="docutils literal notranslate"><span class="pre">LadleFurnaceIntClassLoss.training</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.loss.SpreadRangeLoss"><code class="docutils literal notranslate"><span class="pre">SpreadRangeLoss</span></code></a><ul>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.loss.SpreadRangeLoss.on_volume_batch_begin"><code class="docutils literal notranslate"><span class="pre">SpreadRangeLoss.on_volume_batch_begin()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.loss.SpreadRangeLoss.on_volume_batch_end"><code class="docutils literal notranslate"><span class="pre">SpreadRangeLoss.on_volume_batch_end()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.loss.SpreadRangeLoss.on_x0_pred_end"><code class="docutils literal notranslate"><span class="pre">SpreadRangeLoss.on_x0_pred_end()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-tomopt.benchmarks.ladle_furnace.plotting">tomopt.benchmarks.ladle_furnace.plotting module</a><ul>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.plotting.compare_init_optimised_2"><code class="docutils literal notranslate"><span class="pre">compare_init_optimised_2()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.plotting.compare_init_to_optimised"><code class="docutils literal notranslate"><span class="pre">compare_init_to_optimised()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.plotting.compare_optimised_to_baselines"><code class="docutils literal notranslate"><span class="pre">compare_optimised_to_baselines()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.plotting.compare_raw_init_to_bias_corrected_init"><code class="docutils literal notranslate"><span class="pre">compare_raw_init_to_bias_corrected_init()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-tomopt.benchmarks.ladle_furnace.volume">tomopt.benchmarks.ladle_furnace.volume module</a><ul>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.volume.get_baseline_detector_1"><code class="docutils literal notranslate"><span class="pre">get_baseline_detector_1()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.volume.get_baseline_detector_2"><code class="docutils literal notranslate"><span class="pre">get_baseline_detector_2()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.volume.get_initial_detector"><code class="docutils literal notranslate"><span class="pre">get_initial_detector()</span></code></a></li>
 </ul>
 </li>
 </ul>

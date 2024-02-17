@@ -11,7 +11,6 @@ tomopt.optimisation.loss.loss module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 tomopt.optimisation.loss.sub\_losses module
 -------------------------------------------
@@ -20,4 +19,3 @@ tomopt.optimisation.loss.sub\_losses module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:

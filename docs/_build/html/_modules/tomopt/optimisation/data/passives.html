@@ -14,6 +14,8 @@
 
   
   
+    <link rel="shortcut icon" href="../../../../_static/tomopt_logo.png"/>
+  
   
   
 
@@ -234,11 +236,11 @@
              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
               
   <h1>Source code for tomopt.optimisation.data.passives</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Generator</span>
+<span></span><span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">shuffle</span>
-<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">abstractmethod</span><span class="p">,</span> <span class="n">ABCMeta</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
 
@@ -293,7 +295,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">z_range</span> <span class="o">=</span> <span class="p">[</span><span class="n">z</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">get_passive_z_range</span><span class="p">()]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">volume</span><span class="o">.</span><span class="n">passive_size</span>
 
-<div class="viewcode-block" id="AbsPassiveGenerator._generate"><a class="viewcode-back" href="../../../../tomopt.optimisation.data.html#tomopt.optimisation.data.passives.AbsPassiveGenerator._generate">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">_generate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">RadLengthFunc</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]]:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Inheriting classes should override this.</span>
@@ -303,7 +305,7 @@
 <span class="sd">            Target: An optional &quot;target&quot; value for the layout</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">pass</span></div>
+        <span class="k">pass</span>
 
 <div class="viewcode-block" id="AbsPassiveGenerator.get_data"><a class="viewcode-back" href="../../../../tomopt.optimisation.data.html#tomopt.optimisation.data.passives.AbsPassiveGenerator.get_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">RadLengthFunc</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]]:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
@@ -363,7 +365,7 @@
         <span class="k">if</span> <span class="n">block_size_max_half</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">block_size_max</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="o">/</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_size_max</span><span class="p">]</span>
 
-<div class="viewcode-block" id="AbsBlockPassiveGenerator._get_block_coords"><a class="viewcode-back" href="../../../../tomopt.optimisation.data.html#tomopt.optimisation.data.passives.AbsBlockPassiveGenerator._get_block_coords">[docs]</a>    <span class="k">def</span> <span class="nf">_get_block_coords</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">_get_block_coords</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">block_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">block_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span>
                 <span class="p">(</span>
@@ -384,7 +386,7 @@
         <span class="p">)</span>
         <span class="n">block_high</span> <span class="o">=</span> <span class="n">block_low</span> <span class="o">+</span> <span class="n">block_size</span>
 
-        <span class="k">return</span> <span class="n">block_low</span><span class="p">,</span> <span class="n">block_high</span></div></div>
+        <span class="k">return</span> <span class="n">block_low</span><span class="p">,</span> <span class="n">block_high</span></div>
 
 
 <div class="viewcode-block" id="RandomBlockPassiveGenerator"><a class="viewcode-back" href="../../../../tomopt.optimisation.data.html#tomopt.optimisation.data.passives.RandomBlockPassiveGenerator">[docs]</a><span class="k">class</span> <span class="nc">RandomBlockPassiveGenerator</span><span class="p">(</span><span class="n">AbsBlockPassiveGenerator</span><span class="p">):</span>
@@ -423,7 +425,7 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">volume</span><span class="o">=</span><span class="n">volume</span><span class="p">,</span> <span class="n">block_size</span><span class="o">=</span><span class="n">block_size</span><span class="p">,</span> <span class="n">materials</span><span class="o">=</span><span class="n">materials</span><span class="p">,</span> <span class="n">block_size_max_half</span><span class="o">=</span><span class="n">block_size_max_half</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sort_x0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">enforce_diff_mat</span> <span class="o">=</span> <span class="n">sort_x0</span><span class="p">,</span> <span class="n">enforce_diff_mat</span>
 
-<div class="viewcode-block" id="RandomBlockPassiveGenerator._generate"><a class="viewcode-back" href="../../../../tomopt.optimisation.data.html#tomopt.optimisation.data.passives.RandomBlockPassiveGenerator._generate">[docs]</a>    <span class="k">def</span> <span class="nf">_generate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">RadLengthFunc</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">_generate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">RadLengthFunc</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Generates passive layouts containing a (randomly sized) block of random material at a random location surrounded by a random background.</span>
 
@@ -452,7 +454,7 @@
                 <span class="n">rad_length</span><span class="p">[</span><span class="n">low_xy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">:</span> <span class="n">high_xy</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">low_xy</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="p">:</span> <span class="n">high_xy</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">block_x0</span>
             <span class="k">return</span> <span class="n">rad_length</span>
 
-        <span class="k">return</span> <span class="n">generator</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">([</span><span class="n">block_x0</span><span class="p">])</span></div></div>
+        <span class="k">return</span> <span class="n">generator</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">([</span><span class="n">block_x0</span><span class="p">])</span></div>
 
 
 <div class="viewcode-block" id="BlockPresentPassiveGenerator"><a class="viewcode-back" href="../../../../tomopt.optimisation.data.html#tomopt.optimisation.data.passives.BlockPresentPassiveGenerator">[docs]</a><span class="k">class</span> <span class="nc">BlockPresentPassiveGenerator</span><span class="p">(</span><span class="n">AbsBlockPassiveGenerator</span><span class="p">):</span>
@@ -474,7 +476,7 @@
 <span class="sd">        materials: list of material names that can be used in the volume, None -&gt; all materials known to TomOpt</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="BlockPresentPassiveGenerator._generate"><a class="viewcode-back" href="../../../../tomopt.optimisation.data.html#tomopt.optimisation.data.passives.BlockPresentPassiveGenerator._generate">[docs]</a>    <span class="k">def</span> <span class="nf">_generate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">RadLengthFunc</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">_generate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">RadLengthFunc</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Generates passive layouts containing a (randomly sized) block of random material at a random location surrounded by a fixed background.</span>
 <span class="sd">        The background material for the background will always be the zeroth material provided during initialisation.</span>
@@ -500,7 +502,7 @@
                 <span class="n">rad_length</span><span class="p">[</span><span class="n">low_xy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">:</span> <span class="n">high_xy</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">low_xy</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="p">:</span> <span class="n">high_xy</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">block_x0</span>
             <span class="k">return</span> <span class="n">rad_length</span>
 
-        <span class="k">return</span> <span class="n">generator</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">([</span><span class="n">block_x0</span><span class="p">])</span></div></div>
+        <span class="k">return</span> <span class="n">generator</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">([</span><span class="n">block_x0</span><span class="p">])</span></div>
 
 
 <div class="viewcode-block" id="VoxelPassiveGenerator"><a class="viewcode-back" href="../../../../tomopt.optimisation.data.html#tomopt.optimisation.data.passives.VoxelPassiveGenerator">[docs]</a><span class="k">class</span> <span class="nc">VoxelPassiveGenerator</span><span class="p">(</span><span class="n">AbsPassiveGenerator</span><span class="p">):</span>
@@ -515,7 +517,7 @@
 <span class="sd">        materials: list of material names that can be used in the volume, None -&gt; all materials known to TomOpt</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="VoxelPassiveGenerator._generate"><a class="viewcode-back" href="../../../../tomopt.optimisation.data.html#tomopt.optimisation.data.passives.VoxelPassiveGenerator._generate">[docs]</a>    <span class="k">def</span> <span class="nf">_generate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">RadLengthFunc</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">_generate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">RadLengthFunc</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Generates new passive layouts where ever voxel is of a random material.</span>
 
@@ -529,7 +531,7 @@
             <span class="n">shp</span> <span class="o">=</span> <span class="p">(</span><span class="n">lw</span> <span class="o">/</span> <span class="n">size</span><span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">()</span>
             <span class="k">return</span> <span class="n">x0s</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">high</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">x0s</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">shp</span><span class="o">.</span><span class="n">prod</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),),</span> <span class="n">device</span><span class="o">=</span><span class="n">x0s</span><span class="o">.</span><span class="n">device</span><span class="p">)]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">shp</span><span class="p">))</span>
 
-        <span class="k">return</span> <span class="n">generator</span><span class="p">,</span> <span class="kc">None</span></div></div>
+        <span class="k">return</span> <span class="n">generator</span><span class="p">,</span> <span class="kc">None</span></div>
 
 
 <div class="viewcode-block" id="PassiveYielder"><a class="viewcode-back" href="../../../../tomopt.optimisation.data.html#tomopt.optimisation.data.passives.PassiveYielder">[docs]</a><span class="k">class</span> <span class="nc">PassiveYielder</span><span class="p">:</span>
@@ -584,7 +586,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2021-2022, TomOpt Authors.
+        &copy; Copyright 2021-2024, TomOpt Authors.
 
     </p>
   </div>

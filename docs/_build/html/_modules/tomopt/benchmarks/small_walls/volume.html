@@ -14,6 +14,8 @@
 
   
   
+    <link rel="shortcut icon" href="../../../../_static/tomopt_logo.png"/>
+  
   
   
 
@@ -234,17 +236,17 @@
              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
               
   <h1>Source code for tomopt.benchmarks.small_walls.volume</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span></span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
 
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">nn</span>
 
-<span class="kn">from</span> <span class="nn">...volume</span> <span class="kn">import</span> <span class="n">Volume</span><span class="p">,</span> <span class="n">PanelDetectorLayer</span><span class="p">,</span> <span class="n">PassiveLayer</span><span class="p">,</span> <span class="n">DetectorPanel</span>
-<span class="kn">from</span> <span class="nn">...volume.layer</span> <span class="kn">import</span> <span class="n">AbsLayer</span>
-<span class="kn">from</span> <span class="nn">...optimisation.wrapper</span> <span class="kn">import</span> <span class="n">PanelVolumeWrapper</span>
 <span class="kn">from</span> <span class="nn">...muon</span> <span class="kn">import</span> <span class="n">MuonGenerator2016</span>
+<span class="kn">from</span> <span class="nn">...optimisation.wrapper</span> <span class="kn">import</span> <span class="n">PanelVolumeWrapper</span>
+<span class="kn">from</span> <span class="nn">...volume</span> <span class="kn">import</span> <span class="n">DetectorPanel</span><span class="p">,</span> <span class="n">PanelDetectorLayer</span><span class="p">,</span> <span class="n">PassiveLayer</span><span class="p">,</span> <span class="n">Volume</span>
+<span class="kn">from</span> <span class="nn">...volume.layer</span> <span class="kn">import</span> <span class="n">AbsLayer</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;get_small_walls_volume&quot;</span><span class="p">,</span> <span class="s2">&quot;get_small_walls_volume_wrapper&quot;</span><span class="p">]</span>
 
@@ -332,7 +334,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2021-2022, TomOpt Authors.
+        &copy; Copyright 2021-2024, TomOpt Authors.
 
     </p>
   </div>

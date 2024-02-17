@@ -11,4 +11,3 @@ tomopt.optimisation.data.passives module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:

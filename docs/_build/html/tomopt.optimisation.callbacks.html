@@ -673,6 +673,107 @@ viv. <cite>loss</cite> = 0</p>
 </dd></dl>
 
 </section>
+<section id="module-tomopt.optimisation.callbacks.detector_callbacks">
+<span id="tomopt-optimisation-callbacks-detector-callbacks-module"></span><h2>tomopt.optimisation.callbacks.detector_callbacks module<a class="headerlink" href="#module-tomopt.optimisation.callbacks.detector_callbacks" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.detector_callbacks.PanelCentring">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.callbacks.detector_callbacks.</span></span><span class="sig-name descname"><span class="pre">PanelCentring</span></span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/detector_callbacks.html#PanelCentring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.detector_callbacks.PanelCentring" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tomopt.optimisation.callbacks.callback.Callback" title="tomopt.optimisation.callbacks.callback.Callback"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callback</span></code></a></p>
+<p>Callback class for panel centring in the optimisation process.</p>
+<p>This callback is used to centre the panels of PanelDetectorLayer objects
+by setting their xy coordinates to the mean xy value of all panels in the layer.</p>
+<p>This update takes place after the panel positions have been updated in the optimisation process.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.detector_callbacks.PanelCentring.on_step_end">
+<span class="sig-name descname"><span class="pre">on_step_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/detector_callbacks.html#PanelCentring.on_step_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.detector_callbacks.PanelCentring.on_step_end" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates the xy coordinates of all panels in the PanelDetectorLayer objects after they have be updated, based on their current mean xy position.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.detector_callbacks.PanelUpdateLimiter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.callbacks.detector_callbacks.</span></span><span class="sig-name descname"><span class="pre">PanelUpdateLimiter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_xy_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_z_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_xy_span_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/detector_callbacks.html#PanelUpdateLimiter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.detector_callbacks.PanelUpdateLimiter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tomopt.optimisation.callbacks.callback.Callback" title="tomopt.optimisation.callbacks.callback.Callback"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callback</span></code></a></p>
+<p>Limits the maximum difference that optimisers can make to panel parameters, to prevent them from being affected by large updates from anomolous gradients.
+This is enacted by a hard-clamping based on the initial and final parameter values before/after each update step.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>max_xy_step</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]]) – maximum update in xy position of panels</p></li>
+<li><p><strong>max_z_step</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – maximum update in z position of panels</p></li>
+<li><p><strong>max_xy_span_step</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]]) – maximum update in xy_span position of panels</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.detector_callbacks.PanelUpdateLimiter.on_backwards_end">
+<span class="sig-name descname"><span class="pre">on_backwards_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/detector_callbacks.html#PanelUpdateLimiter.on_backwards_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.detector_callbacks.PanelUpdateLimiter.on_backwards_end" title="Permalink to this definition">¶</a></dt>
+<dd><p>Records the current paramaters of each panel before they are updated.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.detector_callbacks.PanelUpdateLimiter.on_step_end">
+<span class="sig-name descname"><span class="pre">on_step_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/detector_callbacks.html#PanelUpdateLimiter.on_step_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.detector_callbacks.PanelUpdateLimiter.on_step_end" title="Permalink to this definition">¶</a></dt>
+<dd><p>After the update step, goes through and hard-clamps parameter updates based on the difference between their current values
+and values before the update step.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.callbacks.detector_callbacks.</span></span><span class="sig-name descname"><span class="pre">SigmoidPanelSmoothnessSchedule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smooth_range</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/detector_callbacks.html#SigmoidPanelSmoothnessSchedule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tomopt.optimisation.callbacks.warmup_callbacks.PostWarmupCallback" title="tomopt.optimisation.callbacks.warmup_callbacks.PostWarmupCallback"><code class="xref py py-class docutils literal notranslate"><span class="pre">PostWarmupCallback</span></code></a></p>
+<p>Creates an annealing schedule for the smooth attribute of <a class="reference internal" href="tomopt.volume.html#tomopt.volume.panel.SigmoidDetectorPanel" title="tomopt.volume.panel.SigmoidDetectorPanel"><code class="xref py py-class docutils literal notranslate"><span class="pre">SigmoidDetectorPanel</span></code></a>.
+This can be used to move from smooth, unphysical panel with high sensitivity outside the physical panel boundaries,
+to one with sharper decrease in resolution | efficiency at the edge, and so more closely resembles a physical panel, whilst still being differentiable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>smooth_range</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – tuple of initial and final values for the smooth attributes of all panels in the volume.
+A base-10 log schedule used over the number of epochs-total number of warmup epochs.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule.on_epoch_begin">
+<span class="sig-name descname"><span class="pre">on_epoch_begin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/detector_callbacks.html#SigmoidPanelSmoothnessSchedule.on_epoch_begin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule.on_epoch_begin" title="Permalink to this definition">¶</a></dt>
+<dd><p>At the start of each training epoch, will anneal the <a class="reference internal" href="tomopt.volume.html#tomopt.volume.panel.SigmoidDetectorPanel" title="tomopt.volume.panel.SigmoidDetectorPanel"><code class="xref py py-class docutils literal notranslate"><span class="pre">SigmoidDetectorPanel</span></code></a> s’ smooth attributes, if the callback is active.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule.on_train_begin">
+<span class="sig-name descname"><span class="pre">on_train_begin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/detector_callbacks.html#SigmoidPanelSmoothnessSchedule.on_train_begin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule.on_train_begin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets all <a class="reference internal" href="tomopt.volume.html#tomopt.volume.panel.SigmoidDetectorPanel" title="tomopt.volume.panel.SigmoidDetectorPanel"><code class="xref py py-class docutils literal notranslate"><span class="pre">SigmoidDetectorPanel</span></code></a> s to their initial smooth values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
 <section id="module-tomopt.optimisation.callbacks.diagnostic_callbacks">
 <span id="tomopt-optimisation-callbacks-diagnostic-callbacks-module"></span><h2>tomopt.optimisation.callbacks.diagnostic_callbacks module<a class="headerlink" href="#module-tomopt.optimisation.callbacks.diagnostic_callbacks" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
@@ -687,23 +788,6 @@ Once recorded, the hits can be retrieved via the <code class="xref py py-meth do
 <p>Currently this callback makes no distinction between different volume layouts, and is designed to used over a single volume layout.</p>
 </div>
 <p># TODO extend these to create one record per volume</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.diagnostic_callbacks.HitRecord._to_df">
-<span class="sig-name descname"><span class="pre">_to_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/diagnostic_callbacks.html#HitRecord._to_df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.diagnostic_callbacks.HitRecord._to_df" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts the saved hits to a Pandas DataFrame</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>record</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,xyz) tensor of hits</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></p>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>DataFrame of hits</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.optimisation.callbacks.diagnostic_callbacks.HitRecord.on_scatter_end">
 <span class="sig-name descname"><span class="pre">on_scatter_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/diagnostic_callbacks.html#HitRecord.on_scatter_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.diagnostic_callbacks.HitRecord.on_scatter_end" title="Permalink to this definition">¶</a></dt>
@@ -729,34 +813,6 @@ Once recorded, the PoCAs can be retrieved via the <a class="reference internal" 
 <p>Currently this callback makes no distinction between different volume layouts, and is designed to used over a single volume layout.</p>
 </div>
 <p># TODO extend these to create one record per volume</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.diagnostic_callbacks.ScatterRecord._reset">
-<span class="sig-name descname"><span class="pre">_reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/diagnostic_callbacks.html#ScatterRecord._reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.diagnostic_callbacks.ScatterRecord._reset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Prepares to record scatters</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.diagnostic_callbacks.ScatterRecord._to_df">
-<span class="sig-name descname"><span class="pre">_to_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/diagnostic_callbacks.html#ScatterRecord._to_df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.diagnostic_callbacks.ScatterRecord._to_df" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts the saved PoCAs to a Pandas DataFrame</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>record</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,xyz) tensor of PoCAs</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></p>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>DataFrame of PoCAs</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.optimisation.callbacks.diagnostic_callbacks.ScatterRecord.get_record">
 <span class="sig-name descname"><span class="pre">get_record</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">as_df</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/diagnostic_callbacks.html#ScatterRecord.get_record"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.diagnostic_callbacks.ScatterRecord.get_record" title="Permalink to this definition">¶</a></dt>
@@ -895,39 +951,6 @@ Updates based on NaN gradients will set the parameter value to NaN.</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.heatmap_gif.HeatMapGif._create_gif">
-<span class="sig-name descname"><span class="pre">_create_gif</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/heatmap_gif.html#HeatMapGif._create_gif"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.heatmap_gif.HeatMapGif._create_gif" title="Permalink to this definition">¶</a></dt>
-<dd><p>Combines recorded images into a gif</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.heatmap_gif.HeatMapGif._plot_current">
-<span class="sig-name descname"><span class="pre">_plot_current</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/heatmap_gif.html#HeatMapGif._plot_current"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.heatmap_gif.HeatMapGif._plot_current" title="Permalink to this definition">¶</a></dt>
-<dd><p>Saves an image of the current layout of the first heatmap in the first detector layer</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.heatmap_gif.HeatMapGif._reset">
-<span class="sig-name descname"><span class="pre">_reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/heatmap_gif.html#HeatMapGif._reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.heatmap_gif.HeatMapGif._reset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Prepares to record a new gif</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="tomopt.optimisation.callbacks.heatmap_gif.HeatMapGif.on_epoch_begin">
 <span class="sig-name descname"><span class="pre">on_epoch_begin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/heatmap_gif.html#HeatMapGif.on_epoch_begin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.heatmap_gif.HeatMapGif.on_epoch_begin" title="Permalink to this definition">¶</a></dt>
 <dd><p>When a new training epoch begins, saves an image of the current layout of the first heatmap in the first detector layer</p>
@@ -964,9 +987,6 @@ and then combines all images into a gif</p>
 </dd></dl>
 
 </section>
-<section id="tomopt-optimisation-callbacks-loss-callbacks-module">
-<h2>tomopt.optimisation.callbacks.loss_callbacks module<a class="headerlink" href="#tomopt-optimisation-callbacks-loss-callbacks-module" title="Permalink to this heading">¶</a></h2>
-</section>
 <section id="module-tomopt.optimisation.callbacks.monitors">
 <span id="tomopt-optimisation-callbacks-monitors-module"></span><h2>tomopt.optimisation.callbacks.monitors module<a class="headerlink" href="#module-tomopt.optimisation.callbacks.monitors" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
@@ -987,63 +1007,6 @@ The savename will be appended to the callback savepath</p></li>
 </ul>
 </dd>
 </dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.monitors.MetricLogger._build_grid_spec">
-<span class="sig-name descname"><span class="pre">_build_grid_spec</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/monitors.html#MetricLogger._build_grid_spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.monitors.MetricLogger._build_grid_spec" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">GridSpec</span></code></p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The layout object for the plots</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.monitors.MetricLogger._create_gif">
-<span class="sig-name descname"><span class="pre">_create_gif</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/monitors.html#MetricLogger._create_gif"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.monitors.MetricLogger._create_gif" title="Permalink to this definition">¶</a></dt>
-<dd><p>Combines plot snapshots into a gif</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.monitors.MetricLogger._prep_plots">
-<span class="sig-name descname"><span class="pre">_prep_plots</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/monitors.html#MetricLogger._prep_plots"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.monitors.MetricLogger._prep_plots" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates the plots for a new optimisation</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.monitors.MetricLogger._reset">
-<span class="sig-name descname"><span class="pre">_reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/monitors.html#MetricLogger._reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.monitors.MetricLogger._reset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Resets plots and logs for a new optimisation</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.monitors.MetricLogger._snapshot_monitor">
-<span class="sig-name descname"><span class="pre">_snapshot_monitor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/monitors.html#MetricLogger._snapshot_monitor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.monitors.MetricLogger._snapshot_monitor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Saves an image of all the plots in their current state</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py attribute">
 <dt class="sig sig-object py" id="tomopt.optimisation.callbacks.monitors.MetricLogger.cat_palette">
 <span class="sig-name descname"><span class="pre">cat_palette</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'tab10'</span></em><a class="headerlink" href="#tomopt.optimisation.callbacks.monitors.MetricLogger.cat_palette" title="Permalink to this definition">¶</a></dt>
@@ -1230,52 +1193,6 @@ The savename will be appended to the callback savepath</p></li>
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.monitors.PanelMetricLogger._build_grid_spec">
-<span class="sig-name descname"><span class="pre">_build_grid_spec</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/monitors.html#PanelMetricLogger._build_grid_spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.monitors.PanelMetricLogger._build_grid_spec" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">GridSpec</span></code></p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The layout object for the plots</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.monitors.PanelMetricLogger._prep_plots">
-<span class="sig-name descname"><span class="pre">_prep_plots</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/monitors.html#PanelMetricLogger._prep_plots"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.monitors.PanelMetricLogger._prep_plots" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates the plots for a new optimisation</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.monitors.PanelMetricLogger._reset">
-<span class="sig-name descname"><span class="pre">_reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/monitors.html#PanelMetricLogger._reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.monitors.PanelMetricLogger._reset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Resets plots and logs for a new optimisation</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.monitors.PanelMetricLogger._set_axes_labels">
-<span class="sig-name descname"><span class="pre">_set_axes_labels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/monitors.html#PanelMetricLogger._set_axes_labels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.monitors.PanelMetricLogger._set_axes_labels" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adds styling to plots after they are cleared</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="tomopt.optimisation.callbacks.monitors.PanelMetricLogger.update_plot">
 <span class="sig-name descname"><span class="pre">update_plot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/monitors.html#PanelMetricLogger.update_plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.monitors.PanelMetricLogger.update_plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Updates the plot(s).</p>
@@ -1291,6 +1208,25 @@ The savename will be appended to the callback savepath</p></li>
 </section>
 <section id="module-tomopt.optimisation.callbacks.opt_callbacks">
 <span id="tomopt-optimisation-callbacks-opt-callbacks-module"></span><h2>tomopt.optimisation.callbacks.opt_callbacks module<a class="headerlink" href="#module-tomopt.optimisation.callbacks.opt_callbacks" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.opt_callbacks.EpochSave">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.callbacks.opt_callbacks.</span></span><span class="sig-name descname"><span class="pre">EpochSave</span></span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/opt_callbacks.html#EpochSave"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.opt_callbacks.EpochSave" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tomopt.optimisation.callbacks.callback.Callback" title="tomopt.optimisation.callbacks.callback.Callback"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callback</span></code></a></p>
+<p>Saves the state of the volume at the end of each training epoch to a unique file.
+This can be used to load a specifc state to either be used, or to resume training.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.opt_callbacks.EpochSave.on_epoch_end">
+<span class="sig-name descname"><span class="pre">on_epoch_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/opt_callbacks.html#EpochSave.on_epoch_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.opt_callbacks.EpochSave.on_epoch_end" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs when a training or validations epoch ends.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="tomopt.optimisation.callbacks.opt_callbacks.OneCycle">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.callbacks.opt_callbacks.</span></span><span class="sig-name descname"><span class="pre">OneCycle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">opt_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warmup_length</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_mom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mid_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mid_mom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final_mom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/opt_callbacks.html#OneCycle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.opt_callbacks.OneCycle" title="Permalink to this definition">¶</a></dt>
@@ -1320,21 +1256,6 @@ learning rate or momentum arguments can be <cite>None</cite> to avoid annealing 
 </ul>
 </dd>
 </dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.opt_callbacks.OneCycle._abc_impl">
-<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#tomopt.optimisation.callbacks.opt_callbacks.OneCycle._abc_impl" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.opt_callbacks.OneCycle._activate">
-<span class="sig-name descname"><span class="pre">_activate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/opt_callbacks.html#OneCycle._activate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.opt_callbacks.OneCycle._activate" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.optimisation.callbacks.opt_callbacks.OneCycle.on_epoch_end">
 <span class="sig-name descname"><span class="pre">on_epoch_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/opt_callbacks.html#OneCycle.on_epoch_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.opt_callbacks.OneCycle.on_epoch_end" title="Permalink to this definition">¶</a></dt>
@@ -1349,7 +1270,7 @@ learning rate or momentum arguments can be <cite>None</cite> to avoid annealing 
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.optimisation.callbacks.opt_callbacks.OneCycle.schedule">
 <span class="sig-name descname"><span class="pre">schedule</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/opt_callbacks.html#OneCycle.schedule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.opt_callbacks.OneCycle.schedule" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute LR and momentum as a function of inter_cnt, according to defined ranges.</p>
+<dd><p>Compute LR and momentum as a function of iter_cnt, according to defined ranges.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>], <code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]]</p>
@@ -1424,36 +1345,6 @@ If an x02id lookup is provided, it transforms the target from an X0 value to a m
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.pred_callbacks.Save2HDF5PredHandler._open_file">
-<span class="sig-name descname"><span class="pre">_open_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/pred_callbacks.html#Save2HDF5PredHandler._open_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.pred_callbacks.Save2HDF5PredHandler._open_file" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">File</span></code></p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Save file to write data to</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.pred_callbacks.Save2HDF5PredHandler._write_data">
-<span class="sig-name descname"><span class="pre">_write_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targ</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/pred_callbacks.html#Save2HDF5PredHandler._write_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.pred_callbacks.Save2HDF5PredHandler._write_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Writes a new prediction-target pair to the save file</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>pred</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – volume predictions to save</p></li>
-<li><p><strong>targ</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – volume targets to save</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="tomopt.optimisation.callbacks.pred_callbacks.Save2HDF5PredHandler.on_x0_pred_end">
 <span class="sig-name descname"><span class="pre">on_x0_pred_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/pred_callbacks.html#Save2HDF5PredHandler.on_x0_pred_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.pred_callbacks.Save2HDF5PredHandler.on_x0_pred_end" title="Permalink to this definition">¶</a></dt>
 <dd><p>Records predictions and true volume layout or target for the latest volume</p>
@@ -1491,9 +1382,9 @@ If an x02id lookup is provided, it transforms the target from an X0 value to a m
 </dd></dl>
 
 </section>
-<section id="tomopt-optimisation-callbacks-warmup-callbacks-module">
-<h2>tomopt.optimisation.callbacks.warmup_callbacks module<a class="headerlink" href="#tomopt-optimisation-callbacks-warmup-callbacks-module" title="Permalink to this heading">¶</a></h2>
-<span class="target" id="module-tomopt.optimisation.callbacks.warmup_callbacks"></span><dl class="py class">
+<section id="module-tomopt.optimisation.callbacks.warmup_callbacks">
+<span id="tomopt-optimisation-callbacks-warmup-callbacks-module"></span><h2>tomopt.optimisation.callbacks.warmup_callbacks module<a class="headerlink" href="#module-tomopt.optimisation.callbacks.warmup_callbacks" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
 <dt class="sig sig-object py" id="tomopt.optimisation.callbacks.warmup_callbacks.CostCoefWarmup">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.callbacks.warmup_callbacks.</span></span><span class="sig-name descname"><span class="pre">CostCoefWarmup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_warmup</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/warmup_callbacks.html#CostCoefWarmup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.warmup_callbacks.CostCoefWarmup" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback" title="tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback"><code class="xref py py-class docutils literal notranslate"><span class="pre">WarmupCallback</span></code></a></p>
@@ -1505,17 +1396,6 @@ During this warm-up monitoring phase, the detectors will be kept fixed.</p>
 <dd class="field-odd"><p><strong>n_warmup</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – number of training epochs to wait before setting the cost coefficient</p>
 </dd>
 </dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.warmup_callbacks.CostCoefWarmup._reset">
-<span class="sig-name descname"><span class="pre">_reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/warmup_callbacks.html#CostCoefWarmup._reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.warmup_callbacks.CostCoefWarmup._reset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Prepares the callback to warmup, and ensures that only the first <cite>WarmupCallback</cite> is active.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.optimisation.callbacks.warmup_callbacks.CostCoefWarmup.on_epoch_end">
 <span class="sig-name descname"><span class="pre">on_epoch_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/warmup_callbacks.html#CostCoefWarmup.on_epoch_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.warmup_callbacks.CostCoefWarmup.on_epoch_end" title="Permalink to this definition">¶</a></dt>
@@ -1541,37 +1421,36 @@ During this warm-up monitoring phase, the detectors will be kept fixed.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.warmup_callbacks.PanelOptConfig">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.callbacks.warmup_callbacks.</span></span><span class="sig-name descname"><span class="pre">PanelOptConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_warmup</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xy_pos_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_pos_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xy_span_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">budget_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/warmup_callbacks.html#PanelOptConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.warmup_callbacks.PanelOptConfig" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.warmup_callbacks.OptConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.callbacks.warmup_callbacks.</span></span><span class="sig-name descname"><span class="pre">OptConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_warmup</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rates</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/warmup_callbacks.html#OptConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.warmup_callbacks.OptConfig" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback" title="tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback"><code class="xref py py-class docutils literal notranslate"><span class="pre">WarmupCallback</span></code></a></p>
-<p>Allows the user to specify the desired update steps for <a class="reference internal" href="tomopt.volume.html#tomopt.volume.layer.PanelDetectorLayer" title="tomopt.volume.layer.PanelDetectorLayer"><code class="xref py py-class docutils literal notranslate"><span class="pre">PanelDetectorLayer</span></code></a> s in physical units.
-Over the course of several warm-up epochs the gradients on the parameters are monitored, after which suitable learning rates for the optimisation are set.
+<p>Allows the user to specify the desired update steps for parameters in physical units.
+Over the course of several warm-up epochs the gradients on the parameters are monitored, after which suitable learning rates for the optimisers are set,
+such that the parameters will move by the desired amount every update.
 During the warm-up, the detectors will not be updated as optimiser learning rates will be set to zero.</p>
+<p>The calculation here does not account for the effect of the optimiser’s momentum, nor scheduling and adaption of learning rates, and so the actual update rates may be different from the desired ones.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>n_warmup</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – number of training epochs to wait before setting learning rates</p></li>
-<li><p><strong>xy_pos_rate</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – desired distance in metres the panels should move in xy every update</p></li>
-<li><p><strong>z_pos_rate</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – desired distance in metres the panels should move in z every update</p></li>
-<li><p><strong>xy_span_rate</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – desired distance in metres the panels should expand in xy every update</p></li>
-<li><p><strong>budget_rate</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – desired rate at which the fractional budget assignments should change every update</p></li>
+<li><p><strong>rates</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – dictionary of desired update rates for the parameters
+The keys are the names of the optimisers specified in the optimiser dictionary of the wrapper.
+The values are the desired update rates for the parameters in physical units.
+For example, if the optimiser is SGD, and the parameter is the xy position of a panel, then the update rate should be in metres.
+The parameters that are being optimisered are expected to be found in the zeroth parameter group of the optimiser, i.e. <cite>wrapper.opts[opt].param_groups[0][‘params’]</cite>.
+This implies that the optimiser is expected to have only one parameter group.</p></li>
 </ul>
 </dd>
 </dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.warmup_callbacks.PanelOptConfig._reset">
-<span class="sig-name descname"><span class="pre">_reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/warmup_callbacks.html#PanelOptConfig._reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.warmup_callbacks.PanelOptConfig._reset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Prepares the callback to warmup, and ensures that only the first <cite>WarmupCallback</cite> is active.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
+<dl>
+<dt>Example::</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">OptConfig</span><span class="p">(</span><span class="n">n_warmup</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">rates</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;xy_pos_opt&#39;</span><span class="p">:</span><span class="n">xy_pos_rate</span><span class="p">,</span> <span class="s1">&#39;z_pos_opt&#39;</span><span class="p">:</span><span class="n">z_pos_rate</span><span class="p">,</span> <span class="s1">&#39;xy_span_opt&#39;</span><span class="p">:</span><span class="n">xy_span_rate</span><span class="p">})</span>
+</pre></div>
+</div>
 </dd>
 </dl>
-</dd></dl>
-
 <dl class="py method">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.warmup_callbacks.PanelOptConfig.on_backwards_end">
-<span class="sig-name descname"><span class="pre">on_backwards_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/warmup_callbacks.html#PanelOptConfig.on_backwards_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.warmup_callbacks.PanelOptConfig.on_backwards_end" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.warmup_callbacks.OptConfig.on_backwards_end">
+<span class="sig-name descname"><span class="pre">on_backwards_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/warmup_callbacks.html#OptConfig.on_backwards_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.warmup_callbacks.OptConfig.on_backwards_end" title="Permalink to this definition">¶</a></dt>
 <dd><p>Grabs training gradients from detector parameters</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -1581,8 +1460,8 @@ During the warm-up, the detectors will not be updated as optimiser learning rate
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.warmup_callbacks.PanelOptConfig.on_epoch_end">
-<span class="sig-name descname"><span class="pre">on_epoch_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/warmup_callbacks.html#PanelOptConfig.on_epoch_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.warmup_callbacks.PanelOptConfig.on_epoch_end" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.warmup_callbacks.OptConfig.on_epoch_end">
+<span class="sig-name descname"><span class="pre">on_epoch_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/warmup_callbacks.html#OptConfig.on_epoch_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.warmup_callbacks.OptConfig.on_epoch_end" title="Permalink to this definition">¶</a></dt>
 <dd><p>When enough training epochs have passed, sets suitable learning rates for the optimisers based on the median gradients and desired update rates</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -1598,16 +1477,6 @@ During the warm-up, the detectors will not be updated as optimiser learning rate
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.callbacks.warmup_callbacks.</span></span><span class="sig-name descname"><span class="pre">PostWarmupCallback</span></span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/warmup_callbacks.html#PostWarmupCallback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.warmup_callbacks.PostWarmupCallback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tomopt.optimisation.callbacks.callback.Callback" title="tomopt.optimisation.callbacks.callback.Callback"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callback</span></code></a></p>
 <p>Callback class that waits for all <a class="reference internal" href="#tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback" title="tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback"><code class="xref py py-class docutils literal notranslate"><span class="pre">WarmupCallback</span></code></a> obejcts to finish their warmups before activating.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.warmup_callbacks.PostWarmupCallback._activate">
-<span class="sig-name descname"><span class="pre">_activate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/warmup_callbacks.html#PostWarmupCallback._activate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.warmup_callbacks.PostWarmupCallback._activate" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.optimisation.callbacks.warmup_callbacks.PostWarmupCallback.check_warmups">
 <span class="sig-name descname"><span class="pre">check_warmups</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/warmup_callbacks.html#PostWarmupCallback.check_warmups"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.warmup_callbacks.PostWarmupCallback.check_warmups" title="Permalink to this definition">¶</a></dt>
@@ -1662,17 +1531,6 @@ When a <cite>WarmupCallback</cite> is warming up, its <cite>warmup_active</cite>
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback._reset">
-<span class="sig-name descname"><span class="pre">_reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/warmup_callbacks.html#WarmupCallback._reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback._reset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Prepares the callback to warmup, and ensures that only the first <cite>WarmupCallback</cite> is active.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback.check_warmups">
 <span class="sig-name descname"><span class="pre">check_warmups</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/warmup_callbacks.html#WarmupCallback.check_warmups"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback.check_warmups" title="Permalink to this definition">¶</a></dt>
 <dd><p>If a <cite>WarmupCallback</cite> has finished, then its <cite>warmup_active</cite> is set to False,
@@ -1721,182 +1579,6 @@ If the finishing callback was the last <cite>WarmupCallback</cite>, then the “
 </dd></dl>
 
 </section>
-<section id="tomopt-optimisation-callbacks-detector-callbacks-module">
-<h2>tomopt.optimisation.callbacks.detector_callbacks module<a class="headerlink" href="#tomopt-optimisation-callbacks-detector-callbacks-module" title="Permalink to this heading">¶</a></h2>
-<span class="target" id="module-tomopt.optimisation.callbacks.detector_callbacks"></span><dl class="py class">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.detector_callbacks.PanelUpdateLimiter">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.callbacks.detector_callbacks.</span></span><span class="sig-name descname"><span class="pre">PanelUpdateLimiter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_xy_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_z_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_xy_span_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/detector_callbacks.html#PanelUpdateLimiter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.detector_callbacks.PanelUpdateLimiter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#tomopt.optimisation.callbacks.callback.Callback" title="tomopt.optimisation.callbacks.callback.Callback"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callback</span></code></a></p>
-<p>Limits the maximum difference that optimisers can make to panel parameters, to prevent them from being affected by large updates from anomolous gradients.
-This is enacted by a hard-clamping based on the initial and final parameter values before/after each update step.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>max_xy_step</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]]) – maximum update in xy position of panels</p></li>
-<li><p><strong>max_z_step</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – maximum update in z position of panels</p></li>
-<li><p><strong>max_xy_span_step</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]]) – maximum update in xy_span position of panels</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.detector_callbacks.PanelUpdateLimiter.on_backwards_end">
-<span class="sig-name descname"><span class="pre">on_backwards_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/detector_callbacks.html#PanelUpdateLimiter.on_backwards_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.detector_callbacks.PanelUpdateLimiter.on_backwards_end" title="Permalink to this definition">¶</a></dt>
-<dd><p>Records the current paramaters of each panel before they are updated.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.detector_callbacks.PanelUpdateLimiter.on_step_end">
-<span class="sig-name descname"><span class="pre">on_step_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/detector_callbacks.html#PanelUpdateLimiter.on_step_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.detector_callbacks.PanelUpdateLimiter.on_step_end" title="Permalink to this definition">¶</a></dt>
-<dd><p>After the update step, goes through and hard-clamps parameter updates based on the difference between their current values
-and values before the update step.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.callbacks.detector_callbacks.</span></span><span class="sig-name descname"><span class="pre">SigmoidPanelSmoothnessSchedule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smooth_range</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/detector_callbacks.html#SigmoidPanelSmoothnessSchedule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#tomopt.optimisation.callbacks.warmup_callbacks.PostWarmupCallback" title="tomopt.optimisation.callbacks.warmup_callbacks.PostWarmupCallback"><code class="xref py py-class docutils literal notranslate"><span class="pre">PostWarmupCallback</span></code></a></p>
-<p>Creates an annealing schedule for the smooth attribute of <a class="reference internal" href="tomopt.volume.html#tomopt.volume.panel.SigmoidDetectorPanel" title="tomopt.volume.panel.SigmoidDetectorPanel"><code class="xref py py-class docutils literal notranslate"><span class="pre">SigmoidDetectorPanel</span></code></a>.
-This can be used to move from smooth, unphysical panel with high sensitivity outside the physical panel boundaries,
-to one with sharper decrease in resolution | efficiency at the edge, and so more closely resembles a physical panel, whilst still being differentiable.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>smooth_range</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – tuple of initial and final values for the smooth attributes of all panels in the volume.
-A base-10 log schedule used over the number of epochs-total number of warmup epochs.</p>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule._activate">
-<span class="sig-name descname"><span class="pre">_activate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/detector_callbacks.html#SigmoidPanelSmoothnessSchedule._activate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule._activate" title="Permalink to this definition">¶</a></dt>
-<dd><p>When the schedule begins, computes the appropriate smooth value at each up-coming epoch.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule._set_smooth">
-<span class="sig-name descname"><span class="pre">_set_smooth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smooth</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/detector_callbacks.html#SigmoidPanelSmoothnessSchedule._set_smooth"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule._set_smooth" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the smooth values for all :class:<a href="#id1"><span class="problematic" id="id2">`</span></a>~tomopt.volume.panel.SigmoidDetectorPanel  in the detector.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>smooth</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – smooth values for every <a class="reference internal" href="tomopt.volume.html#tomopt.volume.panel.SigmoidDetectorPanel" title="tomopt.volume.panel.SigmoidDetectorPanel"><code class="xref py py-class docutils literal notranslate"><span class="pre">SigmoidDetectorPanel</span></code></a> in the volume.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule.on_epoch_begin">
-<span class="sig-name descname"><span class="pre">on_epoch_begin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/detector_callbacks.html#SigmoidPanelSmoothnessSchedule.on_epoch_begin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule.on_epoch_begin" title="Permalink to this definition">¶</a></dt>
-<dd><p>At the start of each training epoch, will anneal the <a class="reference internal" href="tomopt.volume.html#tomopt.volume.panel.SigmoidDetectorPanel" title="tomopt.volume.panel.SigmoidDetectorPanel"><code class="xref py py-class docutils literal notranslate"><span class="pre">SigmoidDetectorPanel</span></code></a> s’ smooth attributes, if the callback is active.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule.on_train_begin">
-<span class="sig-name descname"><span class="pre">on_train_begin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/detector_callbacks.html#SigmoidPanelSmoothnessSchedule.on_train_begin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule.on_train_begin" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets all <a class="reference internal" href="tomopt.volume.html#tomopt.volume.panel.SigmoidDetectorPanel" title="tomopt.volume.panel.SigmoidDetectorPanel"><code class="xref py py-class docutils literal notranslate"><span class="pre">SigmoidDetectorPanel</span></code></a> s to their initial smooth values.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-</section>
-<section id="id3">
-<h2>tomopt.optimisation.callbacks.opt_callbacks module<a class="headerlink" href="#id3" title="Permalink to this heading">¶</a></h2>
-<span class="target" id="module-0"></span><dl class="py class">
-<dt class="sig sig-object py" id="id0">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.callbacks.opt_callbacks.</span></span><span class="sig-name descname"><span class="pre">OneCycle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">opt_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warmup_length</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_mom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mid_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mid_mom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final_lr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">final_mom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/opt_callbacks.html#OneCycle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">AbsOptSchedule</span></code></p>
-<p>Callback implementing Smith 1-cycle evolution for lr and momentum (beta_1) <a class="reference external" href="https://arxiv.org/abs/1803.09820">https://arxiv.org/abs/1803.09820</a></p>
-<dl class="simple">
-<dt>In the warmup phase:</dt><dd><p>Learning rate is increased from <cite>init_lr</cite> to <cite>mid_lr</cite>,
-Momentum is decreased from <cite>init_mom</cite> to <cite>mid_mom</cite>, to stabilise the use of high LRs</p>
-</dd>
-<dt>In the convergence phase:</dt><dd><p>Learning rate is decreased from <cite>mid_lr</cite> to <cite>final_lr</cite>,
-Momentum is increased from <cite>mid_mom</cite> to <cite>final_mom</cite></p>
-</dd>
-</dl>
-<p>Setting the learning rate or momentum here will override the values specified when instantiating the <cite>VolumeWrapper</cite>.
-learning rate or momentum arguments can be <cite>None</cite> to avoid annealing or overriding their values.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>opt_name</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>) – name of optimiser that should be affected by the scheduler</p></li>
-<li><p><strong>warmup_length</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>) – number of epochs to use for the warmup phase</p></li>
-<li><p><strong>init_lr</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – initial learning rate (low)</p></li>
-<li><p><strong>init_mom</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – initial momentum (high)</p></li>
-<li><p><strong>mid_lr</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – nominal learning rate (high),</p></li>
-<li><p><strong>mid_mom</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – nominal momentum (moderate),</p></li>
-<li><p><strong>final_lr</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – final learning rate (low),</p></li>
-<li><p><strong>final_mom</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]) – final momentum (high)</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="id4">
-<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#id4" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="id5">
-<span class="sig-name descname"><span class="pre">_activate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/opt_callbacks.html#OneCycle._activate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id5" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="id6">
-<span class="sig-name descname"><span class="pre">on_epoch_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/opt_callbacks.html#OneCycle.on_epoch_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id6" title="Permalink to this definition">¶</a></dt>
-<dd><p>Runs when a training or validations epoch ends.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="id7">
-<span class="sig-name descname"><span class="pre">schedule</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/callbacks/opt_callbacks.html#OneCycle.schedule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id7" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute LR and momentum as a function of inter_cnt, according to defined ranges.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>], <code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]]</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-</section>
 </section>
 
 
@@ -1919,7 +1601,7 @@ learning rate or momentum arguments can be <cite>None</cite> to avoid annealing 
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2021-2023, TomOpt Authors.
+        &copy; Copyright 2021-2024, TomOpt Authors.
 
     </p>
   </div>
@@ -1979,15 +1661,29 @@ learning rate or momentum arguments can be <cite>None</cite> to avoid annealing 
 </li>
 </ul>
 </li>
+<li><a class="reference internal" href="#module-tomopt.optimisation.callbacks.detector_callbacks">tomopt.optimisation.callbacks.detector_callbacks module</a><ul>
+<li><a class="reference internal" href="#tomopt.optimisation.callbacks.detector_callbacks.PanelCentring"><code class="docutils literal notranslate"><span class="pre">PanelCentring</span></code></a><ul>
+<li><a class="reference internal" href="#tomopt.optimisation.callbacks.detector_callbacks.PanelCentring.on_step_end"><code class="docutils literal notranslate"><span class="pre">PanelCentring.on_step_end()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tomopt.optimisation.callbacks.detector_callbacks.PanelUpdateLimiter"><code class="docutils literal notranslate"><span class="pre">PanelUpdateLimiter</span></code></a><ul>
+<li><a class="reference internal" href="#tomopt.optimisation.callbacks.detector_callbacks.PanelUpdateLimiter.on_backwards_end"><code class="docutils literal notranslate"><span class="pre">PanelUpdateLimiter.on_backwards_end()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.callbacks.detector_callbacks.PanelUpdateLimiter.on_step_end"><code class="docutils literal notranslate"><span class="pre">PanelUpdateLimiter.on_step_end()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule"><code class="docutils literal notranslate"><span class="pre">SigmoidPanelSmoothnessSchedule</span></code></a><ul>
+<li><a class="reference internal" href="#tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule.on_epoch_begin"><code class="docutils literal notranslate"><span class="pre">SigmoidPanelSmoothnessSchedule.on_epoch_begin()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule.on_train_begin"><code class="docutils literal notranslate"><span class="pre">SigmoidPanelSmoothnessSchedule.on_train_begin()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li><a class="reference internal" href="#module-tomopt.optimisation.callbacks.diagnostic_callbacks">tomopt.optimisation.callbacks.diagnostic_callbacks module</a><ul>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.diagnostic_callbacks.HitRecord"><code class="docutils literal notranslate"><span class="pre">HitRecord</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.diagnostic_callbacks.HitRecord._to_df"><code class="docutils literal notranslate"><span class="pre">HitRecord._to_df()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.diagnostic_callbacks.HitRecord.on_scatter_end"><code class="docutils literal notranslate"><span class="pre">HitRecord.on_scatter_end()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.diagnostic_callbacks.ScatterRecord"><code class="docutils literal notranslate"><span class="pre">ScatterRecord</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.diagnostic_callbacks.ScatterRecord._reset"><code class="docutils literal notranslate"><span class="pre">ScatterRecord._reset()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.diagnostic_callbacks.ScatterRecord._to_df"><code class="docutils literal notranslate"><span class="pre">ScatterRecord._to_df()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.diagnostic_callbacks.ScatterRecord.get_record"><code class="docutils literal notranslate"><span class="pre">ScatterRecord.get_record()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.diagnostic_callbacks.ScatterRecord.on_pred_begin"><code class="docutils literal notranslate"><span class="pre">ScatterRecord.on_pred_begin()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.diagnostic_callbacks.ScatterRecord.on_scatter_end"><code class="docutils literal notranslate"><span class="pre">ScatterRecord.on_scatter_end()</span></code></a></li>
@@ -2013,9 +1709,6 @@ learning rate or momentum arguments can be <cite>None</cite> to avoid annealing 
 </li>
 <li><a class="reference internal" href="#module-tomopt.optimisation.callbacks.heatmap_gif">tomopt.optimisation.callbacks.heatmap_gif module</a><ul>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.heatmap_gif.HeatMapGif"><code class="docutils literal notranslate"><span class="pre">HeatMapGif</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.heatmap_gif.HeatMapGif._create_gif"><code class="docutils literal notranslate"><span class="pre">HeatMapGif._create_gif()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.heatmap_gif.HeatMapGif._plot_current"><code class="docutils literal notranslate"><span class="pre">HeatMapGif._plot_current()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.heatmap_gif.HeatMapGif._reset"><code class="docutils literal notranslate"><span class="pre">HeatMapGif._reset()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.heatmap_gif.HeatMapGif.on_epoch_begin"><code class="docutils literal notranslate"><span class="pre">HeatMapGif.on_epoch_begin()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.heatmap_gif.HeatMapGif.on_train_begin"><code class="docutils literal notranslate"><span class="pre">HeatMapGif.on_train_begin()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.heatmap_gif.HeatMapGif.on_train_end"><code class="docutils literal notranslate"><span class="pre">HeatMapGif.on_train_end()</span></code></a></li>
@@ -2023,14 +1716,8 @@ learning rate or momentum arguments can be <cite>None</cite> to avoid annealing 
 </li>
 </ul>
 </li>
-<li><a class="reference internal" href="#tomopt-optimisation-callbacks-loss-callbacks-module">tomopt.optimisation.callbacks.loss_callbacks module</a></li>
 <li><a class="reference internal" href="#module-tomopt.optimisation.callbacks.monitors">tomopt.optimisation.callbacks.monitors module</a><ul>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.monitors.MetricLogger"><code class="docutils literal notranslate"><span class="pre">MetricLogger</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.monitors.MetricLogger._build_grid_spec"><code class="docutils literal notranslate"><span class="pre">MetricLogger._build_grid_spec()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.monitors.MetricLogger._create_gif"><code class="docutils literal notranslate"><span class="pre">MetricLogger._create_gif()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.monitors.MetricLogger._prep_plots"><code class="docutils literal notranslate"><span class="pre">MetricLogger._prep_plots()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.monitors.MetricLogger._reset"><code class="docutils literal notranslate"><span class="pre">MetricLogger._reset()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.monitors.MetricLogger._snapshot_monitor"><code class="docutils literal notranslate"><span class="pre">MetricLogger._snapshot_monitor()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.monitors.MetricLogger.cat_palette"><code class="docutils literal notranslate"><span class="pre">MetricLogger.cat_palette</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.monitors.MetricLogger.get_loss_history"><code class="docutils literal notranslate"><span class="pre">MetricLogger.get_loss_history()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.monitors.MetricLogger.get_results"><code class="docutils literal notranslate"><span class="pre">MetricLogger.get_results()</span></code></a></li>
@@ -2054,19 +1741,17 @@ learning rate or momentum arguments can be <cite>None</cite> to avoid annealing 
 </ul>
 </li>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.monitors.PanelMetricLogger"><code class="docutils literal notranslate"><span class="pre">PanelMetricLogger</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.monitors.PanelMetricLogger._build_grid_spec"><code class="docutils literal notranslate"><span class="pre">PanelMetricLogger._build_grid_spec()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.monitors.PanelMetricLogger._prep_plots"><code class="docutils literal notranslate"><span class="pre">PanelMetricLogger._prep_plots()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.monitors.PanelMetricLogger._reset"><code class="docutils literal notranslate"><span class="pre">PanelMetricLogger._reset()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.monitors.PanelMetricLogger._set_axes_labels"><code class="docutils literal notranslate"><span class="pre">PanelMetricLogger._set_axes_labels()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.monitors.PanelMetricLogger.update_plot"><code class="docutils literal notranslate"><span class="pre">PanelMetricLogger.update_plot()</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-tomopt.optimisation.callbacks.opt_callbacks">tomopt.optimisation.callbacks.opt_callbacks module</a><ul>
+<li><a class="reference internal" href="#tomopt.optimisation.callbacks.opt_callbacks.EpochSave"><code class="docutils literal notranslate"><span class="pre">EpochSave</span></code></a><ul>
+<li><a class="reference internal" href="#tomopt.optimisation.callbacks.opt_callbacks.EpochSave.on_epoch_end"><code class="docutils literal notranslate"><span class="pre">EpochSave.on_epoch_end()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.opt_callbacks.OneCycle"><code class="docutils literal notranslate"><span class="pre">OneCycle</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.opt_callbacks.OneCycle._abc_impl"><code class="docutils literal notranslate"><span class="pre">OneCycle._abc_impl</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.opt_callbacks.OneCycle._activate"><code class="docutils literal notranslate"><span class="pre">OneCycle._activate()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.opt_callbacks.OneCycle.on_epoch_end"><code class="docutils literal notranslate"><span class="pre">OneCycle.on_epoch_end()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.opt_callbacks.OneCycle.schedule"><code class="docutils literal notranslate"><span class="pre">OneCycle.schedule()</span></code></a></li>
 </ul>
@@ -2081,8 +1766,6 @@ learning rate or momentum arguments can be <cite>None</cite> to avoid annealing 
 </ul>
 </li>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.pred_callbacks.Save2HDF5PredHandler"><code class="docutils literal notranslate"><span class="pre">Save2HDF5PredHandler</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.pred_callbacks.Save2HDF5PredHandler._open_file"><code class="docutils literal notranslate"><span class="pre">Save2HDF5PredHandler._open_file()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.pred_callbacks.Save2HDF5PredHandler._write_data"><code class="docutils literal notranslate"><span class="pre">Save2HDF5PredHandler._write_data()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.pred_callbacks.Save2HDF5PredHandler.on_x0_pred_end"><code class="docutils literal notranslate"><span class="pre">Save2HDF5PredHandler.on_x0_pred_end()</span></code></a></li>
 </ul>
 </li>
@@ -2092,57 +1775,28 @@ learning rate or momentum arguments can be <cite>None</cite> to avoid annealing 
 </li>
 </ul>
 </li>
-<li><a class="reference internal" href="#tomopt-optimisation-callbacks-warmup-callbacks-module">tomopt.optimisation.callbacks.warmup_callbacks module</a><ul>
+<li><a class="reference internal" href="#module-tomopt.optimisation.callbacks.warmup_callbacks">tomopt.optimisation.callbacks.warmup_callbacks module</a><ul>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.warmup_callbacks.CostCoefWarmup"><code class="docutils literal notranslate"><span class="pre">CostCoefWarmup</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.warmup_callbacks.CostCoefWarmup._reset"><code class="docutils literal notranslate"><span class="pre">CostCoefWarmup._reset()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.warmup_callbacks.CostCoefWarmup.on_epoch_end"><code class="docutils literal notranslate"><span class="pre">CostCoefWarmup.on_epoch_end()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.warmup_callbacks.CostCoefWarmup.on_volume_end"><code class="docutils literal notranslate"><span class="pre">CostCoefWarmup.on_volume_end()</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.warmup_callbacks.PanelOptConfig"><code class="docutils literal notranslate"><span class="pre">PanelOptConfig</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.warmup_callbacks.PanelOptConfig._reset"><code class="docutils literal notranslate"><span class="pre">PanelOptConfig._reset()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.warmup_callbacks.PanelOptConfig.on_backwards_end"><code class="docutils literal notranslate"><span class="pre">PanelOptConfig.on_backwards_end()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.warmup_callbacks.PanelOptConfig.on_epoch_end"><code class="docutils literal notranslate"><span class="pre">PanelOptConfig.on_epoch_end()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.callbacks.warmup_callbacks.OptConfig"><code class="docutils literal notranslate"><span class="pre">OptConfig</span></code></a><ul>
+<li><a class="reference internal" href="#tomopt.optimisation.callbacks.warmup_callbacks.OptConfig.on_backwards_end"><code class="docutils literal notranslate"><span class="pre">OptConfig.on_backwards_end()</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.callbacks.warmup_callbacks.OptConfig.on_epoch_end"><code class="docutils literal notranslate"><span class="pre">OptConfig.on_epoch_end()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.warmup_callbacks.PostWarmupCallback"><code class="docutils literal notranslate"><span class="pre">PostWarmupCallback</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.warmup_callbacks.PostWarmupCallback._activate"><code class="docutils literal notranslate"><span class="pre">PostWarmupCallback._activate()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.warmup_callbacks.PostWarmupCallback.check_warmups"><code class="docutils literal notranslate"><span class="pre">PostWarmupCallback.check_warmups()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.warmup_callbacks.PostWarmupCallback.on_epoch_begin"><code class="docutils literal notranslate"><span class="pre">PostWarmupCallback.on_epoch_begin()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.warmup_callbacks.PostWarmupCallback.on_train_begin"><code class="docutils literal notranslate"><span class="pre">PostWarmupCallback.on_train_begin()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback"><code class="docutils literal notranslate"><span class="pre">WarmupCallback</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback._reset"><code class="docutils literal notranslate"><span class="pre">WarmupCallback._reset()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback.check_warmups"><code class="docutils literal notranslate"><span class="pre">WarmupCallback.check_warmups()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback.on_epoch_begin"><code class="docutils literal notranslate"><span class="pre">WarmupCallback.on_epoch_begin()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback.on_epoch_end"><code class="docutils literal notranslate"><span class="pre">WarmupCallback.on_epoch_end()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback.on_train_begin"><code class="docutils literal notranslate"><span class="pre">WarmupCallback.on_train_begin()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a class="reference internal" href="#tomopt-optimisation-callbacks-detector-callbacks-module">tomopt.optimisation.callbacks.detector_callbacks module</a><ul>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.detector_callbacks.PanelUpdateLimiter"><code class="docutils literal notranslate"><span class="pre">PanelUpdateLimiter</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.detector_callbacks.PanelUpdateLimiter.on_backwards_end"><code class="docutils literal notranslate"><span class="pre">PanelUpdateLimiter.on_backwards_end()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.detector_callbacks.PanelUpdateLimiter.on_step_end"><code class="docutils literal notranslate"><span class="pre">PanelUpdateLimiter.on_step_end()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule"><code class="docutils literal notranslate"><span class="pre">SigmoidPanelSmoothnessSchedule</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule._activate"><code class="docutils literal notranslate"><span class="pre">SigmoidPanelSmoothnessSchedule._activate()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule._set_smooth"><code class="docutils literal notranslate"><span class="pre">SigmoidPanelSmoothnessSchedule._set_smooth()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule.on_epoch_begin"><code class="docutils literal notranslate"><span class="pre">SigmoidPanelSmoothnessSchedule.on_epoch_begin()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.optimisation.callbacks.detector_callbacks.SigmoidPanelSmoothnessSchedule.on_train_begin"><code class="docutils literal notranslate"><span class="pre">SigmoidPanelSmoothnessSchedule.on_train_begin()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a class="reference internal" href="#id3">tomopt.optimisation.callbacks.opt_callbacks module</a><ul>
-<li><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">OneCycle</span></code></a><ul>
-<li><a class="reference internal" href="#id4"><code class="docutils literal notranslate"><span class="pre">OneCycle._abc_impl</span></code></a></li>
-<li><a class="reference internal" href="#id5"><code class="docutils literal notranslate"><span class="pre">OneCycle._activate()</span></code></a></li>
-<li><a class="reference internal" href="#id6"><code class="docutils literal notranslate"><span class="pre">OneCycle.on_epoch_end()</span></code></a></li>
-<li><a class="reference internal" href="#id7"><code class="docutils literal notranslate"><span class="pre">OneCycle.schedule()</span></code></a></li>
 </ul>
 </li>
 </ul>

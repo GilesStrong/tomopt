@@ -2,11 +2,11 @@
 
 The TomOpt project, and its continued development and support, is the result of the combined work of many people, whose contributions are summarised below.
 
-In order to start time, the TomOpt authors/contributors are: Giles Strong, Tommaso Dorigo, Andrea Giammanco, Pietro Vischia, Jan Kieseler, Maxime Lagrange, Federico Nardi, Haitham Zaraket, Max Lamparth, Federica Fanzago, Oleg Savchenko, Nitesh Sharma, Anna Bordignon, Mariam Safieldin, Aitor Orio.
+In order to start time, the TomOpt authors/contributors are: Giles Strong, Tommaso Dorigo, Andrea Giammanco, Pietro Vischia, Jan Kieseler, Maxime Lagrange, Federico Nardi, Haitham Zaraket, Max Lamparth, Federica Fanzago, Oleg Savchenko, Nitesh Sharma, Anna Bordignon, Mariam Safieldin, Aitor Orio, Pablo Martinez Ruiz del Arbol, Zahraa Daher.
 
 ## Giles Chatham Strong (@GilesStrong)
 
-### 2021 - present. University of Padova, Italy; INFN-Padova, Italy.
+### 2021 - present. MODE Collaboration, independent researcher.
 
 <img src="docs/source/_static/imgs/authors/giles.png" style="width:auto;height:100px" />
 
@@ -20,11 +20,14 @@ In order to start time, the TomOpt authors/contributors are: Giles Strong, Tomma
 - Conceptual planning, implementation, & investigation for:
   - ULorry benchmark
   - Bimodal test-statistic for classification with X0 predictions
+  - Ladle furnace benchmark
 - Implementation of:
   - Geant 4 parameterised scattering model in TomOpt
   - PhiDet benchmark
+  - Ladle furnace inference
 - Tutorial writing
 - Code reviews
+
 
 ### Other roles:
 
@@ -32,6 +35,8 @@ In order to start time, the TomOpt authors/contributors are: Giles Strong, Tomma
 - Project conceptualisation
 - Meeting chairperson, presentations
 - Dedicated talks on TomOpt
+- Poster presentations
+- Paper writing
 
 ## Tommaso Dorigo (@tdorigo)
 
@@ -52,6 +57,7 @@ In order to start time, the TomOpt authors/contributors are: Giles Strong, Tomma
   - ULorry benchmark
   - Bimodal test-statistic for classification with X0 predictions
   - PhiDet detector benchmark
+- Paper writing
 
 ### Other roles:
 
@@ -71,6 +77,7 @@ In order to start time, the TomOpt authors/contributors are: Giles Strong, Tomma
 ### Code contributions:
 
 - Assistance, advice, and information for various aspects of muon tomography
+- Paper writing
 
 ### Other roles:
 
@@ -132,8 +139,10 @@ In order to start time, the TomOpt authors/contributors are: Giles Strong, Tomma
 
 ### Other roles:
 
-- Meeting presentations
 - Dedicated talks on TomOpt
+- Meeting chairperson, presentations
+- Conference proceedings writing
+- Paper writing
 
 ## Federico Nardi (@FedericoNardi)
 
@@ -163,6 +172,7 @@ In order to start time, the TomOpt authors/contributors are: Giles Strong, Tomma
 ### Other roles:
 
 - Meeting presentations
+- Paper writing
 
 ## Max Lamparth (@maxlampe)
 
@@ -181,13 +191,11 @@ In order to start time, the TomOpt authors/contributors are: Giles Strong, Tomma
 
 ## Federica Fanzago (@fanzago)
 
-### 2021 - present. INFN-Padova, Italy.
+### 2021 - 2021. INFN-Padova, Italy.
 
 <img src="docs/source/_static/imgs/authors/federicaauthor.png" style="width:auto;height:100px" />
 
 ### Code contributions:
-
-- 
 
 ### Other roles:
 
@@ -195,13 +203,11 @@ In order to start time, the TomOpt authors/contributors are: Giles Strong, Tomma
 
 ## Oleg Savchenko (@intfxdx)
 
-### 2022 - present. INFN-Padova, Italy.
+### 2022 - 2023. INFN-Padova, Italy.
 
 <img src="docs/source/_static/imgs/authors/oleg.png" style="width:auto;height:100px" />
 
 ### Code contributions:
-
-- 
 
 ### Other roles:
 
@@ -209,17 +215,17 @@ In order to start time, the TomOpt authors/contributors are: Giles Strong, Tomma
 
 ## Nitesh Sharma
 
-### 2022 - 2022?. Institute?, India?.
+### 2022 - 2022. India.
 
 <img src="docs/source/_static/imgs/authors/nitesh.png" style="width:auto;height:100px" />
 
 ### Code contributions:
 
-- Investigation and development of Geant 4 parameterised scattering model?
+- Investigation and development of Geant 4 parameterised scattering model
 
 ### Other roles:
 
-- 
+- Meeting attendance
 
 ## Anna Bordignon (@Anna5997)
 
@@ -235,8 +241,8 @@ In order to start time, the TomOpt authors/contributors are: Giles Strong, Tomma
 ### Other roles:
 
 - Meeting attendance
-
--
+- Meeting presentations
+- Dedicated talks on TomOpt
 
 ## Mariam Safieldin (@mariamheikal)
 
@@ -247,7 +253,6 @@ In order to start time, the TomOpt authors/contributors are: Giles Strong, Tomma
 ### Code contributions:
 
 - Python/pytorch reimplementation of the expectation maximization algorithm, and further detailed study of its performance
-- ...
 
 ### Other roles:
 
@@ -256,20 +261,51 @@ In order to start time, the TomOpt authors/contributors are: Giles Strong, Tomma
 
 ## Aitor Orio Alonso (@Tortxu10)
 
-### 2018 - present. Muon Tomography Systems, Spain.
+### 2023 - present. Muon Tomography Systems, Spain.
 
 <img src="docs/source/_static/imgs/authors/AitorOrioAlonso.JPG" style="width:auto;height:100px" />
 
 ### Code contributions:
 
-- Conceptual planning, & investigation for:
-  - Ladle furnace benchmark: inference method design. Performance and loss function assessment.
+- Conceptual planning, investigation, and implementation for Ladle furnace benchmark inference method and loss function.
 - Assistance, advice, and information for various aspects of muon tomography
 
 ### Other roles:
 
 - Meeting presentations
 - Meeting attendance
+- Paper writing
+
+## Pablo Martinez Ruiz del Arbol
+
+### 2023 - present. Instituto de Fisica de Cantabria & Muon Tomography Systems, Spain.
+
+<img src="docs/source/_static/imgs/authors/AitorOrioAlonso.JPG" style="width:auto;height:100px" />
+
+### Code contributions:
+
+- Conceptual planning, and Geant 4 simulations for Ladle furnace benchmark.
+- Assistance, advice, and information for various aspects of muon tomography
+
+### Other roles:
+
+- Meeting presentations
+- Meeting attendance
+- Paper writing
+
+## Zahraa Daher (@zahraadaher)
+
+### 2023 - present, Université catholique de Louvain, Belgium.
+
+<img src="docs/source/_static/imgs/authors/author.png" style="width:auto;height:100px" />
+
+### Code contributions:
+
+- Investigation into new muon scattering model
+
+### Other roles:
+
+- Meeting presentations
   
 ## Name Surname (@Github_name)
 
