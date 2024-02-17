@@ -2,7 +2,7 @@
 
 The TomOpt project, and its continued development and support, is the result of the combined work of many people, whose contributions are summarised below.
 
-In order to start time, the TomOpt authors/contributors are: Giles Strong, Tommaso Dorigo, Andrea Giammanco, Pietro Vischia, Jan Kieseler, Maxime Lagrange, Federico Nardi, Haitham Zaraket, Max Lamparth, Federica Fanzago, Oleg Savchenko, Nitesh Sharma, Anna Bordignon, Mariam Safieldin, Aitor Orio, Zahraa Daher.
+In order to start time, the TomOpt authors/contributors are: Giles Strong, Tommaso Dorigo, Andrea Giammanco, Pietro Vischia, Jan Kieseler, Maxime Lagrange, Federico Nardi, Haitham Zaraket, Max Lamparth, Federica Fanzago, Oleg Savchenko, Nitesh Sharma, Anna Bordignon, Mariam Safieldin, Aitor Orio, Pablo Martinez Ruiz del Arbol, Zahraa Daher.
 
 ## Giles Chatham Strong (@GilesStrong)
 
@@ -261,14 +261,30 @@ In order to start time, the TomOpt authors/contributors are: Giles Strong, Tomma
 
 ## Aitor Orio Alonso (@Tortxu10)
 
-### 2018 - present. Muon Tomography Systems, Spain.
+### 2023 - present. Muon Tomography Systems, Spain.
 
 <img src="docs/source/_static/imgs/authors/AitorOrioAlonso.JPG" style="width:auto;height:100px" />
 
 ### Code contributions:
 
-- Conceptual planning, investigation, and implementation for:
-  - Ladle furnace benchmark inference method and loss function.
+- Conceptual planning, investigation, and implementation for Ladle furnace benchmark inference method and loss function.
+- Assistance, advice, and information for various aspects of muon tomography
+
+### Other roles:
+
+- Meeting presentations
+- Meeting attendance
+- Paper writing
+
+## Pablo Martinez Ruiz del Arbol
+
+### 2023 - present. Instituto de Fisica de Cantabria & Muon Tomography Systems, Spain.
+
+<img src="docs/source/_static/imgs/authors/AitorOrioAlonso.JPG" style="width:auto;height:100px" />
+
+### Code contributions:
+
+- Conceptual planning, and Geant 4 simulations for Ladle furnace benchmark.
 - Assistance, advice, and information for various aspects of muon tomography
 
 ### Other roles:
