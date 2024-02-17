@@ -15,7 +15,7 @@ classifiers = [
         "Natural Language :: English",
         "Development Status :: 3 - Alpha",
 ]
-documentation = "https://tomopt.readthedocs.io/en/stable"
+documentation = "https://tomopt.readthedocs.io/en/latest"
 keywords = ["deep learning", "differential programming", "physics", "science", "statistics", "tomography", "detector"]
 include = ["py.typed", "volume/scatter_models/*"]
 
