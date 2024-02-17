@@ -3,7 +3,7 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![pypi tomopt version](https://img.shields.io/pypi/v/tomopt.svg)](https://pypi.python.org/pypi/tomopt)
 [![tomopt python compatibility](https://img.shields.io/pypi/pyversions/tomopt.svg)](https://pypi.python.org/pypi/tomopt) [![tomopt license](https://img.shields.io/pypi/l/tomopt.svg)](https://pypi.python.org/pypi/tomopt)
-[![Documentation Status](https://readthedocs.org/projects/tomopt/badge/?version=stable)](https://tomopt.readthedocs.io/en/stable/?badge=stable)
+[![Documentation Status](https://readthedocs.org/projects/tomopt/badge/?version=stable)](https://tomopt.readthedocs.io/en/latest/?badge=stable)
 <!-- [![DOI](https://zenodo.org/badge/163840693.svg)](https://zenodo.org/badge/latestdoi/163840693) -->
 
 # TomOpt: Differential Muon Tomography Optimisation
