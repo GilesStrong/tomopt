@@ -237,27 +237,35 @@
               
   <h1>Source code for tomopt.optimisation.wrapper.volume_wrapper</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
-<span class="kn">from</span> <span class="nn">fastcore.all</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Type</span>
-<span class="kn">from</span> <span class="nn">fastprogress.fastprogress</span> <span class="kn">import</span> <span class="n">ConsoleProgressBar</span><span class="p">,</span> <span class="n">NBProgressBar</span><span class="p">,</span> <span class="n">ProgressBar</span>
-<span class="kn">from</span> <span class="nn">fastprogress</span> <span class="kn">import</span> <span class="n">master_bar</span><span class="p">,</span> <span class="n">progress_bar</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Union</span>
 
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">fastcore.all</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">fastprogress</span> <span class="kn">import</span> <span class="n">master_bar</span><span class="p">,</span> <span class="n">progress_bar</span>
+<span class="kn">from</span> <span class="nn">fastprogress.fastprogress</span> <span class="kn">import</span> <span class="n">ConsoleProgressBar</span><span class="p">,</span> <span class="n">NBProgressBar</span><span class="p">,</span> <span class="n">ProgressBar</span>
 <span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span>
 <span class="kn">from</span> <span class="nn">torch.optim.optimizer</span> <span class="kn">import</span> <span class="n">Optimizer</span>
 
-<span class="kn">from</span> <span class="nn">..data</span> <span class="kn">import</span> <span class="n">PassiveYielder</span>
-<span class="kn">from</span> <span class="nn">..callbacks</span> <span class="kn">import</span> <span class="n">MetricLogger</span><span class="p">,</span> <span class="n">PredHandler</span><span class="p">,</span> <span class="n">WarmupCallback</span><span class="p">,</span> <span class="n">Callback</span><span class="p">,</span> <span class="n">CyclicCallback</span><span class="p">,</span> <span class="n">EvalMetric</span>
+<span class="kn">from</span> <span class="nn">...core</span> <span class="kn">import</span> <span class="n">DEVICE</span><span class="p">,</span> <span class="n">PartialOpt</span>
+<span class="kn">from</span> <span class="nn">...inference</span> <span class="kn">import</span> <span class="n">AbsVolumeInferrer</span><span class="p">,</span> <span class="n">PanelX0Inferrer</span><span class="p">,</span> <span class="n">ScatterBatch</span>
+<span class="kn">from</span> <span class="nn">...muon</span> <span class="kn">import</span> <span class="n">AbsMuonGenerator</span><span class="p">,</span> <span class="n">MuonBatch</span><span class="p">,</span> <span class="n">MuonGenerator2016</span>
 <span class="kn">from</span> <span class="nn">...optimisation.loss.loss</span> <span class="kn">import</span> <span class="n">AbsDetectorLoss</span>
-<span class="kn">from</span> <span class="nn">...volume</span> <span class="kn">import</span> <span class="n">Volume</span><span class="p">,</span> <span class="n">PanelDetectorLayer</span><span class="p">,</span> <span class="n">AbsDetectorLayer</span>
-<span class="kn">from</span> <span class="nn">...core</span> <span class="kn">import</span> <span class="n">PartialOpt</span><span class="p">,</span> <span class="n">DEVICE</span>
-<span class="kn">from</span> <span class="nn">...muon</span> <span class="kn">import</span> <span class="n">MuonGenerator2016</span><span class="p">,</span> <span class="n">MuonBatch</span><span class="p">,</span> <span class="n">AbsMuonGenerator</span>
-<span class="kn">from</span> <span class="nn">...inference</span> <span class="kn">import</span> <span class="n">ScatterBatch</span><span class="p">,</span> <span class="n">AbsVolumeInferrer</span><span class="p">,</span> <span class="n">PanelX0Inferrer</span>
+<span class="kn">from</span> <span class="nn">...volume</span> <span class="kn">import</span> <span class="n">AbsDetectorLayer</span><span class="p">,</span> <span class="n">PanelDetectorLayer</span><span class="p">,</span> <span class="n">Volume</span>
+<span class="kn">from</span> <span class="nn">..callbacks</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Callback</span><span class="p">,</span>
+    <span class="n">CyclicCallback</span><span class="p">,</span>
+    <span class="n">EvalMetric</span><span class="p">,</span>
+    <span class="n">MetricLogger</span><span class="p">,</span>
+    <span class="n">PredHandler</span><span class="p">,</span>
+    <span class="n">WarmupCallback</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">..data</span> <span class="kn">import</span> <span class="n">PassiveYielder</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;FitParams&quot;</span><span class="p">,</span> <span class="s2">&quot;AbsVolumeWrapper&quot;</span><span class="p">,</span> <span class="s2">&quot;PanelVolumeWrapper&quot;</span><span class="p">,</span> <span class="s2">&quot;HeatMapVolumeWrapper&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;FitParams&quot;</span><span class="p">,</span> <span class="s2">&quot;AbsVolumeWrapper&quot;</span><span class="p">,</span> <span class="s2">&quot;PanelVolumeWrapper&quot;</span><span class="p">,</span> <span class="s2">&quot;HeatMapVolumeWrapper&quot;</span><span class="p">,</span> <span class="s2">&quot;ArbVolumeWrapper&quot;</span><span class="p">]</span>
 
 <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Provides wrapper classes for optimising detectors and other quality-of-life methods</span>
@@ -295,7 +303,6 @@
     <span class="n">volume_inferrer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AbsVolumeInferrer</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">state</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">pred</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">inv_weight</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">n_mu_per_volume</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">mu_bs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">mu</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MuonBatch</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
@@ -475,7 +482,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_build_opt</span><span class="p">(</span><span class="o">**</span><span class="n">partial_opts</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">parameters</span>
 
-<div class="viewcode-block" id="AbsVolumeWrapper._build_opt"><a class="viewcode-back" href="../../../../tomopt.optimisation.wrapper.html#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._build_opt">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">_build_opt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">PartialOpt</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Inheriting classes should override this method to initialise the optimisers by associating them to the detector parameters. e.g.:</span>
@@ -486,7 +493,7 @@
 <span class="sd">            kwargs: uninitialised optimisers passed as keyword arguments</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">pass</span></div>
+        <span class="k">pass</span>
 
 <div class="viewcode-block" id="AbsVolumeWrapper.get_detectors"><a class="viewcode-back" href="../../../../tomopt.optimisation.wrapper.html#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.get_detectors">[docs]</a>    <span class="k">def</span> <span class="nf">get_detectors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">AbsDetectorLayer</span><span class="p">]:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
@@ -516,6 +523,8 @@
 
         <span class="n">state</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;volume&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="s2">&quot;budget_weights&quot;</span> <span class="ow">in</span> <span class="n">state</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">assign_budget</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">state</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="s2">&quot;_opt&quot;</span> <span class="ow">in</span> <span class="n">k</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">opts</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">v</span><span class="p">)</span></div>
@@ -708,7 +717,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">opts</span><span class="p">[</span><span class="n">opt</span><span class="p">]</span><span class="o">.</span><span class="n">param_groups</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;momentum&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mom</span></div>
 
-<div class="viewcode-block" id="AbsVolumeWrapper._sort_cbs"><a class="viewcode-back" href="../../../../tomopt.optimisation.wrapper.html#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._sort_cbs">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_sort_cbs</span><span class="p">(</span><span class="n">cbs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callback</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Callback</span><span class="p">]]]:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Sorts callbacks into lists according to their type and whether other callbacks might need to be aware of them.</span>
@@ -737,9 +746,9 @@
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">sorted_cbs</span><span class="p">[</span><span class="s2">&quot;warmup_cbs&quot;</span><span class="p">])</span><span class="si">}</span><span class="s1"> warmup callbacks found, with a total warmup period of </span><span class="si">{</span><span class="n">n_warmup</span><span class="si">}</span><span class="s1"> epochs.&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sorted_cbs</span><span class="p">[</span><span class="s2">&quot;metric_log&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">sorted_cbs</span><span class="p">[</span><span class="s2">&quot;metric_log&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">sorted_cbs</span></div>
+        <span class="k">return</span> <span class="n">sorted_cbs</span>
 
-<div class="viewcode-block" id="AbsVolumeWrapper._fit_epoch"><a class="viewcode-back" href="../../../../tomopt.optimisation.wrapper.html#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._fit_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">_fit_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_fit_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs through one training epoch (state = &#39;train&#39;), using :meth:`~tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volumes`.</span>
 <span class="sd">        If validation volumes are present, will then run through one validation epoch (state = &#39;valid&#39;),</span>
@@ -763,9 +772,9 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">val_passives</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="s2">&quot;valid&quot;</span>
-            <span class="n">run_epoch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">val_passives</span><span class="p">)</span></div>
+            <span class="n">run_epoch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">val_passives</span><span class="p">)</span>
 
-<div class="viewcode-block" id="AbsVolumeWrapper._scan_volumes"><a class="viewcode-back" href="../../../../tomopt.optimisation.wrapper.html#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volumes">[docs]</a>    <span class="k">def</span> <span class="nf">_scan_volumes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">passives</span><span class="p">:</span> <span class="n">PassiveYielder</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_scan_volumes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">passives</span><span class="p">:</span> <span class="n">PassiveYielder</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Scans all volumes by splitting them into volume batches.</span>
 <span class="sd">        Each volume is scanned via using :meth:`~tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volume`.</span>
@@ -816,16 +825,16 @@
                         <span class="n">d</span><span class="o">.</span><span class="n">conform_detector</span><span class="p">()</span>
 
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">passives</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">passive_bs</span><span class="p">:</span>
-                    <span class="k">break</span></div>
+                    <span class="k">break</span>
 
-<div class="viewcode-block" id="AbsVolumeWrapper._scan_volume"><a class="viewcode-back" href="../../../../tomopt.optimisation.wrapper.html#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volume">[docs]</a>    <span class="k">def</span> <span class="nf">_scan_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_scan_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Passes multiple batches of muons through a single volume, and infers the volume target.</span>
 <span class="sd">        If in &#39;train&#39; or &#39;valid&#39; state, also computes the loss on the detector.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># Scan volume with muon batches</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">pred</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">inv_weight</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">pred</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">state</span> <span class="o">!=</span> <span class="s2">&quot;test&quot;</span><span class="p">:</span>
             <span class="n">muon_bar</span> <span class="o">=</span> <span class="n">progress_bar</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">n_mu_per_volume</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">mu_bs</span><span class="p">),</span> <span class="n">display</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">leave</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -846,17 +855,17 @@
         <span class="c1"># Predict volume based on all muon batches</span>
         <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">cbs</span><span class="p">:</span>
             <span class="n">c</span><span class="o">.</span><span class="n">on_x0_pred_begin</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">pred</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">inv_weight</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">volume_inferrer</span><span class="o">.</span><span class="n">get_prediction</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">volume_inferrer</span><span class="o">.</span><span class="n">get_prediction</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">cbs</span><span class="p">:</span>
             <span class="n">c</span><span class="o">.</span><span class="n">on_x0_pred_end</span><span class="p">()</span>
 
         <span class="c1"># Compute loss for volume</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">state</span> <span class="o">!=</span> <span class="s2">&quot;test&quot;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_func</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">pred</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_func</span><span class="p">(</span><span class="n">pred</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">pred</span><span class="p">,</span> <span class="n">inv_pred_weight</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">inv_weight</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="p">)</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_func</span><span class="p">(</span><span class="n">pred</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">pred</span><span class="p">,</span> <span class="n">volume</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">loss_val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">loss_val</span> <span class="o">=</span> <span class="n">loss</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">loss_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">loss_val</span> <span class="o">+</span> <span class="n">loss</span></div></div>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">loss_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">loss_val</span> <span class="o">+</span> <span class="n">loss</span></div>
 
 
 <div class="viewcode-block" id="PanelVolumeWrapper"><a class="viewcode-back" href="../../../../tomopt.optimisation.wrapper.html#tomopt.optimisation.wrapper.volume_wrapper.PanelVolumeWrapper">[docs]</a><span class="k">class</span> <span class="nc">PanelVolumeWrapper</span><span class="p">(</span><span class="n">AbsVolumeWrapper</span><span class="p">):</span>
@@ -1060,7 +1069,7 @@
         <span class="n">vw</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">vw</span></div>
 
-<div class="viewcode-block" id="PanelVolumeWrapper._build_opt"><a class="viewcode-back" href="../../../../tomopt.optimisation.wrapper.html#tomopt.optimisation.wrapper.volume_wrapper.PanelVolumeWrapper._build_opt">[docs]</a>    <span class="k">def</span> <span class="nf">_build_opt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">PartialOpt</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_build_opt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">PartialOpt</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialises the optimisers by associating them to the detector parameters.</span>
 
@@ -1079,7 +1088,7 @@
             <span class="s2">&quot;xy_span_opt&quot;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;xy_span_opt&quot;</span><span class="p">]((</span><span class="n">p</span><span class="o">.</span><span class="n">xy_span</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">dets</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">l</span><span class="o">.</span><span class="n">panels</span><span class="p">)),</span>
         <span class="p">}</span>
         <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;budget_opt&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">opts</span><span class="p">[</span><span class="s2">&quot;budget_opt&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;budget_opt&quot;</span><span class="p">]((</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">budget_weights</span><span class="p">]))</span></div></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">opts</span><span class="p">[</span><span class="s2">&quot;budget_opt&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;budget_opt&quot;</span><span class="p">]((</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">budget_weights</span><span class="p">]))</span></div>
 
 
 <div class="viewcode-block" id="HeatMapVolumeWrapper"><a class="viewcode-back" href="../../../../tomopt.optimisation.wrapper.html#tomopt.optimisation.wrapper.volume_wrapper.HeatMapVolumeWrapper">[docs]</a><span class="k">class</span> <span class="nc">HeatMapVolumeWrapper</span><span class="p">(</span><span class="n">AbsVolumeWrapper</span><span class="p">):</span>
@@ -1278,7 +1287,7 @@
         <span class="n">vw</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">vw</span></div>
 
-<div class="viewcode-block" id="HeatMapVolumeWrapper._build_opt"><a class="viewcode-back" href="../../../../tomopt.optimisation.wrapper.html#tomopt.optimisation.wrapper.volume_wrapper.HeatMapVolumeWrapper._build_opt">[docs]</a>    <span class="k">def</span> <span class="nf">_build_opt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">PartialOpt</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_build_opt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">PartialOpt</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialises the optimisers by associating them to the detector parameters.</span>
 
@@ -1296,7 +1305,190 @@
             <span class="s2">&quot;norm_opt&quot;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;norm_opt&quot;</span><span class="p">]((</span><span class="n">p</span><span class="o">.</span><span class="n">norm</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">dets</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">l</span><span class="o">.</span><span class="n">panels</span><span class="p">)),</span>
             <span class="s2">&quot;sig_opt&quot;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;sig_opt&quot;</span><span class="p">]((</span><span class="n">p</span><span class="o">.</span><span class="n">sig</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">dets</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">l</span><span class="o">.</span><span class="n">panels</span><span class="p">)),</span>
             <span class="s2">&quot;z_pos_opt&quot;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;z_pos_opt&quot;</span><span class="p">]((</span><span class="n">p</span><span class="o">.</span><span class="n">z</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">dets</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">l</span><span class="o">.</span><span class="n">panels</span><span class="p">)),</span>
-        <span class="p">}</span></div></div>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="ArbVolumeWrapper"><a class="viewcode-back" href="../../../../tomopt.optimisation.wrapper.html#tomopt.optimisation.wrapper.volume_wrapper.ArbVolumeWrapper">[docs]</a><span class="k">class</span> <span class="nc">ArbVolumeWrapper</span><span class="p">(</span><span class="n">AbsVolumeWrapper</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Arbitrary volume wrapper in which the user supplies pre-instantiated optimisers for whatever paramters should be optimised.</span>
+
+<span class="sd">    Wrappers also provide for various quality-of-life methods, such as saving and loading detector configurations,</span>
+<span class="sd">    and computing predictions with a fixed detector (:meth:`~tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.predict`)</span>
+
+<span class="sd">    Fitting of a detector proceeds as training and validation epochs, each of which contains multiple batches of passive volumes.</span>
+<span class="sd">    For each volume in a batch, the loss is evaluated using multiple batches of muons.</span>
+<span class="sd">    The whole loop is:</span>
+
+<span class="sd">    1. for epoch in `n_epochs`:</span>
+<span class="sd">        A. `loss` = 0</span>
+<span class="sd">        B. for `p`, `passive` in enumerate(`trn_passives`):</span>
+<span class="sd">            a. load `passive` into passive volume</span>
+<span class="sd">            b. for muon_batch in range(`n_mu_per_volume`//`mu_bs`):</span>
+<span class="sd">                i. Irradiate volume with `mu_bs` muons</span>
+<span class="sd">                ii. Infer passive volume</span>
+<span class="sd">            c. Compute loss based on precision and cost, and add to `loss`</span>
+<span class="sd">            d. if `p`+1 % `passive_bs` == 0:</span>
+<span class="sd">                i. `loss` = `loss`/`passive_bs`</span>
+<span class="sd">                ii. Backpropagate `loss` and update detector parameters</span>
+<span class="sd">                iii. `loss` = 0</span>
+<span class="sd">            e. if len(`trn_passives`)-(`p`+1) &lt; `passive_bs`:</span>
+<span class="sd">                i. Break</span>
+
+<span class="sd">        C. `val_loss` = 0</span>
+<span class="sd">        D. for `p`, `passive` in enumerate(`val_passives`):</span>
+<span class="sd">            a. load `passive` into passive volume</span>
+<span class="sd">            b. for muon_batch in range(`n_mu_per_volume`//`mu_bs`):</span>
+<span class="sd">                i. Irradiate volume with `mu_bs` muons</span>
+<span class="sd">                ii. Infer passive volume</span>
+<span class="sd">                iii. Compute loss based on precision and cost, and add to `val_loss`</span>
+<span class="sd">            c. if len(`val_passives`)-(`p`+1) &lt; `passive_bs`:</span>
+<span class="sd">                i. Break</span>
+<span class="sd">        E. `val_loss` = `val_loss`/`p`</span>
+
+<span class="sd">    In implementation, the loop is broken up into several functions:</span>
+<span class="sd">        :meth:`~tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._fit_epoch` runs one full epoch of volumes</span>
+<span class="sd">            and updates for both training and validation</span>
+<span class="sd">        :meth:`~tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volumes` runs over all training/validation volumes,</span>
+<span class="sd">            updating parameters when necessary</span>
+<span class="sd">        :meth:`~tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volume` irradiates a single volume with muons multiple batches,</span>
+<span class="sd">            and computes the loss for that volume</span>
+
+<span class="sd">    The optimisation and prediction loops are supported by a stateful callback mechanism.</span>
+<span class="sd">    The base callback is :class:`~tomopt.optimisation.callbacks.callback.Callback`, which can interject at various points in the loops.</span>
+<span class="sd">    All aspects of the optimisation and prediction are stored in a :class:`~tomopt.optimisation.wrapper.volume_wrapper.FitParams` data class,</span>
+<span class="sd">    since the callbacks are also stored there, and the callbacks have a reference to the wrapper, they are able to read/write to the `FitParams` and be</span>
+<span class="sd">    aware of other callbacks that are running.</span>
+
+<span class="sd">    Accounting for the interjection calls (`on_*_begin` &amp; `on_*_end`), the full optimisation loop is:</span>
+
+<span class="sd">    1. Associate callbacks with wrapper (`set_wrapper`)</span>
+<span class="sd">    2. `on_train_begin`</span>
+<span class="sd">    3. for epoch in `n_epochs`:</span>
+<span class="sd">        A. `state` = &quot;train&quot;</span>
+<span class="sd">        B. `on_epoch_begin`</span>
+<span class="sd">        C. for `p`, `passive` in enumerate(`trn_passives`):</span>
+<span class="sd">            a. if `p` % `passive_bs` == 0:</span>
+<span class="sd">                i. `on_volume_batch_begin`</span>
+<span class="sd">                ii. `loss` = 0</span>
+<span class="sd">            b. load `passive` into passive volume</span>
+<span class="sd">            c. `on_volume_begin`</span>
+<span class="sd">            d. for muon_batch in range(`n_mu_per_volume`//`mu_bs`):</span>
+<span class="sd">                i. `on_mu_batch_begin`</span>
+<span class="sd">                ii. Irradiate volume with `mu_bs` muons</span>
+<span class="sd">                iii. Infer scatter locations</span>
+<span class="sd">                iv. `on_scatter_end`</span>
+<span class="sd">                v. Infer x0 and append to list of x0 predictions</span>
+<span class="sd">                vi. `on_mu_batch_end`</span>
+<span class="sd">            e. `on_x0_pred_begin`</span>
+<span class="sd">            f. Compute overall x0 prediction</span>
+<span class="sd">            g. `on_x0_pred_end`</span>
+<span class="sd">            h. Compute loss based on precision and cost, and add to `loss`</span>
+<span class="sd">            i. if `p`+1 % `passive_bs` == 0:</span>
+<span class="sd">                i. `loss` = `loss`/`passive_bs`</span>
+<span class="sd">                ii. `on_volume_batch_end`</span>
+<span class="sd">                iii. Zero parameter gradients</span>
+<span class="sd">                iv. `on_backwards_begin`</span>
+<span class="sd">                v. Backpropagate `loss` and compute parameter gradients</span>
+<span class="sd">                vi. `on_backwards_end`</span>
+<span class="sd">                vii. Update detector parameters</span>
+<span class="sd">                viii. Ensure detector parameters are within physical boundaries (`AbsDetectorLayer.conform_detector`)</span>
+<span class="sd">                viv. `loss` = 0</span>
+<span class="sd">            j. if len(`trn_passives`)-(`p`+1) &lt; `passive_bs`:</span>
+<span class="sd">                i. Break</span>
+<span class="sd">        D. `on_epoch_end`</span>
+<span class="sd">        E. `state` = &quot;valid&quot;</span>
+<span class="sd">        F. `on_epoch_begin`</span>
+<span class="sd">        G. for `p`, `passive` in enumerate(`val_passives`):</span>
+<span class="sd">            a. if `p` % `passive_bs` == 0:</span>
+<span class="sd">                i. `on_volume_batch_begin`</span>
+<span class="sd">                ii. `loss` = 0</span>
+<span class="sd">            b. `on_volume_begin`</span>
+<span class="sd">            c. for muon_batch in range(`n_mu_per_volume`//`mu_bs`):</span>
+<span class="sd">                i. `on_mu_batch_begin`</span>
+<span class="sd">                ii. Irradiate volume with `mu_bs` muons</span>
+<span class="sd">                iii. Infer scatter locations</span>
+<span class="sd">                iv. `on_scatter_end`</span>
+<span class="sd">                v. Infer x0 and append to list of x0 predictions</span>
+<span class="sd">                vi. `on_mu_batch_end`</span>
+<span class="sd">            d. `on_x0_pred_begin`</span>
+<span class="sd">            e. Compute overall x0 prediction</span>
+<span class="sd">            f. `on_x0_pred_end`</span>
+<span class="sd">            g. Compute loss based on precision and cost, and add to `loss`</span>
+<span class="sd">            h. if `p`+1 % `passive_bs` == 0:</span>
+<span class="sd">                i. `loss` = `loss`/`passive_bs`</span>
+<span class="sd">                ii. `on_volume_batch_end`</span>
+<span class="sd">            i. if len(`val_passives`)-(`p`+1) &lt; `passive_bs`:</span>
+<span class="sd">                i. Break</span>
+<span class="sd">        H. `on_epoch_end`</span>
+<span class="sd">    4. `on_train_end`</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        volume: the volume containing the detectors to be optimised</span>
+<span class="sd">        opts: Dict of strings mapping to initialised optimisers</span>
+<span class="sd">        loss_func: optional loss function (required if planning to optimise the detectors)</span>
+<span class="sd">        partial_scatter_inferrer: uninitialised class to be used for inferring muon scatter variables and trajectories</span>
+<span class="sd">        partial_volume_inferrer:  uninitialised class to be used for inferring volume targets</span>
+<span class="sd">        mu_generator: Optional generator class for muons. If None, will use :meth:`~tomopt.muon.generation. MuonGenerator2016.from_volume`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">volume</span><span class="p">:</span> <span class="n">Volume</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">opts</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Optimizer</span><span class="p">],</span>
+        <span class="n">loss_func</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AbsDetectorLoss</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">partial_scatter_inferrer</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">ScatterBatch</span><span class="p">]</span> <span class="o">=</span> <span class="n">ScatterBatch</span><span class="p">,</span>
+        <span class="n">partial_volume_inferrer</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">AbsVolumeInferrer</span><span class="p">]</span> <span class="o">=</span> <span class="n">PanelX0Inferrer</span><span class="p">,</span>
+        <span class="n">mu_generator</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AbsMuonGenerator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">volume</span><span class="o">=</span><span class="n">volume</span><span class="p">,</span>
+            <span class="n">partial_opts</span><span class="o">=</span><span class="p">{},</span>
+            <span class="n">loss_func</span><span class="o">=</span><span class="n">loss_func</span><span class="p">,</span>
+            <span class="n">mu_generator</span><span class="o">=</span><span class="n">mu_generator</span><span class="p">,</span>
+            <span class="n">partial_scatter_inferrer</span><span class="o">=</span><span class="n">partial_scatter_inferrer</span><span class="p">,</span>
+            <span class="n">partial_volume_inferrer</span><span class="o">=</span><span class="n">partial_volume_inferrer</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">opts</span> <span class="o">=</span> <span class="n">opts</span>
+
+<div class="viewcode-block" id="ArbVolumeWrapper.from_save"><a class="viewcode-back" href="../../../../tomopt.optimisation.wrapper.html#tomopt.optimisation.wrapper.volume_wrapper.ArbVolumeWrapper.from_save">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_save</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">volume</span><span class="p">:</span> <span class="n">Volume</span><span class="p">,</span>
+        <span class="n">opts</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Optimizer</span><span class="p">],</span>
+        <span class="n">loss_func</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AbsDetectorLoss</span><span class="p">],</span>
+        <span class="n">partial_scatter_inferrer</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">ScatterBatch</span><span class="p">]</span> <span class="o">=</span> <span class="n">ScatterBatch</span><span class="p">,</span>
+        <span class="n">partial_volume_inferrer</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">AbsVolumeInferrer</span><span class="p">]</span> <span class="o">=</span> <span class="n">PanelX0Inferrer</span><span class="p">,</span>
+        <span class="n">mu_generator</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AbsMuonGenerator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AbsVolumeWrapper</span><span class="p">:</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Instantiates a new `PanelVolumeWrapper` and loads saved detector and optimiser parameters</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            name: file name with saved detector and optimiser parameters</span>
+<span class="sd">            volume: the volume containing the detectors to be optimised</span>
+<span class="sd">            opts: Dict of strings mapping to initialised optimisers</span>
+<span class="sd">            loss_func: optional loss function (required if planning to optimise the detectors)</span>
+<span class="sd">            partial_scatter_inferrer: uninitialised class to be used for inferring muon scatter variables and trajectories</span>
+<span class="sd">            partial_volume_inferrer:  uninitialised class to be used for inferring volume targets</span>
+<span class="sd">            mu_generator: Optional generator class for muons. If None, will use :meth:`~tomopt.muon.generation. MuonGenerator2016.from_volume`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">vw</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">volume</span><span class="o">=</span><span class="n">volume</span><span class="p">,</span>
+            <span class="n">opts</span><span class="o">=</span><span class="n">opts</span><span class="p">,</span>
+            <span class="n">loss_func</span><span class="o">=</span><span class="n">loss_func</span><span class="p">,</span>
+            <span class="n">partial_scatter_inferrer</span><span class="o">=</span><span class="n">partial_scatter_inferrer</span><span class="p">,</span>
+            <span class="n">partial_volume_inferrer</span><span class="o">=</span><span class="n">partial_volume_inferrer</span><span class="p">,</span>
+            <span class="n">mu_generator</span><span class="o">=</span><span class="n">mu_generator</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">vw</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">vw</span></div>
+
+    <span class="k">def</span> <span class="nf">_build_opt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">PartialOpt</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span></div>
 </pre></div>
 
              </article>
@@ -1309,7 +1501,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2021-2023, TomOpt Authors.
+        &copy; Copyright 2021-2024, TomOpt Authors.
 
     </p>
   </div>

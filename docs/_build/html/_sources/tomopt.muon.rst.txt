@@ -11,7 +11,6 @@ tomopt.muon.generation module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 tomopt.muon.muon\_batch module
 ------------------------------
@@ -20,4 +19,3 @@ tomopt.muon.muon\_batch module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:

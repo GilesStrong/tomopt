@@ -256,46 +256,6 @@
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.benchmarks.u_lorry.data.</span></span><span class="sig-name descname"><span class="pre">ULorryPassiveGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u_volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u_prob</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_frac</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0_lorry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01757</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bkg_materials</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['air',</span> <span class="pre">'iron']</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/u_lorry/data.html#ULorryPassiveGenerator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.u_lorry.data.ULorryPassiveGenerator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tomopt.optimisation.data.html#tomopt.optimisation.data.passives.AbsPassiveGenerator" title="tomopt.optimisation.data.passives.AbsPassiveGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsPassiveGenerator</span></code></a></p>
 <p>Research tested only: no unit tests</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.benchmarks.u_lorry.data.ULorryPassiveGenerator._abc_impl">
-<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#tomopt.benchmarks.u_lorry.data.ULorryPassiveGenerator._abc_impl" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.benchmarks.u_lorry.data.ULorryPassiveGenerator._compute_sizes">
-<span class="sig-name descname"><span class="pre">_compute_sizes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/u_lorry/data.html#ULorryPassiveGenerator._compute_sizes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.u_lorry.data.ULorryPassiveGenerator._compute_sizes" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.benchmarks.u_lorry.data.ULorryPassiveGenerator._generate">
-<span class="sig-name descname"><span class="pre">_generate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/u_lorry/data.html#ULorryPassiveGenerator._generate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.u_lorry.data.ULorryPassiveGenerator._generate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Inheriting classes should override this.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A function that provides an xy tensor for a given layer when called with its z position, length and width, and size.
-Target: An optional “target” value for the layout</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>RadLengthFunc</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.benchmarks.u_lorry.data.ULorryPassiveGenerator._get_block_coords">
-<span class="sig-name descname"><span class="pre">_get_block_coords</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/u_lorry/data.html#ULorryPassiveGenerator._get_block_coords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.u_lorry.data.ULorryPassiveGenerator._get_block_coords" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>]</p>
-</dd>
-</dl>
-</dd></dl>
-
 </dd></dl>
 
 </section>
@@ -321,7 +281,7 @@ Target: An optional “target” value for the layout</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2021-2023, TomOpt Authors.
+        &copy; Copyright 2021-2024, TomOpt Authors.
 
     </p>
   </div>
@@ -343,13 +303,7 @@ Target: An optional “target” value for the layout</p>
 <li><a class="reference internal" href="#">tomopt.benchmarks.u_lorry package</a><ul>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#module-tomopt.benchmarks.u_lorry.data">tomopt.benchmarks.u_lorry.data module</a><ul>
-<li><a class="reference internal" href="#tomopt.benchmarks.u_lorry.data.ULorryPassiveGenerator"><code class="docutils literal notranslate"><span class="pre">ULorryPassiveGenerator</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.benchmarks.u_lorry.data.ULorryPassiveGenerator._abc_impl"><code class="docutils literal notranslate"><span class="pre">ULorryPassiveGenerator._abc_impl</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.benchmarks.u_lorry.data.ULorryPassiveGenerator._compute_sizes"><code class="docutils literal notranslate"><span class="pre">ULorryPassiveGenerator._compute_sizes()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.benchmarks.u_lorry.data.ULorryPassiveGenerator._generate"><code class="docutils literal notranslate"><span class="pre">ULorryPassiveGenerator._generate()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.benchmarks.u_lorry.data.ULorryPassiveGenerator._get_block_coords"><code class="docutils literal notranslate"><span class="pre">ULorryPassiveGenerator._get_block_coords()</span></code></a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#tomopt.benchmarks.u_lorry.data.ULorryPassiveGenerator"><code class="docutils literal notranslate"><span class="pre">ULorryPassiveGenerator</span></code></a></li>
 </ul>
 </li>
 </ul>

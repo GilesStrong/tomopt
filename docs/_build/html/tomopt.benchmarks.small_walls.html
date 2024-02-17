@@ -35,7 +35,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="tomopt.benchmarks.u_lorry package" href="tomopt.benchmarks.u_lorry.html" />
-    <link rel="prev" title="tomopt.benchmarks.phi_detector package" href="tomopt.benchmarks.phi_detector.html" /> 
+    <link rel="prev" title="tomopt.benchmarks.ladle_furnace package" href="tomopt.benchmarks.ladle_furnace.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -255,26 +255,6 @@
 <dt class="sig sig-object py" id="tomopt.benchmarks.small_walls.data.SmallWallsPassiveGenerator">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.benchmarks.small_walls.data.</span></span><span class="sig-name descname"><span class="pre">SmallWallsPassiveGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">volume</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0_soil</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2624248696430881</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0_wall</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.08022522418503258</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">turn_k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/small_walls/data.html#SmallWallsPassiveGenerator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.small_walls.data.SmallWallsPassiveGenerator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tomopt.optimisation.data.html#tomopt.optimisation.data.passives.AbsPassiveGenerator" title="tomopt.optimisation.data.passives.AbsPassiveGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsPassiveGenerator</span></code></a></p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.benchmarks.small_walls.data.SmallWallsPassiveGenerator._abc_impl">
-<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#tomopt.benchmarks.small_walls.data.SmallWallsPassiveGenerator._abc_impl" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.benchmarks.small_walls.data.SmallWallsPassiveGenerator._generate">
-<span class="sig-name descname"><span class="pre">_generate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/small_walls/data.html#SmallWallsPassiveGenerator._generate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.small_walls.data.SmallWallsPassiveGenerator._generate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Inheriting classes should override this.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A function that provides an xy tensor for a given layer when called with its z position, length and width, and size.
-Target: An optional “target” value for the layout</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>RadLengthFunc</p>
-</dd>
-</dl>
-</dd></dl>
-
 </dd></dl>
 
 </section>
@@ -314,7 +294,7 @@ Target: An optional “target” value for the layout</p>
         <a href="tomopt.benchmarks.u_lorry.html" class="btn btn-neutral float-right" title="tomopt.benchmarks.u_lorry package" accesskey="n" rel="next">Next <img src="_static/images/chevron-right-orange.svg" class="next-page"></a>
       
       
-        <a href="tomopt.benchmarks.phi_detector.html" class="btn btn-neutral" title="tomopt.benchmarks.phi_detector package" accesskey="p" rel="prev"><img src="_static/images/chevron-right-orange.svg" class="previous-page"> Previous</a>
+        <a href="tomopt.benchmarks.ladle_furnace.html" class="btn btn-neutral" title="tomopt.benchmarks.ladle_furnace package" accesskey="p" rel="prev"><img src="_static/images/chevron-right-orange.svg" class="previous-page"> Previous</a>
       
     </div>
   
@@ -323,7 +303,7 @@ Target: An optional “target” value for the layout</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2021-2023, TomOpt Authors.
+        &copy; Copyright 2021-2024, TomOpt Authors.
 
     </p>
   </div>
@@ -345,11 +325,7 @@ Target: An optional “target” value for the layout</p>
 <li><a class="reference internal" href="#">tomopt.benchmarks.small_walls package</a><ul>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#module-tomopt.benchmarks.small_walls.data">tomopt.benchmarks.small_walls.data module</a><ul>
-<li><a class="reference internal" href="#tomopt.benchmarks.small_walls.data.SmallWallsPassiveGenerator"><code class="docutils literal notranslate"><span class="pre">SmallWallsPassiveGenerator</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.benchmarks.small_walls.data.SmallWallsPassiveGenerator._abc_impl"><code class="docutils literal notranslate"><span class="pre">SmallWallsPassiveGenerator._abc_impl</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.benchmarks.small_walls.data.SmallWallsPassiveGenerator._generate"><code class="docutils literal notranslate"><span class="pre">SmallWallsPassiveGenerator._generate()</span></code></a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#tomopt.benchmarks.small_walls.data.SmallWallsPassiveGenerator"><code class="docutils literal notranslate"><span class="pre">SmallWallsPassiveGenerator</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-tomopt.benchmarks.small_walls.volume">tomopt.benchmarks.small_walls.volume module</a><ul>

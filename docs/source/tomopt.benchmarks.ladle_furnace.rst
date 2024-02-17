@@ -11,7 +11,6 @@ tomopt.benchmarks.ladle\_furnace.data module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 tomopt.benchmarks.ladle\_furnace.inference module
 -------------------------------------------------
@@ -20,7 +19,6 @@ tomopt.benchmarks.ladle\_furnace.inference module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 tomopt.benchmarks.ladle\_furnace.loss module
 --------------------------------------------
@@ -29,5 +27,19 @@ tomopt.benchmarks.ladle\_furnace.loss module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
+tomopt.benchmarks.ladle\_furnace.plotting module
+------------------------------------------------
+
+.. automodule:: tomopt.benchmarks.ladle_furnace.plotting
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+tomopt.benchmarks.ladle\_furnace.volume module
+----------------------------------------------
+
+.. automodule:: tomopt.benchmarks.ladle_furnace.volume
+   :members:
+   :undoc-members:
+   :show-inheritance:

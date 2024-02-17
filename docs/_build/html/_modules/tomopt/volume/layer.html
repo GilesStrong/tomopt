@@ -236,19 +236,20 @@
              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
               
   <h1>Source code for tomopt.volume.layer</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span></span><span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span><span class="p">,</span> <span class="n">abstractmethod</span>
-<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span><span class="p">,</span> <span class="n">Tensor</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">nn</span>
 
-<span class="kn">from</span> <span class="nn">.scatter_model</span> <span class="kn">import</span> <span class="n">PGEANT_SCATTER_MODEL</span>
+<span class="kn">from</span> <span class="nn">tomopt.volume.heatmap</span> <span class="kn">import</span> <span class="n">DetectorHeatMap</span>
+<span class="kn">from</span> <span class="nn">tomopt.volume.panel</span> <span class="kn">import</span> <span class="n">DetectorPanel</span><span class="p">,</span> <span class="n">SigmoidDetectorPanel</span>
+
 <span class="kn">from</span> <span class="nn">..core</span> <span class="kn">import</span> <span class="n">DEVICE</span><span class="p">,</span> <span class="n">SCATTER_COEF_A</span><span class="p">,</span> <span class="n">SCATTER_COEF_B</span><span class="p">,</span> <span class="n">RadLengthFunc</span>
 <span class="kn">from</span> <span class="nn">..muon</span> <span class="kn">import</span> <span class="n">MuonBatch</span>
-<span class="kn">from</span> <span class="nn">tomopt.volume.panel</span> <span class="kn">import</span> <span class="n">DetectorPanel</span>
-<span class="kn">from</span> <span class="nn">tomopt.volume.heatmap</span> <span class="kn">import</span> <span class="n">DetectorHeatMap</span>
+<span class="kn">from</span> <span class="nn">.scatter_model</span> <span class="kn">import</span> <span class="n">PGEANT_SCATTER_MODEL</span>
 
 <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Provides implementations of the layers in z, which are used to construct volumes, both the passive scattering layers, and the active detection layers.</span>
@@ -475,7 +476,7 @@
 
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">xy</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="PassiveLayer._pgeant_scatter"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.PassiveLayer._pgeant_scatter">[docs]</a>    <span class="k">def</span> <span class="nf">_pgeant_scatter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">x0</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta_x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta_y</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">mom</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">_pgeant_scatter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">x0</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta_x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta_y</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">mom</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the scattering of the muons using the parameterised GEANT 4 model.</span>
 
@@ -490,9 +491,9 @@
 <span class="sd">            A dictionary of muon scattering variables in the volume reference frame: dtheta_vol, dphi_vol, dx_vol, &amp; dy_vol</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">return</span> <span class="n">PGEANT_SCATTER_MODEL</span><span class="o">.</span><span class="n">compute_scattering</span><span class="p">(</span><span class="n">x0</span><span class="o">=</span><span class="n">x0</span><span class="p">,</span> <span class="n">step_sz</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">step_sz</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">,</span> <span class="n">theta_x</span><span class="o">=</span><span class="n">theta_x</span><span class="p">,</span> <span class="n">theta_y</span><span class="o">=</span><span class="n">theta_y</span><span class="p">,</span> <span class="n">mom</span><span class="o">=</span><span class="n">mom</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">PGEANT_SCATTER_MODEL</span><span class="o">.</span><span class="n">compute_scattering</span><span class="p">(</span><span class="n">x0</span><span class="o">=</span><span class="n">x0</span><span class="p">,</span> <span class="n">step_sz</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">step_sz</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">,</span> <span class="n">theta_x</span><span class="o">=</span><span class="n">theta_x</span><span class="p">,</span> <span class="n">theta_y</span><span class="o">=</span><span class="n">theta_y</span><span class="p">,</span> <span class="n">mom</span><span class="o">=</span><span class="n">mom</span><span class="p">)</span>
 
-<div class="viewcode-block" id="PassiveLayer._pdg_scatter"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.PassiveLayer._pdg_scatter">[docs]</a>    <span class="k">def</span> <span class="nf">_pdg_scatter</span><span class="p">(</span>
+    <span class="k">def</span> <span class="nf">_pdg_scatter</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">x0</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">phi</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta_x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta_y</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">mom</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">step_sz</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">log_term</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
@@ -523,7 +524,7 @@
         <span class="c1"># These are in the muons&#39; reference frames NOT the volume&#39;s!!!</span>
         <span class="c1"># Make sure that scattering angle in the muon reference frame &lt; pi/2</span>
         <span class="c1"># to ensure conversion into the volume reference frame</span>
-        <span class="n">dtheta_xy_mu</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">z1</span> <span class="o">*</span> <span class="n">theta0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">2.2</span><span class="p">)</span>  <span class="c1"># TODO Check this</span>
+        <span class="n">dtheta_xy_mu</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">z2</span> <span class="o">*</span> <span class="n">theta0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">2.2</span><span class="p">)</span>  <span class="c1"># TODO Check this</span>
         <span class="n">dxy_mu</span> <span class="o">=</span> <span class="n">step_sz</span> <span class="o">*</span> <span class="n">theta0</span> <span class="o">*</span> <span class="p">((</span><span class="n">z1</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">12</span><span class="p">))</span> <span class="o">+</span> <span class="p">(</span><span class="n">z2</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span>
 
         <span class="c1"># Note that if a track incides on a layer</span>
@@ -577,9 +578,9 @@
             <span class="s2">&quot;dz_vol&quot;</span><span class="p">:</span> <span class="n">dz_vol</span><span class="p">,</span>
             <span class="s2">&quot;dtheta_x_m&quot;</span><span class="p">:</span> <span class="n">dtheta_x_m</span><span class="p">,</span>
             <span class="s2">&quot;dtheta_y_m&quot;</span><span class="p">:</span> <span class="n">dtheta_y_m</span><span class="p">,</span>
-        <span class="p">}</span></div>
+        <span class="p">}</span>
 
-<div class="viewcode-block" id="PassiveLayer._compute_scattering"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.PassiveLayer._compute_scattering">[docs]</a>    <span class="k">def</span> <span class="nf">_compute_scattering</span><span class="p">(</span>
+    <span class="k">def</span> <span class="nf">_compute_scattering</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">x0</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">phi</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta_x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta_y</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">mom</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">step_sz</span><span class="p">:</span> <span class="n">Tensor</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
@@ -600,7 +601,7 @@
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">scatter_model</span> <span class="o">==</span> <span class="s2">&quot;pgeant&quot;</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pgeant_scatter</span><span class="p">(</span><span class="n">x0</span><span class="o">=</span><span class="n">x0</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">,</span> <span class="n">theta_x</span><span class="o">=</span><span class="n">theta_x</span><span class="p">,</span> <span class="n">theta_y</span><span class="o">=</span><span class="n">theta_y</span><span class="p">,</span> <span class="n">mom</span><span class="o">=</span><span class="n">mom</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Scatter model </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">scatter_model</span><span class="si">}</span><span class="s2"> is not currently supported.&quot;</span><span class="p">)</span></div></div>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Scatter model </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">scatter_model</span><span class="si">}</span><span class="s2"> is not currently supported.&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="AbsDetectorLayer"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.layer.AbsDetectorLayer">[docs]</a><span class="k">class</span> <span class="nc">AbsDetectorLayer</span><span class="p">(</span><span class="n">AbsLayer</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
@@ -721,7 +722,15 @@
 <span class="sd">        panels: The set of initialised panels to contain in the detector layer</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">lw</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">panels</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">DetectorPanel</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">DetectorHeatMap</span><span class="p">],</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">]):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">pos</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">lw</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">z</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">size</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">panels</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">DetectorPanel</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">DetectorHeatMap</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">SigmoidDetectorPanel</span><span class="p">],</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">],</span>
+    <span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">panels</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="n">panels</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">(</span><span class="n">panels</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">pos</span><span class="o">=</span><span class="n">pos</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="n">lw</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="n">z</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">size</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_device</span><span class="p">(</span><span class="n">panels</span><span class="p">))</span>
@@ -856,7 +865,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2021-2023, TomOpt Authors.
+        &copy; Copyright 2021-2024, TomOpt Authors.
 
     </p>
   </div>

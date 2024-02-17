@@ -252,61 +252,6 @@
 <dt class="sig sig-object py" id="tomopt.volume.heatmap.DetectorHeatMap">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.volume.heatmap.</span></span><span class="sig-name descname"><span class="pre">DetectorHeatMap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">res</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eff</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_xyz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_xy_span</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m2_cost</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">budget</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">realistic_validation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">device(type='cpu')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_cluster</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/heatmap.html#DetectorHeatMap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.heatmap.DetectorHeatMap" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.heatmap.DetectorHeatMap._backward_hooks">
-<span class="sig-name descname"><span class="pre">_backward_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.heatmap.DetectorHeatMap._backward_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.heatmap.DetectorHeatMap._buffers">
-<span class="sig-name descname"><span class="pre">_buffers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.heatmap.DetectorHeatMap._buffers" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.heatmap.DetectorHeatMap._forward_hooks">
-<span class="sig-name descname"><span class="pre">_forward_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.heatmap.DetectorHeatMap._forward_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.heatmap.DetectorHeatMap._forward_pre_hooks">
-<span class="sig-name descname"><span class="pre">_forward_pre_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.heatmap.DetectorHeatMap._forward_pre_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.heatmap.DetectorHeatMap._is_full_backward_hook">
-<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.heatmap.DetectorHeatMap._is_full_backward_hook" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.heatmap.DetectorHeatMap._load_state_dict_post_hooks">
-<span class="sig-name descname"><span class="pre">_load_state_dict_post_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.heatmap.DetectorHeatMap._load_state_dict_post_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.heatmap.DetectorHeatMap._load_state_dict_pre_hooks">
-<span class="sig-name descname"><span class="pre">_load_state_dict_pre_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.heatmap.DetectorHeatMap._load_state_dict_pre_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.heatmap.DetectorHeatMap._modules">
-<span class="sig-name descname"><span class="pre">_modules</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Module</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.heatmap.DetectorHeatMap._modules" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.heatmap.DetectorHeatMap._non_persistent_buffers_set">
-<span class="sig-name descname"><span class="pre">_non_persistent_buffers_set</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.heatmap.DetectorHeatMap._non_persistent_buffers_set" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.heatmap.DetectorHeatMap._parameters">
-<span class="sig-name descname"><span class="pre">_parameters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Parameter</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.heatmap.DetectorHeatMap._parameters" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.heatmap.DetectorHeatMap._state_dict_hooks">
-<span class="sig-name descname"><span class="pre">_state_dict_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.heatmap.DetectorHeatMap._state_dict_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.volume.heatmap.DetectorHeatMap.assign_budget">
 <span class="sig-name descname"><span class="pre">assign_budget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">budget</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/heatmap.html#DetectorHeatMap.assign_budget"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.heatmap.DetectorHeatMap.assign_budget" title="Permalink to this definition">¶</a></dt>
@@ -449,71 +394,6 @@ z indicates the position of the top of the layer, in meters, and size is the dis
 </ul>
 </dd>
 </dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.AbsDetectorLayer._abc_impl">
-<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#tomopt.volume.layer.AbsDetectorLayer._abc_impl" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.AbsDetectorLayer._backward_hooks">
-<span class="sig-name descname"><span class="pre">_backward_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.AbsDetectorLayer._backward_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.AbsDetectorLayer._buffers">
-<span class="sig-name descname"><span class="pre">_buffers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.AbsDetectorLayer._buffers" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.AbsDetectorLayer._forward_hooks">
-<span class="sig-name descname"><span class="pre">_forward_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.AbsDetectorLayer._forward_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.AbsDetectorLayer._forward_pre_hooks">
-<span class="sig-name descname"><span class="pre">_forward_pre_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.AbsDetectorLayer._forward_pre_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.AbsDetectorLayer._is_full_backward_hook">
-<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.AbsDetectorLayer._is_full_backward_hook" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.AbsDetectorLayer._load_state_dict_post_hooks">
-<span class="sig-name descname"><span class="pre">_load_state_dict_post_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.AbsDetectorLayer._load_state_dict_post_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.AbsDetectorLayer._load_state_dict_pre_hooks">
-<span class="sig-name descname"><span class="pre">_load_state_dict_pre_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.AbsDetectorLayer._load_state_dict_pre_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.AbsDetectorLayer._modules">
-<span class="sig-name descname"><span class="pre">_modules</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Module</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.AbsDetectorLayer._modules" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.AbsDetectorLayer._n_costs">
-<span class="sig-name descname"><span class="pre">_n_costs</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#tomopt.volume.layer.AbsDetectorLayer._n_costs" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.AbsDetectorLayer._non_persistent_buffers_set">
-<span class="sig-name descname"><span class="pre">_non_persistent_buffers_set</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.AbsDetectorLayer._non_persistent_buffers_set" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.AbsDetectorLayer._parameters">
-<span class="sig-name descname"><span class="pre">_parameters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Parameter</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.AbsDetectorLayer._parameters" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.AbsDetectorLayer._state_dict_hooks">
-<span class="sig-name descname"><span class="pre">_state_dict_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.AbsDetectorLayer._state_dict_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.volume.layer.AbsDetectorLayer.assign_budget">
 <span class="sig-name descname"><span class="pre">assign_budget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">budget</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/layer.html#AbsDetectorLayer.assign_budget"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.layer.AbsDetectorLayer.assign_budget" title="Permalink to this definition">¶</a></dt>
@@ -600,66 +480,6 @@ size is also used to set the length, width, and height of the voxels that make u
 </ul>
 </dd>
 </dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.AbsLayer._abc_impl">
-<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#tomopt.volume.layer.AbsLayer._abc_impl" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.AbsLayer._backward_hooks">
-<span class="sig-name descname"><span class="pre">_backward_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.AbsLayer._backward_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.AbsLayer._buffers">
-<span class="sig-name descname"><span class="pre">_buffers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.AbsLayer._buffers" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.AbsLayer._forward_hooks">
-<span class="sig-name descname"><span class="pre">_forward_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.AbsLayer._forward_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.AbsLayer._forward_pre_hooks">
-<span class="sig-name descname"><span class="pre">_forward_pre_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.AbsLayer._forward_pre_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.AbsLayer._is_full_backward_hook">
-<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.AbsLayer._is_full_backward_hook" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.AbsLayer._load_state_dict_post_hooks">
-<span class="sig-name descname"><span class="pre">_load_state_dict_post_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.AbsLayer._load_state_dict_post_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.AbsLayer._load_state_dict_pre_hooks">
-<span class="sig-name descname"><span class="pre">_load_state_dict_pre_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.AbsLayer._load_state_dict_pre_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.AbsLayer._modules">
-<span class="sig-name descname"><span class="pre">_modules</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Module</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.AbsLayer._modules" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.AbsLayer._non_persistent_buffers_set">
-<span class="sig-name descname"><span class="pre">_non_persistent_buffers_set</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.AbsLayer._non_persistent_buffers_set" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.AbsLayer._parameters">
-<span class="sig-name descname"><span class="pre">_parameters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Parameter</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.AbsLayer._parameters" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.AbsLayer._state_dict_hooks">
-<span class="sig-name descname"><span class="pre">_state_dict_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.AbsLayer._state_dict_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.volume.layer.AbsLayer.forward">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/layer.html#AbsLayer.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.layer.AbsLayer.forward" title="Permalink to this definition">¶</a></dt>
@@ -721,70 +541,10 @@ z indicates the position of the top of the layer, in meters, and size is the dis
 <li><p><strong>lw</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – the length and width of the layer in the x and y axes in metres, starting from (x,y)=(0,0).</p></li>
 <li><p><strong>z</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – the z position of the top of layer in metres. The bottom of the layer will be located at z-size</p></li>
 <li><p><strong>size</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>) – the voxel size in metres. Must be such that lw is divisible by the specified size.</p></li>
-<li><p><strong>panels</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="#tomopt.volume.panel.DetectorPanel" title="tomopt.volume.panel.DetectorPanel"><code class="xref py py-class docutils literal notranslate"><span class="pre">DetectorPanel</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="#tomopt.volume.heatmap.DetectorHeatMap" title="tomopt.volume.heatmap.DetectorHeatMap"><code class="xref py py-class docutils literal notranslate"><span class="pre">DetectorHeatMap</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">ModuleList</span></code>]) – The set of initialised panels to contain in the detector layer</p></li>
+<li><p><strong>panels</strong> (<code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="#tomopt.volume.panel.DetectorPanel" title="tomopt.volume.panel.DetectorPanel"><code class="xref py py-class docutils literal notranslate"><span class="pre">DetectorPanel</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="#tomopt.volume.heatmap.DetectorHeatMap" title="tomopt.volume.heatmap.DetectorHeatMap"><code class="xref py py-class docutils literal notranslate"><span class="pre">DetectorHeatMap</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">List</span></code>[<a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel" title="tomopt.volume.panel.SigmoidDetectorPanel"><code class="xref py py-class docutils literal notranslate"><span class="pre">SigmoidDetectorPanel</span></code></a>], <code class="xref py py-class docutils literal notranslate"><span class="pre">ModuleList</span></code>]) – The set of initialised panels to contain in the detector layer</p></li>
 </ul>
 </dd>
 </dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.PanelDetectorLayer._abc_impl">
-<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#tomopt.volume.layer.PanelDetectorLayer._abc_impl" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.PanelDetectorLayer._backward_hooks">
-<span class="sig-name descname"><span class="pre">_backward_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.PanelDetectorLayer._backward_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.PanelDetectorLayer._buffers">
-<span class="sig-name descname"><span class="pre">_buffers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.PanelDetectorLayer._buffers" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.PanelDetectorLayer._forward_hooks">
-<span class="sig-name descname"><span class="pre">_forward_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.PanelDetectorLayer._forward_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.PanelDetectorLayer._forward_pre_hooks">
-<span class="sig-name descname"><span class="pre">_forward_pre_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.PanelDetectorLayer._forward_pre_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.PanelDetectorLayer._is_full_backward_hook">
-<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.PanelDetectorLayer._is_full_backward_hook" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.PanelDetectorLayer._load_state_dict_post_hooks">
-<span class="sig-name descname"><span class="pre">_load_state_dict_post_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.PanelDetectorLayer._load_state_dict_post_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.PanelDetectorLayer._load_state_dict_pre_hooks">
-<span class="sig-name descname"><span class="pre">_load_state_dict_pre_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.PanelDetectorLayer._load_state_dict_pre_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.PanelDetectorLayer._modules">
-<span class="sig-name descname"><span class="pre">_modules</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Module</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.PanelDetectorLayer._modules" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.PanelDetectorLayer._non_persistent_buffers_set">
-<span class="sig-name descname"><span class="pre">_non_persistent_buffers_set</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.PanelDetectorLayer._non_persistent_buffers_set" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.PanelDetectorLayer._parameters">
-<span class="sig-name descname"><span class="pre">_parameters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Parameter</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.PanelDetectorLayer._parameters" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.PanelDetectorLayer._state_dict_hooks">
-<span class="sig-name descname"><span class="pre">_state_dict_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.PanelDetectorLayer._state_dict_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.volume.layer.PanelDetectorLayer.assign_budget">
 <span class="sig-name descname"><span class="pre">assign_budget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">budget</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/layer.html#PanelDetectorLayer.assign_budget"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.layer.PanelDetectorLayer.assign_budget" title="Permalink to this definition">¶</a></dt>
@@ -944,139 +704,6 @@ After initialisation, the <cite>load_rad_length</cite> method may be used to loa
 </ul>
 </dd>
 </dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.PassiveLayer._abc_impl">
-<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#tomopt.volume.layer.PassiveLayer._abc_impl" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.PassiveLayer._backward_hooks">
-<span class="sig-name descname"><span class="pre">_backward_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.PassiveLayer._backward_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.PassiveLayer._buffers">
-<span class="sig-name descname"><span class="pre">_buffers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.PassiveLayer._buffers" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.volume.layer.PassiveLayer._compute_scattering">
-<span class="sig-name descname"><span class="pre">_compute_scattering</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_sz</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/layer.html#PassiveLayer._compute_scattering"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.layer.PassiveLayer._compute_scattering" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes the scattering of the muons using the chosen model</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x0</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the X0 of the voxel each muon is traversing</p></li>
-<li><p><strong>theta</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons</p></li>
-<li><p><strong>theta_x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons’ frames to the volume’s</p></li>
-<li><p><strong>theta_y</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons’ frames to the volume’s</p></li>
-<li><p><strong>mom</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the absolute value of the momentum of each muon</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>dtheta_vol, dphi_vol, dx_vol, &amp; dy_vol</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A dictionary of muon scattering variables in the volume reference frame</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.PassiveLayer._forward_hooks">
-<span class="sig-name descname"><span class="pre">_forward_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.PassiveLayer._forward_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.PassiveLayer._forward_pre_hooks">
-<span class="sig-name descname"><span class="pre">_forward_pre_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.PassiveLayer._forward_pre_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.PassiveLayer._is_full_backward_hook">
-<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.PassiveLayer._is_full_backward_hook" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.PassiveLayer._load_state_dict_post_hooks">
-<span class="sig-name descname"><span class="pre">_load_state_dict_post_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.PassiveLayer._load_state_dict_post_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.PassiveLayer._load_state_dict_pre_hooks">
-<span class="sig-name descname"><span class="pre">_load_state_dict_pre_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.PassiveLayer._load_state_dict_pre_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.PassiveLayer._modules">
-<span class="sig-name descname"><span class="pre">_modules</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Module</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.PassiveLayer._modules" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.PassiveLayer._non_persistent_buffers_set">
-<span class="sig-name descname"><span class="pre">_non_persistent_buffers_set</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.PassiveLayer._non_persistent_buffers_set" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.PassiveLayer._parameters">
-<span class="sig-name descname"><span class="pre">_parameters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Parameter</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.PassiveLayer._parameters" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.volume.layer.PassiveLayer._pdg_scatter">
-<span class="sig-name descname"><span class="pre">_pdg_scatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_sz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_term</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/layer.html#PassiveLayer._pdg_scatter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.layer.PassiveLayer._pdg_scatter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes the scattering of the muons using the PDG model <a class="reference external" href="https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf">https://pdg.lbl.gov/2019/reviews/rpp2018-rev-passage-particles-matter.pdf</a>
-Scattering and displacements are generated in the muon reference frame.
-They are then converted in the volume reference frame using Euler rotation matrices.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x0</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the X0 of the voxel each muon is traversing</p></li>
-<li><p><strong>theta</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the theta angles of the muons. This is used to proceed to the muon -&gt; volume reference frame conversion</p></li>
-<li><p><strong>phi</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the phi angles of the muons. This is used to proceed to the muon -&gt; volume reference frame conversion</p></li>
-<li><p><strong>theta_x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons’ frames to the volume’s</p></li>
-<li><p><strong>theta_y</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons’ frames to the volume’s</p></li>
-<li><p><strong>mom</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the absolute value of the momentum of each muon</p></li>
-<li><p><strong>step_sz</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the scattering step length (x distance in the PDG model).</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>dtheta_x_vol, dtheta_y_vol, dx_vol, dy_vol and dz_vol</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A dictionary of muon scattering variables in the volume reference frame</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.volume.layer.PassiveLayer._pgeant_scatter">
-<span class="sig-name descname"><span class="pre">_pgeant_scatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/layer.html#PassiveLayer._pgeant_scatter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.layer.PassiveLayer._pgeant_scatter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes the scattering of the muons using the parameterised GEANT 4 model.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x0</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the X0 of the voxel each muon is traversing</p></li>
-<li><p><strong>theta</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the theta angles of the muons. This is used to compute the total flight path of the muons</p></li>
-<li><p><strong>theta_x</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the theta_x angles of the muons. This is used to map the dx displacements from the muons’ frame to the volume’s</p></li>
-<li><p><strong>theta_y</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the theta_y angles of the muons. This is used to map the dy displacements from the muons’ frame to the volume’s</p></li>
-<li><p><strong>mom</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>) – (N,) tensor of the absolute value of the momentum of each muon</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>dtheta_vol, dphi_vol, dx_vol, &amp; dy_vol</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A dictionary of muon scattering variables in the volume reference frame</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.PassiveLayer._state_dict_hooks">
-<span class="sig-name descname"><span class="pre">_state_dict_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.PassiveLayer._state_dict_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.volume.layer.PassiveLayer.abs2idx">
 <span class="sig-name descname"><span class="pre">abs2idx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xy</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/layer.html#PassiveLayer.abs2idx"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.layer.PassiveLayer.abs2idx" title="Permalink to this definition">¶</a></dt>
@@ -1234,61 +861,6 @@ however the :class”<cite>~tomopt.volume.volume.Volume</cite> class will pass t
 </ul>
 </dd>
 </dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.panel.DetectorPanel._backward_hooks">
-<span class="sig-name descname"><span class="pre">_backward_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.panel.DetectorPanel._backward_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.panel.DetectorPanel._buffers">
-<span class="sig-name descname"><span class="pre">_buffers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.panel.DetectorPanel._buffers" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.panel.DetectorPanel._forward_hooks">
-<span class="sig-name descname"><span class="pre">_forward_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.panel.DetectorPanel._forward_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.panel.DetectorPanel._forward_pre_hooks">
-<span class="sig-name descname"><span class="pre">_forward_pre_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.panel.DetectorPanel._forward_pre_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.panel.DetectorPanel._is_full_backward_hook">
-<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.panel.DetectorPanel._is_full_backward_hook" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.panel.DetectorPanel._load_state_dict_post_hooks">
-<span class="sig-name descname"><span class="pre">_load_state_dict_post_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.panel.DetectorPanel._load_state_dict_post_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.panel.DetectorPanel._load_state_dict_pre_hooks">
-<span class="sig-name descname"><span class="pre">_load_state_dict_pre_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.panel.DetectorPanel._load_state_dict_pre_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.panel.DetectorPanel._modules">
-<span class="sig-name descname"><span class="pre">_modules</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Module</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.panel.DetectorPanel._modules" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.panel.DetectorPanel._non_persistent_buffers_set">
-<span class="sig-name descname"><span class="pre">_non_persistent_buffers_set</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.panel.DetectorPanel._non_persistent_buffers_set" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.panel.DetectorPanel._parameters">
-<span class="sig-name descname"><span class="pre">_parameters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Parameter</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.panel.DetectorPanel._parameters" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.panel.DetectorPanel._state_dict_hooks">
-<span class="sig-name descname"><span class="pre">_state_dict_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.panel.DetectorPanel._state_dict_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.volume.panel.DetectorPanel.assign_budget">
 <span class="sig-name descname"><span class="pre">assign_budget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">budget</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/panel.html#DetectorPanel.assign_budget"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.panel.DetectorPanel.assign_budget" title="Permalink to this definition">¶</a></dt>
@@ -1543,61 +1115,6 @@ whereas a lower smooth value provides a sharper transition, with lower sensitivi
 </ul>
 </dd>
 </dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.panel.SigmoidDetectorPanel._backward_hooks">
-<span class="sig-name descname"><span class="pre">_backward_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.panel.SigmoidDetectorPanel._backward_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.panel.SigmoidDetectorPanel._buffers">
-<span class="sig-name descname"><span class="pre">_buffers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.panel.SigmoidDetectorPanel._buffers" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.panel.SigmoidDetectorPanel._forward_hooks">
-<span class="sig-name descname"><span class="pre">_forward_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.panel.SigmoidDetectorPanel._forward_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.panel.SigmoidDetectorPanel._forward_pre_hooks">
-<span class="sig-name descname"><span class="pre">_forward_pre_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.panel.SigmoidDetectorPanel._forward_pre_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.panel.SigmoidDetectorPanel._is_full_backward_hook">
-<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.panel.SigmoidDetectorPanel._is_full_backward_hook" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.panel.SigmoidDetectorPanel._load_state_dict_post_hooks">
-<span class="sig-name descname"><span class="pre">_load_state_dict_post_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.panel.SigmoidDetectorPanel._load_state_dict_post_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.panel.SigmoidDetectorPanel._load_state_dict_pre_hooks">
-<span class="sig-name descname"><span class="pre">_load_state_dict_pre_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.panel.SigmoidDetectorPanel._load_state_dict_pre_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.panel.SigmoidDetectorPanel._modules">
-<span class="sig-name descname"><span class="pre">_modules</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Module</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.panel.SigmoidDetectorPanel._modules" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.panel.SigmoidDetectorPanel._non_persistent_buffers_set">
-<span class="sig-name descname"><span class="pre">_non_persistent_buffers_set</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.panel.SigmoidDetectorPanel._non_persistent_buffers_set" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.panel.SigmoidDetectorPanel._parameters">
-<span class="sig-name descname"><span class="pre">_parameters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Parameter</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.panel.SigmoidDetectorPanel._parameters" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.panel.SigmoidDetectorPanel._state_dict_hooks">
-<span class="sig-name descname"><span class="pre">_state_dict_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.panel.SigmoidDetectorPanel._state_dict_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.volume.panel.SigmoidDetectorPanel.get_efficiency">
 <span class="sig-name descname"><span class="pre">get_efficiency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/panel.html#SigmoidDetectorPanel.get_efficiency"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.panel.SigmoidDetectorPanel.get_efficiency" title="Permalink to this definition">¶</a></dt>
@@ -1715,105 +1232,6 @@ and configure the detectors for the budget.</p></li>
 </ul>
 </dd>
 </dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.volume.Volume._backward_hooks">
-<span class="sig-name descname"><span class="pre">_backward_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.volume.Volume._backward_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.volume.Volume._buffers">
-<span class="sig-name descname"><span class="pre">_buffers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.volume.Volume._buffers" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.volume.volume.Volume._check_passives">
-<span class="sig-name descname"><span class="pre">_check_passives</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/volume.html#Volume._check_passives"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.volume.Volume._check_passives" title="Permalink to this definition">¶</a></dt>
-<dd><p>Ensures that all <a class="reference internal" href="#tomopt.volume.layer.PassiveLayer" title="tomopt.volume.layer.PassiveLayer"><code class="xref py py-class docutils literal notranslate"><span class="pre">PassiveLayer</span></code></a> s have the same sizes</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.volume.volume.Volume._configure_budget">
-<span class="sig-name descname"><span class="pre">_configure_budget</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/volume.html#Volume._configure_budget"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.volume.Volume._configure_budget" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a list of learnable parameters, which acts as the fractional assignment of the total budget to various parts of the detectors.
-The <cite>budget_weights</cite> contains all these assignments with no explicit hierarchy.</p>
-<dl>
-<dt>Ordering of the elements is thus:</dt><dd><dl class="simple">
-<dt>Each layer, as ordered in <cite>layers</cite> is checked for a <cite>get_cost</cite> attribute.</dt><dd><p>If the layer has this attribute, then the number of costs that that layer has <cite>layer._n_costs</cite> is appended to a list, <cite>_n_layer_costs</cite></p>
-</dd>
-</dl>
-<p>A tensor, <cite>budget_weights</cite>, is then instantiated with a number of zero-valued elements equal to the total number of individual detector costs</p>
-</dd>
-</dl>
-<p>When assigning budgets to layers, the budget weights are softmax-normalised to one, and multiplied by the total budget.
-Slices of these budgets are then passed to the layers, with the length of the slices being taken from <cite>_n_layer_costs</cite>.</p>
-<p>After the <cite>budget_weights</cite> are initialised, the <a class="reference internal" href="#tomopt.volume.volume.Volume.assign_budget" title="tomopt.volume.volume.Volume.assign_budget"><code class="xref py py-meth docutils literal notranslate"><span class="pre">assign_budget()</span></code></a> is called automatically.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.volume.Volume._forward_hooks">
-<span class="sig-name descname"><span class="pre">_forward_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.volume.Volume._forward_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.volume.Volume._forward_pre_hooks">
-<span class="sig-name descname"><span class="pre">_forward_pre_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.volume.Volume._forward_pre_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tomopt.volume.volume.Volume._get_device">
-<span class="sig-name descname"><span class="pre">_get_device</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/volume.html#Volume._get_device"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.volume.Volume._get_device" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">device</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.volume.Volume._is_full_backward_hook">
-<span class="sig-name descname"><span class="pre">_is_full_backward_hook</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.volume.Volume._is_full_backward_hook" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.volume.Volume._load_state_dict_post_hooks">
-<span class="sig-name descname"><span class="pre">_load_state_dict_post_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.volume.Volume._load_state_dict_post_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.volume.Volume._load_state_dict_pre_hooks">
-<span class="sig-name descname"><span class="pre">_load_state_dict_pre_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.volume.Volume._load_state_dict_pre_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.volume.Volume._modules">
-<span class="sig-name descname"><span class="pre">_modules</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Module</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.volume.Volume._modules" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.volume.Volume._non_persistent_buffers_set">
-<span class="sig-name descname"><span class="pre">_non_persistent_buffers_set</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.volume.Volume._non_persistent_buffers_set" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.volume.Volume._parameters">
-<span class="sig-name descname"><span class="pre">_parameters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Parameter</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.volume.Volume._parameters" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.volume.Volume._state_dict_hooks">
-<span class="sig-name descname"><span class="pre">_state_dict_hooks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.volume.Volume._state_dict_hooks" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.volume.volume.Volume.assign_budget">
 <span class="sig-name descname"><span class="pre">assign_budget</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/volume.html#Volume.assign_budget"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.volume.Volume.assign_budget" title="Permalink to this definition">¶</a></dt>
@@ -1828,20 +1246,9 @@ Slices of these budgets are then passed to the layers, with the length of the sl
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="tomopt.volume.volume.Volume.build_edges">
-<span class="sig-name descname"><span class="pre">build_edges</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/volume.html#Volume.build_edges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.volume.Volume.build_edges" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes the zxy locations of low-left-front edges of voxels in the passive layers of the volume.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="tomopt.volume.volume.Volume.centres">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">centres</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.volume.volume.Volume.centres" title="Permalink to this definition">¶</a></dt>
-<dd><p>zxy locations of the centres of voxels in the passive layers of the volume.</p>
+<dt class="sig sig-object py" id="tomopt.volume.volume.Volume.build_xyz_edges">
+<span class="sig-name descname"><span class="pre">build_xyz_edges</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/volume.html#Volume.build_xyz_edges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.volume.Volume.build_xyz_edges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the xyz locations of low-left-front edges of voxels in the passive layers of the volume.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
@@ -1874,17 +1281,6 @@ When using this in a jupyter notebook, use “%matplotlib notebook” to have an
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="tomopt.volume.volume.Volume.edges">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">edges</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.volume.volume.Volume.edges" title="Permalink to this definition">¶</a></dt>
-<dd><p>zxy locations of low-left-front edges of voxels in the passive layers of the volume.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2069,6 +1465,28 @@ The target can be set as part of the call to <a class="reference internal" href=
 <span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#tomopt.volume.volume.Volume.training" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.volume.volume.Volume.xyz_centres">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">xyz_centres</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.volume.volume.Volume.xyz_centres" title="Permalink to this definition">¶</a></dt>
+<dd><p>xyz locations of the centres of voxels in the passive layers of the volume.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tomopt.volume.volume.Volume.xyz_edges">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">xyz_edges</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.volume.volume.Volume.xyz_edges" title="Permalink to this definition">¶</a></dt>
+<dd><p>xyz locations of low-left-front edges of voxels in the passive layers of the volume.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -2092,7 +1510,7 @@ The target can be set as part of the call to <a class="reference internal" href=
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2021-2023, TomOpt Authors.
+        &copy; Copyright 2021-2024, TomOpt Authors.
 
     </p>
   </div>
@@ -2115,17 +1533,6 @@ The target can be set as part of the call to <a class="reference internal" href=
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#module-tomopt.volume.heatmap">tomopt.volume.heatmap module</a><ul>
 <li><a class="reference internal" href="#tomopt.volume.heatmap.DetectorHeatMap"><code class="docutils literal notranslate"><span class="pre">DetectorHeatMap</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.volume.heatmap.DetectorHeatMap._backward_hooks"><code class="docutils literal notranslate"><span class="pre">DetectorHeatMap._backward_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.heatmap.DetectorHeatMap._buffers"><code class="docutils literal notranslate"><span class="pre">DetectorHeatMap._buffers</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.heatmap.DetectorHeatMap._forward_hooks"><code class="docutils literal notranslate"><span class="pre">DetectorHeatMap._forward_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.heatmap.DetectorHeatMap._forward_pre_hooks"><code class="docutils literal notranslate"><span class="pre">DetectorHeatMap._forward_pre_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.heatmap.DetectorHeatMap._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">DetectorHeatMap._is_full_backward_hook</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.heatmap.DetectorHeatMap._load_state_dict_post_hooks"><code class="docutils literal notranslate"><span class="pre">DetectorHeatMap._load_state_dict_post_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.heatmap.DetectorHeatMap._load_state_dict_pre_hooks"><code class="docutils literal notranslate"><span class="pre">DetectorHeatMap._load_state_dict_pre_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.heatmap.DetectorHeatMap._modules"><code class="docutils literal notranslate"><span class="pre">DetectorHeatMap._modules</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.heatmap.DetectorHeatMap._non_persistent_buffers_set"><code class="docutils literal notranslate"><span class="pre">DetectorHeatMap._non_persistent_buffers_set</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.heatmap.DetectorHeatMap._parameters"><code class="docutils literal notranslate"><span class="pre">DetectorHeatMap._parameters</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.heatmap.DetectorHeatMap._state_dict_hooks"><code class="docutils literal notranslate"><span class="pre">DetectorHeatMap._state_dict_hooks</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.heatmap.DetectorHeatMap.assign_budget"><code class="docutils literal notranslate"><span class="pre">DetectorHeatMap.assign_budget()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.heatmap.DetectorHeatMap.clamp_params"><code class="docutils literal notranslate"><span class="pre">DetectorHeatMap.clamp_params()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.heatmap.DetectorHeatMap.get_cost"><code class="docutils literal notranslate"><span class="pre">DetectorHeatMap.get_cost()</span></code></a></li>
@@ -2143,19 +1550,6 @@ The target can be set as part of the call to <a class="reference internal" href=
 </li>
 <li><a class="reference internal" href="#module-tomopt.volume.layer">tomopt.volume.layer module</a><ul>
 <li><a class="reference internal" href="#tomopt.volume.layer.AbsDetectorLayer"><code class="docutils literal notranslate"><span class="pre">AbsDetectorLayer</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.volume.layer.AbsDetectorLayer._abc_impl"><code class="docutils literal notranslate"><span class="pre">AbsDetectorLayer._abc_impl</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.AbsDetectorLayer._backward_hooks"><code class="docutils literal notranslate"><span class="pre">AbsDetectorLayer._backward_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.AbsDetectorLayer._buffers"><code class="docutils literal notranslate"><span class="pre">AbsDetectorLayer._buffers</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.AbsDetectorLayer._forward_hooks"><code class="docutils literal notranslate"><span class="pre">AbsDetectorLayer._forward_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.AbsDetectorLayer._forward_pre_hooks"><code class="docutils literal notranslate"><span class="pre">AbsDetectorLayer._forward_pre_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.AbsDetectorLayer._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">AbsDetectorLayer._is_full_backward_hook</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.AbsDetectorLayer._load_state_dict_post_hooks"><code class="docutils literal notranslate"><span class="pre">AbsDetectorLayer._load_state_dict_post_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.AbsDetectorLayer._load_state_dict_pre_hooks"><code class="docutils literal notranslate"><span class="pre">AbsDetectorLayer._load_state_dict_pre_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.AbsDetectorLayer._modules"><code class="docutils literal notranslate"><span class="pre">AbsDetectorLayer._modules</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.AbsDetectorLayer._n_costs"><code class="docutils literal notranslate"><span class="pre">AbsDetectorLayer._n_costs</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.AbsDetectorLayer._non_persistent_buffers_set"><code class="docutils literal notranslate"><span class="pre">AbsDetectorLayer._non_persistent_buffers_set</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.AbsDetectorLayer._parameters"><code class="docutils literal notranslate"><span class="pre">AbsDetectorLayer._parameters</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.AbsDetectorLayer._state_dict_hooks"><code class="docutils literal notranslate"><span class="pre">AbsDetectorLayer._state_dict_hooks</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.AbsDetectorLayer.assign_budget"><code class="docutils literal notranslate"><span class="pre">AbsDetectorLayer.assign_budget()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.AbsDetectorLayer.conform_detector"><code class="docutils literal notranslate"><span class="pre">AbsDetectorLayer.conform_detector()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.AbsDetectorLayer.forward"><code class="docutils literal notranslate"><span class="pre">AbsDetectorLayer.forward()</span></code></a></li>
@@ -2164,36 +1558,12 @@ The target can be set as part of the call to <a class="reference internal" href=
 </ul>
 </li>
 <li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer"><code class="docutils literal notranslate"><span class="pre">AbsLayer</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer._abc_impl"><code class="docutils literal notranslate"><span class="pre">AbsLayer._abc_impl</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer._backward_hooks"><code class="docutils literal notranslate"><span class="pre">AbsLayer._backward_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer._buffers"><code class="docutils literal notranslate"><span class="pre">AbsLayer._buffers</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer._forward_hooks"><code class="docutils literal notranslate"><span class="pre">AbsLayer._forward_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer._forward_pre_hooks"><code class="docutils literal notranslate"><span class="pre">AbsLayer._forward_pre_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">AbsLayer._is_full_backward_hook</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer._load_state_dict_post_hooks"><code class="docutils literal notranslate"><span class="pre">AbsLayer._load_state_dict_post_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer._load_state_dict_pre_hooks"><code class="docutils literal notranslate"><span class="pre">AbsLayer._load_state_dict_pre_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer._modules"><code class="docutils literal notranslate"><span class="pre">AbsLayer._modules</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer._non_persistent_buffers_set"><code class="docutils literal notranslate"><span class="pre">AbsLayer._non_persistent_buffers_set</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer._parameters"><code class="docutils literal notranslate"><span class="pre">AbsLayer._parameters</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer._state_dict_hooks"><code class="docutils literal notranslate"><span class="pre">AbsLayer._state_dict_hooks</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer.forward"><code class="docutils literal notranslate"><span class="pre">AbsLayer.forward()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer.get_lw_z_size"><code class="docutils literal notranslate"><span class="pre">AbsLayer.get_lw_z_size()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer.training"><code class="docutils literal notranslate"><span class="pre">AbsLayer.training</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#tomopt.volume.layer.PanelDetectorLayer"><code class="docutils literal notranslate"><span class="pre">PanelDetectorLayer</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.volume.layer.PanelDetectorLayer._abc_impl"><code class="docutils literal notranslate"><span class="pre">PanelDetectorLayer._abc_impl</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.PanelDetectorLayer._backward_hooks"><code class="docutils literal notranslate"><span class="pre">PanelDetectorLayer._backward_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.PanelDetectorLayer._buffers"><code class="docutils literal notranslate"><span class="pre">PanelDetectorLayer._buffers</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.PanelDetectorLayer._forward_hooks"><code class="docutils literal notranslate"><span class="pre">PanelDetectorLayer._forward_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.PanelDetectorLayer._forward_pre_hooks"><code class="docutils literal notranslate"><span class="pre">PanelDetectorLayer._forward_pre_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.PanelDetectorLayer._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">PanelDetectorLayer._is_full_backward_hook</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.PanelDetectorLayer._load_state_dict_post_hooks"><code class="docutils literal notranslate"><span class="pre">PanelDetectorLayer._load_state_dict_post_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.PanelDetectorLayer._load_state_dict_pre_hooks"><code class="docutils literal notranslate"><span class="pre">PanelDetectorLayer._load_state_dict_pre_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.PanelDetectorLayer._modules"><code class="docutils literal notranslate"><span class="pre">PanelDetectorLayer._modules</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.PanelDetectorLayer._non_persistent_buffers_set"><code class="docutils literal notranslate"><span class="pre">PanelDetectorLayer._non_persistent_buffers_set</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.PanelDetectorLayer._parameters"><code class="docutils literal notranslate"><span class="pre">PanelDetectorLayer._parameters</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.PanelDetectorLayer._state_dict_hooks"><code class="docutils literal notranslate"><span class="pre">PanelDetectorLayer._state_dict_hooks</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.PanelDetectorLayer.assign_budget"><code class="docutils literal notranslate"><span class="pre">PanelDetectorLayer.assign_budget()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.PanelDetectorLayer.conform_detector"><code class="docutils literal notranslate"><span class="pre">PanelDetectorLayer.conform_detector()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.PanelDetectorLayer.forward"><code class="docutils literal notranslate"><span class="pre">PanelDetectorLayer.forward()</span></code></a></li>
@@ -2206,21 +1576,6 @@ The target can be set as part of the call to <a class="reference internal" href=
 </ul>
 </li>
 <li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer"><code class="docutils literal notranslate"><span class="pre">PassiveLayer</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer._abc_impl"><code class="docutils literal notranslate"><span class="pre">PassiveLayer._abc_impl</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer._backward_hooks"><code class="docutils literal notranslate"><span class="pre">PassiveLayer._backward_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer._buffers"><code class="docutils literal notranslate"><span class="pre">PassiveLayer._buffers</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer._compute_scattering"><code class="docutils literal notranslate"><span class="pre">PassiveLayer._compute_scattering()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer._forward_hooks"><code class="docutils literal notranslate"><span class="pre">PassiveLayer._forward_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer._forward_pre_hooks"><code class="docutils literal notranslate"><span class="pre">PassiveLayer._forward_pre_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">PassiveLayer._is_full_backward_hook</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer._load_state_dict_post_hooks"><code class="docutils literal notranslate"><span class="pre">PassiveLayer._load_state_dict_post_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer._load_state_dict_pre_hooks"><code class="docutils literal notranslate"><span class="pre">PassiveLayer._load_state_dict_pre_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer._modules"><code class="docutils literal notranslate"><span class="pre">PassiveLayer._modules</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer._non_persistent_buffers_set"><code class="docutils literal notranslate"><span class="pre">PassiveLayer._non_persistent_buffers_set</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer._parameters"><code class="docutils literal notranslate"><span class="pre">PassiveLayer._parameters</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer._pdg_scatter"><code class="docutils literal notranslate"><span class="pre">PassiveLayer._pdg_scatter()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer._pgeant_scatter"><code class="docutils literal notranslate"><span class="pre">PassiveLayer._pgeant_scatter()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer._state_dict_hooks"><code class="docutils literal notranslate"><span class="pre">PassiveLayer._state_dict_hooks</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer.abs2idx"><code class="docutils literal notranslate"><span class="pre">PassiveLayer.abs2idx()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer.forward"><code class="docutils literal notranslate"><span class="pre">PassiveLayer.forward()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer.load_rad_length"><code class="docutils literal notranslate"><span class="pre">PassiveLayer.load_rad_length()</span></code></a></li>
@@ -2234,17 +1589,6 @@ The target can be set as part of the call to <a class="reference internal" href=
 </li>
 <li><a class="reference internal" href="#module-tomopt.volume.panel">tomopt.volume.panel module</a><ul>
 <li><a class="reference internal" href="#tomopt.volume.panel.DetectorPanel"><code class="docutils literal notranslate"><span class="pre">DetectorPanel</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.volume.panel.DetectorPanel._backward_hooks"><code class="docutils literal notranslate"><span class="pre">DetectorPanel._backward_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.panel.DetectorPanel._buffers"><code class="docutils literal notranslate"><span class="pre">DetectorPanel._buffers</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.panel.DetectorPanel._forward_hooks"><code class="docutils literal notranslate"><span class="pre">DetectorPanel._forward_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.panel.DetectorPanel._forward_pre_hooks"><code class="docutils literal notranslate"><span class="pre">DetectorPanel._forward_pre_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.panel.DetectorPanel._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">DetectorPanel._is_full_backward_hook</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.panel.DetectorPanel._load_state_dict_post_hooks"><code class="docutils literal notranslate"><span class="pre">DetectorPanel._load_state_dict_post_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.panel.DetectorPanel._load_state_dict_pre_hooks"><code class="docutils literal notranslate"><span class="pre">DetectorPanel._load_state_dict_pre_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.panel.DetectorPanel._modules"><code class="docutils literal notranslate"><span class="pre">DetectorPanel._modules</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.panel.DetectorPanel._non_persistent_buffers_set"><code class="docutils literal notranslate"><span class="pre">DetectorPanel._non_persistent_buffers_set</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.panel.DetectorPanel._parameters"><code class="docutils literal notranslate"><span class="pre">DetectorPanel._parameters</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.panel.DetectorPanel._state_dict_hooks"><code class="docutils literal notranslate"><span class="pre">DetectorPanel._state_dict_hooks</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.panel.DetectorPanel.assign_budget"><code class="docutils literal notranslate"><span class="pre">DetectorPanel.assign_budget()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.panel.DetectorPanel.clamp_params"><code class="docutils literal notranslate"><span class="pre">DetectorPanel.clamp_params()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.panel.DetectorPanel.forward"><code class="docutils literal notranslate"><span class="pre">DetectorPanel.forward()</span></code></a></li>
@@ -2261,17 +1605,6 @@ The target can be set as part of the call to <a class="reference internal" href=
 </ul>
 </li>
 <li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel._backward_hooks"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel._backward_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel._buffers"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel._buffers</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel._forward_hooks"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel._forward_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel._forward_pre_hooks"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel._forward_pre_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel._is_full_backward_hook</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel._load_state_dict_post_hooks"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel._load_state_dict_post_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel._load_state_dict_pre_hooks"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel._load_state_dict_pre_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel._modules"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel._modules</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel._non_persistent_buffers_set"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel._non_persistent_buffers_set</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel._parameters"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel._parameters</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel._state_dict_hooks"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel._state_dict_hooks</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel.get_efficiency"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel.get_efficiency()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel.get_resolution"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel.get_resolution()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel.sig_model"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel.sig_model()</span></code></a></li>
@@ -2284,26 +1617,10 @@ The target can be set as part of the call to <a class="reference internal" href=
 <li><a class="reference internal" href="#module-tomopt.volume.scatter_model">tomopt.volume.scatter_model module</a></li>
 <li><a class="reference internal" href="#module-tomopt.volume.volume">tomopt.volume.volume module</a><ul>
 <li><a class="reference internal" href="#tomopt.volume.volume.Volume"><code class="docutils literal notranslate"><span class="pre">Volume</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.volume.volume.Volume._backward_hooks"><code class="docutils literal notranslate"><span class="pre">Volume._backward_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.volume.Volume._buffers"><code class="docutils literal notranslate"><span class="pre">Volume._buffers</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.volume.Volume._check_passives"><code class="docutils literal notranslate"><span class="pre">Volume._check_passives()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.volume.Volume._configure_budget"><code class="docutils literal notranslate"><span class="pre">Volume._configure_budget()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.volume.Volume._forward_hooks"><code class="docutils literal notranslate"><span class="pre">Volume._forward_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.volume.Volume._forward_pre_hooks"><code class="docutils literal notranslate"><span class="pre">Volume._forward_pre_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.volume.Volume._get_device"><code class="docutils literal notranslate"><span class="pre">Volume._get_device()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.volume.Volume._is_full_backward_hook"><code class="docutils literal notranslate"><span class="pre">Volume._is_full_backward_hook</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.volume.Volume._load_state_dict_post_hooks"><code class="docutils literal notranslate"><span class="pre">Volume._load_state_dict_post_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.volume.Volume._load_state_dict_pre_hooks"><code class="docutils literal notranslate"><span class="pre">Volume._load_state_dict_pre_hooks</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.volume.Volume._modules"><code class="docutils literal notranslate"><span class="pre">Volume._modules</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.volume.Volume._non_persistent_buffers_set"><code class="docutils literal notranslate"><span class="pre">Volume._non_persistent_buffers_set</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.volume.Volume._parameters"><code class="docutils literal notranslate"><span class="pre">Volume._parameters</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.volume.Volume._state_dict_hooks"><code class="docutils literal notranslate"><span class="pre">Volume._state_dict_hooks</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.volume.Volume.assign_budget"><code class="docutils literal notranslate"><span class="pre">Volume.assign_budget()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.volume.Volume.build_edges"><code class="docutils literal notranslate"><span class="pre">Volume.build_edges()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.volume.Volume.centres"><code class="docutils literal notranslate"><span class="pre">Volume.centres</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.volume.volume.Volume.build_xyz_edges"><code class="docutils literal notranslate"><span class="pre">Volume.build_xyz_edges()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.volume.Volume.device"><code class="docutils literal notranslate"><span class="pre">Volume.device</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.volume.Volume.draw"><code class="docutils literal notranslate"><span class="pre">Volume.draw()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.volume.Volume.edges"><code class="docutils literal notranslate"><span class="pre">Volume.edges</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.volume.Volume.forward"><code class="docutils literal notranslate"><span class="pre">Volume.forward()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.volume.Volume.get_cost"><code class="docutils literal notranslate"><span class="pre">Volume.get_cost()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.volume.Volume.get_detectors"><code class="docutils literal notranslate"><span class="pre">Volume.get_detectors()</span></code></a></li>
@@ -2317,6 +1634,8 @@ The target can be set as part of the call to <a class="reference internal" href=
 <li><a class="reference internal" href="#tomopt.volume.volume.Volume.passive_size"><code class="docutils literal notranslate"><span class="pre">Volume.passive_size</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.volume.Volume.target"><code class="docutils literal notranslate"><span class="pre">Volume.target</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.volume.Volume.training"><code class="docutils literal notranslate"><span class="pre">Volume.training</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.volume.volume.Volume.xyz_centres"><code class="docutils literal notranslate"><span class="pre">Volume.xyz_centres</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.volume.volume.Volume.xyz_edges"><code class="docutils literal notranslate"><span class="pre">Volume.xyz_edges</span></code></a></li>
 </ul>
 </li>
 </ul>

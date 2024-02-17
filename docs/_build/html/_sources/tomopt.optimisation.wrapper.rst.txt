@@ -11,4 +11,3 @@ tomopt.optimisation.wrapper.volume\_wrapper module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
