@@ -85,7 +85,7 @@ Finally, make sure everything is working as expected by running the tests:
 poetry run pytest tests
 ```
 
-For those unfamiliar with `poetry`, basically just prepend commands with `poetry run` to use the stuff installed within the local environment. This local environment is basically a python virtual environment. To correctly set up the interpreter in your IDE, use `poetry run which python` to see the path to the correct python executable
+For those unfamiliar with `poetry`, basically just prepend commands with `poetry run` to use the stuff installed within the local environment, e.g. `poetry run jupyter notebook` to start a jupyter notebook server. This local environment is basically a python virtual environment. To correctly set up the interpreter in your IDE, use `poetry run which python` to see the path to the correct python executable.
 
 ## Examples
 
@@ -105,7 +105,7 @@ If you want to run notebooks on a remote cluster but access them on the browser 
 
 On the cluster, run:
 ```
-jupyter notebook --no-browser --port=8889
+poetry run jupyter notebook --no-browser --port=8889
 ```
 
 On your local computer, you need to set up a forwarding that picks the flux of data from the cluster via a local port, and makes it available on another port as if the server was in the local machine:
