@@ -14,8 +14,6 @@
 
   
   
-    <link rel="shortcut icon" href="../../../_static/tomopt_logo.png"/>
-  
   
   
 
@@ -260,7 +258,7 @@
 
 
 <div class="viewcode-block" id="Volume"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.volume.Volume">[docs]</a><span class="k">class</span> <span class="nc">Volume</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The `Volume` class is used to contain both passive layers and detector layers.</span>
 <span class="sd">    It is designed to act as an interface to them for the convenience of e.g. :class:`~tomopt.optimisation.wrapper.volume_wrapper.VolumeWrapper`,</span>
 <span class="sd">    and to allow new passive-volume layouts to be loaded.</span>
@@ -285,7 +283,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layers</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">,</span> <span class="n">budget</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialises the volume with the set of layers (both detector and passive),</span>
 <span class="sd">        which should be supplied as a `torch.nn.ModuleList` ordered in decreasing z position.</span>
 <span class="sd">        Supplying a value for the optional budget, here, will prepare the volume to learn budget assignments to the detectors,</span>
@@ -307,7 +305,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
 
 <div class="viewcode-block" id="Volume.get_passive_z_range"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.volume.Volume.get_passive_z_range">[docs]</a>    <span class="k">def</span> <span class="nf">get_passive_z_range</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            The z position of the bottom of the lowest passive layer, and the z position of the top of the highest passive layer.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -316,7 +314,7 @@
         <span class="k">return</span> <span class="n">ps</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">z</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">passive_size</span><span class="p">,</span> <span class="n">ps</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">z</span></div>
 
 <div class="viewcode-block" id="Volume.build_xyz_edges"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.volume.Volume.build_xyz_edges">[docs]</a>    <span class="k">def</span> <span class="nf">build_xyz_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the xyz locations of low-left-front edges of voxels in the passive layers of the volume.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -334,7 +332,7 @@
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">bounds</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Volume.get_detectors"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.volume.Volume.get_detectors">[docs]</a>    <span class="k">def</span> <span class="nf">get_detectors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">AbsDetectorLayer</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            A list of all :class:`~tomopt.volume.layer.AbsDetectorLayer` s in the volume, in the order of `layers` (normally decreasing z position)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -342,7 +340,7 @@
         <span class="k">return</span> <span class="p">[</span><span class="n">l</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">AbsDetectorLayer</span><span class="p">)]</span></div>
 
 <div class="viewcode-block" id="Volume.get_passives"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.volume.Volume.get_passives">[docs]</a>    <span class="k">def</span> <span class="nf">get_passives</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">PassiveLayer</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            A list of all :class:`~tomopt.volume.layer.PassiveLayer` s in the volume, in the order of `layers` (normally decreasing z position)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -350,7 +348,7 @@
         <span class="k">return</span> <span class="p">[</span><span class="n">l</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">PassiveLayer</span><span class="p">)]</span></div>
 
 <div class="viewcode-block" id="Volume.get_rad_cube"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.volume.Volume.get_rad_cube">[docs]</a>    <span class="k">def</span> <span class="nf">get_rad_cube</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            zxy tensor of the values stored in the voxels of the passive volume, with the lowest layer being found in the zeroth z index position.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -365,7 +363,7 @@
             <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;None of volume layers have a non-None rad_length attribute&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Volume.lookup_passive_xyz_coords"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.volume.Volume.lookup_passive_xyz_coords">[docs]</a>    <span class="k">def</span> <span class="nf">lookup_passive_xyz_coords</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xyz</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Looks up the voxel indices of the supplied list of absolute positions in the volume frame</span>
 
 <span class="sd">        .. warning::</span>
@@ -389,7 +387,7 @@
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">xyz</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">passive_size</span><span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="Volume.load_rad_length"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.volume.Volume.load_rad_length">[docs]</a>    <span class="k">def</span> <span class="nf">load_rad_length</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rad_length_func</span><span class="p">:</span> <span class="n">RadLengthFunc</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Loads a new passive-volume configuration.</span>
 <span class="sd">        Optionally, a &quot;target&quot; for the configuration may also be supplied.</span>
 <span class="sd">        This could be e.g. the class ID of the passive-volume configuration which is currently loaded.</span>
@@ -405,7 +403,7 @@
             <span class="n">p</span><span class="o">.</span><span class="n">load_rad_length</span><span class="p">(</span><span class="n">rad_length_func</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Volume.assign_budget"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.volume.Volume.assign_budget">[docs]</a>    <span class="k">def</span> <span class="nf">assign_budget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Distributed the total budget for the detector system amongst the various sub-detectors.</span>
 <span class="sd">        When assigning budgets to layers, the budget weights are softmax-normalised to one, and multiplied by the total budget.</span>
 <span class="sd">        Slices of these budgets are then passed to the layers, with the length of the slices being taken from `_n_layer_costs`.</span>
@@ -422,7 +420,7 @@
                     <span class="n">layer_idx</span> <span class="o">+=</span> <span class="mi">1</span></div>
 
 <div class="viewcode-block" id="Volume.forward"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.volume.Volume.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="n">MuonBatch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Propagates muons through each layer in turn.</span>
 <span class="sd">        Prior to propagating muons, the :meth:`~tomopt.volume.volume.Volume.assign_budget` method is called.</span>
 
@@ -437,7 +435,7 @@
             <span class="n">mu</span><span class="o">.</span><span class="n">snapshot_xyz</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="Volume.get_cost"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.volume.Volume.get_cost">[docs]</a>    <span class="k">def</span> <span class="nf">get_cost</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            The total, current cost of the layers in the volume,</span>
 <span class="sd">                or the assigned budget for the volume (these two values should be the same but, the actual cost won&#39;t be evaluated explicitly)</span>
@@ -458,7 +456,7 @@
         <span class="k">return</span> <span class="n">cost</span></div>
 
 <div class="viewcode-block" id="Volume.draw"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.volume.Volume.draw">[docs]</a>    <span class="k">def</span> <span class="nf">draw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">xlim</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">ylim</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">zlim</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Draws the layers/panels pertaining to the volume.</span>
 <span class="sd">        When using this in a jupyter notebook, use &quot;%matplotlib notebook&quot; to have an interactive plot that you can rotate.</span>
 
@@ -556,7 +554,7 @@
         <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
 
     <span class="k">def</span> <span class="nf">_configure_budget</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Creates a list of learnable parameters, which acts as the fractional assignment of the total budget to various parts of the detectors.</span>
 <span class="sd">        The `budget_weights` contains all these assignments with no explicit hierarchy.</span>
 
@@ -584,7 +582,7 @@
         <span class="k">return</span> <span class="n">device</span>
 
     <span class="k">def</span> <span class="nf">_check_passives</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Ensures that all :class:`~tomopt.volume.layer.PassiveLayer` s have the same sizes</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -601,7 +599,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">lw</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            The length and width of the passive volume</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -610,7 +608,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">passive_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            The size of voxels in the passive volume</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -619,7 +617,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">h</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            The height of the volume (including both passive and detector layers), as computed from the z position of the zeroth layer.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -628,7 +626,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">xyz_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        xyz locations of low-left-front edges of voxels in the passive layers of the volume.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -638,7 +636,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">xyz_centres</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        xyz locations of the centres of voxels in the passive layers of the volume.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -652,7 +650,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">target</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            The &quot;target&quot; value of the volume. This could be e.g. the class ID of the passive-volume configuration which is currently loaded.</span>
 <span class="sd">            See e.g. :class:`~tomopt.optimisation.loss.VolumeClassLoss`.</span>
@@ -705,9 +703,6 @@
      
        <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
          <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-         <script src="../../../_static/jquery.js"></script>
-         <script src="../../../_static/underscore.js"></script>
-         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
          <script src="../../../_static/doctools.js"></script>
          <script src="../../../_static/sphinx_highlight.js"></script>
      

@@ -15,8 +15,6 @@
 
   
   
-    <link rel="shortcut icon" href="_static/tomopt_logo.png"/>
-  
   
   
 
@@ -305,11 +303,6 @@ otherwise the budget term will flatten off for very high costs</p></li>
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.AbsDetectorLoss.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.AbsDetectorLoss.training" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -348,16 +341,6 @@ otherwise the budget term will flatten off for very high costs</p></li>
 </ul>
 </dd>
 </dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.AbsMaterialClassLoss.sub_losses">
-<span class="sig-name descname"><span class="pre">sub_losses</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss.sub_losses" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.AbsMaterialClassLoss.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss.training" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -399,16 +382,6 @@ otherwise the budget term will flatten off for very high costs</p></li>
 </ul>
 </dd>
 </dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeClassLoss.sub_losses">
-<span class="sig-name descname"><span class="pre">sub_losses</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeClassLoss.sub_losses" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeClassLoss.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeClassLoss.training" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -447,16 +420,6 @@ otherwise the budget term will flatten off for very high costs</p></li>
 </ul>
 </dd>
 </dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeIntClassLoss.sub_losses">
-<span class="sig-name descname"><span class="pre">sub_losses</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss.sub_losses" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeIntClassLoss.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss.training" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -464,16 +427,6 @@ otherwise the budget term will flatten off for very high costs</p></li>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.optimisation.loss.loss.</span></span><span class="sig-name descname"><span class="pre">VolumeMSELoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_budget</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">budget_smoothing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cost_coef</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steep_budget</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/optimisation/loss/loss.html#VolumeMSELoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeMSELoss" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsDetectorLoss" title="tomopt.optimisation.loss.loss.AbsDetectorLoss"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbsDetectorLoss</span></code></a></p>
 <p>TODO: Add unit tests and docs</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeMSELoss.sub_losses">
-<span class="sig-name descname"><span class="pre">sub_losses</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeMSELoss.sub_losses" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VolumeMSELoss.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VolumeMSELoss.training" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -511,16 +464,6 @@ otherwise the budget term will flatten off for very high costs</p></li>
 </ul>
 </dd>
 </dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelClassLoss.sub_losses">
-<span class="sig-name descname"><span class="pre">sub_losses</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelClassLoss.sub_losses" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelClassLoss.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelClassLoss.training" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -555,16 +498,6 @@ otherwise the budget term will flatten off for very high costs</p></li>
 </ul>
 </dd>
 </dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelX0Loss.sub_losses">
-<span class="sig-name descname"><span class="pre">sub_losses</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelX0Loss.sub_losses" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.optimisation.loss.loss.VoxelX0Loss.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#tomopt.optimisation.loss.loss.VoxelX0Loss.training" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 </section>
@@ -647,39 +580,14 @@ I.e. integers close to the target have a lower error, and these are given greate
 <li><a class="reference internal" href="#module-tomopt.optimisation.loss.loss">tomopt.optimisation.loss.loss module</a><ul>
 <li><a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsDetectorLoss"><code class="docutils literal notranslate"><span class="pre">AbsDetectorLoss</span></code></a><ul>
 <li><a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsDetectorLoss.forward"><code class="docutils literal notranslate"><span class="pre">AbsDetectorLoss.forward()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsDetectorLoss.training"><code class="docutils literal notranslate"><span class="pre">AbsDetectorLoss.training</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss"><code class="docutils literal notranslate"><span class="pre">AbsMaterialClassLoss</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss.sub_losses"><code class="docutils literal notranslate"><span class="pre">AbsMaterialClassLoss.sub_losses</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss.training"><code class="docutils literal notranslate"><span class="pre">AbsMaterialClassLoss.training</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeClassLoss"><code class="docutils literal notranslate"><span class="pre">VolumeClassLoss</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeClassLoss.sub_losses"><code class="docutils literal notranslate"><span class="pre">VolumeClassLoss.sub_losses</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeClassLoss.training"><code class="docutils literal notranslate"><span class="pre">VolumeClassLoss.training</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss"><code class="docutils literal notranslate"><span class="pre">VolumeIntClassLoss</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss.sub_losses"><code class="docutils literal notranslate"><span class="pre">VolumeIntClassLoss.sub_losses</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss.training"><code class="docutils literal notranslate"><span class="pre">VolumeIntClassLoss.training</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeMSELoss"><code class="docutils literal notranslate"><span class="pre">VolumeMSELoss</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeMSELoss.sub_losses"><code class="docutils literal notranslate"><span class="pre">VolumeMSELoss.sub_losses</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeMSELoss.training"><code class="docutils literal notranslate"><span class="pre">VolumeMSELoss.training</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelClassLoss"><code class="docutils literal notranslate"><span class="pre">VoxelClassLoss</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelClassLoss.sub_losses"><code class="docutils literal notranslate"><span class="pre">VoxelClassLoss.sub_losses</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelClassLoss.training"><code class="docutils literal notranslate"><span class="pre">VoxelClassLoss.training</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelX0Loss"><code class="docutils literal notranslate"><span class="pre">VoxelX0Loss</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelX0Loss.sub_losses"><code class="docutils literal notranslate"><span class="pre">VoxelX0Loss.sub_losses</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelX0Loss.training"><code class="docutils literal notranslate"><span class="pre">VoxelX0Loss.training</span></code></a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.AbsMaterialClassLoss"><code class="docutils literal notranslate"><span class="pre">AbsMaterialClassLoss</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeClassLoss"><code class="docutils literal notranslate"><span class="pre">VolumeClassLoss</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeIntClassLoss"><code class="docutils literal notranslate"><span class="pre">VolumeIntClassLoss</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VolumeMSELoss"><code class="docutils literal notranslate"><span class="pre">VolumeMSELoss</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelClassLoss"><code class="docutils literal notranslate"><span class="pre">VoxelClassLoss</span></code></a></li>
+<li><a class="reference internal" href="#tomopt.optimisation.loss.loss.VoxelX0Loss"><code class="docutils literal notranslate"><span class="pre">VoxelX0Loss</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-tomopt.optimisation.loss.sub_losses">tomopt.optimisation.loss.sub_losses module</a><ul>
@@ -704,9 +612,6 @@ I.e. integers close to the target have a lower error, and these are given greate
      
        <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
          <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-         <script src="_static/jquery.js"></script>
-         <script src="_static/underscore.js"></script>
-         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
          <script src="_static/doctools.js"></script>
          <script src="_static/sphinx_highlight.js"></script>
      

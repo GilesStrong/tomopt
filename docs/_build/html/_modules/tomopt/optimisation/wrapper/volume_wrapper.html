@@ -14,8 +14,6 @@
 
   
   
-    <link rel="shortcut icon" href="../../../../_static/tomopt_logo.png"/>
-  
   
   
 
@@ -292,7 +290,7 @@
 
 
 <div class="viewcode-block" id="FitParams"><a class="viewcode-back" href="../../../../tomopt.optimisation.wrapper.html#tomopt.optimisation.wrapper.volume_wrapper.FitParams">[docs]</a><span class="k">class</span> <span class="nc">FitParams</span><span class="p">:</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Data class used for storing all aspects of optimisation and prediction when working with</span>
 <span class="sd">    :class:`~tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper`</span>
 
@@ -329,7 +327,7 @@
     <span class="n">skip_opt_step</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Stores any keyword arguments as an attribute</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -337,7 +335,7 @@
 
 
 <div class="viewcode-block" id="AbsVolumeWrapper"><a class="viewcode-back" href="../../../../tomopt.optimisation.wrapper.html#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper">[docs]</a><span class="k">class</span> <span class="nc">AbsVolumeWrapper</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Abstract base class for optimisation volume wrappers.</span>
 <span class="sd">    Inheriting classes will need to override :meth:`~tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._build_opt`</span>
 <span class="sd">    according to the detector parameters that need to be optimised.</span>
@@ -484,7 +482,7 @@
 
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">_build_opt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">PartialOpt</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Inheriting classes should override this method to initialise the optimisers by associating them to the detector parameters. e.g.:</span>
 <span class="sd">        self.opts = {&#39;res_opt&#39;: res_opt((l.resolution for l in self.volume.get_detectors())),</span>
 <span class="sd">                     &#39;eff_opt&#39;: eff_opt((l.efficiency for l in self.volume.get_detectors()))}</span>
@@ -496,7 +494,7 @@
         <span class="k">pass</span>
 
 <div class="viewcode-block" id="AbsVolumeWrapper.get_detectors"><a class="viewcode-back" href="../../../../tomopt.optimisation.wrapper.html#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.get_detectors">[docs]</a>    <span class="k">def</span> <span class="nf">get_detectors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">AbsDetectorLayer</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            A list of all :class:`~tomopt.volume.layer.AbsDetectorLayer` s in the volume, in the order of `layers` (normally decreasing z position)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -504,7 +502,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">get_detectors</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="AbsVolumeWrapper.save"><a class="viewcode-back" href="../../../../tomopt.optimisation.wrapper.html#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Saves the volume and optimiser parameters to a file.</span>
 
 <span class="sd">        Arguments:</span>
@@ -514,7 +512,7 @@
         <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">({</span><span class="s2">&quot;volume&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">opts</span><span class="o">.</span><span class="n">items</span><span class="p">()}},</span> <span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="AbsVolumeWrapper.load"><a class="viewcode-back" href="../../../../tomopt.optimisation.wrapper.html#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Loads saved volume and optimiser parameters from a file.</span>
 
 <span class="sd">        Arguments:</span>
@@ -530,7 +528,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">opts</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">v</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="AbsVolumeWrapper.get_param_count"><a class="viewcode-back" href="../../../../tomopt.optimisation.wrapper.html#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.get_param_count">[docs]</a>    <span class="k">def</span> <span class="nf">get_param_count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trainable</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return number of parameters in detector.</span>
 
 <span class="sd">        Arguments:</span>
@@ -553,7 +551,7 @@
         <span class="n">cbs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Callback</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">cb_savepath</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;train_weights&quot;</span><span class="p">),</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Callback</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs the fitting loop for the detectors over a specified number of epochs, using the provided volumes or volume generators.</span>
 <span class="sd">        The optimisation loop can be supported by callbacks.</span>
 
@@ -618,7 +616,7 @@
         <span class="n">cbs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Callback</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">cb_savepath</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;train_weights&quot;</span><span class="p">),</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Uses the detectors to predict the provided volumes</span>
 <span class="sd">        The prediction loop can be supported by callbacks.</span>
 
@@ -664,7 +662,7 @@
         <span class="k">return</span> <span class="n">pred_cb</span><span class="o">.</span><span class="n">get_preds</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="AbsVolumeWrapper.get_opt_lr"><a class="viewcode-back" href="../../../../tomopt.optimisation.wrapper.html#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.get_opt_lr">[docs]</a>    <span class="k">def</span> <span class="nf">get_opt_lr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">opt</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the learning rate of the specified optimiser.</span>
 
 <span class="sd">        Arguments:</span>
@@ -677,7 +675,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">opts</span><span class="p">[</span><span class="n">opt</span><span class="p">]</span><span class="o">.</span><span class="n">param_groups</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;lr&quot;</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="AbsVolumeWrapper.set_opt_lr"><a class="viewcode-back" href="../../../../tomopt.optimisation.wrapper.html#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.set_opt_lr">[docs]</a>    <span class="k">def</span> <span class="nf">set_opt_lr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">opt</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Sets the learning rate of the specified optimiser.</span>
 
 <span class="sd">        Arguments:</span>
@@ -688,7 +686,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">opts</span><span class="p">[</span><span class="n">opt</span><span class="p">]</span><span class="o">.</span><span class="n">param_groups</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;lr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lr</span></div>
 
 <div class="viewcode-block" id="AbsVolumeWrapper.get_opt_mom"><a class="viewcode-back" href="../../../../tomopt.optimisation.wrapper.html#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.get_opt_mom">[docs]</a>    <span class="k">def</span> <span class="nf">get_opt_mom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">opt</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the momentum coefficient/beta_1 of the specified optimiser.</span>
 
 <span class="sd">        Arguments:</span>
@@ -704,7 +702,7 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">opts</span><span class="p">[</span><span class="n">opt</span><span class="p">]</span><span class="o">.</span><span class="n">param_groups</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;momentum&quot;</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="AbsVolumeWrapper.set_opt_mom"><a class="viewcode-back" href="../../../../tomopt.optimisation.wrapper.html#tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper.set_opt_mom">[docs]</a>    <span class="k">def</span> <span class="nf">set_opt_mom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mom</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">opt</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Sets the learning rate of the specified optimiser.</span>
 
 <span class="sd">        Arguments:</span>
@@ -719,7 +717,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_sort_cbs</span><span class="p">(</span><span class="n">cbs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callback</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Callback</span><span class="p">]]]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Sorts callbacks into lists according to their type and whether other callbacks might need to be aware of them.</span>
 
 <span class="sd">        Arguments:</span>
@@ -749,7 +747,7 @@
         <span class="k">return</span> <span class="n">sorted_cbs</span>
 
     <span class="k">def</span> <span class="nf">_fit_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs through one training epoch (state = &#39;train&#39;), using :meth:`~tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volumes`.</span>
 <span class="sd">        If validation volumes are present, will then run through one validation epoch (state = &#39;valid&#39;),</span>
 <span class="sd">        again using :meth:`~tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volumes`.</span>
@@ -775,7 +773,7 @@
             <span class="n">run_epoch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">val_passives</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_scan_volumes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">passives</span><span class="p">:</span> <span class="n">PassiveYielder</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Scans all volumes by splitting them into volume batches.</span>
 <span class="sd">        Each volume is scanned via using :meth:`~tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volume`.</span>
 <span class="sd">        After each volume batch, if in &#39;train&#39; state,the detector parameters will be updated using the loss of the volume batch and the optimisers.</span>
@@ -828,7 +826,7 @@
                     <span class="k">break</span>
 
     <span class="k">def</span> <span class="nf">_scan_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Passes multiple batches of muons through a single volume, and infers the volume target.</span>
 <span class="sd">        If in &#39;train&#39; or &#39;valid&#39; state, also computes the loss on the detector.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -869,7 +867,7 @@
 
 
 <div class="viewcode-block" id="PanelVolumeWrapper"><a class="viewcode-back" href="../../../../tomopt.optimisation.wrapper.html#tomopt.optimisation.wrapper.volume_wrapper.PanelVolumeWrapper">[docs]</a><span class="k">class</span> <span class="nc">PanelVolumeWrapper</span><span class="p">(</span><span class="n">AbsVolumeWrapper</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Volume wrapper for volumes with :class:`~tomopt.volume.panel.DetectorPanel`-based detectors.</span>
 
 <span class="sd">    Volume wrappers are designed to contain a :class:`~tomopt.volume.volume.Volume` and provide means of optimising the detectors it contains,</span>
@@ -1039,7 +1037,7 @@
         <span class="n">partial_volume_inferrer</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">AbsVolumeInferrer</span><span class="p">]</span> <span class="o">=</span> <span class="n">PanelX0Inferrer</span><span class="p">,</span>
         <span class="n">mu_generator</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AbsMuonGenerator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AbsVolumeWrapper</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Instantiates a new `PanelVolumeWrapper` and loads saved detector and optimiser parameters</span>
 
 <span class="sd">        Arguments:</span>
@@ -1070,7 +1068,7 @@
         <span class="k">return</span> <span class="n">vw</span></div>
 
     <span class="k">def</span> <span class="nf">_build_opt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">PartialOpt</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialises the optimisers by associating them to the detector parameters.</span>
 
 <span class="sd">        Arguments:</span>
@@ -1092,7 +1090,7 @@
 
 
 <div class="viewcode-block" id="HeatMapVolumeWrapper"><a class="viewcode-back" href="../../../../tomopt.optimisation.wrapper.html#tomopt.optimisation.wrapper.volume_wrapper.HeatMapVolumeWrapper">[docs]</a><span class="k">class</span> <span class="nc">HeatMapVolumeWrapper</span><span class="p">(</span><span class="n">AbsVolumeWrapper</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Volume wrapper for volumes with :class:`~tomopt.volume.heatmap.DetectorHeatMap`-based detectors.</span>
 
 <span class="sd">    Volume wrappers are designed to contain a :class:`~tomopt.volume.volume.Volume` and provide means of optimising the detectors it contains,</span>
@@ -1257,7 +1255,7 @@
         <span class="n">partial_volume_inferrer</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">AbsVolumeInferrer</span><span class="p">]</span> <span class="o">=</span> <span class="n">PanelX0Inferrer</span><span class="p">,</span>
         <span class="n">mu_generator</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AbsMuonGenerator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AbsVolumeWrapper</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Instantiates a new `HeatMapVolumeWrapper` and loads saved detector and optimiser parameters</span>
 
 <span class="sd">        Arguments:</span>
@@ -1288,7 +1286,7 @@
         <span class="k">return</span> <span class="n">vw</span></div>
 
     <span class="k">def</span> <span class="nf">_build_opt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">PartialOpt</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialises the optimisers by associating them to the detector parameters.</span>
 
 <span class="sd">        Arguments:</span>
@@ -1309,7 +1307,7 @@
 
 
 <div class="viewcode-block" id="ArbVolumeWrapper"><a class="viewcode-back" href="../../../../tomopt.optimisation.wrapper.html#tomopt.optimisation.wrapper.volume_wrapper.ArbVolumeWrapper">[docs]</a><span class="k">class</span> <span class="nc">ArbVolumeWrapper</span><span class="p">(</span><span class="n">AbsVolumeWrapper</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Arbitrary volume wrapper in which the user supplies pre-instantiated optimisers for whatever paramters should be optimised.</span>
 
 <span class="sd">    Wrappers also provide for various quality-of-life methods, such as saving and loading detector configurations,</span>
@@ -1463,7 +1461,7 @@
         <span class="n">partial_volume_inferrer</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">AbsVolumeInferrer</span><span class="p">]</span> <span class="o">=</span> <span class="n">PanelX0Inferrer</span><span class="p">,</span>
         <span class="n">mu_generator</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">AbsMuonGenerator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AbsVolumeWrapper</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Instantiates a new `PanelVolumeWrapper` and loads saved detector and optimiser parameters</span>
 
 <span class="sd">        Arguments:</span>
@@ -1534,9 +1532,6 @@
      
        <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
          <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-         <script src="../../../../_static/jquery.js"></script>
-         <script src="../../../../_static/underscore.js"></script>
-         <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
          <script src="../../../../_static/doctools.js"></script>
          <script src="../../../../_static/sphinx_highlight.js"></script>
      

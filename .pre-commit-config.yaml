@@ -5,7 +5,7 @@ repos:
       - id: poetry-check
       - id: poetry-lock
       - id: poetry-export
-        args: ["--dev", "-f", "requirements.txt", "-o", "requirements.txt"]
+        args: ["-f", "requirements.txt", "-o", "requirements.txt", "--with", "docs", "--with", "dev"]
 
   - repo: https://github.com/psf/black
     rev: 24.2.0

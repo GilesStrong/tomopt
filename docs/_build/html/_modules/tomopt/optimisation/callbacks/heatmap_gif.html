@@ -14,8 +14,6 @@
 
   
   
-    <link rel="shortcut icon" href="../../../../_static/tomopt_logo.png"/>
-  
   
   
 
@@ -252,7 +250,7 @@
 
 
 <div class="viewcode-block" id="HeatMapGif"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.heatmap_gif.HeatMapGif">[docs]</a><span class="k">class</span> <span class="nc">HeatMapGif</span><span class="p">(</span><span class="n">Callback</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Records a gif of the first heatmap in the first detector layer during training.</span>
 
 <span class="sd">    Arguments:</span>
@@ -260,7 +258,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gif_filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;heatmap.gif&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialises the callback.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -268,7 +266,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_reset</span><span class="p">()</span>
 
 <div class="viewcode-block" id="HeatMapGif.on_train_begin"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.heatmap_gif.HeatMapGif.on_train_begin">[docs]</a>    <span class="k">def</span> <span class="nf">on_train_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Prepares to record a new gif</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -276,7 +274,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_reset</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="HeatMapGif.on_epoch_begin"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.heatmap_gif.HeatMapGif.on_epoch_begin">[docs]</a>    <span class="k">def</span> <span class="nf">on_epoch_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        When a new training epoch begins, saves an image of the current layout of the first heatmap in the first detector layer</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -284,7 +282,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_plot_current</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="HeatMapGif.on_train_end"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.heatmap_gif.HeatMapGif.on_train_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_train_end</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        When training, saves an image of the current layout of the first heatmap in the first detector layer</span>
 <span class="sd">        and then combines all images into a gif</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -293,7 +291,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_create_gif</span><span class="p">()</span></div>
 
     <span class="k">def</span> <span class="nf">_plot_current</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Saves an image of the current layout of the first heatmap in the first detector layer</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -305,18 +303,18 @@
                     <span class="n">p</span><span class="o">.</span><span class="n">plot_map</span><span class="p">(</span><span class="n">bsavefig</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">)</span>
                     <span class="k">break</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;HeatMapGif does not yet support </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="p">,</span> <span class="n">l</span><span class="o">.</span><span class="n">type_label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;HeatMapGif does not yet support </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">l</span><span class="p">)</span><span class="w"> </span><span class="p">,</span><span class="w"> </span><span class="n">l</span><span class="o">.</span><span class="n">type_label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">break</span>
 
     <span class="k">def</span> <span class="nf">_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Prepares to record a new gif</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_buffer_files</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="k">def</span> <span class="nf">_create_gif</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Combines recorded images into a gif</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -372,9 +370,6 @@
      
        <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
          <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-         <script src="../../../../_static/jquery.js"></script>
-         <script src="../../../../_static/underscore.js"></script>
-         <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
          <script src="../../../../_static/doctools.js"></script>
          <script src="../../../../_static/sphinx_highlight.js"></script>
      

@@ -3,6 +3,8 @@
 TomOpt: Differential Muon Tomography Optimisation
 ===================================================
 
+.. mdinclude:: introduction.md
+
 Package overview
 ----------------------------------------------------
 

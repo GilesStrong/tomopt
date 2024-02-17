@@ -14,8 +14,6 @@
 
   
   
-    <link rel="shortcut icon" href="../../../../_static/tomopt_logo.png"/>
-  
   
   
 
@@ -253,13 +251,13 @@
 
 
 <div class="viewcode-block" id="MuonResampler"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.data_callbacks.MuonResampler">[docs]</a><span class="k">class</span> <span class="nc">MuonResampler</span><span class="p">(</span><span class="n">Callback</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Resamples muons to only include those which will impact the passive volume at some point, even if they only hit the bottom layer.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="MuonResampler.check_mu_batch"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.data_callbacks.MuonResampler.check_mu_batch">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">check_mu_batch</span><span class="p">(</span><span class="n">mu</span><span class="p">:</span> <span class="n">MuonBatch</span><span class="p">,</span> <span class="n">volume</span><span class="p">:</span> <span class="n">Volume</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Checks the provided muon batch to determine which muons will impact the passive volume at any point</span>
 
 <span class="sd">        Arguments:</span>
@@ -279,7 +277,7 @@
 
 <div class="viewcode-block" id="MuonResampler.resample"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.data_callbacks.MuonResampler.resample">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">resample</span><span class="p">(</span><span class="n">mus</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">volume</span><span class="p">:</span> <span class="n">Volume</span><span class="p">,</span> <span class="n">gen</span><span class="p">:</span> <span class="n">AbsMuonGenerator</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Resamples muons until all muons will hit the passive volume.</span>
 
 <span class="sd">        Arguments:</span>
@@ -311,7 +309,7 @@
         <span class="k">return</span> <span class="n">mus</span></div>
 
 <div class="viewcode-block" id="MuonResampler.on_mu_batch_begin"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.data_callbacks.MuonResampler.on_mu_batch_begin">[docs]</a>    <span class="k">def</span> <span class="nf">on_mu_batch_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Resamples muons prior to propagation through the volume such that all muons will hit the passive volume.</span>
 
 <span class="sd">        # TODO Add check for realistic validation</span>
@@ -365,9 +363,6 @@
      
        <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
          <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-         <script src="../../../../_static/jquery.js"></script>
-         <script src="../../../../_static/underscore.js"></script>
-         <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
          <script src="../../../../_static/doctools.js"></script>
          <script src="../../../../_static/sphinx_highlight.js"></script>
      

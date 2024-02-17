@@ -15,8 +15,6 @@
 
   
   
-    <link rel="shortcut icon" href="_static/tomopt_logo.png"/>
-  
   
   
 
@@ -332,30 +330,15 @@
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.heatmap.DetectorHeatMap.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#tomopt.volume.heatmap.DetectorHeatMap.training" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="py property">
 <dt class="sig sig-object py" id="tomopt.volume.heatmap.DetectorHeatMap.x">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">x</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.volume.heatmap.DetectorHeatMap.x" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
-</dd>
-</dl>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="tomopt.volume.heatmap.DetectorHeatMap.y">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">y</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.volume.heatmap.DetectorHeatMap.y" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
-</dd>
-</dl>
-</dd></dl>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -451,11 +434,6 @@ and record muon positions (hits) according to the detector model.</p>
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.AbsDetectorLayer.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#tomopt.volume.layer.AbsDetectorLayer.training" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -506,11 +484,6 @@ size is also used to set the length, width, and height of the voxels that make u
 </dd>
 </dl>
 </dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.AbsLayer.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#tomopt.volume.layer.AbsLayer.training" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 </dd></dl>
 
@@ -634,16 +607,6 @@ If not all the panels are on the same device, then an exception will be raised.<
 </dd>
 </dl>
 </dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.PanelDetectorLayer.rad_length">
-<span class="sig-name descname"><span class="pre">rad_length</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.PanelDetectorLayer.rad_length" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.PanelDetectorLayer.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#tomopt.volume.layer.PanelDetectorLayer.training" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.volume.layer.PanelDetectorLayer.yield_zordered_panels">
@@ -781,11 +744,6 @@ Please also supply a mask, to only select muons inside the layer.</p>
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.PassiveLayer.rad_length">
-<span class="sig-name descname"><span class="pre">rad_length</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.layer.PassiveLayer.rad_length" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.volume.layer.PassiveLayer.scatter_and_propagate">
 <span class="sig-name descname"><span class="pre">scatter_and_propagate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/layer.html#PassiveLayer.scatter_and_propagate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.layer.PassiveLayer.scatter_and_propagate" title="Permalink to this definition">¶</a></dt>
@@ -809,11 +767,6 @@ If a muon moves into a neighbouring voxel of differing X0, then this will only b
 </dd>
 </dl>
 </dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.layer.PassiveLayer.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#tomopt.volume.layer.PassiveLayer.training" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 </dd></dl>
 
@@ -898,8 +851,9 @@ A small random number &lt; 1e-3 is added/subtracted to the min/max z position of
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.volume.panel.DetectorPanel.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/panel.html#DetectorPanel.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.panel.DetectorPanel.forward" title="Permalink to this definition">¶</a></dt>
-<dd><p>Defines the computation performed at every call.</p>
-<p>Should be overridden by all subclasses.</p>
+<dd><p>Define the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.
+:rtype: <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Although the recipe for forward pass needs to be defined within
@@ -907,11 +861,6 @@ this function, one should call the <code class="xref py py-class docutils litera
 instead of this since the former takes care of running the
 registered hooks while the latter silently ignores them.</p>
 </div>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -968,7 +917,12 @@ If required, but not supplied, than will be computed automatically.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.volume.panel.DetectorPanel.get_hits">
 <span class="sig-name descname"><span class="pre">get_hits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/volume/panel.html#DetectorPanel.get_hits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.volume.panel.DetectorPanel.get_hits" title="Permalink to this definition">¶</a></dt>
-<dd><p>The main interaction method with the panel: returns hits for the supplied muons.
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]</p>
+</dd>
+</dl>
+<p>The main interaction method with the panel: returns hits for the supplied muons.
 Hits consist of:</p>
 <blockquote>
 <div><p>reco_xy: (muons,xy) tensor of reconstructed xy positions of muons included simulated resolution
@@ -978,11 +932,6 @@ z: z position of the panel</p>
 <p>If running in evaluation mode with <cite>realistic_validation</cite>,
 then these will be the full resolution of the panel for points inside the panel (indicated by the mask), and zero outside.
 Otherwise, the Gaussian model will be used.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Dict</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1041,30 +990,15 @@ If required, but not supplied, than will be computed automatically.</p></li>
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.panel.DetectorPanel.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#tomopt.volume.panel.DetectorPanel.training" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="py property">
 <dt class="sig sig-object py" id="tomopt.volume.panel.DetectorPanel.x">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">x</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.volume.panel.DetectorPanel.x" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
-</dd>
-</dl>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="tomopt.volume.panel.DetectorPanel.y">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">y</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.volume.panel.DetectorPanel.y" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
-</dd>
-</dl>
-</dd></dl>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -1185,16 +1119,6 @@ If required, but not supplied, than will be computed automatically.</p></li>
 <dl class="py property">
 <dt class="sig sig-object py" id="tomopt.volume.panel.SigmoidDetectorPanel.smooth">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">smooth</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.volume.panel.SigmoidDetectorPanel.smooth" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.panel.SigmoidDetectorPanel.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#tomopt.volume.panel.SigmoidDetectorPanel.training" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -1259,12 +1183,7 @@ Slices of these budgets are then passed to the layers, with the length of the sl
 <dl class="py property">
 <dt class="sig sig-object py" id="tomopt.volume.volume.Volume.device">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">device</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">device</span></em><a class="headerlink" href="#tomopt.volume.volume.Volume.device" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">device</span></code></p>
-</dd>
-</dl>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="tomopt.volume.volume.Volume.draw">
@@ -1374,11 +1293,6 @@ Prior to propagating muons, the <a class="reference internal" href="#tomopt.volu
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">h</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.volume.volume.Volume.h" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns:
 The height of the volume (including both passive and detector layers), as computed from the z position of the zeroth layer.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1427,11 +1341,6 @@ See e.g. <code class="xref py py-class docutils literal notranslate"><span class
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lw</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.volume.volume.Volume.lw" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns:
 The length and width of the passive volume</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py property">
@@ -1439,52 +1348,27 @@ The length and width of the passive volume</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">passive_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#tomopt.volume.volume.Volume.passive_size" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns:
 The size of voxels in the passive volume</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="tomopt.volume.volume.Volume.target">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">target</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tomopt.volume.volume.Volume.target" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">target</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#tomopt.volume.volume.Volume.target" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns:
 The “target” value of the volume. This could be e.g. the class ID of the passive-volume configuration which is currently loaded.
 See e.g. <code class="xref py py-class docutils literal notranslate"><span class="pre">VolumeClassLoss</span></code>.
 The target can be set as part of the call to <a class="reference internal" href="#tomopt.volume.volume.Volume.load_rad_length" title="tomopt.volume.volume.Volume.load_rad_length"><code class="xref py py-meth docutils literal notranslate"><span class="pre">load_rad_length()</span></code></a></p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code>]</p>
-</dd>
-</dl>
 </dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.volume.volume.Volume.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#tomopt.volume.volume.Volume.training" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="tomopt.volume.volume.Volume.xyz_centres">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">xyz_centres</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.volume.volume.Volume.xyz_centres" title="Permalink to this definition">¶</a></dt>
 <dd><p>xyz locations of the centres of voxels in the passive layers of the volume.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="tomopt.volume.volume.Volume.xyz_edges">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">xyz_edges</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.volume.volume.Volume.xyz_edges" title="Permalink to this definition">¶</a></dt>
 <dd><p>xyz locations of low-left-front edges of voxels in the passive layers of the volume.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
-</dd>
-</dl>
 </dd></dl>
 
 </dd></dl>
@@ -1541,7 +1425,6 @@ The target can be set as part of the call to <a class="reference internal" href=
 <li><a class="reference internal" href="#tomopt.volume.heatmap.DetectorHeatMap.get_resolution"><code class="docutils literal notranslate"><span class="pre">DetectorHeatMap.get_resolution()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.heatmap.DetectorHeatMap.get_xy_mask"><code class="docutils literal notranslate"><span class="pre">DetectorHeatMap.get_xy_mask()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.heatmap.DetectorHeatMap.plot_map"><code class="docutils literal notranslate"><span class="pre">DetectorHeatMap.plot_map()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.heatmap.DetectorHeatMap.training"><code class="docutils literal notranslate"><span class="pre">DetectorHeatMap.training</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.heatmap.DetectorHeatMap.x"><code class="docutils literal notranslate"><span class="pre">DetectorHeatMap.x</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.heatmap.DetectorHeatMap.y"><code class="docutils literal notranslate"><span class="pre">DetectorHeatMap.y</span></code></a></li>
 </ul>
@@ -1554,13 +1437,11 @@ The target can be set as part of the call to <a class="reference internal" href=
 <li><a class="reference internal" href="#tomopt.volume.layer.AbsDetectorLayer.conform_detector"><code class="docutils literal notranslate"><span class="pre">AbsDetectorLayer.conform_detector()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.AbsDetectorLayer.forward"><code class="docutils literal notranslate"><span class="pre">AbsDetectorLayer.forward()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.AbsDetectorLayer.get_cost"><code class="docutils literal notranslate"><span class="pre">AbsDetectorLayer.get_cost()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.AbsDetectorLayer.training"><code class="docutils literal notranslate"><span class="pre">AbsDetectorLayer.training</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer"><code class="docutils literal notranslate"><span class="pre">AbsLayer</span></code></a><ul>
 <li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer.forward"><code class="docutils literal notranslate"><span class="pre">AbsLayer.forward()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer.get_lw_z_size"><code class="docutils literal notranslate"><span class="pre">AbsLayer.get_lw_z_size()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.AbsLayer.training"><code class="docutils literal notranslate"><span class="pre">AbsLayer.training</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#tomopt.volume.layer.PanelDetectorLayer"><code class="docutils literal notranslate"><span class="pre">PanelDetectorLayer</span></code></a><ul>
@@ -1570,8 +1451,6 @@ The target can be set as part of the call to <a class="reference internal" href=
 <li><a class="reference internal" href="#tomopt.volume.layer.PanelDetectorLayer.get_cost"><code class="docutils literal notranslate"><span class="pre">PanelDetectorLayer.get_cost()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.PanelDetectorLayer.get_device"><code class="docutils literal notranslate"><span class="pre">PanelDetectorLayer.get_device()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.PanelDetectorLayer.get_panel_zorder"><code class="docutils literal notranslate"><span class="pre">PanelDetectorLayer.get_panel_zorder()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.PanelDetectorLayer.rad_length"><code class="docutils literal notranslate"><span class="pre">PanelDetectorLayer.rad_length</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.PanelDetectorLayer.training"><code class="docutils literal notranslate"><span class="pre">PanelDetectorLayer.training</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.PanelDetectorLayer.yield_zordered_panels"><code class="docutils literal notranslate"><span class="pre">PanelDetectorLayer.yield_zordered_panels()</span></code></a></li>
 </ul>
 </li>
@@ -1580,9 +1459,7 @@ The target can be set as part of the call to <a class="reference internal" href=
 <li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer.forward"><code class="docutils literal notranslate"><span class="pre">PassiveLayer.forward()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer.load_rad_length"><code class="docutils literal notranslate"><span class="pre">PassiveLayer.load_rad_length()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer.mu_abs2idx"><code class="docutils literal notranslate"><span class="pre">PassiveLayer.mu_abs2idx()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer.rad_length"><code class="docutils literal notranslate"><span class="pre">PassiveLayer.rad_length</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer.scatter_and_propagate"><code class="docutils literal notranslate"><span class="pre">PassiveLayer.scatter_and_propagate()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.layer.PassiveLayer.training"><code class="docutils literal notranslate"><span class="pre">PassiveLayer.training</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -1599,7 +1476,6 @@ The target can be set as part of the call to <a class="reference internal" href=
 <li><a class="reference internal" href="#tomopt.volume.panel.DetectorPanel.get_resolution"><code class="docutils literal notranslate"><span class="pre">DetectorPanel.get_resolution()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.panel.DetectorPanel.get_scaled_xy_span"><code class="docutils literal notranslate"><span class="pre">DetectorPanel.get_scaled_xy_span()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.panel.DetectorPanel.get_xy_mask"><code class="docutils literal notranslate"><span class="pre">DetectorPanel.get_xy_mask()</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.panel.DetectorPanel.training"><code class="docutils literal notranslate"><span class="pre">DetectorPanel.training</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.panel.DetectorPanel.x"><code class="docutils literal notranslate"><span class="pre">DetectorPanel.x</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.panel.DetectorPanel.y"><code class="docutils literal notranslate"><span class="pre">DetectorPanel.y</span></code></a></li>
 </ul>
@@ -1609,7 +1485,6 @@ The target can be set as part of the call to <a class="reference internal" href=
 <li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel.get_resolution"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel.get_resolution()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel.sig_model"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel.sig_model()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel.smooth"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel.smooth</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.panel.SigmoidDetectorPanel.training"><code class="docutils literal notranslate"><span class="pre">SigmoidDetectorPanel.training</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -1633,7 +1508,6 @@ The target can be set as part of the call to <a class="reference internal" href=
 <li><a class="reference internal" href="#tomopt.volume.volume.Volume.lw"><code class="docutils literal notranslate"><span class="pre">Volume.lw</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.volume.Volume.passive_size"><code class="docutils literal notranslate"><span class="pre">Volume.passive_size</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.volume.Volume.target"><code class="docutils literal notranslate"><span class="pre">Volume.target</span></code></a></li>
-<li><a class="reference internal" href="#tomopt.volume.volume.Volume.training"><code class="docutils literal notranslate"><span class="pre">Volume.training</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.volume.Volume.xyz_centres"><code class="docutils literal notranslate"><span class="pre">Volume.xyz_centres</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.volume.volume.Volume.xyz_edges"><code class="docutils literal notranslate"><span class="pre">Volume.xyz_edges</span></code></a></li>
 </ul>
@@ -1658,9 +1532,6 @@ The target can be set as part of the call to <a class="reference internal" href=
      
        <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
          <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-         <script src="_static/jquery.js"></script>
-         <script src="_static/underscore.js"></script>
-         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
          <script src="_static/doctools.js"></script>
          <script src="_static/sphinx_highlight.js"></script>
      

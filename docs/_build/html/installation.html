@@ -15,8 +15,6 @@
 
   
   
-    <link rel="shortcut icon" href="_static/tomopt_logo.png"/>
-  
   
   
 
@@ -156,7 +154,7 @@
             
               <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#testing">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#examples">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#external-repos">External repos</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#authors">Authors</a></li>
 </ul>
@@ -242,59 +240,82 @@
               
   <section id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this heading">¶</a></h1>
-<p>N.B. Whilst the repo is private, you will need to make sure that you have registered the public ssh key of your computer/instance with your <a class="reference external" href="https://github.com/settings/keys">GitHub profile</a>. Follow <a class="reference external" href="https://docs.github.com/en/github/authenticating-to-github/connecting-to-github-with-ssh/checking-for-existing-ssh-keys">these instructions</a> to check for existing keys or <a class="reference external" href="https://docs.github.com/en/github/authenticating-to-github/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent">these</a> to generate a new key. After that follow <a class="reference external" href="https://docs.github.com/en/github/authenticating-to-github/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account">this</a> to associate the key.</p>
-<p>Checkout package:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">git</span><span class="nd">@github</span><span class="o">.</span><span class="n">com</span><span class="p">:</span><span class="n">GilesStrong</span><span class="o">/</span><span class="n">mode_muon_tomography</span><span class="o">.</span><span class="n">git</span>
-<span class="n">cd</span> <span class="n">mode_muon_tomography</span>
-</pre></div>
-</div>
-<p><em>N.B.</em> For GPU usage, it is recommended to manually setup conda and install PyTorch according to system, e.g.:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">activate</span> <span class="n">root</span>
-<span class="n">conda</span> <span class="n">install</span> <span class="n">nb_conda_kernels</span>
-<span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">tomopt</span> <span class="n">python</span><span class="o">=</span><span class="mf">3.8</span> <span class="n">pip</span> <span class="n">ipykernel</span>
-<span class="n">conda</span> <span class="n">activate</span> <span class="n">tomopt</span>
-<span class="n">pip</span> <span class="n">install</span> <span class="n">torch</span><span class="o">==</span><span class="mf">1.8.1</span><span class="o">+</span><span class="n">cu111</span> <span class="o">-</span><span class="n">f</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">download</span><span class="o">.</span><span class="n">pytorch</span><span class="o">.</span><span class="n">org</span><span class="o">/</span><span class="n">whl</span><span class="o">/</span><span class="n">torch_stable</span><span class="o">.</span><span class="n">html</span>
-<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">r</span> <span class="n">requirements</span><span class="o">.</span><span class="n">txt</span>
-</pre></div>
-</div>
-<p>Minimum python version is 3.8. Recommend creating a virtual environment, e.g. assuming your are using <a class="reference external" href="https://www.anaconda.com/products/individual">Anaconda</a>/<a class="reference external" href="https://docs.conda.io/en/latest/miniconda.html">Miniconda</a> (if installing conda for the first time, remember to restart the shell before attemting to use conda, and that by default conda writes the setup commands to <code class="docutils literal notranslate"><span class="pre">.bashrc</span></code>):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">activate</span> <span class="n">root</span>
-<span class="n">conda</span> <span class="n">install</span> <span class="n">nb_conda_kernels</span>
-<span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">environment</span><span class="o">.</span><span class="n">yml</span>
-<span class="n">conda</span> <span class="n">activate</span> <span class="n">tomopt</span>
-</pre></div>
-</div>
-<p>Otherwise set up a suitable environment using your python distribution of choice using the contents of <code class="docutils literal notranslate"><span class="pre">environment.yml</span></code>. Remember to activate the correct environment each time, via e.g. <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">tomopt</span></code>.</p>
-<p>Install package and dependencies</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">r</span> <span class="n">requirements</span><span class="o">.</span><span class="n">txt</span>
-<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="o">.</span>
-</pre></div>
-</div>
-<p>Install git-hooks:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pre</span><span class="o">-</span><span class="n">commit</span> <span class="n">install</span>
-</pre></div>
-</div>
-<section id="windows-usage">
-<h2>Windows usage<a class="headerlink" href="#windows-usage" title="Permalink to this heading">¶</a></h2>
-<p>Apparently when using Windows, the environment must also be activated within ipython using:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">ipykernel</span> <span class="n">install</span> <span class="o">--</span><span class="n">user</span> <span class="o">--</span><span class="n">name</span> <span class="n">tomopt</span> <span class="o">--</span><span class="n">display</span><span class="o">-</span><span class="n">name</span> <span class="s2">&quot;Python (tomopt)&quot;</span>
+<section id="as-a-dependency">
+<h2>As a dependency<a class="headerlink" href="#as-a-dependency" title="Permalink to this heading">¶</a></h2>
+<p>For dependency usage, <code class="docutils literal notranslate"><span class="pre">tomopt</span></code> can be installed via e.g.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>tomopt
 </pre></div>
 </div>
 </section>
+<section id="for-development">
+<h2>For development<a class="headerlink" href="#for-development" title="Permalink to this heading">¶</a></h2>
+<p>Check out the repo locally:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>git@github.com:GilesStrong/tomopt.git
+<span class="nb">cd</span><span class="w"> </span>tomopt
+</pre></div>
+</div>
+<p>For development usage, we use <cite>``poetry`</cite> &lt;<a class="reference external" href="https://python-poetry.org/docs/#installing-with-the-official-installer">https://python-poetry.org/docs/#installing-with-the-official-installer</a>&gt;`_ to handle dependency installation.
+Poetry can be installed via, e.g.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-sSL<span class="w"> </span>https://install.python-poetry.org<span class="w"> </span><span class="p">|</span><span class="w"> </span>python3<span class="w"> </span>-
+poetry<span class="w"> </span>self<span class="w"> </span>update
+</pre></div>
+</div>
+<p>and ensuring that <code class="docutils literal notranslate"><span class="pre">poetry</span></code> is available in your <code class="docutils literal notranslate"><span class="pre">$PATH</span></code></p>
+<p>TomOpt requires <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">&gt;=</span> <span class="pre">3.10</span></code>. This can be installed via e.g. <cite>``pyenv`</cite> &lt;<a class="reference external" href="https://github.com/pyenv/pyenv">https://github.com/pyenv/pyenv</a>&gt;`_:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>https://pyenv.run<span class="w"> </span><span class="p">|</span><span class="w"> </span>bash
+pyenv<span class="w"> </span>update
+pyenv<span class="w"> </span>install<span class="w"> </span><span class="m">3</span>.10
+pyenv<span class="w"> </span><span class="nb">local</span><span class="w"> </span><span class="m">3</span>.10
+</pre></div>
+</div>
+<p>Install the dependencies:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>poetry<span class="w"> </span>install
+poetry<span class="w"> </span>self<span class="w"> </span>add<span class="w"> </span>poetry-plugin-export
+poetry<span class="w"> </span>config<span class="w"> </span>warnings.export<span class="w"> </span><span class="nb">false</span>
+poetry<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>install
+</pre></div>
+</div>
+<p>Finally, make sure everything is working as expected by running the tests:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>poetry<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>tests
+</pre></div>
+</div>
+<p>For those unfamiliar with <code class="docutils literal notranslate"><span class="pre">poetry</span></code>, basically just prepend commands with <code class="docutils literal notranslate"><span class="pre">poetry</span> <span class="pre">run</span></code> to use the stuff installed within the local environment. This local environment is basically a python virtual environment. To correctly set up the interpreter in your IDE, use <code class="docutils literal notranslate"><span class="pre">poetry</span> <span class="pre">run</span> <span class="pre">which</span> <span class="pre">python</span></code> to see the path to the correct python executable</p>
 </section>
-<section id="testing">
-<h1>Testing<a class="headerlink" href="#testing" title="Permalink to this heading">¶</a></h1>
-<p>Testing is handled by <code class="docutils literal notranslate"><span class="pre">pytest</span></code> and is set up to run during pull requests. Tests can be manually ran locally via:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pytest</span> <span class="n">tests</span><span class="o">/</span>
+</section>
+<section id="examples">
+<h1>Examples<a class="headerlink" href="#examples" title="Permalink to this heading">¶</a></h1>
+<p>A few examples are included to introduce users and developers to the TomOpt library. These take the form of Jupyter notebooks. In <code class="docutils literal notranslate"><span class="pre">examples/getting_started</span></code> there are four ordered notebooks:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">00_Hello_World.ipynb</span></code> aims to show the user the high-level classes in TomOpt and the general workflow.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">01_Indepth_tutorial_single_cycle.ipynb</span></code> aims to show developers what is going on in a single update iteration.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">02_Indepth_tutotial_optimisation_and_callbacks.ipynb</span></code> aims to show users and developers the workings of the callback system in TomOpt</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">03_fixed_budget_mode.ipynb</span></code> aims to show users and developers how to optimise such that the detector maintains a constant cost.</p></li>
+</ul>
+<p>In <code class="docutils literal notranslate"><span class="pre">examples/benchmarks</span></code> there is a single notebook that covers the optimisation performed in our first publication, in which we optimised a detector to estimate the fill-height of a ladle furnace at a steel plant. As a disclaimer, this notebook may not fully reproduce our result, and is designed to be used in an interactive manner by experienced users.</p>
+<section id="running-notebooks-in-a-remote-cluster">
+<h2>Running notebooks in a remote cluster<a class="headerlink" href="#running-notebooks-in-a-remote-cluster" title="Permalink to this heading">¶</a></h2>
+<p>If you want to run notebooks on a remote cluster but access them on the browser of your local machine, you need to forward the notebook server from the cluster to your local machine.</p>
+<p>On the cluster, run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">jupyter</span> <span class="n">notebook</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">browser</span> <span class="o">--</span><span class="n">port</span><span class="o">=</span><span class="mi">8889</span>
 </pre></div>
 </div>
-<p>to run all tests, or, e.g.:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pytest</span> <span class="n">tests</span><span class="o">/</span><span class="n">test_muon</span><span class="o">.</span><span class="n">py</span>
+<p>On your local computer, you need to set up a forwarding that picks the flux of data from the cluster via a local port, and makes it available on another port as if the server was in the local machine:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ssh</span> <span class="o">-</span><span class="n">N</span> <span class="o">-</span><span class="n">f</span> <span class="o">-</span><span class="n">L</span> <span class="n">localhost</span><span class="p">:</span><span class="mi">8888</span><span class="p">:</span><span class="n">localhost</span><span class="p">:</span><span class="mi">8889</span> <span class="n">username</span><span class="nd">@cluster_hostname</span>
 </pre></div>
 </div>
+<p>The layperson version of this command is: <a href="#id1"><span class="problematic" id="id2">*</span></a>take the flux of info from the port <code class="docutils literal notranslate"><span class="pre">8889</span></code> of <code class="docutils literal notranslate"><span class="pre">cluster_hostname</span></code>, logging in as <code class="docutils literal notranslate"><span class="pre">username</span></code>, get it inside the local machine via the port <code class="docutils literal notranslate"><span class="pre">8889</span></code>, and make it available on the port <code class="docutils literal notranslate"><span class="pre">8888</span></code> as if the jupyter notebook server was running locally on the port <code class="docutils literal notranslate"><span class="pre">8888</span></code>*</p>
+<p>You can now point your browser to <a class="reference external" href="http://localhost:8888/tree">http://localhost:8888/tree</a> (you will be asked to copy the server authentication token, which is the number that is shown by jupyter when you run the notebook on the server)</p>
+<p>If there is an intermediate machine (e.g. a gateway) between the cluster and your local machine, you need to set up a similar port forwarding on the gateway machine. The crucial point is that the input port of each machine must be the output port of the machine before it in the chain. For instance:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">jupyter</span> <span class="n">notebook</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">browser</span> <span class="o">--</span><span class="n">port</span><span class="o">=</span><span class="mi">8889</span> <span class="c1"># on the cluster</span>
+<span class="n">ssh</span> <span class="o">-</span><span class="n">N</span> <span class="o">-</span><span class="n">f</span> <span class="o">-</span><span class="n">L</span> <span class="n">localhost</span><span class="p">:</span><span class="mi">8888</span><span class="p">:</span><span class="n">localhost</span><span class="p">:</span><span class="mi">8889</span> <span class="n">username</span><span class="nd">@cluster_hostname</span> <span class="c1"># on the gateway. Makes the notebook running on the cluster port 8889 available on the local port 8888</span>
+<span class="n">ssh</span> <span class="o">-</span><span class="n">N</span> <span class="o">-</span><span class="n">f</span> <span class="o">-</span><span class="n">L</span> <span class="n">localhost</span><span class="p">:</span><span class="mi">8890</span><span class="p">:</span><span class="n">localhost</span><span class="p">:</span><span class="mi">8888</span> <span class="n">username</span><span class="nd">@gateway_hostname</span> <span class="c1"># on your local machine. Picks up the server available on 8888 of the gateway and makes it available on the local port 8890 (or any other number, e.g. 8888)</span>
+</pre></div>
+</div>
+</section>
 </section>
 <section id="external-repos">
 <h1>External repos<a class="headerlink" href="#external-repos" title="Permalink to this heading">¶</a></h1>
+<p>N.B. Most are not currently public</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/GilesStrong/mode_muon_tomo_inference">tomo_deepinfer</a> (contact &#64;GilesStrong for access) separately handles training and model definition of GNNs used for passive volume inference. Models are exported as JIT-traced scripts, and loaded here using the <code class="docutils literal notranslate"><span class="pre">DeepVolumeInferer</span></code> class. We still need to find a good way to host the trained models for easy download.</p></li>
 <li><p><a class="reference external" href="https://github.com/GilesStrong/mode_muon_tomography_scattering">mode_muon_tomography_scattering</a>  (contact &#64;GilesStrong for access) separately handles conversion of PGeant model from root to HDF5, and Geant validation data from csv to HDF5.</p></li>
@@ -303,7 +324,7 @@
 </section>
 <section id="authors">
 <h1>Authors<a class="headerlink" href="#authors" title="Permalink to this heading">¶</a></h1>
-<p>The TomOpt project, and its continued development and support, is the result of the combined work of many people, whose contributions are summarised in <a class="reference external" href="https://github.com/GilesStrong/mode_muon_tomography/blob/main/AUTHORS.md">the author list</a></p>
+<p>The TomOpt project, and its continued development and support, is the result of the combined work of many people, whose contributions are summarised in <a class="reference external" href="https://github.com/GilesStrong/tomopt/blob/main/AUTHORS.md">the author list</a></p>
 </section>
 
 
@@ -346,10 +367,14 @@
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
 <li><a class="reference internal" href="#">Installation</a><ul>
-<li><a class="reference internal" href="#windows-usage">Windows usage</a></li>
+<li><a class="reference internal" href="#as-a-dependency">As a dependency</a></li>
+<li><a class="reference internal" href="#for-development">For development</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#testing">Testing</a></li>
+<li><a class="reference internal" href="#examples">Examples</a><ul>
+<li><a class="reference internal" href="#running-notebooks-in-a-remote-cluster">Running notebooks in a remote cluster</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#external-repos">External repos</a></li>
 <li><a class="reference internal" href="#authors">Authors</a></li>
 </ul>
@@ -368,9 +393,6 @@
      
        <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
          <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-         <script src="_static/jquery.js"></script>
-         <script src="_static/underscore.js"></script>
-         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
          <script src="_static/doctools.js"></script>
          <script src="_static/sphinx_highlight.js"></script>
      

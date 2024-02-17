@@ -14,8 +14,6 @@
 
   
   
-    <link rel="shortcut icon" href="../../../../_static/tomopt_logo.png"/>
-  
   
   
 
@@ -262,7 +260,7 @@
 
 
 <div class="viewcode-block" id="AbsPassiveGenerator"><a class="viewcode-back" href="../../../../tomopt.optimisation.data.html#tomopt.optimisation.data.passives.AbsPassiveGenerator">[docs]</a><span class="k">class</span> <span class="nc">AbsPassiveGenerator</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Abstract base class for classes that generate new passive layouts.</span>
 
 <span class="sd">    The :meth:`~tomopt.optimisation.data.passives.AbsPassiveGenerator._generate` method should be overridden to return:</span>
@@ -282,7 +280,7 @@
         <span class="n">volume</span><span class="p">:</span> <span class="n">Volume</span><span class="p">,</span>
         <span class="n">materials</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialises the generator for a given volume, in case any volume parameters are required by the inheriting generators</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -297,7 +295,7 @@
 
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">_generate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">RadLengthFunc</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Inheriting classes should override this.</span>
 
 <span class="sd">        Returns:</span>
@@ -308,7 +306,7 @@
         <span class="k">pass</span>
 
 <div class="viewcode-block" id="AbsPassiveGenerator.get_data"><a class="viewcode-back" href="../../../../tomopt.optimisation.data.html#tomopt.optimisation.data.passives.AbsPassiveGenerator.get_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">RadLengthFunc</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            RadLengthFunc: A function that provides an xy tensor for a given layer when called with its z position, length and width, and size.</span>
 <span class="sd">            Target: An optional &quot;target&quot; value for the layout</span>
@@ -317,7 +315,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="AbsPassiveGenerator.generate"><a class="viewcode-back" href="../../../../tomopt.optimisation.data.html#tomopt.optimisation.data.passives.AbsPassiveGenerator.generate">[docs]</a>    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RadLengthFunc</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            The layout function and no target</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -327,7 +325,7 @@
 
 
 <div class="viewcode-block" id="AbsBlockPassiveGenerator"><a class="viewcode-back" href="../../../../tomopt.optimisation.data.html#tomopt.optimisation.data.passives.AbsBlockPassiveGenerator">[docs]</a><span class="k">class</span> <span class="nc">AbsBlockPassiveGenerator</span><span class="p">(</span><span class="n">AbsPassiveGenerator</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Abstract base class for classes that generate new passive layouts which contain a single cuboid of material (block).</span>
 
 <span class="sd">    The :meth:`~tomopt.optimisation.data.passives.AbsPassiveGenerator._generate` method should be overridden to return:</span>
@@ -353,7 +351,7 @@
         <span class="n">block_size_max_half</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">materials</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialises the generator for a given volume, in case any volume parameters are required by the inheriting generators.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -390,7 +388,7 @@
 
 
 <div class="viewcode-block" id="RandomBlockPassiveGenerator"><a class="viewcode-back" href="../../../../tomopt.optimisation.data.html#tomopt.optimisation.data.passives.RandomBlockPassiveGenerator">[docs]</a><span class="k">class</span> <span class="nc">RandomBlockPassiveGenerator</span><span class="p">(</span><span class="n">AbsBlockPassiveGenerator</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generates new passive layouts which contain a single cuboid of material (block) of random material against a random background material.</span>
 <span class="sd">    Blocks are always present, but can potentially be of the same material as the background.</span>
 <span class="sd">    The target for the volumes is the X0 of the block material.</span>
@@ -418,7 +416,7 @@
         <span class="n">block_size_max_half</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">materials</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialises the generator for a given volume, in case any volume parameters are required by the inheriting generators.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -426,7 +424,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">sort_x0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">enforce_diff_mat</span> <span class="o">=</span> <span class="n">sort_x0</span><span class="p">,</span> <span class="n">enforce_diff_mat</span>
 
     <span class="k">def</span> <span class="nf">_generate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">RadLengthFunc</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Generates passive layouts containing a (randomly sized) block of random material at a random location surrounded by a random background.</span>
 
 <span class="sd">        Returns:</span>
@@ -458,7 +456,7 @@
 
 
 <div class="viewcode-block" id="BlockPresentPassiveGenerator"><a class="viewcode-back" href="../../../../tomopt.optimisation.data.html#tomopt.optimisation.data.passives.BlockPresentPassiveGenerator">[docs]</a><span class="k">class</span> <span class="nc">BlockPresentPassiveGenerator</span><span class="p">(</span><span class="n">AbsBlockPassiveGenerator</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generates new passive layouts which contain a single cuboid of material (block) of random material against a fixed background material.</span>
 <span class="sd">    Blocks are always present, but can potentially be of the same material as the background.</span>
 <span class="sd">    The target for the volumes is the X0 of the block material.</span>
@@ -477,7 +475,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">_generate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">RadLengthFunc</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Generates passive layouts containing a (randomly sized) block of random material at a random location surrounded by a fixed background.</span>
 <span class="sd">        The background material for the background will always be the zeroth material provided during initialisation.</span>
 
@@ -506,7 +504,7 @@
 
 
 <div class="viewcode-block" id="VoxelPassiveGenerator"><a class="viewcode-back" href="../../../../tomopt.optimisation.data.html#tomopt.optimisation.data.passives.VoxelPassiveGenerator">[docs]</a><span class="k">class</span> <span class="nc">VoxelPassiveGenerator</span><span class="p">(</span><span class="n">AbsPassiveGenerator</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generates new passive layouts where every voxel is of a random material.</span>
 
 <span class="sd">    The :meth:`~tomopt.optimisation.data.passives.AbsPassiveGenerator.generate` method will return only the layout function and no target</span>
@@ -518,7 +516,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">_generate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">RadLengthFunc</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Generates new passive layouts where ever voxel is of a random material.</span>
 
 <span class="sd">        Returns:</span>
@@ -535,7 +533,7 @@
 
 
 <div class="viewcode-block" id="PassiveYielder"><a class="viewcode-back" href="../../../../tomopt.optimisation.data.html#tomopt.optimisation.data.passives.PassiveYielder">[docs]</a><span class="k">class</span> <span class="nc">PassiveYielder</span><span class="p">:</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Dataset class that can either:</span>
 <span class="sd">        Yield from a set of pre-specified passive-volume layouts, and optional targets</span>
 <span class="sd">        Generate and yield random layouts and optional targets from a provided generator</span>
@@ -619,9 +617,6 @@
      
        <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
          <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-         <script src="../../../../_static/jquery.js"></script>
-         <script src="../../../../_static/underscore.js"></script>
-         <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
          <script src="../../../../_static/doctools.js"></script>
          <script src="../../../../_static/sphinx_highlight.js"></script>
      

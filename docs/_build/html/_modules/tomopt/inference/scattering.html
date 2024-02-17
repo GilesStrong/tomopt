@@ -14,8 +14,6 @@
 
   
   
-    <link rel="shortcut icon" href="../../../_static/tomopt_logo.png"/>
-  
   
   
 
@@ -256,7 +254,7 @@
 
 
 <div class="viewcode-block" id="ScatterBatch"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.scattering.ScatterBatch">[docs]</a><span class="k">class</span> <span class="nc">ScatterBatch</span><span class="p">:</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Class for computing scattering information from the hits via incoming/outgoing trajectory fitting.</span>
 
 <span class="sd">    Linear fits are performed separately to all hits associated with layer groups, as indicated by the `pos` attribute of the layers which recorded hits.</span>
@@ -334,7 +332,7 @@
     <span class="n">_dxy_unc</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="n">MuonBatch</span><span class="p">,</span> <span class="n">volume</span><span class="p">:</span> <span class="n">Volume</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialise scatter batch from a muon batch.</span>
 <span class="sd">        During initialisation:</span>
 <span class="sd">            The muons will be filtered in-place via :meth:`~tomopt.inference.ScatterBatch._filter_scatters`</span>
@@ -351,7 +349,7 @@
 
 <div class="viewcode-block" id="ScatterBatch.get_muon_trajectory"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.scattering.ScatterBatch.get_muon_trajectory">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">get_muon_trajectory</span><span class="p">(</span><span class="n">hits</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">uncs</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">lw</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Fits a linear trajectory to a group of hits, whilst considering their uncertainties on their xy positions.</span>
 <span class="sd">        No uncertainty is considered for z positions of hits.</span>
 <span class="sd">        The fit is performed via an analytical likelihood-maximisation.</span>
@@ -400,7 +398,7 @@
         <span class="k">return</span> <span class="n">vec</span><span class="p">,</span> <span class="n">start</span></div>
 
 <div class="viewcode-block" id="ScatterBatch.get_scatter_mask"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.scattering.ScatterBatch.get_scatter_mask">[docs]</a>    <span class="k">def</span> <span class="nf">get_scatter_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons) Boolean tensor where True indicates that the PoCA of the muon is located within the passive volume</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -416,7 +414,7 @@
         <span class="p">)</span></div>
 
 <div class="viewcode-block" id="ScatterBatch.plot_scatter"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.scattering.ScatterBatch.plot_scatter">[docs]</a>    <span class="k">def</span> <span class="nf">plot_scatter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">savename</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plots representation of hits and fitted trajectories for a single muon.</span>
 
 <span class="sd">        Arguments:</span>
@@ -526,7 +524,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_compute_theta_msc</span><span class="p">(</span><span class="n">p</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the angle between sets of vectors p and q via the cosine dot-product.</span>
 
 <span class="sd">        Arguments:</span>
@@ -541,7 +539,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_compute_theta</span><span class="p">(</span><span class="n">track</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the theta angles of vectors</span>
 
 <span class="sd">        Arguments:</span>
@@ -561,7 +559,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_compute_phi</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the phi angles from the xy components of vectors</span>
 
 <span class="sd">        Arguments:</span>
@@ -590,7 +588,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_compute_dtheta_dphi_scatter</span><span class="p">(</span><span class="n">theta_in</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">phi_in</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">theta_out</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">phi_out</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes dtheta and dphi variables under the assumption of small angular scatterings.</span>
 <span class="sd">        An assumption is necessary here, since there is a loss of information in the when the muons undergo scattering in theta and phi:</span>
 <span class="sd">        since theta is [0,pi] a negative scattering in theta will always results in a positive theta, but phi can become phi+pi.</span>
@@ -634,7 +632,7 @@
         <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;dtheta&quot;</span><span class="p">:</span> <span class="n">dtheta</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">hypo</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="s2">&quot;dphi&quot;</span><span class="p">:</span> <span class="n">dphi</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">hypo</span><span class="p">,</span> <span class="kc">None</span><span class="p">]}</span>
 
     <span class="k">def</span> <span class="nf">_extract_hits</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Takes the dictionary of hits from the muons and combines them into single tensors of recorded and true hits.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -648,7 +646,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_hit_effs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">hits</span><span class="p">[</span><span class="s2">&quot;above&quot;</span><span class="p">][</span><span class="s2">&quot;eff&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">hits</span><span class="p">[</span><span class="s2">&quot;below&quot;</span><span class="p">][</span><span class="s2">&quot;eff&quot;</span><span class="p">]),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># muons, all panels, eff</span>
 
     <span class="k">def</span> <span class="nf">_compute_tracks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes tracks from hits according to the uncertainty and efficiency of the hits, computed as 1/(resolution*efficiency).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -656,7 +654,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_track_out</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_track_start_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_muon_trajectory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">below_hits</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">below_hit_uncs</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">below_hit_effs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume</span><span class="o">.</span><span class="n">lw</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_filter_scatters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Filters muons to avoid NaN/Inf gradients or values. This results in direct, in-place changes to the :class:`~tomopt.muon.muon_batch.MuonBatch`.</span>
 <span class="sd">        This might seem heavy-handed, but tracks with invalid/extreme parameters can have NaN gradients, which can spoil the grads of all other muons.</span>
 
@@ -703,7 +701,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_compute_tracks</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_compute_scatters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes incoming and outgoing vectors, and the vector normal to them, from hits extracted from filtered muons.</span>
 
 <span class="sd">        .. important::</span>
@@ -733,7 +731,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_track_coefs</span> <span class="o">=</span> <span class="p">(</span><span class="n">lhs</span><span class="o">.</span><span class="n">inverse</span><span class="p">()</span> <span class="o">@</span> <span class="n">rhs</span><span class="p">[:,</span> <span class="p">:,</span> <span class="kc">None</span><span class="p">])</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_compute_xyz_in</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muon,xyz) tensor the positions of the muons at the z-level of the top of the passive volume</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -742,7 +740,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_track_start_in</span> <span class="o">+</span> <span class="p">((</span><span class="n">dz</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_track_in</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:</span><span class="mi">3</span><span class="p">])</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_track_in</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_compute_xyz_out</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muon,xyz) tensor the positions of the muons at the z-level of the bottom of the passive volume</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -751,7 +749,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_track_start_out</span> <span class="o">-</span> <span class="p">((</span><span class="n">dz</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_track_out</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">:</span><span class="mi">3</span><span class="p">])</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_track_out</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_compute_out_var_unc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the uncertainty on variable computed from the recorded hits due to the uncertainties on the hits, via gradient-based error propagation.</span>
 <span class="sd">        This computation uses the triangle of the error matrix and does not assume zero-valued off-diagonal elements.</span>
 <span class="sd">        .. warning::</span>
@@ -777,7 +775,7 @@
         <span class="k">return</span> <span class="n">unc_2</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sqrt</span><span class="p">()</span>  <span class="c1"># (mu,var)</span>
 
     <span class="k">def</span> <span class="nf">_set_dtheta_dphi_scatter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Simultaneously sets dtheta and dphi scattering variables under the assumption of small angular scatterings.</span>
 <span class="sd">        An assumption is necessary here, since there is a loss of information in the when the muons undergo scattering in theta and phi:</span>
 <span class="sd">        since theta is [0,pi] a negative scattering in theta will always results in a positive theta, but phi can become phi+pi.</span>
@@ -793,7 +791,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">hits</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            Dictionary of hits, as returned by :meth:`~tomopt.muon.muon_batch.MuonBatch.get_hits()`</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -802,7 +800,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">reco_hits</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,hits,xyz) tensor of recorded hits</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -811,7 +809,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">gen_hits</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,hits,xyz) tensor of true hits</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -820,7 +818,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">n_hits_above</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            Number of hits per muon in the &quot;above&quot; detectors</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -829,7 +827,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">n_hits_below</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            Number of hits per muon in the &quot;below&quot; detectors</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -838,7 +836,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">above_gen_hits</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,hits,xyz) tensor of true hits in the &quot;above&quot; detectors</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -850,7 +848,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">below_gen_hits</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,hits,xyz) tensor of true hits in the &quot;below&quot; detectors</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -862,7 +860,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">above_hits</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,hits,xyz) tensor of recorded hits in the &quot;above&quot; detectors</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -874,7 +872,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">below_hits</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,hits,xyz) tensor of recorded hits in the &quot;below&quot; detectors</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -886,7 +884,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">hit_uncs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,hits,xyz) tensor of uncertainties on hits</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -895,7 +893,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">hit_effs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,hits,eff) tensor of hit efficiencies</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -904,7 +902,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">above_hit_uncs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,hits,xyz) tensor of uncertainties on hits in the &quot;above&quot; detectors</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -916,7 +914,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">below_hit_uncs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,hits,xyz) tensor of uncertainties on hits in the &quot;below&quot; detectors</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -928,7 +926,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">above_hit_effs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,hits,effs) tensor of hit efficiencies in the &quot;above&quot; detectors</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -940,7 +938,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">below_hit_effs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,hits,eff) tensor of hit efficiencies in the &quot;below&quot; detectors</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -952,7 +950,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">track_in</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,xyz) incoming xyz vector</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -961,7 +959,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">track_start_in</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,xyz) initial point of incoming xyz vector</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -970,7 +968,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">track_out</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,xyz) outgoing xyz vector</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -979,7 +977,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">track_start_out</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,xyz) initial point of outgoing xyz vector</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -988,7 +986,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">poca_xyz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,xyz) xyz location of PoCA</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1001,7 +999,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">poca_xyz_unc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,xyz) uncertainty on poca_xyz</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1012,7 +1010,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dxy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,xy) distances in x &amp; y from PoCA to incoming|outgoing muons</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1024,7 +1022,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dxy_unc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,xy) uncertainty on dxy</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1035,7 +1033,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">theta_in</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,1) theta of incoming muons</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1047,7 +1045,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">theta_in_unc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,1) uncertainty on theta_in</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1058,7 +1056,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">theta_out</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,1) theta of outgoing muons</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1070,7 +1068,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">theta_out_unc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,1) uncertainty on theta_out</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1081,7 +1079,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">phi_in</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,1) phi of incoming muons</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1093,7 +1091,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">phi_in_unc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,1) uncertainty on phi_in</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1104,7 +1102,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">phi_out</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,1) phi of outgoing muons</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1116,7 +1114,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">phi_out_unc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,1) uncertainty on phi_out</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1127,7 +1125,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dtheta</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,1) delta theta between incoming &amp; outgoing muons</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1138,7 +1136,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dtheta_unc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,1) uncertainty on dtheta</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1149,7 +1147,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dphi</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,1) delta phi between incoming &amp; outgoing muons</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1160,7 +1158,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dphi_unc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,1) uncertainty on dphi</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1171,7 +1169,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">total_scatter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,1) theta_msc; the total amount of angular scattering</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1183,7 +1181,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">total_scatter_unc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,1) uncertainty on total_scatter</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1194,7 +1192,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">theta_msc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,1) theta_msc; the total amount of angular scattering</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1203,7 +1201,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">theta_msc_unc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,1) uncertainty on total_scatter</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1211,7 +1209,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">theta_xy_in</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,xy) decomposed theta and phi of incoming muons in the zx and zy planes</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1223,7 +1221,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">theta_xy_in_unc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,xy) uncertainty on theta_xy_in</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1234,7 +1232,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">theta_xy_out</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,xy) decomposed theta and phi of outgoing muons in the zx and zy planes</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1246,7 +1244,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">theta_xy_out_unc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,xy) uncertainty on theta_xy_out</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1257,7 +1255,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dtheta_xy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,xy) delta theta_xy between incoming &amp; outgoing muons in the zx and zy planes</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1269,7 +1267,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">dtheta_xy_unc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,xy) uncertainty on dtheta_xy</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1280,7 +1278,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">xyz_in</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,xyz) inferred xy position of muon at the z-level of the top of the passive volume</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1292,7 +1290,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">xyz_in_unc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,xyz) uncertainty on xyz_in</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1303,7 +1301,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">xyz_out</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,xyz) inferred xy position of muon at the z-level of the bottom of the passive volume</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1315,7 +1313,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">xyz_out_unc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            (muons,xyz) uncertainty on xyz_out</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1326,7 +1324,7 @@
 
 
 <div class="viewcode-block" id="GenScatterBatch"><a class="viewcode-back" href="../../../tomopt.inference.html#tomopt.inference.scattering.GenScatterBatch">[docs]</a><span class="k">class</span> <span class="nc">GenScatterBatch</span><span class="p">(</span><span class="n">ScatterBatch</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Class for computing scattering information from the true hits via incoming/outgoing trajectory fitting.</span>
 
 <span class="sd">    .. warning::</span>
@@ -1364,7 +1362,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">_compute_tracks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes tracks from true muon positions.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -1416,9 +1414,6 @@
      
        <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
          <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-         <script src="../../../_static/jquery.js"></script>
-         <script src="../../../_static/underscore.js"></script>
-         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
          <script src="../../../_static/doctools.js"></script>
          <script src="../../../_static/sphinx_highlight.js"></script>
      

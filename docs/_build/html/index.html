@@ -15,8 +15,6 @@
 
   
   
-    <link rel="shortcut icon" href="_static/tomopt_logo.png"/>
-  
   
   
 
@@ -155,7 +153,7 @@
             
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation.html#testing">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#examples">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html#external-repos">External repos</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html#authors">Authors</a></li>
 </ul>
@@ -246,12 +244,31 @@
               
   <section id="tomopt-differential-muon-tomography-optimisation">
 <h1>TomOpt: Differential Muon Tomography Optimisation<a class="headerlink" href="#tomopt-differential-muon-tomography-optimisation" title="Permalink to this heading">¶</a></h1>
+<p>This repo provides a library for the differential optimisation of scattering muon tomography systems. For an overview, please read our first publication <a class="reference external" href="https://arxiv.org/abs/2309.14027">here</a>.</p>
+<p>As a disclaimer, this is a library designed to be extended by users for their specific tasks: e.g. passive volume definition, inference methods, and loss functions. Additionally, optimisation in TomOpt can be unstable, and requires careful tuning by users. This is to say that it is not a polished product for the general public, but rather fellow researchers in the field of optimisation and muon tomography.</p>
+<p>If you are interested in using this library seriously, please contact us;  we would love to here if you have a specific use-case you wish to work on.</p>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
+<p>The TomOpt library is designed to optimise the design of a muon tomography system. The detector system is defined by a set of parameters, which are used to define the geometry of the detectors. The optimisation is performed by minimising a loss function, which is defined by the user. The loss function is evaluated by simulating the muon scattering process through the detector system and passive volumes. The information recorded by the detectors is then passed through an inference system to arrive at a set of task-specific parameters. These are then compared to the ground truth, and the loss is calculated. The gradient of the loss with respect to the detector parameters is then used to update the detector parameters.</p>
+<p>The TomOpt library is designed to be modular, and to allow for the easy addition of new inference systems, loss functions, and passive volume definitions. The library is also designed to be easily extensible to new optimisation algorithms, and to allow for the easy addition of new constraints on the detector parameters.</p>
+<p>TomOpt consists of several submodules:</p>
+<ul class="simple">
+<li><p>benchmarks: and ongoing collection of concrete implementations and task-specific extensions that are used to test the library on real-world problems.</p></li>
+<li><p>inference: provides classes that infer muon-trajectories from detector data, and infer properties of passive volumes from muon-trajectories.</p></li>
+<li><p>muon: provides classes for handling muon batches, and generating muons from literature flux-distributions</p></li>
+<li><p>optimisation: provides classes for handling the optimisation of detector parameters, and an extensive callback system to modify the optimisation process.</p></li>
+<li><p>plotting: various plotting utilities for visualising the detector system, the optimisation process, and results</p></li>
+<li><p>volume: contains classes for defining passive volumes and detector systems</p></li>
+<li><p>core: core objects used by all parts of the code</p></li>
+<li><p>utils: various utilities used throughout the codebase</p></li>
+</ul>
+</section>
 <section id="package-overview">
 <h2>Package overview<a class="headerlink" href="#package-overview" title="Permalink to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation.html#testing">Testing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html#examples">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html#external-repos">External repos</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html#authors">Authors</a></li>
 </ul>
@@ -317,6 +334,7 @@
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
 <li><a class="reference internal" href="#">TomOpt: Differential Muon Tomography Optimisation</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
 <li><a class="reference internal" href="#package-overview">Package overview</a></li>
 <li><a class="reference internal" href="#package-documentation">Package documentation</a></li>
 </ul>
@@ -338,9 +356,6 @@
      
        <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
          <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-         <script src="_static/jquery.js"></script>
-         <script src="_static/underscore.js"></script>
-         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
          <script src="_static/doctools.js"></script>
          <script src="_static/sphinx_highlight.js"></script>
      

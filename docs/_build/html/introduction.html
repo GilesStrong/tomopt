@@ -10,7 +10,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>tomopt.optimisation package &mdash; TomOpt  documentation</title>
+  <title>Overview &mdash; TomOpt  documentation</title>
   
 
   
@@ -31,9 +31,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="tomopt.optimisation.callbacks package" href="tomopt.optimisation.callbacks.html" />
-    <link rel="prev" title="tomopt.muon package" href="tomopt.muon.html" /> 
+    <link rel="search" title="Search" href="search.html" /> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -154,16 +152,13 @@
             
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation.html#testing">Testing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation.html#external-repos">External repos</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation.html#authors">Authors</a></li>
 </ul>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="tomopt.html">tomopt package</a></li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tomopt.html">tomopt package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tomopt.muon.html">tomopt.muon package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tomopt.volume.html">tomopt.volume package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tomopt.inference.html">tomopt.inference package</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">tomopt.optimisation package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tomopt.optimisation.html">tomopt.optimisation package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tomopt.plotting.html">tomopt.plotting package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tomopt.benchmarks.html">tomopt.benchmarks package</a></li>
 </ul>
@@ -206,15 +201,13 @@
       </li>
 
         
-          <li><a href="tomopt.html">tomopt package</a> &gt;</li>
-        
-      <li>tomopt.optimisation package</li>
+      <li>Overview</li>
     
     
       <li class="pytorch-breadcrumbs-aside">
         
             
-            <a href="_sources/tomopt.optimisation.rst.txt" rel="nofollow"><img src="_static/images/view-page-source-icon.svg"></a>
+            <a href="_sources/introduction.md.txt" rel="nofollow"><img src="_static/images/view-page-source-icon.svg"></a>
           
         
       </li>
@@ -240,19 +233,24 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
               
-  <section id="tomopt-optimisation-package">
-<h1>tomopt.optimisation package<a class="headerlink" href="#tomopt-optimisation-package" title="Permalink to this heading">¶</a></h1>
-<section id="subpackages">
-<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this heading">¶</a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="tomopt.optimisation.callbacks.html">tomopt.optimisation.callbacks package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tomopt.optimisation.data.html">tomopt.optimisation.data package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tomopt.optimisation.loss.html">tomopt.optimisation.loss package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tomopt.optimisation.wrapper.html">tomopt.optimisation.wrapper package</a></li>
+  <p>This repo provides a library for the differential optimisation of scattering muon tomography systems. For an overview, please read our first publication <a class="reference external" href="https://arxiv.org/abs/2309.14027">here</a>.</p>
+<p>As a disclaimer, this is a library designed to be extended by users for their specific tasks: e.g. passive volume definition, inference methods, and loss functions. Additionally, optimisation in TomOpt can be unstable, and requires careful tuning by users. This is to say that it is not a polished product for the general public, but rather fellow researchers in the field of optimisation and muon tomography.</p>
+<p>If you are interested in using this library seriously, please contact us;  we would love to here if you have a specific use-case you wish to work on.</p>
+<section id="overview">
+<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h1>
+<p>The TomOpt library is designed to optimise the design of a muon tomography system. The detector system is defined by a set of parameters, which are used to define the geometry of the detectors. The optimisation is performed by minimising a loss function, which is defined by the user. The loss function is evaluated by simulating the muon scattering process through the detector system and passive volumes. The information recorded by the detectors is then passed through an inference system to arrive at a set of task-specific parameters. These are then compared to the ground truth, and the loss is calculated. The gradient of the loss with respect to the detector parameters is then used to update the detector parameters.</p>
+<p>The TomOpt library is designed to be modular, and to allow for the easy addition of new inference systems, loss functions, and passive volume definitions. The library is also designed to be easily extensible to new optimisation algorithms, and to allow for the easy addition of new constraints on the detector parameters.</p>
+<p>TomOpt consists of several submodules:</p>
+<ul class="simple">
+<li><p>benchmarks: and ongoing collection of concrete implementations and task-specific extensions that are used to test the library on real-world problems.</p></li>
+<li><p>inference: provides classes that infer muon-trajectories from detector data, and infer properties of passive volumes from muon-trajectories.</p></li>
+<li><p>muon: provides classes for handling muon batches, and generating muons from literature flux-distributions</p></li>
+<li><p>optimisation: provides classes for handling the optimisation of detector parameters, and an extensive callback system to modify the optimisation process.</p></li>
+<li><p>plotting: various plotting utilities for visualising the detector system, the optimisation process, and results</p></li>
+<li><p>volume: contains classes for defining passive volumes and detector systems</p></li>
+<li><p>core: core objects used by all parts of the code</p></li>
+<li><p>utils: various utilities used throughout the codebase</p></li>
 </ul>
-</div>
-</section>
 </section>
 
 
@@ -260,15 +258,6 @@
              
             </div>
             <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="tomopt.optimisation.callbacks.html" class="btn btn-neutral float-right" title="tomopt.optimisation.callbacks package" accesskey="n" rel="next">Next <img src="_static/images/chevron-right-orange.svg" class="next-page"></a>
-      
-      
-        <a href="tomopt.muon.html" class="btn btn-neutral" title="tomopt.muon package" accesskey="p" rel="prev"><img src="_static/images/chevron-right-orange.svg" class="previous-page"> Previous</a>
-      
-    </div>
   
 
   <hr>
@@ -294,10 +283,7 @@
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">tomopt.optimisation package</a><ul>
-<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#">Overview</a></li>
 </ul>
 
             </div>

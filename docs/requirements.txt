@@ -1,6 +1,0 @@
-sphinx
--e git+https://github.com/GilesStrong/tomopt_sphinx_theme#egg=tomopt_sphinx_theme
-sphinx_rtd_theme
-sphinx_autodoc_typehints
-sphinx_autodoc_annotation
-m2r2

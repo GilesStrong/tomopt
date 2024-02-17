@@ -10,12 +10,14 @@ readme = "README.md"
 homepage = "https://mode-collaboration.github.io/"
 classifiers = [
         "Programming Language :: Python :: 3.10",
-        "Operating System :: POSIX :: Linux",
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
         "Natural Language :: English",
         "Development Status :: 3 - Alpha",
 ]
+# documentation = "https://python-poetry.org/docs/"
+keywords = ["deep learning", "differential programming", "physics", "science", "statistics", "tomography", "detector"]
+include = ["py.typed", "volume/scatter_models/*"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -31,6 +33,7 @@ prettytable = "^3.9.0"
 imageio = "2.16.2"
 h5py = "^3.10.0"
 
+
 [tool.poetry.group.dev.dependencies]
 notebook = "<7.0.0"
 jupyter = "^1.0.0"
@@ -45,6 +48,13 @@ isort = "^5.13.2"
 black = "^24.2.0"
 pytest = "<8.0.0"
 
+[tool.poetry.group.docs.dependencies]
+sphinx = "<7.0.0"
+sphinx-rtd-theme = "<2.0.0"
+sphinx-autodoc-typehints = "<2.0.0"
+sphinx-autodoc-annotation = "^1.0.post1"
+m2r2 = "^0.3.3.post2"
+tomopt_sphinx_theme = { git = "https://github.com/GilesStrong/tomopt_sphinx_theme.git" }
 
 [tool.black]
 line-length = 160

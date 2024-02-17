@@ -14,8 +14,6 @@
 
   
   
-    <link rel="shortcut icon" href="../../../../_static/tomopt_logo.png"/>
-  
   
   
 
@@ -254,7 +252,7 @@
 
 
 <div class="viewcode-block" id="AbsDetectorLoss"><a class="viewcode-back" href="../../../../tomopt.optimisation.loss.html#tomopt.optimisation.loss.loss.AbsDetectorLoss">[docs]</a><span class="k">class</span> <span class="nc">AbsDetectorLoss</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Abstract base class from which all loss functions should inherit.</span>
 
 <span class="sd">    The loss consists of:</span>
@@ -302,7 +300,7 @@
 
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">_get_inference_loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pred</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">volume</span><span class="p">:</span> <span class="n">Volume</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Inheriting classes must override this to compute the inference-error component of the loss.</span>
 <span class="sd">        The target for the predictions should be extracted from the volume; whether this be the voxelwise X0s or the value of the `target` attribute.</span>
 
@@ -317,7 +315,7 @@
         <span class="k">pass</span>
 
 <div class="viewcode-block" id="AbsDetectorLoss.forward"><a class="viewcode-back" href="../../../../tomopt.optimisation.loss.html#tomopt.optimisation.loss.loss.AbsDetectorLoss.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pred</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">volume</span><span class="p">:</span> <span class="n">Volume</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the loss for the predictions of a single volume using the current state of the detector</span>
 
 <span class="sd">        Arguments:</span>
@@ -334,7 +332,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_losses</span><span class="p">[</span><span class="s2">&quot;error&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">sub_losses</span><span class="p">[</span><span class="s2">&quot;cost&quot;</span><span class="p">]</span></div>
 
     <span class="k">def</span> <span class="nf">_get_budget_coef</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cost</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the budget loss term from the current cost of the detectors.</span>
 <span class="sd">        Switch-on near target budget, plus linear/smooth increase above budget</span>
 
@@ -359,7 +357,7 @@
             <span class="k">return</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">budget_smoothing</span> <span class="o">*</span> <span class="n">d</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_budget</span><span class="p">))</span> <span class="o">+</span> <span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_budget</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_compute_cost_coef</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inference</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        If the cost coefficient is None, will set it equal the current value of the inference-error loss</span>
 
 <span class="sd">        Arguments:</span>
@@ -370,7 +368,7 @@
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Automatically setting cost coefficient to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">cost_coef</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_get_cost_loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume</span><span class="p">:</span> <span class="n">Volume</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the budget term of the loss, dependent on the current cost of the detectors</span>
 
 <span class="sd">        Arguments:</span>
@@ -392,7 +390,7 @@
 
 
 <div class="viewcode-block" id="VoxelX0Loss"><a class="viewcode-back" href="../../../../tomopt.optimisation.loss.html#tomopt.optimisation.loss.loss.VoxelX0Loss">[docs]</a><span class="k">class</span> <span class="nc">VoxelX0Loss</span><span class="p">(</span><span class="n">AbsDetectorLoss</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Loss function designed for tasks where the voxelwise X0 value must be predicted as floats.</span>
 <span class="sd">    Inference-error component of the loss is the squared-error on X0 predictions, averaged over all voxels (MSE)</span>
 
@@ -418,7 +416,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">_get_inference_loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pred</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">volume</span><span class="p">:</span> <span class="n">Volume</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the MSE of the predictions against the true voxelwise X0s.</span>
 
 <span class="sd">        Arguments:</span>
@@ -434,7 +432,7 @@
 
 
 <div class="viewcode-block" id="AbsMaterialClassLoss"><a class="viewcode-back" href="../../../../tomopt.optimisation.loss.html#tomopt.optimisation.loss.loss.AbsMaterialClassLoss">[docs]</a><span class="k">class</span> <span class="nc">AbsMaterialClassLoss</span><span class="p">(</span><span class="n">AbsDetectorLoss</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Abstract base class for cases in which the task is to classify materials in the passive volumes, or some other aspect of the volumes.</span>
 <span class="sd">    The targets returned by the volume are expected to be float X0s, and are converted to class IDs using an X0 to ID map.</span>
 
@@ -480,7 +478,7 @@
 
 
 <div class="viewcode-block" id="VoxelClassLoss"><a class="viewcode-back" href="../../../../tomopt.optimisation.loss.html#tomopt.optimisation.loss.loss.VoxelClassLoss">[docs]</a><span class="k">class</span> <span class="nc">VoxelClassLoss</span><span class="p">(</span><span class="n">AbsMaterialClassLoss</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Loss function designed for tasks where the voxelwise material class ID must be classified.</span>
 <span class="sd">    Inference-error component of the loss is the negative log-likelihood on log class-probabilities, averaged over all voxels (NLL)</span>
 
@@ -510,7 +508,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">_get_inference_loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pred</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">volume</span><span class="p">:</span> <span class="n">Volume</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the NLL of the log-probabilities against the true voxelwise classes.</span>
 
 <span class="sd">        Arguments:</span>
@@ -529,7 +527,7 @@
 
 
 <div class="viewcode-block" id="VolumeClassLoss"><a class="viewcode-back" href="../../../../tomopt.optimisation.loss.html#tomopt.optimisation.loss.loss.VolumeClassLoss">[docs]</a><span class="k">class</span> <span class="nc">VolumeClassLoss</span><span class="p">(</span><span class="n">AbsMaterialClassLoss</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Loss function designed for tasks where some overall target of the passive volume must be classified, and the target of the volume is encoded as a float X0.</span>
 <span class="sd">    E.g. what is the material of a large block in the volume.</span>
 
@@ -562,7 +560,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">_get_inference_loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pred</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">volume</span><span class="p">:</span> <span class="n">Volume</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the NLL of the log-probabilities against the true voxelwise classes.</span>
 
 <span class="sd">        Arguments:</span>
@@ -580,7 +578,7 @@
 
 
 <div class="viewcode-block" id="VolumeIntClassLoss"><a class="viewcode-back" href="../../../../tomopt.optimisation.loss.html#tomopt.optimisation.loss.loss.VolumeIntClassLoss">[docs]</a><span class="k">class</span> <span class="nc">VolumeIntClassLoss</span><span class="p">(</span><span class="n">AbsDetectorLoss</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Loss function designed for tasks where some overall integer target of the passive volume must be classified,</span>
 <span class="sd">    and the values of this target are quantifiably comparable (i.e. the integers are treatable as numbers not just categorical codes).</span>
 <span class="sd">    E.g. Predicting how many layers of the passive volume are filled with a given material.</span>
@@ -622,7 +620,7 @@
         <span class="n">steep_budget</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">debug</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Arguments:</span>
 <span class="sd">            targ2int: function to convert volume targets to integers to classify</span>
 <span class="sd">            pred_int_start: the integer that the zeroth probability in predictions corresponds to</span>
@@ -640,7 +638,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">targ2int</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pred_int_start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_mse</span> <span class="o">=</span> <span class="n">targ2int</span><span class="p">,</span> <span class="n">pred_int_start</span><span class="p">,</span> <span class="n">use_mse</span>
 
     <span class="k">def</span> <span class="nf">_get_inference_loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pred</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">volume</span><span class="p">:</span> <span class="n">Volume</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the ICL of the integer probabilities against the true target integer.</span>
 
 <span class="sd">        Arguments:</span>
@@ -656,12 +654,12 @@
 
 
 <div class="viewcode-block" id="VolumeMSELoss"><a class="viewcode-back" href="../../../../tomopt.optimisation.loss.html#tomopt.optimisation.loss.loss.VolumeMSELoss">[docs]</a><span class="k">class</span> <span class="nc">VolumeMSELoss</span><span class="p">(</span><span class="n">AbsDetectorLoss</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    TODO: Add unit tests and docs</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">_get_inference_loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pred</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">volume</span><span class="p">:</span> <span class="n">Volume</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the MSE of the preds and targets.</span>
 
 <span class="sd">        Arguments:</span>
@@ -719,9 +717,6 @@
      
        <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
          <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-         <script src="../../../../_static/jquery.js"></script>
-         <script src="../../../../_static/underscore.js"></script>
-         <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
          <script src="../../../../_static/doctools.js"></script>
          <script src="../../../../_static/sphinx_highlight.js"></script>
      
