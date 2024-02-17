@@ -14,8 +14,6 @@
 
   
   
-    <link rel="shortcut icon" href="../../../../_static/tomopt_logo.png"/>
-  
   
   
 
@@ -253,13 +251,13 @@
 
 
 <div class="viewcode-block" id="PredHandler"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.pred_callbacks.PredHandler">[docs]</a><span class="k">class</span> <span class="nc">PredHandler</span><span class="p">(</span><span class="n">Callback</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Default callback for predictions. Collects predictions and true voxelwise X0 pairs for a range of volumes and returns them as list of tuples of numpy arrays</span>
 <span class="sd">    when :meth:`~tomopt.optimisation.callbacks.pred_callbacks.PredHandler.get_preds` is called.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="PredHandler.on_pred_begin"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.pred_callbacks.PredHandler.on_pred_begin">[docs]</a>    <span class="k">def</span> <span class="nf">on_pred_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Prepares to record predictions</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -267,7 +265,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">preds</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span></div>
 
 <div class="viewcode-block" id="PredHandler.get_preds"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.pred_callbacks.PredHandler.get_preds">[docs]</a>    <span class="k">def</span> <span class="nf">get_preds</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            List of predicted and target pairs</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -275,7 +273,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">preds</span></div>
 
 <div class="viewcode-block" id="PredHandler.on_x0_pred_end"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.pred_callbacks.PredHandler.on_x0_pred_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_x0_pred_end</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Records predictions and true volume layout for the latest volume</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -284,7 +282,7 @@
 
 
 <div class="viewcode-block" id="VolumeTargetPredHandler"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.pred_callbacks.VolumeTargetPredHandler">[docs]</a><span class="k">class</span> <span class="nc">VolumeTargetPredHandler</span><span class="p">(</span><span class="n">PredHandler</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Returns the volume target as the target value, rather than the voxel-wise X0s.</span>
 <span class="sd">    If an x02id lookup is provided, it transforms the target from an X0 value to a material class ID.</span>
 
@@ -296,7 +294,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">x02id</span> <span class="o">=</span> <span class="n">x02id</span>
 
 <div class="viewcode-block" id="VolumeTargetPredHandler.on_x0_pred_end"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.pred_callbacks.VolumeTargetPredHandler.on_x0_pred_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_x0_pred_end</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Records predictions and volume target for the latest volume</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -308,7 +306,7 @@
 
 
 <div class="viewcode-block" id="Save2HDF5PredHandler"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.pred_callbacks.Save2HDF5PredHandler">[docs]</a><span class="k">class</span> <span class="nc">Save2HDF5PredHandler</span><span class="p">(</span><span class="n">VolumeTargetPredHandler</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Saves predictions and targets to an HDF5 file, rather than caching and returning them.</span>
 <span class="sd">    Samples are written incrementally. Can optionally save volume targets rather than voxel-wise X0 targets</span>
 <span class="sd">    If an x02id lookup is provided, it transforms the target from an X0 value to a material class ID.</span>
@@ -331,7 +329,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_open_file</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            Save file to write data to</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -341,7 +339,7 @@
         <span class="k">return</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_write_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pred</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">targ</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Writes a new prediction-target pair to the save file</span>
 
 <span class="sd">        Arguments:</span>
@@ -368,7 +366,7 @@
                 <span class="p">)</span>
 
 <div class="viewcode-block" id="Save2HDF5PredHandler.on_x0_pred_end"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.pred_callbacks.Save2HDF5PredHandler.on_x0_pred_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_x0_pred_end</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Records predictions and true volume layout or target for the latest volume</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -426,9 +424,6 @@
      
        <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
          <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-         <script src="../../../../_static/jquery.js"></script>
-         <script src="../../../../_static/underscore.js"></script>
-         <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
          <script src="../../../../_static/doctools.js"></script>
          <script src="../../../../_static/sphinx_highlight.js"></script>
      

@@ -14,8 +14,6 @@
 
   
   
-    <link rel="shortcut icon" href="../../../_static/tomopt_logo.png"/>
-  
   
   
 
@@ -255,7 +253,7 @@
 
 
 <div class="viewcode-block" id="DetectorPanel"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.panel.DetectorPanel">[docs]</a><span class="k">class</span> <span class="nc">DetectorPanel</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Provides an infinitely thin, rectangular panel in the xy plane, centred at a learnable xyz position (metres, in absolute position in the volume frame),</span>
 <span class="sd">    with a learnable width in x and y (`xy_span`).</span>
 <span class="sd">    Whilst this class can be used manually, it is designed to be used by the :class:`~tomopt.volume.layer.PanelDetectorLayer` class.</span>
@@ -309,7 +307,7 @@
         <span class="n">realistic_validation</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">DEVICE</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Panel initialiser with user-supplied initial positions and widths.</span>
 <span class="sd">        The resolution and efficiency remain fixed at the specified values.</span>
 <span class="sd">        If intending to run in &quot;fixed-budget&quot; mode, then a budget can be specified here,</span>
@@ -336,7 +334,7 @@
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="si">}</span><span class="s2"> located at xy=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">xy</span><span class="o">.</span><span class="n">data</span><span class="si">}</span><span class="s2">, z=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">z</span><span class="o">.</span><span class="n">data</span><span class="si">}</span><span class="s2">, and xy span </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">get_scaled_xy_span</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="si">}</span><span class="s2"> with budget scale </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">budget_scale</span><span class="o">.</span><span class="n">data</span><span class="si">}</span><span class="s2">&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="DetectorPanel.get_scaled_xy_span"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.panel.DetectorPanel.get_scaled_xy_span">[docs]</a>    <span class="k">def</span> <span class="nf">get_scaled_xy_span</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the effective size of the panel by rescaling based on the xy-span, cost per m^2, and budget.</span>
 
 <span class="sd">        Returns:</span>
@@ -346,7 +344,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">xy_span</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">budget_scale</span></div>
 
 <div class="viewcode-block" id="DetectorPanel.get_xy_mask"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.panel.DetectorPanel.get_xy_mask">[docs]</a>    <span class="k">def</span> <span class="nf">get_xy_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xy</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes which of the xy points lie inside the physical panel.</span>
 
 <span class="sd">        Arguments:</span>
@@ -362,7 +360,7 @@
         <span class="k">return</span> <span class="p">(</span><span class="n">xy</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">xy_low</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">xy</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">xy_high</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">xy</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">xy_low</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">xy</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">xy_high</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div>
 
 <div class="viewcode-block" id="DetectorPanel.get_gauss"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.panel.DetectorPanel.get_gauss">[docs]</a>    <span class="k">def</span> <span class="nf">get_gauss</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">Normal</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            A Gaussian distribution, with 2 uncorrelated components corresponding to x and y, centred at the xy position of the panel, and sigma = panel span/4</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -370,10 +368,10 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">Normal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xy</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_scaled_xy_span</span><span class="p">()</span> <span class="o">/</span> <span class="mi">4</span><span class="p">)</span>  <span class="c1"># We say that the panel widths corresponds to 2-sigma of the Gaussian</span>
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid parameters for Gaussian: loc=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">xy</span><span class="si">}</span><span class="s2">, scale=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">get_scaled_xy_span</span><span class="p">()</span> <span class="o">/</span> <span class="mi">4</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid parameters for Gaussian: loc=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">xy</span><span class="si">}</span><span class="s2">, scale=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">get_scaled_xy_span</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">4</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DetectorPanel.get_resolution"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.panel.DetectorPanel.get_resolution">[docs]</a>    <span class="k">def</span> <span class="nf">get_resolution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xy</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the xy resolutions of panel at the supplied list of xy points.</span>
 <span class="sd">        If running in evaluation mode with `realistic_validation`,</span>
 <span class="sd">        then these will be the full resolution of the panel for points inside the panel (indicated by the mask), and zero outside.</span>
@@ -403,7 +401,7 @@
         <span class="k">return</span> <span class="n">res</span></div>
 
 <div class="viewcode-block" id="DetectorPanel.get_efficiency"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.panel.DetectorPanel.get_efficiency">[docs]</a>    <span class="k">def</span> <span class="nf">get_efficiency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xy</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the efficiency of panel at the supplied list of xy points.</span>
 <span class="sd">        If running in evaluation mode with `realistic_validation`,</span>
 <span class="sd">        then these will be the full efficiency of the panel for points inside the panel (indicated by the mask), and zero outside.</span>
@@ -433,7 +431,7 @@
         <span class="k">return</span> <span class="n">eff</span></div>
 
 <div class="viewcode-block" id="DetectorPanel.assign_budget"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.panel.DetectorPanel.assign_budget">[docs]</a>    <span class="k">def</span> <span class="nf">assign_budget</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">budget</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Sets the budget for the panel. This is then used to set a multiplicative coefficient, `budget_scale`, based on the `m2_cost`</span>
 <span class="sd">        which rescales the `xy_span` such that the area of the resulting panel matches the assigned budget.</span>
 
@@ -445,7 +443,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">budget_scale</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">budget</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m2_cost</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">xy_span</span><span class="o">.</span><span class="n">prod</span><span class="p">()))</span></div>
 
 <div class="viewcode-block" id="DetectorPanel.get_hits"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.panel.DetectorPanel.get_hits">[docs]</a>    <span class="k">def</span> <span class="nf">get_hits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu</span><span class="p">:</span> <span class="n">MuonBatch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tensor</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The main interaction method with the panel: returns hits for the supplied muons.</span>
 <span class="sd">        Hits consist of:</span>
 <span class="sd">            reco_xy: (muons,xy) tensor of reconstructed xy positions of muons included simulated resolution</span>
@@ -484,7 +482,7 @@
         <span class="k">return</span> <span class="n">hits</span></div>
 
 <div class="viewcode-block" id="DetectorPanel.get_cost"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.panel.DetectorPanel.get_cost">[docs]</a>    <span class="k">def</span> <span class="nf">get_cost</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns:</span>
 <span class="sd">            current cost of the panel according to its area and m2_cost</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -492,7 +490,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">m2_cost</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_scaled_xy_span</span><span class="p">()</span><span class="o">.</span><span class="n">prod</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="DetectorPanel.clamp_params"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.panel.DetectorPanel.clamp_params">[docs]</a>    <span class="k">def</span> <span class="nf">clamp_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xyz_low</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">xyz_high</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Ensures that the panel is centred within the supplied xyz range,</span>
 <span class="sd">        and that the span of the panel is between xyz_high/20 and xyz_high*10.</span>
 <span class="sd">        A small random number &lt; 1e-3 is added/subtracted to the min/max z position of the panel, to ensure it doesn&#39;t overlap with other panels.</span>
@@ -523,7 +521,7 @@
 
 
 <div class="viewcode-block" id="SigmoidDetectorPanel"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.panel.SigmoidDetectorPanel">[docs]</a><span class="k">class</span> <span class="nc">SigmoidDetectorPanel</span><span class="p">(</span><span class="n">DetectorPanel</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Provides an infinitely thin, rectangular panel in the xy plane, centred at a learnable xyz position (metres, in absolute position in the volume frame),</span>
 <span class="sd">    with a learnable width in x and y (`xy_span`).</span>
 <span class="sd">    Whilst this class can be used manually, it is designed to be used by the :class:`~tomopt.volume.layer.PanelDetectorLayer` class.</span>
@@ -598,7 +596,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">smooth</span> <span class="o">=</span> <span class="n">smooth</span>  <span class="c1"># type: ignore</span>
 
 <div class="viewcode-block" id="SigmoidDetectorPanel.sig_model"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.panel.SigmoidDetectorPanel.sig_model">[docs]</a>    <span class="k">def</span> <span class="nf">sig_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xy</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Models fractional resolution and efficiency from a sigmoid-based model to provide a smooth and differentiable model of a physical detector-panel.</span>
 
 <span class="sd">        Arguments:</span>
@@ -614,7 +612,7 @@
         <span class="k">return</span> <span class="n">coef</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">smooth</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="SigmoidDetectorPanel.get_resolution"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.panel.SigmoidDetectorPanel.get_resolution">[docs]</a>    <span class="k">def</span> <span class="nf">get_resolution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xy</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the xy resolutions of panel at the supplied list of xy points.</span>
 <span class="sd">        If running in evaluation mode with `realistic_validation`,</span>
 <span class="sd">        then these will be the full resolution of the panel for points inside the panel (indicated by the mask), and zero outside.</span>
@@ -643,7 +641,7 @@
         <span class="k">return</span> <span class="n">res</span></div>
 
 <div class="viewcode-block" id="SigmoidDetectorPanel.get_efficiency"><a class="viewcode-back" href="../../../tomopt.volume.html#tomopt.volume.panel.SigmoidDetectorPanel.get_efficiency">[docs]</a>    <span class="k">def</span> <span class="nf">get_efficiency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xy</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the efficiency of panel at the supplied list of xy points.</span>
 <span class="sd">        If running in evaluation mode with `realistic_validation`,</span>
 <span class="sd">        then these will be the full efficiency of the panel for points inside the panel (indicated by the mask), and zero outside.</span>
@@ -730,9 +728,6 @@
      
        <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
          <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-         <script src="../../../_static/jquery.js"></script>
-         <script src="../../../_static/underscore.js"></script>
-         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
          <script src="../../../_static/doctools.js"></script>
          <script src="../../../_static/sphinx_highlight.js"></script>
      

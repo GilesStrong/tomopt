@@ -14,8 +14,6 @@
 
   
   
-    <link rel="shortcut icon" href="../../../../_static/tomopt_logo.png"/>
-  
   
   
 
@@ -253,7 +251,7 @@
 
 
 <div class="viewcode-block" id="ScatterRecord"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.diagnostic_callbacks.ScatterRecord">[docs]</a><span class="k">class</span> <span class="nc">ScatterRecord</span><span class="p">(</span><span class="n">Callback</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Records the PoCAs of the muons which are located inside the passive volume.</span>
 <span class="sd">    Once recorded, the PoCAs can be retrieved via the :meth:`~tomopt.optimisation.callbacks.diagnostic_callbacks.ScatterRecord.get_record` method.</span>
 <span class="sd">    :meth:`~tomopt.plotting.diagnostics.plot_scatter_density` may be used to plot the scatter record.</span>
@@ -268,7 +266,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_reset</span><span class="p">()</span>
 
 <div class="viewcode-block" id="ScatterRecord.on_train_begin"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.diagnostic_callbacks.ScatterRecord.on_train_begin">[docs]</a>    <span class="k">def</span> <span class="nf">on_train_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Prepares to record scatters</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -276,7 +274,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_reset</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="ScatterRecord.on_pred_begin"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.diagnostic_callbacks.ScatterRecord.on_pred_begin">[docs]</a>    <span class="k">def</span> <span class="nf">on_pred_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Prepares to record scatters</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -284,14 +282,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_reset</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="ScatterRecord.on_scatter_end"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.diagnostic_callbacks.ScatterRecord.on_scatter_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_scatter_end</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Saves the PoCAs of the latest muon batch.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wrapper</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">sb</span><span class="o">.</span><span class="n">poca_xyz</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">wrapper</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">sb</span><span class="o">.</span><span class="n">get_scatter_mask</span><span class="p">()]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">clone</span><span class="p">())</span></div>
 
     <span class="k">def</span> <span class="nf">_to_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Converts the saved PoCAs to a Pandas DataFrame</span>
 
 <span class="sd">        Arguments:</span>
@@ -311,7 +309,7 @@
         <span class="k">return</span> <span class="n">df</span>
 
 <div class="viewcode-block" id="ScatterRecord.get_record"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.diagnostic_callbacks.ScatterRecord.get_record">[docs]</a>    <span class="k">def</span> <span class="nf">get_record</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">as_df</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Access the recorded PoCAs.</span>
 
 <span class="sd">        Arguments:</span>
@@ -327,7 +325,7 @@
             <span class="k">return</span> <span class="n">record</span></div>
 
     <span class="k">def</span> <span class="nf">_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Prepares to record scatters</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -335,7 +333,7 @@
 
 
 <div class="viewcode-block" id="HitRecord"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.diagnostic_callbacks.HitRecord">[docs]</a><span class="k">class</span> <span class="nc">HitRecord</span><span class="p">(</span><span class="n">ScatterRecord</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Records the hits of the muons.</span>
 <span class="sd">    Once recorded, the hits can be retrieved via the :meth:`~tomopt.optimisation.callbacks.diagnostic_callbacks.HitRecord.get_record` method.</span>
 <span class="sd">    :meth:`~tomopt.plotting.diagnostics.plot_hit_density` may be used to plot the hit record.</span>
@@ -347,7 +345,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="HitRecord.on_scatter_end"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.diagnostic_callbacks.HitRecord.on_scatter_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_scatter_end</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Saves the hits of the latest muon batch.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -355,7 +353,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hits</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_to_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Converts the saved hits to a Pandas DataFrame</span>
 
 <span class="sd">        Arguments:</span>
@@ -413,9 +411,6 @@
      
        <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
          <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-         <script src="../../../../_static/jquery.js"></script>
-         <script src="../../../../_static/underscore.js"></script>
-         <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
          <script src="../../../../_static/doctools.js"></script>
          <script src="../../../../_static/sphinx_highlight.js"></script>
      

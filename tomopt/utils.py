@@ -2,8 +2,7 @@ from typing import Dict, List, Optional, Union
 
 import numpy as np
 import torch
-from functorch import vmap
-from torch import Tensor
+from torch import Tensor, vmap
 
 r"""
 Common utility functions

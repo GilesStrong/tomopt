@@ -15,8 +15,6 @@
 
   
   
-    <link rel="shortcut icon" href="_static/tomopt_logo.png"/>
-  
   
   
 
@@ -540,11 +538,6 @@ as the probability of at least two hits above and below the passive volume.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">muon_efficiency</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer.muon_efficiency" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns:
 (muons,1) tensor of the efficiencies of the muons</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py property">
@@ -552,11 +545,6 @@ as the probability of at least two hits above and below the passive volume.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">muon_poca_xyz</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer.muon_poca_xyz" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns:
 (muons,xyz) tensor of PoCA locations</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py property">
@@ -564,11 +552,6 @@ as the probability of at least two hits above and below the passive volume.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">muon_poca_xyz_unc</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer.muon_poca_xyz_unc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns:
 (muons,xyz) tensor of PoCA location uncertainties</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py property">
@@ -576,11 +559,6 @@ as the probability of at least two hits above and below the passive volume.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n_mu</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer.n_mu" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns:
 Total number muons included in the inference</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py property">
@@ -588,22 +566,12 @@ Total number muons included in the inference</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pred_height</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer.pred_height" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns:
 (h) tensor of fill-height prediction</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer.smooth">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">smooth</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tensor</span></em><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.inference.PocaZLadleFurnaceFillLevelInferrer.smooth" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></p>
-</dd>
-</dl>
-</dd></dl>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -615,11 +583,6 @@ Total number muons included in the inference</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tomopt.benchmarks.ladle_furnace.loss.</span></span><span class="sig-name descname"><span class="pre">LadleFurnaceIntClassLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pred_int_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_mse</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_budget</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">budget_smoothing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cost_coef</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steep_budget</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tomopt/benchmarks/ladle_furnace/loss.html#LadleFurnaceIntClassLoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.loss.LadleFurnaceIntClassLoss" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="tomopt.optimisation.loss.html#tomopt.optimisation.loss.loss.VolumeIntClassLoss" title="tomopt.optimisation.loss.loss.VolumeIntClassLoss"><code class="xref py py-class docutils literal notranslate"><span class="pre">VolumeIntClassLoss</span></code></a></p>
 <p>Research tested only: no unit tests</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="tomopt.benchmarks.ladle_furnace.loss.LadleFurnaceIntClassLoss.training">
-<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#tomopt.benchmarks.ladle_furnace.loss.LadleFurnaceIntClassLoss.training" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -828,10 +791,7 @@ Total number muons included in the inference</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-tomopt.benchmarks.ladle_furnace.loss">tomopt.benchmarks.ladle_furnace.loss module</a><ul>
-<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.loss.LadleFurnaceIntClassLoss"><code class="docutils literal notranslate"><span class="pre">LadleFurnaceIntClassLoss</span></code></a><ul>
-<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.loss.LadleFurnaceIntClassLoss.training"><code class="docutils literal notranslate"><span class="pre">LadleFurnaceIntClassLoss.training</span></code></a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.loss.LadleFurnaceIntClassLoss"><code class="docutils literal notranslate"><span class="pre">LadleFurnaceIntClassLoss</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.loss.SpreadRangeLoss"><code class="docutils literal notranslate"><span class="pre">SpreadRangeLoss</span></code></a><ul>
 <li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.loss.SpreadRangeLoss.on_volume_batch_begin"><code class="docutils literal notranslate"><span class="pre">SpreadRangeLoss.on_volume_batch_begin()</span></code></a></li>
 <li><a class="reference internal" href="#tomopt.benchmarks.ladle_furnace.loss.SpreadRangeLoss.on_volume_batch_end"><code class="docutils literal notranslate"><span class="pre">SpreadRangeLoss.on_volume_batch_end()</span></code></a></li>
@@ -871,9 +831,6 @@ Total number muons included in the inference</p>
      
        <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
          <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-         <script src="_static/jquery.js"></script>
-         <script src="_static/underscore.js"></script>
-         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
          <script src="_static/doctools.js"></script>
          <script src="_static/sphinx_highlight.js"></script>
      

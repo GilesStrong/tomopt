@@ -14,8 +14,6 @@
 
   
   
-    <link rel="shortcut icon" href="../../../_static/tomopt_logo.png"/>
-  
   
   
 
@@ -257,7 +255,7 @@
 
 
 <div class="viewcode-block" id="AbsMuonGenerator"><a class="viewcode-back" href="../../../tomopt.muon.html#tomopt.muon.generation.AbsMuonGenerator">[docs]</a><span class="k">class</span> <span class="nc">AbsMuonGenerator</span><span class="p">:</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Abstract generator base class implementing core functionality.</span>
 <span class="sd">    Inheriting classes should override the `flux` method.</span>
 
@@ -285,7 +283,7 @@
         <span class="n">energy_range</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">500</span><span class="p">),</span>
         <span class="n">theta_range</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">70</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span><span class="p">),</span>  <span class="c1"># Models on accurate up to ~70 degrees</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialises the flux model</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -315,7 +313,7 @@
 
 <div class="viewcode-block" id="AbsMuonGenerator.flux"><a class="viewcode-back" href="../../../tomopt.muon.html#tomopt.muon.generation.AbsMuonGenerator.flux">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">flux</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">theta</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Inheriting classes should override this to implement their flux model for the supplied pairs of energies and thetas</span>
 
 <span class="sd">        Arguments:</span>
@@ -337,7 +335,7 @@
         <span class="n">energy_range</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">500</span><span class="p">),</span>
         <span class="n">theta_range</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">70</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span><span class="p">),</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AbsMuonGenerator</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Class method to initialise x and y ranges of muon generation from the passive volume.</span>
 <span class="sd">        Heuristically computes x,y generation range as (0-d,x+d), (0-d,y+d).</span>
 <span class="sd">        Where d is such that a muon generated at (0-d,1) will only hit the last layer of the passive volume if it&#39;s initial angle is at least min_angle.</span>
@@ -357,7 +355,7 @@
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">x_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span> <span class="o">-</span> <span class="n">d</span><span class="p">,</span> <span class="n">x</span> <span class="o">+</span> <span class="n">d</span><span class="p">),</span> <span class="n">y_range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span> <span class="o">-</span> <span class="n">d</span><span class="p">,</span> <span class="n">y</span> <span class="o">+</span> <span class="n">d</span><span class="p">),</span> <span class="n">fixed_mom</span><span class="o">=</span><span class="n">fixed_mom</span><span class="p">,</span> <span class="n">energy_range</span><span class="o">=</span><span class="n">energy_range</span><span class="p">,</span> <span class="n">theta_range</span><span class="o">=</span><span class="n">theta_range</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="AbsMuonGenerator.generate_set"><a class="viewcode-back" href="../../../tomopt.muon.html#tomopt.muon.generation.AbsMuonGenerator.generate_set">[docs]</a>    <span class="k">def</span> <span class="nf">generate_set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_muons</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Generates a set of muons as a rank-2 tensor of shape (n_muons, 5), with initial kinematic variables [x, y, momentum, theta, phi].</span>
 <span class="sd">        Theta and, optionally, momentum are sampled from the flux model. x and y are sampled uniformly from the defined ranges.</span>
 <span class="sd">        Phi is sampled uniformly from [0,2pi].</span>
@@ -391,7 +389,7 @@
 
 
 <div class="viewcode-block" id="MuonGenerator2015"><a class="viewcode-back" href="../../../tomopt.muon.html#tomopt.muon.generation.MuonGenerator2015">[docs]</a><span class="k">class</span> <span class="nc">MuonGenerator2015</span><span class="p">(</span><span class="n">AbsMuonGenerator</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Provides muon generator for sampling initial muon kinematics according to  Guan et al. 2015 (arXiv:1509.06176).</span>
 
 <span class="sd">    Once initialised, the object can be called, or it&#39;s `generate_set` method called, to generate a set of initial muon kinematics.</span>
@@ -413,7 +411,7 @@
     <span class="n">P5</span> <span class="o">=</span> <span class="mf">0.817285</span>
 
 <div class="viewcode-block" id="MuonGenerator2015.flux"><a class="viewcode-back" href="../../../tomopt.muon.html#tomopt.muon.generation.MuonGenerator2015.flux">[docs]</a>    <span class="k">def</span> <span class="nf">flux</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">theta</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Function returning modified Gaisser formula for cosmic muon flux given energy (float/np.array) and incidence angle (float/np.array)</span>
 <span class="sd">        Uses model defined in Guan et al. 2015 (arXiv:1509.06176)</span>
 
@@ -438,7 +436,7 @@
 
 
 <div class="viewcode-block" id="MuonGenerator2016"><a class="viewcode-back" href="../../../tomopt.muon.html#tomopt.muon.generation.MuonGenerator2016">[docs]</a><span class="k">class</span> <span class="nc">MuonGenerator2016</span><span class="p">(</span><span class="n">AbsMuonGenerator</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Provides muon generator for sampling initial muon kinematics according to Shukla and Sanskrith 2018 arXiv:1606.06907</span>
 
 <span class="sd">    Once initialised, the object can be called, or it&#39;s `generate_set` method called, to generate a set of initial muon kinematics.</span>
@@ -462,7 +460,7 @@
     <span class="n">N</span> <span class="o">=</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">E_0</span> <span class="o">+</span> <span class="n">E_c</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
 
 <div class="viewcode-block" id="MuonGenerator2016.flux"><a class="viewcode-back" href="../../../tomopt.muon.html#tomopt.muon.generation.MuonGenerator2016.flux">[docs]</a>    <span class="k">def</span> <span class="nf">flux</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">energy</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">theta</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Function returning modified Gaisser formula for cosmic muon flux given energy (float/np.array) and incidence angle (float/np.array)</span>
 <span class="sd">        Uses model defined in Shukla and Sanskrith 2018 arXiv:1606.06907</span>
 
@@ -522,9 +520,6 @@
      
        <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
          <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-         <script src="../../../_static/jquery.js"></script>
-         <script src="../../../_static/underscore.js"></script>
-         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
          <script src="../../../_static/doctools.js"></script>
          <script src="../../../_static/sphinx_highlight.js"></script>
      

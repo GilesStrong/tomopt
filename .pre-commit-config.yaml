@@ -1,18 +1,26 @@
 repos:
+  - repo: https://github.com/python-poetry/poetry
+    rev: '1.7.0'
+    hooks:
+      - id: poetry-check
+      - id: poetry-lock
+      - id: poetry-export
+        args: ["-f", "requirements.txt", "-o", "requirements.txt", "--with", "docs", "--with", "dev"]
+
   - repo: https://github.com/psf/black
-    rev: 24.1.1
+    rev: 24.2.0
     hooks:
       - id: black
         language_version: python3
 
   - repo: https://github.com/pycqa/flake8.git
-    rev: 3.9.1
+    rev: 7.0.0
     hooks:
     - id: flake8
       args: [--ignore=E741 W503 E203 E501 C901]
     
   - repo: https://github.com/pycqa/isort
-    rev: 5.12.0
+    rev: 5.13.2
     hooks:
       - id: isort
         args: ["--profile", "black", "--filter-files"]

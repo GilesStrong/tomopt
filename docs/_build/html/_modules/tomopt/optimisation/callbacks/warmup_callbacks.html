@@ -14,8 +14,6 @@
 
   
   
-    <link rel="shortcut icon" href="../../../../_static/tomopt_logo.png"/>
-  
   
   
 
@@ -251,7 +249,7 @@
 
 
 <div class="viewcode-block" id="WarmupCallback"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback">[docs]</a><span class="k">class</span> <span class="nc">WarmupCallback</span><span class="p">(</span><span class="n">Callback</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Warmup callbacks act at the start of training to track and set parameters based on the initial state of the detector.</span>
 <span class="sd">    During warmup, optimisation of the detector is prevented, via a flag.</span>
 <span class="sd">    If multiple warmup callbacks are present, they will wait to warmup according to the order they are provided in.</span>
@@ -269,7 +267,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">n_warmup</span> <span class="o">=</span> <span class="n">n_warmup</span>
 
 <div class="viewcode-block" id="WarmupCallback.on_train_begin"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback.on_train_begin">[docs]</a>    <span class="k">def</span> <span class="nf">on_train_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Prepares to warmup</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -277,7 +275,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_reset</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="WarmupCallback.check_warmups"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback.check_warmups">[docs]</a>    <span class="k">def</span> <span class="nf">check_warmups</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        If a `WarmupCallback` has finished, then its `warmup_active` is set to False,</span>
 <span class="sd">        and the next `WarmupCallback` will have its `warmup_active` is set to True.</span>
 <span class="sd">        If the finishing callback was the last `WarmupCallback`, then the &quot;skip optimisation&quot; flag is unset.</span>
@@ -293,7 +291,7 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">wrapper</span><span class="o">.</span><span class="n">fit_params</span><span class="o">.</span><span class="n">skip_opt_step</span> <span class="o">=</span> <span class="kc">False</span></div>
 
 <div class="viewcode-block" id="WarmupCallback.on_epoch_begin"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback.on_epoch_begin">[docs]</a>    <span class="k">def</span> <span class="nf">on_epoch_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Ensures that when one `WarmupCallback` has finished, either the next is called, or the detectors are set to be optimised.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -301,7 +299,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">check_warmups</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="WarmupCallback.on_epoch_end"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback.on_epoch_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        After a training epoch is finished, increments the number of epochs that the callback has been warming up, provided it is active.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -311,7 +309,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">epoch_cnt</span> <span class="o">+=</span> <span class="mi">1</span></div>
 
     <span class="k">def</span> <span class="nf">_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Prepares the callback to warmup, and ensures that only the first `WarmupCallback` is active.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -322,7 +320,7 @@
 
 
 <div class="viewcode-block" id="CostCoefWarmup"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.CostCoefWarmup">[docs]</a><span class="k">class</span> <span class="nc">CostCoefWarmup</span><span class="p">(</span><span class="n">WarmupCallback</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Sets a more stable cost coefficient in the :class:`~tomopt.optimisation.loss.loss.AbsDetectorLoss`</span>
 <span class="sd">    by averaging the inference-error component for several epochs.</span>
 <span class="sd">    During this warm-up monitoring phase, the detectors will be kept fixed.</span>
@@ -336,7 +334,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">errors</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 
 <div class="viewcode-block" id="CostCoefWarmup.on_volume_end"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.CostCoefWarmup.on_volume_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_volume_end</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        If training, grabs the inference-error for the latest volume</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -346,7 +344,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wrapper</span><span class="o">.</span><span class="n">loss_func</span><span class="o">.</span><span class="n">sub_losses</span><span class="p">[</span><span class="s2">&quot;error&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span></div>
 
 <div class="viewcode-block" id="CostCoefWarmup.on_epoch_end"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.CostCoefWarmup.on_epoch_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        If enough epochs have past, the overall median inference-error is computed and used to set the cost coefficient in the loss.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -361,7 +359,7 @@
 
 
 <div class="viewcode-block" id="OptConfig"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.OptConfig">[docs]</a><span class="k">class</span> <span class="nc">OptConfig</span><span class="p">(</span><span class="n">WarmupCallback</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Allows the user to specify the desired update steps for parameters in physical units.</span>
 <span class="sd">    Over the course of several warm-up epochs the gradients on the parameters are monitored, after which suitable learning rates for the optimisers are set,</span>
 <span class="sd">    such that the parameters will move by the desired amount every update.</span>
@@ -391,7 +389,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">rates</span> <span class="o">=</span> <span class="n">rates</span>
 
 <div class="viewcode-block" id="OptConfig.on_backwards_end"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.OptConfig.on_backwards_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_backwards_end</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Grabs training gradients from detector parameters</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -403,7 +401,7 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="p">[</span><span class="n">opt</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span></div>
 
 <div class="viewcode-block" id="OptConfig.on_epoch_end"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.OptConfig.on_epoch_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        When enough training epochs have passed, sets suitable learning rates for the optimisers based on the median gradients and desired update rates</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -429,12 +427,12 @@
 
 
 <div class="viewcode-block" id="PostWarmupCallback"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.PostWarmupCallback">[docs]</a><span class="k">class</span> <span class="nc">PostWarmupCallback</span><span class="p">(</span><span class="n">Callback</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Callback class that waits for all :class:`~tomopt.optimisation.callbacks.warmup_callbacks.WarmupCallback` obejcts to finish their warmups before activating.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="PostWarmupCallback.on_train_begin"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.PostWarmupCallback.on_train_begin">[docs]</a>    <span class="k">def</span> <span class="nf">on_train_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Prepares for new training</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -442,7 +440,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">active</span> <span class="o">=</span> <span class="kc">False</span></div>
 
 <div class="viewcode-block" id="PostWarmupCallback.check_warmups"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.PostWarmupCallback.check_warmups">[docs]</a>    <span class="k">def</span> <span class="nf">check_warmups</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        When all WarmupCallbacks have finished, sets the callback to be active.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -455,7 +453,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">active</span> <span class="o">=</span> <span class="kc">True</span>
 
 <div class="viewcode-block" id="PostWarmupCallback.on_epoch_begin"><a class="viewcode-back" href="../../../../tomopt.optimisation.callbacks.html#tomopt.optimisation.callbacks.warmup_callbacks.PostWarmupCallback.on_epoch_begin">[docs]</a>    <span class="k">def</span> <span class="nf">on_epoch_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Checks to see whether the callback should be active.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -506,9 +504,6 @@
      
        <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
          <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-         <script src="../../../../_static/jquery.js"></script>
-         <script src="../../../../_static/underscore.js"></script>
-         <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
          <script src="../../../../_static/doctools.js"></script>
          <script src="../../../../_static/sphinx_highlight.js"></script>
      
