@@ -8,7 +8,7 @@
 
 # TomOpt: Differential Muon Tomography Optimisation
 
-This repo provides a library for the differential optimisation of scattering muon tomography systems. For an overview, please read our first publication [here](https://arxiv.org/abs/2309.14027).
+This repo provides a library for the differential optimisation of scattering muon tomography systems. For a quick overview, check out our abstract and poster from NeurIPS [paper](https://ml4physicalsciences.github.io/2023/files/NeurIPS_ML4PS_2023_50.pdf) [poster](https://nips.cc/media/PosterPDFs/NeurIPS%202023/76115.png), and for a more in-depth guide, please read our first publication [here](https://arxiv.org/abs/2309.14027) (shortly to be published in IOP MLST).
 
 As a disclaimer, this is a library designed to be extended by users for their specific tasks: e.g. passive volume definition, inference methods, and loss functions. Additionally, optimisation in TomOpt can be unstable, and requires careful tuning by users. This is to say that it is not a polished product for the general public, but rather fellow researchers in the field of optimisation and muon tomography.
 
