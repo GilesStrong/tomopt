@@ -280,7 +280,7 @@ In order to start time, the TomOpt authors/contributors are: Giles Strong, Tomma
 
 ### 2023 - present. Instituto de Fisica de Cantabria & Muon Tomography Systems, Spain.
 
-<img src="docs/source/_static/imgs/authors/AitorOrioAlonso.JPG" style="width:auto;height:100px" />
+<img src="docs/source/_static/imgs/authors/author.png" style="width:auto;height:100px" />
 
 ### Code contributions:
 
