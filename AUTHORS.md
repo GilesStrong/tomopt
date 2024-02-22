@@ -81,8 +81,8 @@ In order to start time, the TomOpt authors/contributors are: Giles Strong, Tomma
 
 ### Other roles:
 
-- Funding acquisition (M. Lagrange)
-- Supervision (M. Lagrange)
+- Funding acquisition (M. Lagrange, Z. Daher)
+- Supervision (M. Lagrange, Z. Daher, M. Safieldin)
 - Meeting attendance
 - Advertisement/mention of TomOpt in talks
 
@@ -136,6 +136,7 @@ In order to start time, the TomOpt authors/contributors are: Giles Strong, Tomma
   - Angular statistics reconstruction method for volume inference
 - Assistance with muon coordinate-system
 - Assistance, advice, and information for various aspects of muon tomography
+- Tutoring (M. Safieldin, A. Orio)
 
 ### Other roles:
 
