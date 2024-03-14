@@ -6,7 +6,94 @@ from torch import Tensor, nn
 
 from ...volume import AbsLayer, PanelDetectorLayer, PassiveLayer, SigmoidDetectorPanel
 
-__all__ = ["get_initial_detector", "get_baseline_detector_1", "get_baseline_detector_2"]
+__all__ = ["get_detector", "get_initial_detector", "get_baseline_detector_1", "get_baseline_detector_2"]
+
+
+# res=1e5 == 0.01 mm resolution??
+def get_detector(
+    *,
+    res: float = 1e5,
+    eff: float = 1.0,
+    span: float = 0.7,
+    panelZpositions: list = [1.80, 1.65, 1.50, 0.30, 0.15, 0.00],
+    device: torch.device = torch.device("cpu"),
+) -> nn.ModuleList:
+    lwh: Tensor = Tensor([1.0, 1.0, 1.8])
+    size: float = 0.1
+
+    layers: List[AbsLayer] = []
+    layers.append(
+        PanelDetectorLayer(
+            pos="above",
+            lw=lwh[:2],
+            z=lwh[2].item(),
+            size=0.4,
+            panels=[
+                SigmoidDetectorPanel(
+                    smooth=1.0,
+                    res=res,
+                    eff=eff,
+                    init_xyz=(0.5, 0.5, panelZpositions[0]),
+                    init_xy_span=(span, span),
+                    device=device,
+                ),
+                SigmoidDetectorPanel(
+                    smooth=0.1,
+                    res=res,
+                    eff=eff,
+                    init_xyz=(0.5, 0.5, panelZpositions[1]),
+                    init_xy_span=(span, span),
+                    device=device,
+                ),
+                SigmoidDetectorPanel(
+                    smooth=1.0,
+                    res=res,
+                    eff=eff,
+                    init_xyz=(0.5, 0.5, panelZpositions[2]),
+                    init_xy_span=(span, span),
+                    device=device,
+                ),
+            ],
+        )
+    )
+    for z in np.round(np.arange(lwh[2] - 0.4, 0.4, -size), decimals=2):
+        layers.append(PassiveLayer(lw=lwh[:2], z=z, size=size, device=device))
+    layers.append(
+        PanelDetectorLayer(
+            pos="below",
+            lw=lwh[:2],
+            z=0.4,
+            size=0.4,
+            panels=[
+                SigmoidDetectorPanel(
+                    smooth=1.0,
+                    res=res,
+                    eff=eff,
+                    init_xyz=(0.5, 0.5, panelZpositions[3]),
+                    init_xy_span=(span, span),
+                    device=device,
+                ),
+                SigmoidDetectorPanel(
+                    smooth=1.0,
+                    res=res,
+                    eff=1,
+                    init_xyz=(0.5, 0.5, panelZpositions[4]),
+                    init_xy_span=(span, span),
+                    device=device,
+                ),
+                SigmoidDetectorPanel(
+                    smooth=1.0,
+                    res=res,
+                    eff=eff,
+                    init_xyz=(0.5, 0.5, panelZpositions[5]),
+                    init_xy_span=(span, span),
+                    device=device,
+                ),
+            ],
+        )
+    )
+
+    return nn.ModuleList(layers)
 
 
 def get_initial_detector(*, res: float = 1e4, eff: float = 0.9, span: float = 0.8, device: torch.device = torch.device("cpu")) -> nn.ModuleList:
