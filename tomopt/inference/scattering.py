@@ -177,6 +177,37 @@ class ScatterBatch:
             * (self.poca_xyz[:, 2] < z[1])
         )
 
+    def plot_poca_batch(self, Zlims: Optional[list] = [0, 2], savename: Optional[Path] = None) -> None:
+        r"""
+        Plots POCA points of the muons in the batch.
+
+        Arguments:
+            savename: optional path to save figure to
+        """
+
+        gap = 0.2
+        fig, ax = plt.subplots(nrows=3, figsize=(5, 10))
+
+        poca_x = self.poca_xyz.detach().cpu().numpy()[:, 0]
+        poca_y = self.poca_xyz.detach().cpu().numpy()[:, 1]
+        poca_z = self.poca_xyz.detach().cpu().numpy()[:, 2]
+
+        ax[0].hist2d(poca_x, poca_y, bins=100, range=((-gap, 1.0 + gap), (-gap, 1.0 + gap)))
+        ax[0].set_aspect("equal")
+        ax[0].set_xlabel("X [m]")
+        ax[0].set_ylabel("Y [m]")
+        ax[1].hist2d(poca_x, poca_z, bins=100, range=((-gap, 1.0 + gap), (Zlims[0], Zlims[1])))
+        ax[1].set_aspect("equal")
+        ax[1].set_xlabel("X [m]")
+        ax[1].set_ylabel("Z [m]")
+        ax[2].hist2d(poca_y, poca_z, bins=100, range=((-gap, 1.0 + gap), (Zlims[0], Zlims[1])))
+        ax[2].set_aspect("equal")
+        ax[2].set_xlabel("Y [m]")
+        ax[2].set_ylabel("Z [m]")
+
+        plt.tight_layout()
+        plt.show()
+
     def plot_scatter(self, idx: int, savename: Optional[Path] = None) -> None:
         r"""
         Plots representation of hits and fitted trajectories for a single muon.
