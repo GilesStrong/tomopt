@@ -6,56 +6,7 @@ import seaborn as sns
 
 from .appearance import H_MID, LBL_COL, LBL_SZ, W_MID
 
-__all__ = ["plot_true_x0", "plot_pred_true_x0"]
-
-
-def plot_true_x0(true: np.ndarray, ColorBarLabel: Optional[str] = None, savename: Optional[str] = None) -> None:
-    r"""
-    Plots the true voxelwise X0s.
-    2D plots are produced in xy for layers in z in order of increasing z, i.e. the bottom most layer is the first to be plotted.
-    TODO: revise this ordering to make it more intuitive
-
-    Arguments:
-        true: (z,x,y) array of true X0s
-        savename: optional savename for saving the plot
-    """
-
-    with sns.axes_style(style="whitegrid", rc={"patch.edgecolor": "none"}):
-        fig, axs = plt.subplots(len(true), 1, figsize=(H_MID, W_MID))
-        # pred_cbar_ax = fig.add_axes([0.45, 0.25, 0.03, 0.5])
-        true_cbar_ax = fig.add_axes([0.90, 0.25, 0.03, 0.5])
-
-        for plot_idx in range(len(true)):
-            layer_idx = len(true) - 1 - plot_idx
-
-            # sns.heatmap(
-            #     pred[layer_idx],
-            #     ax=axs[plot_idx][0],
-            #     cmap="viridis",
-            #     square=True,
-            #     cbar=(plot_idx == 0),
-            #     vmin=np.nanmin(pred),
-            #     vmax=np.nanmax(pred),
-            #     cbar_ax=pred_cbar_ax if plot_idx == 0 else None,
-            # )
-
-            sns.heatmap(
-                true[layer_idx],
-                ax=axs[plot_idx],
-                cmap="viridis",
-                square=True,
-                cbar=(plot_idx == 0),
-                vmin=true.min(),
-                vmax=true.max(),
-                cbar_ax=true_cbar_ax if plot_idx == 0 else None,
-                cbar_kws={"label": ColorBarLabel},
-            )
-
-            # axs[plot_idx].set_ylabel(f"AbsLayer {layer_idx}", fontsize=LBL_SZ, color=LBL_COL)
-        axs[-1].set_xlabel("True", fontsize=LBL_SZ, color=LBL_COL)
-        if savename is not None:
-            plt.savefig(savename, bbox_inches="tight")
-        plt.show()
+__all__ = ["plot_pred_true_x0"]
 
 
 def plot_pred_true_x0(
