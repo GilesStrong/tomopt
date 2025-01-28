@@ -9,12 +9,11 @@ on:
 jobs:
   PyTest:
     runs-on: ubuntu-latest
-    # container: pytorch/pytorch:1.8.1-cuda11.1-cudnn8-runtime
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
-          python-version: "3.8"
+          python-version: "3.10"
       - name: Install Dependencies
         run: |
           curl -sSL https://install.python-poetry.org | python3 -
