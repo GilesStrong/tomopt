@@ -51,8 +51,8 @@ class SegmentedPanelDetectorLayer(AbsDetectorLayer):
         self.panels = nn.ModuleList(
             [
                 SegmentedSigmoidDetectorPanel(
-                    init_xyz=(xy[0].cpu().detach().numpy(), xy[1].cpu().detach().numpy(), z - (i * panel_z_spacing) / (n_panels - 1)),
-                    init_xy_span=(lw[0].cpu().detach().numpy(), lw[1].cpu().detach().numpy()),
+                    init_xyz=(xy[0].cpu().detach().item(), xy[1].cpu().detach().item(), z - (i * panel_z_spacing) / (n_panels - 1)),
+                    init_xy_span=(lw[0].cpu().detach().item(), lw[1].cpu().detach().item()),
                     device=DEVICE,
                     res=res,
                     eff=eff,

@@ -184,7 +184,7 @@ class PanelMetricLogger(MetricLogger):
                         width = panel.get_scaled_xy_span()[0].cpu().item()
                         panel.xy[0].cpu().item()
                         x_range = torch.linspace(-width, width, 50)[:, None]
-                        y = panel.sig_model(x)[:, 0]
+                        y = panel.sig_model(x_range)[:, 0]
                         self.panel_smoothness.plot(2 * x_range / width, y)
 
             self._set_axes_labels()
