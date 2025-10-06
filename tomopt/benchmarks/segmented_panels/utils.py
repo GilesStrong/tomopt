@@ -10,16 +10,18 @@ import torch.nn.functional as F
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from torch import Tensor
 
+# segmented panel imports
+from tomopt.benchmarks.segmented_panels.callbacks import PredHitRecord
+from tomopt.benchmarks.segmented_panels.detector_config import get_layers
+from tomopt.benchmarks.segmented_panels.layer import SegmentedPanelDetectorLayer
+from tomopt.benchmarks.segmented_panels.panel import SegmentedSigmoidDetectorPanel
+from tomopt.benchmarks.segmented_panels.wrapper import SegmentedPanelVolumeWrapper
+
+# tomopt imports
 from tomopt.inference import ScatterBatch
 from tomopt.optimisation.callbacks import Callback
 from tomopt.optimisation.data.passives import PassiveYielder
 from tomopt.volume import PassiveLayer, Volume
-
-from .callbacks import PredHitRecord
-from .detector_config import get_layers
-from .layer import SegmentedPanelDetectorLayer
-from .panel import SegmentedSigmoidDetectorPanel
-from .wrapper import SegmentedPanelVolumeWrapper
 
 """_description_
 This module contains utility functions for analysis and performance evaluation.

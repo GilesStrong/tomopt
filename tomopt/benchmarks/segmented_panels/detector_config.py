@@ -3,10 +3,12 @@ from typing import List, Union
 import torch.nn as nn
 from torch import Tensor
 
+# segmented panel imports
+from tomopt.benchmarks.segmented_panels.layer import SegmentedPanelDetectorLayer
+
+# tomopt imports
 from tomopt.core import DEVICE
 from tomopt.volume.layer import PassiveLayer
-
-from .layer import SegmentedPanelDetectorLayer
 
 __all__ = ["get_layers"]
 

@@ -4,12 +4,14 @@ import numpy as np
 import torch
 from torch import Tensor, nn
 
+# segmented panel imports
+from tomopt.benchmarks.segmented_panels.panel import SegmentedSigmoidDetectorPanel
+
+# tomopt imports
 from tomopt.core import DEVICE
 from tomopt.muon import MuonBatch
 from tomopt.volume.layer import AbsDetectorLayer
 from tomopt.volume.panel import DetectorPanel
-
-from .panel import SegmentedSigmoidDetectorPanel
 
 _all__ = ["SegmentedPanelDetectorLayer"]
 

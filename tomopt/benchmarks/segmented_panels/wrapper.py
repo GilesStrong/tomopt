@@ -4,15 +4,17 @@ from typing import List, Optional, Type
 
 from fastprogress import progress_bar
 
+# segmented panel imports
+from tomopt.benchmarks.segmented_panels.layer import SegmentedPanelDetectorLayer
+from tomopt.benchmarks.segmented_panels.loss import AngularResLoss
+
+# tomopt imports
 from tomopt.core import PartialOpt
 from tomopt.inference import AbsVolumeInferrer, PanelX0Inferrer, ScatterBatch
 from tomopt.muon import AbsMuonGenerator, MuonBatch
 from tomopt.optimisation.loss.loss import AbsDetectorLoss
 from tomopt.optimisation.wrapper import AbsVolumeWrapper
 from tomopt.volume import Volume
-
-from .layer import SegmentedPanelDetectorLayer
-from .loss import AngularResLoss
 
 _all__ = ["SegmentedPanelVolumeWrapper"]
 

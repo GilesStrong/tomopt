@@ -8,11 +8,13 @@ import torch
 from matplotlib.gridspec import GridSpec
 from torch import Tensor
 
+# segmented panel imports
+from tomopt.benchmarks.segmented_panels.layer import SegmentedPanelDetectorLayer
+from tomopt.benchmarks.segmented_panels.panel import SegmentedSigmoidDetectorPanel
+
+# tomopt imports
 from tomopt.optimisation.callbacks import Callback, MetricLogger, PostWarmupCallback
 from tomopt.volume import AbsDetectorLayer
-
-from .layer import SegmentedPanelDetectorLayer
-from .panel import SegmentedSigmoidDetectorPanel
 
 """_DESCRIPTION_
 
