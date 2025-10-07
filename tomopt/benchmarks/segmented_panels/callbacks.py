@@ -1,3 +1,5 @@
+import os
+import sys
 from typing import List, Tuple
 
 import matplotlib.lines as mlines
@@ -8,13 +10,18 @@ import torch
 from matplotlib.gridspec import GridSpec
 from torch import Tensor
 
-# segmented panel imports
-from tomopt.benchmarks.segmented_panels.layer import SegmentedPanelDetectorLayer
-from tomopt.benchmarks.segmented_panels.panel import SegmentedSigmoidDetectorPanel
-
 # tomopt imports
 from tomopt.optimisation.callbacks import Callback, MetricLogger, PostWarmupCallback
 from tomopt.volume import AbsDetectorLayer
+
+# Add parent directories to path
+current_dir = os.path.dirname(os.path.abspath(__file__))
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
+
+# segmented panel imports
+from layer import SegmentedPanelDetectorLayer  # type: ignore[import] # noqa: E402
+from panel import SegmentedSigmoidDetectorPanel  # type: ignore[import] # noqa: E402
 
 """_DESCRIPTION_
 

@@ -1,12 +1,10 @@
 from __future__ import annotations
 
+import os
+import sys
 from typing import List, Optional, Type
 
 from fastprogress import progress_bar
-
-# segmented panel imports
-from tomopt.benchmarks.segmented_panels.layer import SegmentedPanelDetectorLayer
-from tomopt.benchmarks.segmented_panels.loss import AngularResLoss
 
 # tomopt imports
 from tomopt.core import PartialOpt
@@ -15,6 +13,15 @@ from tomopt.muon import AbsMuonGenerator, MuonBatch
 from tomopt.optimisation.loss.loss import AbsDetectorLoss
 from tomopt.optimisation.wrapper import AbsVolumeWrapper
 from tomopt.volume import Volume
+
+# segmented panel imports
+# Add current directory to path
+current_dir = os.path.dirname(os.path.abspath(__file__))
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
+
+from layer import SegmentedPanelDetectorLayer  # type: ignore[import] # noqa: E402
+from loss import AngularResLoss  # type: ignore[import] # noqa: E402
 
 _all__ = ["SegmentedPanelVolumeWrapper"]
 

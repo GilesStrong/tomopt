@@ -1,14 +1,21 @@
+import os
+import sys
 from typing import List, Union
 
 import torch.nn as nn
 from torch import Tensor
 
-# segmented panel imports
-from tomopt.benchmarks.segmented_panels.layer import SegmentedPanelDetectorLayer
-
 # tomopt imports
 from tomopt.core import DEVICE
 from tomopt.volume.layer import PassiveLayer
+
+# Add current directory to path
+current_dir = os.path.dirname(os.path.abspath(__file__))
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
+
+# segmented panel imports
+from layer import SegmentedPanelDetectorLayer  # type: ignore[import] # noqa: E402
 
 __all__ = ["get_layers"]
 

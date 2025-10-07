@@ -1,17 +1,25 @@
+import os
+import sys
 from typing import Iterator, List, Optional, Tuple, Union
 
 import numpy as np
 import torch
 from torch import Tensor, nn
 
-# segmented panel imports
-from tomopt.benchmarks.segmented_panels.panel import SegmentedSigmoidDetectorPanel
-
 # tomopt imports
 from tomopt.core import DEVICE
 from tomopt.muon import MuonBatch
 from tomopt.volume.layer import AbsDetectorLayer
 from tomopt.volume.panel import DetectorPanel
+
+# Add current directory to path
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
+
+# segmented panel imports
+from panel import SegmentedSigmoidDetectorPanel  # type: ignore[import] # noqa: E402
 
 _all__ = ["SegmentedPanelDetectorLayer"]
 
