@@ -57,7 +57,8 @@ def plot_pred_true_x0(
                     square=True,
                     cbar=(plot_idx == 0),
                     vmin=true.min(),
-                    vmax=true.max(),
+                    # vmax=true.max(),
+                    vmax=20,
                     cbar_ax=true_cbar_ax if plot_idx == 0 else None,
                     cbar_kws={"label": ColorBarLabel},
                 )
