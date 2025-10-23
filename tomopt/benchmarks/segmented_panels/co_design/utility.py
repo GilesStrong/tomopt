@@ -2,6 +2,7 @@ from typing import Any, Tuple
 
 import torch
 from scipy import stats  # type: ignore
+from scipy.stats import norm  # type: ignore
 from torch import Tensor
 
 
@@ -22,7 +23,8 @@ class AnomalyUtility(torch.nn.Module):
         super().__init__()
         self.ang_res = torch.tensor(ang_res, dtype=torch.float32)
         self.log_scale = torch.nn.Parameter(torch.tensor(-5.0, requires_grad=True))  # smoothing factor
-        self.log_alpha = torch.nn.Parameter(torch.tensor(-2.0, requires_grad=True))  # regularization strength (currently unused)
+        # self.log_alpha = torch.nn.Parameter(torch.tensor(-2.0, requires_grad=True))  # regularization strength (currently unused)
+        self.register_buffer("log_alpha", torch.tensor(-2.0))  # log alpha fixed
 
     def soft_hist(self, data: Tensor, bins: Tensor) -> Tensor:
         """
@@ -70,8 +72,7 @@ class AnomalyUtility(torch.nn.Module):
 
         # regularization term to account for large angular resolutions
         alpha = torch.exp(self.log_alpha)
-        bin_width = bins[1] - bins[0]
-        reg = (alpha * self.ang_res) * (1.0 / bin_width)
+        reg = alpha * (torch.exp(self.log_scale) / self.ang_res - 1) ** 2
 
         U = kl_signal - kl_null  # - reg
 
@@ -170,9 +171,172 @@ class DetectionPowerUtility(AnomalyUtility):
         if data_null is not None:
             power_null, effect_null = self.kl_to_power(kl_null, len(data_null))
             # Utility: maximize signal power, minimize null power
-            power = power_signal  # - power_null # removed to trust our null
+            power = power_signal - reg  # - power_null # removed to trust our null
         else:
             power = power_signal
 
         # Return power as the utility to maximize
         return power, hist_bkg, hist_sig, kl_signal, kl_null, reg, effect_signal
+
+
+class JensenShannonDetectionPowerUtility(torch.nn.Module):
+    """
+    Detection power utility using Jensen-Shannon divergence between signal and background.
+    Numerically stable, bounded, and symmetric. Optional null distribution to penalize spurious separation.
+    """
+
+    def __init__(self, ang_res: float, significance_level: float = 0.05):
+        super().__init__()
+        self.ang_res = torch.tensor(ang_res, dtype=torch.float32)
+        self.log_scale = torch.nn.Parameter(torch.tensor(-5.0, requires_grad=True))
+        self.register_buffer("log_alpha", torch.tensor(-2.0))
+        self.significance_level = significance_level
+        self.z_critical = torch.tensor(norm.ppf(1 - significance_level), dtype=torch.float32)
+
+    @staticmethod
+    def soft_hist_static(data: Tensor, bins: Tensor, sigma: Tensor) -> Tensor:
+        data = data.unsqueeze(-1)
+        bins = bins.unsqueeze(0)
+        weights = torch.exp(-0.5 * ((data - bins) / sigma) ** 2)
+        weights = weights / (sigma * (2 * torch.pi) ** 0.5)
+        hist = weights.sum(dim=0)
+        hist = hist + 1e-8
+        hist = hist / hist.sum()
+        return hist
+
+    @staticmethod
+    def jensen_shannon_divergence(hist1: Tensor, hist2: Tensor) -> Tensor:
+        """Compute JS divergence between two normalized histograms."""
+        eps = 1e-8
+        hist1 = hist1 + eps
+        hist2 = hist2 + eps
+        hist1 = hist1 / hist1.sum()
+        hist2 = hist2 / hist2.sum()
+        m = 0.5 * (hist1 + hist2)
+        js = 0.5 * (torch.sum(hist1 * torch.log(hist1 / m)) + torch.sum(hist2 * torch.log(hist2 / m)))
+        return js
+
+    def kl_to_power(self, kl_divergence: Tensor, n_samples: int) -> Tuple[Tensor, Tensor]:
+        """Convert divergence to detection power (effect size) using z-critical."""
+        effect_size = 2 * torch.sqrt(kl_divergence + 1e-8)
+        ncp = effect_size * torch.sqrt(torch.tensor(n_samples, dtype=torch.float32))
+        z_power = ncp - self.z_critical
+        power = 0.5 * (1.0 + torch.tanh(0.8 * z_power))
+        power = torch.clamp(power, 0.01, 0.99)
+        return power, effect_size
+
+    def forward(
+        self, data_bkg: Tensor, data_sig: Tensor, bins: Tensor, data_null: Tensor = None
+    ) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
+        sigma = torch.exp(self.log_scale).clamp(min=1e-4)
+        hist_bkg = self.soft_hist_static(data_bkg, bins, sigma)
+        hist_sig = self.soft_hist_static(data_sig, bins, sigma)
+
+        # JS divergence
+        js_signal = self.jensen_shannon_divergence(hist_sig, hist_bkg)
+
+        # Optional null divergence
+        if data_null is not None:
+            hist_null = self.soft_hist_static(data_null, bins, sigma)
+            js_null = self.jensen_shannon_divergence(hist_null, hist_bkg)
+
+        # Regularization (penalize sigma too large)
+        alpha = torch.exp(self.log_alpha)
+        reg = alpha * (sigma / self.ang_res - 1.0) ** 2
+
+        # Detection power
+        n_samples = len(data_sig)
+        print(f"Number of signal samples: {n_samples}")
+        power_signal, effect_signal = self.kl_to_power(js_signal, n_samples)
+
+        if data_null is not None:
+            power_null, effect_null = self.kl_to_power(js_null, len(data_null))
+            # Utility: maximize signal power, minimize null power
+            power = power_signal - reg  # - power_null
+
+        else:
+            power = power_signal - reg
+
+        return power, hist_bkg, hist_sig, js_signal, js_null, reg, effect_signal
+
+
+class JensenShannonDetectionPowerUtilityNullEffect(torch.nn.Module):
+    """
+    Detection power utility using Jensen-Shannon divergence between signal and background.
+    Incorporates a minimum effect size threshold derived from the null distribution.
+    """
+
+    def __init__(self, ang_res: float, significance_level: float = 0.05):
+        super().__init__()
+        self.ang_res = torch.tensor(ang_res, dtype=torch.float32)
+        self.log_scale = torch.nn.Parameter(torch.tensor(-5.0, requires_grad=True))
+        self.register_buffer("log_alpha", torch.tensor(-2.0))
+        self.significance_level = significance_level
+        self.z_critical = torch.tensor(norm.ppf(1 - significance_level), dtype=torch.float32)
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    def soft_hist(self, data: Tensor, bins: Tensor, sigma: Tensor) -> Tensor:
+        data = data.unsqueeze(-1).to(self.device)
+        bins = bins.unsqueeze(0).to(self.device)
+        weights = torch.exp(-0.5 * ((data - bins) / sigma) ** 2)
+        weights = weights / (sigma * (2 * torch.pi) ** 0.5)
+        hist = weights.sum(dim=0)
+        hist = hist + 1e-8
+        hist = hist / hist.sum()
+        return hist
+
+    @staticmethod
+    def jensen_shannon_divergence(hist1: Tensor, hist2: Tensor) -> Tensor:
+        eps = 1e-8
+        hist1 = hist1 + eps
+        hist2 = hist2 + eps
+        hist1 = hist1 / hist1.sum()
+        hist2 = hist2 / hist2.sum()
+        m = 0.5 * (hist1 + hist2)
+        js = 0.5 * (torch.sum(hist1 * torch.log(hist1 / m)) + torch.sum(hist2 * torch.log(hist2 / m)))
+        return js
+
+    def kl_to_power(self, kl_divergence: Tensor, n_samples: int) -> Tuple[Tensor, Tensor]:
+        """Convert divergence to detection power (effect size) using z-critical."""
+        effect_size = 2.0 * torch.sqrt(kl_divergence + 1e-8)
+        ncp = effect_size * torch.sqrt(torch.tensor(n_samples / 2, dtype=torch.float32))
+        z_power = ncp - self.z_critical
+        power = 0.5 * (1.0 + torch.tanh(0.8 * z_power))
+        return torch.clamp(power, 0.01, 0.99), effect_size
+
+    def forward(
+        self, data_bkg: Tensor, data_sig: Tensor, bins: Tensor, data_null: Tensor = None
+    ) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
+
+        sigma = torch.exp(self.log_scale).clamp(min=1e-4)
+        hist_bkg = self.soft_hist(data_bkg, bins, sigma)
+        hist_sig = self.soft_hist(data_sig, bins, sigma)
+
+        js_signal = self.jensen_shannon_divergence(hist_sig, hist_bkg)
+        js_null = torch.tensor(0.0)
+
+        # Optional null divergence
+        if data_null is not None:
+            hist_null = self.soft_hist(data_null, bins, sigma)
+            js_null = self.jensen_shannon_divergence(hist_null, hist_bkg)
+
+        # Convert to power and effect size
+        n_sig, n_null = len(data_sig), len(data_null) if data_null is not None else len(data_sig)
+        power_sig, eff_sig = self.kl_to_power(js_signal, n_sig)
+        power_null, eff_null = self.kl_to_power(js_null, n_null)
+
+        # Adjust for minimum detectable effect (null baseline)
+        eff_adj = torch.clamp(eff_sig - eff_null, min=0.0)
+        ncp_adj = eff_adj * torch.sqrt(torch.tensor(n_sig, dtype=torch.float32))
+        z_power_adj = ncp_adj - self.z_critical
+        power_adj = 0.5 * (1.0 + torch.tanh(0.8 * z_power_adj))
+        power_adj = torch.clamp(power_adj, 0.01, 0.99)
+
+        # Regularization (keep sigma near ang_res)
+        alpha = torch.exp(self.log_alpha)
+        reg = alpha * (sigma / self.ang_res - 1.0) ** 2
+
+        # Final utility: adjusted detection power minus regularization
+        utility = power_adj - reg
+
+        return utility, hist_bkg, hist_sig, js_signal, js_null, reg, eff_adj
