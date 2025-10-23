@@ -170,7 +170,6 @@ class SegmentedPanelVolumeWrapper(AbsVolumeWrapper):
             "z_pos_opt": kwargs["z_pos_opt"]((p.z for l in dets for p in l.panels)),
             "xy_span_opt": kwargs["xy_span_opt"]((p.xy_span for l in dets for p in l.panels)),
             "gap_opt": kwargs["gap_opt"]((l.gap_size for l in dets)),
-            # "gap_opt": kwargs["gap_opt"]((l.gap_size for l in dets)),
         }
         if kwargs["budget_opt"] is not None:
             self.opts["budget_opt"] = kwargs["budget_opt"]((p for p in [self.volume.budget_weights]))
