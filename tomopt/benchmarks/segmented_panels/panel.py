@@ -50,7 +50,6 @@ class SegmentedSigmoidDetectorPanel(DetectorPanel):
         self.n_panels = n_panels  # Number of panels along one axis (n x n)
         self.gap_size = init_gap  # Learnable gap size
         self.realistic_training = realistic_training
-
         # Smooth will be massaged to Tensor, but MyPy doesn't spot this
         self.smooth = smooth  # type: ignore
 
@@ -159,7 +158,7 @@ class SegmentedSigmoidDetectorPanel(DetectorPanel):
         if not smooth > 0:
             raise ValueError("smooth argument must be positive and non-zero")
         if not isinstance(smooth, Tensor):
-            smooth = Tensor([smooth], device=self.device)
+            smooth = torch.tensor([smooth], device=self.device)
         if hasattr(self, "_smooth"):
             self._smooth = smooth
         else:
