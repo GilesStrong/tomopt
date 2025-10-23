@@ -25,6 +25,7 @@ class AnomalyUtility(torch.nn.Module):
         self.log_scale = torch.nn.Parameter(torch.tensor(-5.0, requires_grad=True))  # smoothing factor
         # self.log_alpha = torch.nn.Parameter(torch.tensor(-2.0, requires_grad=True))  # regularization strength (currently unused)
         self.register_buffer("log_alpha", torch.tensor(-2.0))  # log alpha fixed
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     def soft_hist(self, data: Tensor, bins: Tensor) -> Tensor:
         """
@@ -44,8 +45,8 @@ class AnomalyUtility(torch.nn.Module):
         sigma = torch.exp(self.log_scale).clamp(min=1e-4)
 
         # Broadcast data and bins to form pairwise differences: (N, 1) - (1, B) --> (N, B)
-        data = data.unsqueeze(-1)
-        bins = bins.unsqueeze(0)
+        data = data.unsqueeze(-1).to(self.device)
+        bins = bins.unsqueeze(0).to(self.device)
 
         # Compute Gaussian kernel weights for each (data, bin) pair
         weights = torch.exp(-0.5 * ((data - bins) / sigma) ** 2)
