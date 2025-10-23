@@ -91,7 +91,6 @@ def generate_three_volumes_poca(
         xy_span_opt=partial(torch.optim.SGD, lr=1e3),
         z_pos_opt=partial(torch.optim.SGD, lr=1e3),
         gap_opt=partial(torch.optim.SGD, lr=1e3),
-        res_opt=partial(torch.optim.SGD, lr=1e3),
         loss_func=VoxelX0Loss(target_budget=None, cost_coef=None),
     )
 
