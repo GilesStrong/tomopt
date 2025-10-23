@@ -32,6 +32,7 @@ def generate_three_volumes_poca(
     init_gap: float = 0.1,
     n_panels: int = 3,
     n_panels_seg: int = 2,
+    lw: Tensor = Tensor([2.0, 2.0]),
     n_mu: int = 1000,
     mu_bs: int = 100,
     block_mat: str = "uranium",
@@ -63,9 +64,9 @@ def generate_three_volumes_poca(
         rad_length = torch.ones(list((lw / size).long())) * X0[bkg_mat]
         grid = torch.zeros_like(rad_length)
 
-        cube_size = 2
+        cube_size = 1
         offset = 2
-        if uranium and (z > 0.3 and z < 0.6):
+        if uranium and (z > 0.3 and z < 0.5):
             grid[-offset - cube_size : -offset, offset : offset + cube_size] = X0[block_mat]
             rad_length[grid.bool()] = grid[grid.bool()]
 
@@ -81,7 +82,7 @@ def generate_three_volumes_poca(
     )
 
     # Volume construction
-    volume = Volume(get_layers(init_gap=init_gap, panel_z_spacing=panel_z_spacing, n_panels=n_panels, n_panels_seg=n_panels_seg, init_res=init_res))
+    volume = Volume(get_layers(init_gap=init_gap, panel_z_spacing=panel_z_spacing, n_panels=n_panels, n_panels_seg=n_panels_seg, init_res=init_res, lw=lw))
 
     # volume wrapper
     wrapper = SegmentedPanelVolumeWrapper(
@@ -90,6 +91,7 @@ def generate_three_volumes_poca(
         xy_span_opt=partial(torch.optim.SGD, lr=1e3),
         z_pos_opt=partial(torch.optim.SGD, lr=1e3),
         gap_opt=partial(torch.optim.SGD, lr=1e3),
+        res_opt=partial(torch.optim.SGD, lr=1e3),
         loss_func=VoxelX0Loss(target_budget=None, cost_coef=None),
     )
 
