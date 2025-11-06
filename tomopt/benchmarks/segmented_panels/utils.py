@@ -1,4 +1,6 @@
+import os
 import pickle
+import sys
 from functools import partial
 from typing import Any, List, Optional, Tuple
 
@@ -10,18 +12,23 @@ import torch.nn.functional as F
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from torch import Tensor
 
-# segmented panel imports
-from tomopt.benchmarks.segmented_panels.callbacks import PredHitRecord
-from tomopt.benchmarks.segmented_panels.detector_config import get_layers
-from tomopt.benchmarks.segmented_panels.layer import SegmentedPanelDetectorLayer
-from tomopt.benchmarks.segmented_panels.panel import SegmentedSigmoidDetectorPanel
-from tomopt.benchmarks.segmented_panels.wrapper import SegmentedPanelVolumeWrapper
-
 # tomopt imports
 from tomopt.inference import ScatterBatch
 from tomopt.optimisation.callbacks import Callback
 from tomopt.optimisation.data.passives import PassiveYielder
 from tomopt.volume import PassiveLayer, Volume
+
+# Add parent directories to path
+current_dir = os.path.dirname(os.path.abspath(__file__))
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
+
+# segmented panel imports
+from callbacks import PredHitRecord  # type: ignore[import] # noqa: E402
+from detector_config import get_layers  # type: ignore[import] # noqa: E402
+from layer import SegmentedPanelDetectorLayer  # type: ignore[import] # noqa: E402
+from panel import SegmentedSigmoidDetectorPanel  # type: ignore[import] # noqa: E402
+from wrapper import SegmentedPanelVolumeWrapper  # type: ignore[import] # noqa: E402
 
 """_description_
 This module contains utility functions for analysis and performance evaluation.
