@@ -1,0 +1,232 @@
+from __future__ import annotations
+
+import os
+import sys
+from typing import List, Optional, Type
+
+from fastprogress import master_bar, progress_bar
+
+# tomopt imports
+from tomopt.core import PartialOpt
+from tomopt.inference import AbsVolumeInferrer, PanelX0Inferrer, ScatterBatch
+from tomopt.muon import AbsMuonGenerator, MuonBatch
+from tomopt.optimisation.data import PassiveYielder
+from tomopt.optimisation.loss.loss import AbsDetectorLoss
+from tomopt.optimisation.wrapper import AbsVolumeWrapper
+from tomopt.volume import Volume
+
+# segmented panel imports
+# Add current directory to path
+current_dir = os.path.dirname(os.path.abspath(__file__))
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
+
+from layer import SegmentedPanelDetectorLayer  # type: ignore[import] # noqa: E402
+
+_all__ = ["CoDesignVolumeWrapper"]
+
+
+class CoDesignVolumeWrapper(AbsVolumeWrapper):
+    r"""
+    An implementation of a wrapper class designed for segmented layer and panel classes.
+    """
+
+    def __init__(
+        self,
+        volume: Volume,
+        *,
+        xy_pos_opt: PartialOpt,
+        z_pos_opt: PartialOpt,
+        xy_span_opt: Optional[PartialOpt] = None,
+        gap_opt: PartialOpt,
+        sigma_soft_opt: Optional[PartialOpt],
+        budget_opt: Optional[PartialOpt] = None,
+        loss_func: Optional[AbsDetectorLoss] = None,
+        partial_scatter_inferrer: Type[ScatterBatch] = ScatterBatch,
+        partial_volume_inferrer: Type[AbsVolumeInferrer] = PanelX0Inferrer,
+        mu_generator: Optional[AbsMuonGenerator] = None,
+        background_bs: int = 10,
+    ):
+        super().__init__(
+            volume=volume,
+            partial_opts={
+                "xy_pos_opt": xy_pos_opt,
+                "z_pos_opt": z_pos_opt,
+                "xy_span_opt": xy_span_opt,
+                "gap_opt": gap_opt,
+                "sigma_soft_opt": sigma_soft_opt,
+                "budget_opt": budget_opt,
+            },
+            loss_func=loss_func,
+            mu_generator=mu_generator,
+            partial_scatter_inferrer=partial_scatter_inferrer,
+            partial_volume_inferrer=partial_volume_inferrer,
+        )
+        self.background_bs = background_bs
+
+    @classmethod
+    def from_save(
+        cls,
+        name: str,
+        *,
+        volume: Volume,
+        xy_pos_opt: PartialOpt,
+        z_pos_opt: PartialOpt,
+        xy_span_opt: Optional[PartialOpt] = None,
+        gap_opt: Optional[PartialOpt] = None,
+        sigma_soft_opt: Optional[PartialOpt] = None,
+        budget_opt: Optional[PartialOpt] = None,
+        loss_func: Optional[AbsDetectorLoss],
+        partial_scatter_inferrer: Type[ScatterBatch] = ScatterBatch,
+        partial_volume_inferrer: Type[AbsVolumeInferrer] = PanelX0Inferrer,
+        mu_generator: Optional[AbsMuonGenerator] = None,
+    ) -> AbsVolumeWrapper:
+        r"""
+        Instantiates a new `SegmentedPanelVolumeWrapper` and loads saved detector and optimiser parameters
+
+        Arguments:
+            name: file name with saved detector and optimiser parameters
+            volume: the volume containing the detectors to be optimised
+            xy_pos_opt: uninitialised optimiser to be used for adjusting the xy position of panels
+            z_pos_opt: uninitialised optimiser to be used for adjusting the z position of panels,
+            xy_span_opt: uninitialised optimiser to be used for adjusting the xy size of panels,
+            budget_opt: optional uninitialised optimiser to be used for adjusting the fractional assignment of budget to the panels
+            loss_func: optional loss function (required if planning to optimise the detectors)
+            partial_scatter_inferrer: uninitialised class to be used for inferring muon scatter variables and trajectories
+            partial_volume_inferrer:  uninitialised class to be used for inferring volume targets
+            mu_generator: Optional generator class for muons. If None, will use :meth:`~tomopt.muon.generation. MuonGenerator2016.from_volume`.
+        """
+
+        vw = cls(
+            volume=volume,
+            xy_pos_opt=xy_pos_opt,
+            z_pos_opt=z_pos_opt,
+            xy_span_opt=xy_span_opt,
+            gap_opt=gap_opt,
+            sigma_soft_opt=sigma_soft_opt,
+            budget_opt=budget_opt,
+            loss_func=loss_func,
+            partial_scatter_inferrer=partial_scatter_inferrer,
+            partial_volume_inferrer=partial_volume_inferrer,
+            mu_generator=mu_generator,
+        )
+        vw.load(name)
+        return vw
+
+    def _scan_volumes(self, passives: PassiveYielder) -> None:
+        r"""
+        Scans all volumes by splitting them into volume batches.
+        Each volume is scanned via using :meth:`~tomopt.optimisation.wrapper.volume_wrapper.AbsVolumeWrapper._scan_volume`.
+        After each volume batch, if in 'train' state,the detector parameters will be updated using the loss of the volume batch and the optimisers.
+            If not enough volumes remain to form a complete batch and in 'train' state, the method will end prematurely.
+        """
+
+        if self.fit_params.state == "test":
+            self.fit_params.passive_bar = master_bar(passives)
+        for i, (passive, target) in enumerate(self.fit_params.passive_bar if self.fit_params.state == "test" else passives):
+            self.fit_params.volume_id = i
+            if self.fit_params.state != "test" and (i == 0):  # Volume batch start
+                self.fit_params.loss_val = None
+                for c in self.fit_params.cbs:
+                    c.on_volume_batch_begin()
+
+            self.volume.load_rad_length(passive, target)
+            for c in self.fit_params.cbs:
+                c.on_volume_begin()
+            self._scan_volume()
+            for c in self.fit_params.cbs:
+                c.on_volume_end()
+
+            if self.fit_params.state != "test" and (i + 1) == self.background_bs:  # Bkg volume batch end
+                for c in self.fit_params.cbs:
+                    if hasattr(c, "is_signal_phase"):
+                        c.is_signal_phase = True
+                        c.on_volume_batch_begin()
+
+            if self.fit_params.state != "test" and (i + 1) % self.fit_params.passive_bs == 0:  # Volume batch end
+                for c in self.fit_params.cbs:
+                    c.on_volume_batch_end()
+                # Compute loss for volume batch
+                if self.fit_params.state != "test" and self.loss_func is not None:
+                    self.fit_params.mean_loss = self.loss_func()
+                    print(f"Epoch {self.fit_params.epoch} Volume: {i}: Loss = {self.fit_params.mean_loss.item():.4f}, state={self.fit_params.state}")
+
+                if self.fit_params.state == "train":
+                    # Compute update step
+                    for o in self.opts.values():
+                        o.zero_grad()
+                    for c in self.fit_params.cbs:
+                        c.on_backwards_begin()
+                    if self.fit_params.mean_loss is not None:
+                        self.fit_params.mean_loss.backward()
+                    for c in self.fit_params.cbs:
+                        c.on_backwards_end()
+
+                    print("=== Gradient check ===")
+                    for opt_name, opt in self.opts.items():
+                        print(f"Optimizer: {opt_name}")
+                        for i, group in enumerate(opt.param_groups):
+                            for j, param in enumerate(group["params"]):
+                                if param.grad is not None:
+                                    print(f"  Param {j}: grad norm = {param.grad.norm().item()}")
+                                else:
+                                    print(f"  Param {j}: grad is None")
+                    print("======================")
+                    if self.fit_params.mean_loss is not None and not self.fit_params.skip_opt_step:
+                        for o in self.opts.values():
+                            o.step()
+                    for c in self.fit_params.cbs:
+                        c.on_step_end()
+                    for d in self.volume.get_detectors():
+                        d.conform_detector()
+
+                if len(passives) - (i + 1) < self.fit_params.passive_bs:
+                    print("exiting training epoch")
+                    break
+
+    def _scan_volume(self) -> None:
+        r"""
+        Passes multiple batches of muons through a single volume, and saves the PoCA scattering angle distribution.
+        """
+        # Scan volume with muon batches
+        self.fit_params.pred = None
+        if self.fit_params.state != "test":
+            muon_bar = progress_bar(range(self.fit_params.n_mu_per_volume // self.fit_params.mu_bs), display=False, leave=False)
+        else:
+            muon_bar = progress_bar(range(self.fit_params.n_mu_per_volume // self.fit_params.mu_bs), parent=self.fit_params.passive_bar)
+        # self.fit_params.volume_inferrer = self.partial_volume_inferrer(volume=self.volume)
+        for _ in muon_bar:
+            self.fit_params.mu = MuonBatch(self.mu_generator(self.fit_params.mu_bs), init_z=self.volume.h, device=self.fit_params.device)
+            for c in self.fit_params.cbs:
+                c.on_mu_batch_begin()
+            self.volume(self.fit_params.mu)
+            self.fit_params.sb = self.partial_scatter_inferrer(mu=self.fit_params.mu, volume=self.volume)
+
+            for c in self.fit_params.cbs:
+                c.on_scatter_end()
+            # self.fit_params.volume_inferrer.add_scatters(self.fit_params.sb)
+            for c in self.fit_params.cbs:
+                c.on_mu_batch_end()
+
+    def _build_opt(self, **kwargs: PartialOpt) -> None:
+        r"""
+        Initialises the optimisers by associating them to the detector and software parameters.
+
+        Arguments:
+            kwargs: uninitialised optimisers passed as keyword arguments
+        """
+
+        all_dets = self.volume.get_detectors()
+        dets: List[SegmentedPanelDetectorLayer] = []
+        for d in all_dets:
+            if isinstance(d, SegmentedPanelDetectorLayer):
+                dets.append(d)
+        self.opts = {
+            "xy_pos_opt": kwargs["xy_pos_opt"]((p.xy for l in dets for p in l.panels)),
+            "z_pos_opt": kwargs["z_pos_opt"]((p.z for l in dets for p in l.panels)),
+            "xy_span_opt": kwargs["xy_span_opt"]((p.xy_span for l in dets for p in l.panels)),
+            "gap_opt": kwargs["gap_opt"]((l.gap_size for l in dets)),
+            "sigma_soft_opt": kwargs["sigma_soft_opt"](p for p in [self.loss_func.log_sigma_soft]),
+        }
+        if kwargs["budget_opt"] is not None:
+            self.opts["budget_opt"] = kwargs["budget_opt"]((p for p in [self.volume.budget_weights]))
