@@ -1,3 +1,5 @@
+import os
+from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Union
@@ -125,3 +127,56 @@ class DiagnosticPlotter:
         """Generate all diagnostic plots."""
         self.plot_background_distribution(plot_data)
         self.plot_signal_detection(plot_data, tau_detect)
+
+
+class GradientDebugPlotter:
+    """
+    Track and plot values and gradients of debug_tensors across epochs with separate y-axes.
+    """
+
+    def __init__(self, save_path: str = "grad_debug"):
+        self.tensor_vals: Dict[str, list] = defaultdict(list)
+        self.tensor_grads: Dict[str, list] = defaultdict(list)
+        self.epochs: list = []
+        self.save_path = save_path
+        os.makedirs(self.save_path, exist_ok=True)
+
+    def update(self, debug_tensors: dict, epoch: int) -> None:
+        self.epochs.append(epoch)
+        for name, tensor in debug_tensors.items():
+            if tensor is None or not torch.is_tensor(tensor):
+                continue
+
+            val_mean = tensor.detach().mean().item()
+            self.tensor_vals[name].append(val_mean)
+            grad_mean = tensor.grad.detach().mean().item() if tensor.grad is not None else 0.0
+            self.tensor_grads[name].append(grad_mean)
+
+    def plot(self, epoch: int = None) -> None:
+        n_tensors = len(self.tensor_vals)
+        if n_tensors == 0:
+            return
+        fig, axes = plt.subplots(n_tensors, 1, figsize=(10, 3 * n_tensors), sharex=True)
+        if n_tensors == 1:
+            axes = [axes]
+        for ax, name in zip(axes, self.tensor_vals.keys()):
+            # left axis: tensor value
+            ax.plot(self.epochs, self.tensor_vals[name], color="blue", lw=2, label=f"{name} mean")
+            ax.set_ylabel(name, color="blue")
+            ax.tick_params(axis="y", labelcolor="blue")
+            ax.grid(alpha=0.3)
+            # right axis: gradient
+            ax2 = ax.twinx()
+            ax2.plot(self.epochs, self.tensor_grads[name], color="red", lw=1.5, linestyle="--", label=f"{name} grad mean")
+            ax2.set_ylabel(f"{name} grad", color="red")
+            ax2.tick_params(axis="y", labelcolor="red")
+            # legends
+            lines, labels = ax.get_legend_handles_labels()
+            lines2, labels2 = ax2.get_legend_handles_labels()
+            ax.legend(lines + lines2, labels + labels2, loc="upper right")
+        axes[-1].set_xlabel("Epoch")
+        plt.tight_layout()
+        # Save figure
+        fname = f"grad_debug_epoch_{epoch:03d}.png" if epoch is not None else "grad_debug.png"
+        plt.savefig(os.path.join(self.save_path, fname))
+        plt.close()
