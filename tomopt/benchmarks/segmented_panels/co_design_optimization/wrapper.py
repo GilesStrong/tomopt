@@ -75,6 +75,48 @@ class CoDesignVolumeWrapper(AbsVolumeWrapper):
             - sigma_hw: Hardware angular resolution
     """
 
+    # def __init__(
+    #     self,
+    #     volume: Volume,
+    #     *,
+    #     xy_pos_opt: PartialOpt,
+    #     z_pos_opt: PartialOpt,
+    #     xy_span_opt: Optional[PartialOpt] = None,
+    #     gap_opt: PartialOpt,
+    #     log_sigma_sw_opt: Optional[PartialOpt],
+    #     budget_opt: Optional[PartialOpt] = None,
+    #     loss_func: Optional[AbsDetectorLoss] = None,
+    #     partial_scatter_inferrer: Type[ScatterBatch] = ScatterBatch,
+    #     partial_volume_inferrer: Type[AbsVolumeInferrer] = PanelX0Inferrer,
+    #     mu_generator: Optional[AbsMuonGenerator] = None,
+    # ) -> None:
+    #     """Initialize co-design volume wrapper with optimizers and settings."""
+    #     super().__init__(
+    #         volume=volume,
+    #         partial_opts={
+    #             "xy_pos_opt": xy_pos_opt,
+    #             "z_pos_opt": z_pos_opt,
+    #             "xy_span_opt": xy_span_opt,
+    #             "gap_opt": gap_opt,
+    #             "log_sigma_sw_opt": log_sigma_sw_opt,
+    #             "budget_opt": budget_opt,
+    #         },
+    #         loss_func=loss_func,
+    #         mu_generator=mu_generator,
+    #         partial_scatter_inferrer=partial_scatter_inferrer,
+    #         partial_volume_inferrer=partial_volume_inferrer,
+    #     )
+
+    #     self.debug_plotter = GradientDebugPlotter(save_path="grad_debug_plots")
+    #     # Training history for diagnostics
+    #     self.history: Dict[str, List[Optional[float]]] = {
+    #     "train_loss": [],
+    #     "val_loss": [],
+    #     "log_sigma_sw": [],
+    #     "sigma_hw": [],
+    # }
+
+    # Modified __init__ signature (remove log_sigma_sw_opt parameter)
     def __init__(
         self,
         volume: Volume,
@@ -83,14 +125,18 @@ class CoDesignVolumeWrapper(AbsVolumeWrapper):
         z_pos_opt: PartialOpt,
         xy_span_opt: Optional[PartialOpt] = None,
         gap_opt: PartialOpt,
-        log_sigma_sw_opt: Optional[PartialOpt],
         budget_opt: Optional[PartialOpt] = None,
         loss_func: Optional[AbsDetectorLoss] = None,
         partial_scatter_inferrer: Type[ScatterBatch] = ScatterBatch,
         partial_volume_inferrer: Type[AbsVolumeInferrer] = PanelX0Inferrer,
         mu_generator: Optional[AbsMuonGenerator] = None,
     ) -> None:
-        """Initialize co-design volume wrapper with optimizers and settings."""
+        """
+        Initialize co-design volume wrapper.
+
+        NOTE: log_sigma_sw_opt parameter REMOVED.
+        Software parameter now optimized internally by loss function.
+        """
         super().__init__(
             volume=volume,
             partial_opts={
@@ -98,8 +144,8 @@ class CoDesignVolumeWrapper(AbsVolumeWrapper):
                 "z_pos_opt": z_pos_opt,
                 "xy_span_opt": xy_span_opt,
                 "gap_opt": gap_opt,
-                "log_sigma_sw_opt": log_sigma_sw_opt,
                 "budget_opt": budget_opt,
+                # log_sigma_sw_opt REMOVED
             },
             loss_func=loss_func,
             mu_generator=mu_generator,
@@ -107,7 +153,11 @@ class CoDesignVolumeWrapper(AbsVolumeWrapper):
             partial_volume_inferrer=partial_volume_inferrer,
         )
 
-        self.debug_plotter = GradientDebugPlotter(save_path="grad_debug_plots")
+        if hasattr(self, "debug_plotter"):
+            self.debug_plotter = GradientDebugPlotter(save_path="grad_debug_plots")
+
+        self.debug = True  # Enable debug output
+
         # Training history for diagnostics
         self.history: Dict[str, List[Optional[float]]] = {
             "train_loss": [],
@@ -126,7 +176,7 @@ class CoDesignVolumeWrapper(AbsVolumeWrapper):
         z_pos_opt: PartialOpt,
         xy_span_opt: Optional[PartialOpt] = None,
         gap_opt: Optional[PartialOpt] = None,
-        log_sigma_sw_opt: Optional[PartialOpt] = None,
+        # log_sigma_sw_opt: Optional[PartialOpt] = None,
         budget_opt: Optional[PartialOpt] = None,
         loss_func: Optional[AbsDetectorLoss] = None,
         partial_scatter_inferrer: Type[ScatterBatch] = ScatterBatch,
@@ -162,7 +212,7 @@ class CoDesignVolumeWrapper(AbsVolumeWrapper):
             z_pos_opt=z_pos_opt,
             xy_span_opt=xy_span_opt,
             gap_opt=gap_opt,
-            log_sigma_sw_opt=log_sigma_sw_opt,
+            # log_sigma_sw_opt=log_sigma_sw_opt,
             budget_opt=budget_opt,
             loss_func=loss_func,
             partial_scatter_inferrer=partial_scatter_inferrer,
@@ -235,46 +285,46 @@ class CoDesignVolumeWrapper(AbsVolumeWrapper):
                     print("Exiting training epoch")
                     break
 
-    def _process_batch_end(self, current_idx: int, total_volumes: int) -> None:
-        """
-        Process end of volume batch: compute loss and update parameters.
+    # def _process_batch_end(self, current_idx: int, total_volumes: int) -> None:
+    #     """
+    #     Process end of volume batch: compute loss and update parameters.
 
-        Called when a complete batch has been processed. Triggers hypothesis
-        test callbacks, computes loss, performs backpropagation (if training),
-        and updates detector parameters.
+    #     Called when a complete batch has been processed. Triggers hypothesis
+    #     test callbacks, computes loss, performs backpropagation (if training),
+    #     and updates detector parameters.
 
-        Args:
-            current_idx: Index of current volume in epoch
-            total_volumes: Total number of volumes in epoch
+    #     Args:
+    #         current_idx: Index of current volume in epoch
+    #         total_volumes: Total number of volumes in epoch
 
-        Note:
-            Accumulates loss across batches and averages at end of epoch.
-            Only performs parameter updates in training mode.
-        """
-        # Trigger hypothesis test data collection
-        for c in self.fit_params.cbs:
-            if hasattr(c, "is_signal_phase"):
-                print(current_idx)
-                c.on_volume_batch_end_hypothesis()  # type: ignore[attr-defined]
+    #     Note:
+    #         Accumulates loss across batches and averages at end of epoch.
+    #         Only performs parameter updates in training mode.
+    #     """
+    #     # Trigger hypothesis test data collection
+    #     for c in self.fit_params.cbs:
+    #         if hasattr(c, "is_signal_phase"):
+    #             print(current_idx)
+    #             c.on_volume_batch_end_hypothesis()  # type: ignore[attr-defined]
 
-        # Compute loss for current batch
-        loss = self.loss_func()
+    #     # Compute loss for current batch
+    #     loss = self.loss_func()
 
-        # Accumulate loss
-        if self.fit_params.loss_val is None:
-            self.fit_params.loss_val = loss
-            print(f"Epoch {self.fit_params.epoch} Volume: {current_idx}, " f"pre-summed loss, state={self.fit_params.state}")
-        else:
-            self.fit_params.loss_val = self.fit_params.loss_val + loss
-            print(f"Epoch {self.fit_params.epoch} Volume: {current_idx}, " f"summed loss, state={self.fit_params.state}")
+    #     # Accumulate loss
+    #     if self.fit_params.loss_val is None:
+    #         self.fit_params.loss_val = loss
+    #         print(f"Epoch {self.fit_params.epoch} Volume: {current_idx}, " f"pre-summed loss, state={self.fit_params.state}")
+    #     else:
+    #         self.fit_params.loss_val = self.fit_params.loss_val + loss
+    #         print(f"Epoch {self.fit_params.epoch} Volume: {current_idx}, " f"summed loss, state={self.fit_params.state}")
 
-        # Finalize and update at end of epoch
-        is_epoch_end = (current_idx + 1) == total_volumes
-        is_training_mode = self.fit_params.state != "test"
-        has_loss_func = self.loss_func is not None
+    #     # Finalize and update at end of epoch
+    #     is_epoch_end = (current_idx + 1) == total_volumes
+    #     is_training_mode = self.fit_params.state != "test"
+    #     has_loss_func = self.loss_func is not None
 
-        if is_training_mode and has_loss_func and is_epoch_end:
-            self._finalize_epoch(current_idx, total_volumes)
+    #     if is_training_mode and has_loss_func and is_epoch_end:
+    #         self._finalize_epoch(current_idx, total_volumes)
 
     def _finalize_epoch(self, current_idx: int, total_volumes: int) -> None:
         """
@@ -302,63 +352,63 @@ class CoDesignVolumeWrapper(AbsVolumeWrapper):
         elif self.fit_params.state == "valid":
             self._record_validation_metrics()
 
-    def _perform_training_update(self, current_idx: int) -> None:
-        """
-        Perform training update: backpropagation and parameter optimization.
+    # def _perform_training_update(self, current_idx: int) -> None:
+    #     """
+    #     Perform training update: backpropagation and parameter optimization.
 
-        Executes the complete training update cycle:
-        1. Zero gradients
-        2. Trigger pre-backward callbacks
-        3. Compute gradients via backpropagation
-        4. Trigger post-backward callbacks (e.g., gradient clipping)
-        5. Update parameters with optimizer step
-        6. Conform detector parameters to constraints
-        7. Record training metrics
+    #     Executes the complete training update cycle:
+    #     1. Zero gradients
+    #     2. Trigger pre-backward callbacks
+    #     3. Compute gradients via backpropagation
+    #     4. Trigger post-backward callbacks (e.g., gradient clipping)
+    #     5. Update parameters with optimizer step
+    #     6. Conform detector parameters to constraints
+    #     7. Record training metrics
 
-        Args:
-            current_idx: Index of current volume (for logging)
-        """
-        print(current_idx)
+    #     Args:
+    #         current_idx: Index of current volume (for logging)
+    #     """
+    #     print(current_idx)
 
-        # Zero all optimizer gradients
-        for o in self.opts.values():
-            o.zero_grad()
+    #     # Zero all optimizer gradients
+    #     for o in self.opts.values():
+    #         o.zero_grad()
 
-        # Pre-backward callbacks
-        for c in self.fit_params.cbs:
-            c.on_backwards_begin()
+    #     # Pre-backward callbacks
+    #     for c in self.fit_params.cbs:
+    #         c.on_backwards_begin()
 
-        # Compute gradients
-        if self.fit_params.mean_loss is not None:
-            self.fit_params.mean_loss.backward()
+    #     # Compute gradients
+    #     if self.fit_params.mean_loss is not None:
+    #         self.fit_params.mean_loss.backward()
 
-        # Post-backward callbacks (e.g., gradient clipping)
-        for c in self.fit_params.cbs:
-            c.on_backwards_end()
+    #     # Post-backward callbacks (e.g., gradient clipping)
+    #     for c in self.fit_params.cbs:
+    #         c.on_backwards_end()
 
-        self.debug_plotter.update(self.loss_func.debug_tensors, self.fit_params.epoch)
-        self.debug_plotter.plot(epoch=self.fit_params.epoch)
+    #     self.debug_plotter.update(self.loss_func.debug_tensors, self.fit_params.epoch)
+    #     self.debug_plotter.plot(epoch=self.fit_params.epoch)
 
-        # Update parameters
-        if self.fit_params.mean_loss is not None and not self.fit_params.skip_opt_step:
-            for o in self.opts.values():
-                o.step()
+    #     # Update parameters
+    #     if self.fit_params.mean_loss is not None and not self.fit_params.skip_opt_step:
+    #         for o in self.opts.values():
+    #             o.step()
 
-        # Record training metrics
-        self.history["train_loss"].append(self.fit_params.mean_loss.item() if self.fit_params.mean_loss is not None else None)
-        self.history["log_sigma_sw"].append(self.loss_func.log_sigma_sw.detach().cpu().item())
+    #     # Record training metrics
+    #     self.history["train_loss"].append(self.fit_params.mean_loss.item() if self.fit_params.mean_loss is not None else None)
+    #     self.history["log_sigma_sw"].append(self.loss_func.log_sigma_sw.detach().cpu().item())
 
-        # Post-step callbacks
-        for c in self.fit_params.cbs:
-            c.on_step_end()
+    #     # Post-step callbacks
+    #     for c in self.fit_params.cbs:
+    #         c.on_step_end()
 
-        # Ensure detector parameters satisfy constraints
-        for d in self.volume.get_detectors():
-            d.conform_detector()
+    #     # Ensure detector parameters satisfy constraints
+    #     for d in self.volume.get_detectors():
+    #         d.conform_detector()
 
-        # Record hardware resolution if available
-        sigma_hw_val = self._extract_sigma_hw()
-        self.history["sigma_hw"].append(sigma_hw_val)
+    #     # Record hardware resolution if available
+    #     sigma_hw_val = self._extract_sigma_hw()
+    #     self.history["sigma_hw"].append(sigma_hw_val)
 
     def _record_validation_metrics(self) -> None:
         """
@@ -435,46 +485,46 @@ class CoDesignVolumeWrapper(AbsVolumeWrapper):
             for c in self.fit_params.cbs:
                 c.on_mu_batch_end()
 
-    def _build_opt(self, **kwargs: PartialOpt) -> None:
-        """
-        Initialize optimizers by associating them with detector parameters.
+    # def _build_opt(self, **kwargs: PartialOpt) -> None:
+    #     """
+    #     Initialize optimizers by associating them with detector parameters.
 
-        Creates optimizer instances for each optimizable parameter group:
-        - xy_pos_opt: Panel xy positions
-        - z_pos_opt: Panel z positions
-        - xy_span_opt: Panel xy spans (optional)
-        - gap_opt: Gap sizes between panels
-        - log_sigma_sw_opt: Log software smoothing parameter
-        - budget_opt: Budget allocation weights (optional)
+    #     Creates optimizer instances for each optimizable parameter group:
+    #     - xy_pos_opt: Panel xy positions
+    #     - z_pos_opt: Panel z positions
+    #     - xy_span_opt: Panel xy spans (optional)
+    #     - gap_opt: Gap sizes between panels
+    #     - log_sigma_sw_opt: Log software smoothing parameter
+    #     - budget_opt: Budget allocation weights (optional)
 
-        Only segmented panel detector layers are included in optimization.
+    #     Only segmented panel detector layers are included in optimization.
 
-        Args:
-            **kwargs: Uninitialized optimizers passed as keyword arguments
+    #     Args:
+    #         **kwargs: Uninitialized optimizers passed as keyword arguments
 
-        Note:
-            Optimizers must be provided as PartialOpt objects that accept
-            parameter iterators and return initialized optimizer instances.
-        """
-        # Filter for segmented panel detectors
-        all_dets = self.volume.get_detectors()
-        dets: List[SegmentedPanelDetectorLayer] = []
-        for d in all_dets:
-            if isinstance(d, SegmentedPanelDetectorLayer):
-                dets.append(d)
+    #     Note:
+    #         Optimizers must be provided as PartialOpt objects that accept
+    #         parameter iterators and return initialized optimizer instances.
+    #     """
+    #     # Filter for segmented panel detectors
+    #     all_dets = self.volume.get_detectors()
+    #     dets: List[SegmentedPanelDetectorLayer] = []
+    #     for d in all_dets:
+    #         if isinstance(d, SegmentedPanelDetectorLayer):
+    #             dets.append(d)
 
-        # Initialize optimizers for each parameter group
-        self.opts = {
-            "xy_pos_opt": kwargs["xy_pos_opt"]((p.xy for l in dets for p in l.panels)),
-            "z_pos_opt": kwargs["z_pos_opt"]((p.z for l in dets for p in l.panels)),
-            "xy_span_opt": kwargs["xy_span_opt"]((p.xy_span for l in dets for p in l.panels)),
-            "gap_opt": kwargs["gap_opt"]((l.gap_size for l in dets)),
-            "log_sigma_sw_opt": kwargs["log_sigma_sw_opt"](p for p in [self.loss_func.log_sigma_sw]),
-        }
+    #     # Initialize optimizers for each parameter group
+    #     self.opts = {
+    #         "xy_pos_opt": kwargs["xy_pos_opt"]((p.xy for l in dets for p in l.panels)),
+    #         "z_pos_opt": kwargs["z_pos_opt"]((p.z for l in dets for p in l.panels)),
+    #         "xy_span_opt": kwargs["xy_span_opt"]((p.xy_span for l in dets for p in l.panels)),
+    #         "gap_opt": kwargs["gap_opt"]((l.gap_size for l in dets)),
+    #         "log_sigma_sw_opt": kwargs["log_sigma_sw_opt"](p for p in [self.loss_func.log_sigma_sw]),
+    #     }
 
-        # Add budget optimizer if provided
-        if kwargs["budget_opt"] is not None:
-            self.opts["budget_opt"] = kwargs["budget_opt"]((p for p in [self.volume.budget_weights]))
+    #     # Add budget optimizer if provided
+    #     if kwargs["budget_opt"] is not None:
+    #        self.opts["budget_opt"] = kwargs["budget_opt"]((p for p in [self.volume.budget_weights]))
 
     # -------------------------------------------------------------------------
     # Diagnostic Plotting Methods
@@ -597,3 +647,158 @@ class CoDesignVolumeWrapper(AbsVolumeWrapper):
 
         plt.tight_layout()
         plt.show()
+
+        """
+    Modified wrapper to handle separated hardware/software optimization.
+
+    Key changes:
+    - Removed log_sigma_sw_opt from wrapper (now handled in loss inner loop)
+    - Added cache invalidation before hardware updates
+    - Hardware optimization in outer loop, software in inner loop
+    """
+
+    def _build_opt(self, **kwargs: PartialOpt) -> None:
+        """
+        Initialize optimizers - SOFTWARE PARAMETER EXCLUDED.
+
+        log_sigma_sw is now optimized internally by the loss function,
+        so we only create optimizers for hardware parameters here.
+        """
+        # Filter for segmented panel detectors
+        all_dets = self.volume.get_detectors()
+        dets = []
+        for d in all_dets:
+            if isinstance(d, SegmentedPanelDetectorLayer):
+                dets.append(d)
+
+        # Initialize optimizers for HARDWARE parameters only
+        self.opts = {
+            "xy_pos_opt": kwargs["xy_pos_opt"]((p.xy for l in dets for p in l.panels)),
+            "z_pos_opt": kwargs["z_pos_opt"]((p.z for l in dets for p in l.panels)),
+            "xy_span_opt": kwargs["xy_span_opt"]((p.xy_span for l in dets for p in l.panels)),
+            "gap_opt": kwargs["gap_opt"]((l.gap_size for l in dets)),
+        }
+
+        # NOTE: log_sigma_sw_opt is NO LONGER HERE
+        # Software parameter optimized internally by loss function
+
+        # Add budget optimizer if provided
+        if kwargs.get("budget_opt") is not None:
+            self.opts["budget_opt"] = kwargs["budget_opt"]((p for p in [self.volume.budget_weights]))
+
+    def _perform_training_update(self, current_idx: int) -> None:
+        """
+        Perform training update with separated hardware/software optimization.
+
+        Modified flow:
+        1. Loss function has already optimized software in inner loop
+        2. The returned loss has gradients to hardware parameters
+        3. We optimize hardware parameters
+        4. Invalidate cache for next iteration
+        """
+        print(f"[Outer Loop] Epoch {self.fit_params.epoch}, Volume {current_idx}")
+
+        # The loss already contains:
+        # - Optimized software parameter (from inner loop)
+        # - Fresh computation graph with hardware gradients
+
+        # Zero hardware optimizer gradients
+        for o in self.opts.values():
+            o.zero_grad()
+
+        # Pre-backward callbacks
+        for c in self.fit_params.cbs:
+            c.on_backwards_begin()
+
+        # Compute gradients for HARDWARE parameters
+        if self.fit_params.mean_loss is not None:
+            self.fit_params.mean_loss.backward()
+
+            if self.debug:
+                print(" [Outer Loop] Computed hardware gradients")
+
+        # Post-backward callbacks (e.g., gradient clipping)
+        for c in self.fit_params.cbs:
+            c.on_backwards_end()
+
+        # Debug plotting
+        if hasattr(self, "debug_plotter"):
+            self.debug_plotter.update(self.loss_func.debug_tensors, self.fit_params.epoch)
+            self.debug_plotter.plot(epoch=self.fit_params.epoch)
+
+        # Update HARDWARE parameters
+        if self.fit_params.mean_loss is not None and not self.fit_params.skip_opt_step:
+            for opt_name, o in self.opts.items():
+                o.step()
+                if self.debug:
+                    print(f" [Outer Loop] Updated {opt_name}")
+
+            # CRITICAL: Invalidate cache after hardware update
+            self.loss_func.invalidate_cache()
+            if self.debug:
+                print("  [Outer Loop] Cache invalidated - new samples needed")
+
+        # Record training metrics
+        self.history["train_loss"].append(self.fit_params.mean_loss.item() if self.fit_params.mean_loss is not None else None)
+        self.history["log_sigma_sw"].append(self.loss_func.log_sigma_sw.detach().cpu().item())
+
+        # Post-step callbacks
+        for c in self.fit_params.cbs:
+            c.on_step_end()
+
+        # Ensure detector parameters satisfy constraints
+        for d in self.volume.get_detectors():
+            d.conform_detector()
+
+        # Record hardware resolution
+        sigma_hw_val = self._extract_sigma_hw()
+        self.history["sigma_hw"].append(sigma_hw_val)
+
+        if self.debug:
+            print("[Outer Loop] Hardware update complete\n")
+
+    def _process_batch_end(self, current_idx: int, total_volumes: int) -> None:
+        """
+        Process end of volume batch.
+
+        Modified to work with inner-outer loop structure:
+        - Scatter data is collected and set in loss function
+        - Loss function performs inner loop optimization
+        - Wrapper performs outer loop optimization
+        """
+        # Trigger hypothesis test data collection
+        for c in self.fit_params.cbs:
+            if hasattr(c, "is_signal_phase"):
+                c.on_volume_batch_end_hypothesis()  # type: ignore[attr-defined]
+
+        # At this point, scatter data has been set in the loss function
+        # The loss function's forward() will:
+        # 1. Cache the scatter samples
+        # 2. Run inner loop to optimize sigma_sw
+        # 3. Return the final converged loss
+
+        if self.debug:
+            print(f"\n{'='*70}")
+            print(f"Batch {current_idx} complete - computing loss...")
+            print(f"{'='*70}")
+
+        # Compute loss (triggers inner loop optimization)
+        loss = self.loss_func()
+
+        # Accumulate loss
+        if self.fit_params.loss_val is None:
+            self.fit_params.loss_val = loss
+            if self.debug:
+                print(f"[Batch] First batch loss: {loss.item():.6f}")
+        else:
+            self.fit_params.loss_val = self.fit_params.loss_val + loss
+            if self.debug:
+                print(f"[Batch] Accumulated loss: {self.fit_params.loss_val.item():.6f}")
+
+        # Finalize and update at end of epoch
+        is_epoch_end = (current_idx + 1) == total_volumes
+        is_training_mode = self.fit_params.state != "test"
+        has_loss_func = self.loss_func is not None
+
+        if is_training_mode and has_loss_func and is_epoch_end:
+            self._finalize_epoch(current_idx, total_volumes)
