@@ -773,6 +773,36 @@ class HypothesisTestLossInner(nn.Module):
         self.sigma_hw = sigma_hw
         self.epoch = epoch
 
+    def prepare_plot_data(
+        self,
+        bins: torch.Tensor,
+        Tc: torch.Tensor,
+        T_bkg: torch.Tensor,
+        pdf: torch.Tensor,
+        jsd_sig: torch.Tensor,
+    ) -> PlotData:
+        """
+        Prepare all data needed for diagnostic plots.
+
+        Args:
+            bins: bin centers used for KDE
+            Tc: computed threshold
+            T_bkg: background JSD values
+            pdf: background PDF from KDE
+            jsd_sig: signal JSD values
+
+        Returns:
+            PlotData container with all necessary information
+        """
+        # Normalized values for sigmoid visualization
+        jsd_norm = (jsd_sig - jsd_sig.min()) / (jsd_sig.max() - jsd_sig.min() + 1e-8)
+        Tc_norm = (Tc - jsd_sig.min()) / (jsd_sig.max() - jsd_sig.min() + 1e-8)
+        sigmoid_det = torch.sigmoid(self.tau_detect * (jsd_norm - Tc_norm))
+
+        return PlotData(
+            bins=bins, Tc=Tc, T_bkg=T_bkg, pdf=pdf, jsd_sig=jsd_sig, jsd_norm=jsd_norm, Tc_norm=Tc_norm, sigmoid_det=sigmoid_det, epoch=self.epoch or 0
+        )
+
     def forward(self) -> torch.Tensor:
         """
         Compute loss with separated inner/outer optimization.
