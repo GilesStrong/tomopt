@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 from IPython.display import clear_output
 import copy
 import os
+from tqdm import tqdm
+from torch.nn.utils.rnn import pad_sequence
 
 
 class AbsVoxelNNInferrer(nn.Module):
@@ -21,129 +23,67 @@ class AbsVoxelNNInferrer(nn.Module):
 
     def __init__(self):
         super().__init__()
+
+    def _collate_poca_batch(self, batch: List[Tuple[Tensor, Tensor]]) -> Tuple[Tensor, Tensor, Tensor]:
+        """
+        Collates a batch of (poca_tensor, x0_tensor) pairs for training or evaluation.
+
+        Pads variable-length PoCA sequences in the batch
+        to the same length, and generates corresponding masks to recover unpadded entries.
+
+        Args:
+            batch (List[Tuple[Tensor, Tensor]]):
+                A list of tuples, where each tuple contains:
+                - poca_tensor: (N_i, feature_dim) float tensor for i-th example
+                - x0_tensor: ground truth flattened X0 tensor
+
+        Returns:
+            Tuple[Tensor, Tensor, Tensor]:
+                - padded_poca_tensor: (B, max_len, feature_dim) tensor with padded PoCA sequences
+                - x0_tensor: (B, X, Y, Z) tensor of ground truth volumes
+                - mask_tensor: (B, max_len) boolean tensor indicating unpadded PoCA entries
+        """
+        poca_batch = [b[0] for b in batch]  # list of (N_i, feature_dim)
+        
+        # reshape flattened X0 tensor to 3D. 
+        # In TomOpt, X0 is originally shaped like Z,X,Y so need to permute
+        # TomOpt X0 voxelization is of shape (4,10,10)
+        x0_batch = [b[1].view(4,10,10).permute(1,2,0) for b in batch] 
+        x0_tensor = torch.stack(x0_batch)
     
-    def _get_dataloader(self, dataset, batch_size, collate_fn, shuffle) -> DataLoader:
-        """
-        Creates a DataLoader for the given dataset.
-        """
-        return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle,
-                          collate_fn= collate_fn, num_workers=0, pin_memory=True)
-        
-    def _collate_poca_batch(self, batch: List[Tuple[Tensor, Tensor]]) -> Tuple[Tensor, Tensor, Tensor]: 
-        """
-        Collates a batch of (poca_tensor, x0_tensor) pairs for training or evaluation.
-
-        Pads variable-length PoCA sequences in the batch
-        to the same length using small random noise, and generates corresponding masks
-        indicating valid (unpadded) entries.
-
-        Args:
-            batch (List[Tuple[Tensor, Tensor]]):
-                A list of tuples, where each tuple contains:
-                - poca_tensor: (N_i, 22) float tensor for i-th example
-                - x0_tensor: (X, Y, Z) ground truth 3D volume tensor
-
-        Returns:
-            Tuple[Tensor, Tensor, Tensor]:
-                - padded_poca_tensor: (B, max_len, 22) tensor with padded POCA sequences
-                - x0_tensor: (B, X, Y, Z) tensor of ground truth volumes
-                - mask_tensor: (B, max_len) boolean tensor indicating valid POCA entries
-        """
-        poca_batch, x0_batch, _ = zip(*batch)
-        max_len = max(p.shape[0] for p in poca_batch)
-
-        padded = []
-        masks = []
-
-        for p in poca_batch:
-            pad_len = max_len - p.shape[0]
-            
-            # Create binary mask for real data (1s) vs padded data (0s)
-            mask = torch.ones(p.shape[0], dtype=torch.bool)
-            pad_mask = torch.zeros(pad_len, dtype=torch.bool)
-            full_mask = torch.cat([mask, pad_mask], dim=0)
-            masks.append(full_mask)
-
-            # Pad with small random noise to avoid introducing hard zeros
-            pad = torch.randn(pad_len, 8, dtype=p.dtype) * 0.01
-            padded.append(torch.cat([p, pad], dim=0))
-
-        # Stack batch components
-        poca_tensor = torch.stack(padded)       # (B, max_len, 22)
-        mask_tensor = torch.stack(masks)        # (B, max_len)
-        x0_tensor = torch.stack(x0_batch)       # (B, X, Y, Z)
-
-        return poca_tensor, x0_tensor, mask_tensor
-
-    def _collate_poca_batch(self, batch: List[Tuple[Tensor, Tensor]]) -> Tuple[Tensor, Tensor, Tensor]: 
-        """
-        Collates a batch of (poca_tensor, x0_tensor) pairs for training or evaluation.
-
-        Pads variable-length PoCA sequences in the batch
-        to the same length using small random noise, and generates corresponding masks
-        indicating valid (unpadded) entries.
-
-        Args:
-            batch (List[Tuple[Tensor, Tensor]]):
-                A list of tuples, where each tuple contains:
-                - poca_tensor: (N_i, 22) float tensor for i-th example
-                - x0_tensor: (X, Y, Z) ground truth 3D volume tensor
-
-        Returns:
-            Tuple[Tensor, Tensor, Tensor]:
-                - padded_poca_tensor: (B, max_len, 22) tensor with padded POCA sequences
-                - x0_tensor: (B, X, Y, Z) tensor of ground truth volumes
-                - mask_tensor: (B, max_len) boolean tensor indicating valid POCA entries
-        """
-        poca_batch = [b[0] for b in batch]
-        x0_batch = [b[1].view(4,10,10).permute(1,2,0) for b in batch]
-        max_len = max(p[0].shape[0] for p in batch)
-        
-        padded = []
-        masks = []
-
-        for p in poca_batch:
-            pad_len = max_len - p.shape[0]
-            
-            # Create binary mask for real data (1s) vs padded data (0s)
-            mask = torch.ones(p.shape[0], dtype=torch.bool)
-            pad_mask = torch.zeros(pad_len, dtype=torch.bool)
-            full_mask = torch.cat([mask, pad_mask], dim=0)
-            masks.append(full_mask)
-
-            # Pad with small random noise to avoid introducing hard zeros
-            pad = torch.randn(pad_len, 8, dtype=p.dtype) * 0.01
-            padded.append(torch.cat([p, pad], dim=0))
-
-        # Stack batch components
-        poca_tensor = torch.stack(padded)       # (B, max_len, 22)
-        mask_tensor = torch.stack(masks)        # (B, max_len)
-        x0_tensor = torch.stack(x0_batch)       # (B, X, Y, Z)
-
-        return poca_tensor, x0_tensor, mask_tensor
-
-    def _run_epoch(self, loader, optimizer, scheduler, loss_fn, device, epoch, train=True) -> float:
+        # Pad sequences to the same length
+        # batch_first=True -> output shape: (B, max_len, feature_dim)
+        padded_poca = pad_sequence(poca_batch, batch_first=True, padding_value=0.0)
+    
+        # Create mask: True for real entries, False for padding
+        lengths = torch.tensor([p.shape[0] for p in poca_batch])
+        max_len = padded_poca.shape[1]
+        mask = torch.arange(max_len).expand(len(lengths), max_len) < lengths.unsqueeze(1)
+        mask = mask.to(torch.bool)
+    
+        return padded_poca, x0_tensor, mask
+    
+    def _run_epoch(self, loader:DataLoader, optimizer, scheduler, loss_fn, device:str, epoch:int, train:bool=True) -> float:
         """
         Runs one epoch of training or validation.
         """
         self.train() if train else self.eval()
         total_loss = 0.0
 
-        for poca_batch, x0_true, point_mask in loader:
-            poca_batch = poca_batch.to(device)
-            x0_true = x0_true.to(device)
+        for poca_batch, x0_true, point_mask in tqdm(loader):
+            poca_batch = poca_batch.to(device, non_blocking=True)
+            x0_true = x0_true.to(device, non_blocking=True)
             x0_true = torch.log(x0_true)#.permute(0, 2, 3, 1)
 
             with torch.set_grad_enabled(train):
                 x0_pred = self(poca_batch, point_mask)
-                loss = loss_fn(x0_pred, x0_true, epoch)
+                loss = loss_fn(x0_pred, x0_true)
 
                 if train:
                     optimizer.zero_grad()
                     loss.backward()
                     torch.nn.utils.clip_grad_norm_(self.parameters(), max_norm=1.0)
                     optimizer.step()
-                    #scheduler.step()
 
             total_loss += loss.item()
 
@@ -171,7 +111,7 @@ class AbsVoxelNNInferrer(nn.Module):
         plt.tight_layout()
         plt.show()
 
-    def train_model(self, ## remoced scheduler.step() here
+    def train_model(self,
                     train_set,
                     val_set, 
                     n_epochs:int = 20, 
@@ -190,18 +130,16 @@ class AbsVoxelNNInferrer(nn.Module):
         """
         High-level training loop.
         """
-        diagnostics = MaterialDiagnostics()
         self.to(device)
         collate_fn = collate_fun if collate_fun is not None else self._collate_poca_batch
         
-        train_loader = self._get_dataloader(train_set, batch_size, collate_fn = collate_fn, shuffle=True)
-        val_loader   = self._get_dataloader(val_set, batch_size, collate_fn = collate_fn, shuffle=False)
+        train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True, collate_fn= collate_fn, num_workers=0, pin_memory=True)
+        val_loader   = DataLoader(val_set,  batch_size=batch_size, shuffle=False, collate_fn= collate_fn, num_workers=0, pin_memory=True)
 
         loss_fn = loss_fun if loss_fun is not None else nn.HuberLoss(delta=1.0)
         optimizer = optim if optim is not None else torch.optim.AdamW(self.parameters(), lr=lr, weight_decay=1e-3)
         scheduler = schedlr if schedlr is not None else torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer, mode='min', factor=0.3, patience=3,
-            threshold=1e-2, min_lr=1e-6, threshold_mode='rel', verbose=True
+            optimizer, mode='min', factor=0.3, patience=3, min_lr=1e-6, threshold_mode='rel', verbose=True
         )
 
         best_val_loss = float('inf')
@@ -266,7 +204,7 @@ class AbsVoxelNNInferrer(nn.Module):
         """
         os.makedirs(os.path.dirname(path), exist_ok=True)
         torch.save(self.state_dict(), path)
-        print(f"[✓] Model saved to: {path}")
+        print(f"Model saved to: {path}")
 
     def load_model(self, path: str, map_location: str = 'cpu'):
         """
@@ -274,7 +212,7 @@ class AbsVoxelNNInferrer(nn.Module):
         """
         state_dict = torch.load(path, map_location=map_location)
         self.load_state_dict(state_dict)
-        print(f"[✓] Model loaded from: {path}")
+        print(f"Model loaded from: {path}")
 
     def evaluate_on_dataset(self, dataset, batch_size=20, device='cuda') -> float:
         """
@@ -292,7 +230,7 @@ class AbsVoxelNNInferrer(nn.Module):
                 x0_true = x0_true.to(device)
                 x0_true = torch.log(x0_true)#.permute(0, 2, 3, 1)
                 x0_pred = self(poca_batch, point_mask)
-                total_loss += loss_fn(x0_pred, x0_true).item()
+                total_loss += loss_fn(x0_pred, x0_true)
 
         avg_loss = total_loss / len(loader)
         print(f"Evaluation Loss: {avg_loss:.4f}")
