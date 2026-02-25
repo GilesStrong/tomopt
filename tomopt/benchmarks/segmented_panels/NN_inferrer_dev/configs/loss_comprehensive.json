@@ -1,0 +1,31 @@
+{
+    "model": {
+        "voxel_shape": [
+            10,
+            10,
+            4
+        ],
+        "radius": 0.1,
+        "device": "cuda"
+    },
+    "data": {
+        "n_positions": 49,
+        "n_materials": 5,
+        "n_repetitions": 20,
+        "val_combos": 20,
+        "test_combos": 20,
+        "random_seed": 32,
+        "batch_size": 32
+    },
+    "train": {
+        "n_epochs": 50,
+        "lr": 0.01,
+        "weight_decay": 0.001,
+        "patience": 3,
+        "min_lr": 0.000001,
+        "factor": 0.3,
+        "loss_type": "comprehensive",
+        "use_wandb": false,
+        "wandb_config": null
+    }
+}
