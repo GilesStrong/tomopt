@@ -6,7 +6,7 @@ import torch
 import argparse
 import json
 from src.params import ExperimentParams
-from src.data_h5 import MuonDataManager
+from src.data import MuonDataManager
 from models.model_v0 import LocalAggVoxelX0InferNet
 from src.loss import get_material_loss_function
 def main():
