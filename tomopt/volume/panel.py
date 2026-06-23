@@ -13,7 +13,7 @@ Provides implementations of class simulating panel-style detectors with learnabl
 """
 
 
-__all__ = ["DetectorPanel", "SigmoidDetectorPanel"]
+__all__ = ["DetectorPanel", "SigmoidDetectorPanel", "SegmentedSigmoidDetectorPanel"]
 
 
 class DetectorPanel(nn.Module):
@@ -447,3 +447,280 @@ class SigmoidDetectorPanel(DetectorPanel):
             self._smooth = smooth
         else:
             self.register_buffer("_smooth", smooth)
+
+
+class SegmentedSigmoidDetectorPanel(DetectorPanel):
+    r"""
+    A modified implementation of the :class:`~tomopt.volume.panel.SigmoidPanelDetector` class.
+    Provides an infinitely thin, rectangular panel in the xy plane, centred at a learnable xyz position (metres, in absolute position in the volume frame),
+    with a learnable width in x and y (`xy_span`).
+    This sensitive detector area is equally divided to a number of sub-panels, referred to as segmented panels. This implementation takes into account
+    the hardware gaps between adjacent detector modules in real-life modular detector design.
+    Whilst this class can be used manually, it is designed to be used by the :class:`~tomopt.volume.layer.PanelDetectorLayer` class.
+
+    Arguments:
+    n_panels: number of segmented sub-panels in each of the xy dimensions
+    smooth: smoothness of the sigmoid: A higher smooth value provides a slower change, with higher resolution|efficiency outside the physical panel,
+        whereas a lower smooth value provides a sharper transition, with lower sensitivity to muons outside the panel
+        (and therefore more strongly approximated a physical panel).
+    res: resolution of the panel in m^-1, i.e. a higher value improves the precision on the hit recording
+    eff: efficiency of the hit recording of the panel, indicated as a probability [0,1]
+    init_xyz: initial xyz position of the panel in metres in the volume frame
+    init_xy_span: initial xy-span (total width) of the panel in metres
+    init_gap: initial size of the gap between sub-panels in each of the xy dimensions
+    m2_cost: the cost in unit currency of the 1 square metre of detector
+    budget: optional required cost of the panel. Based on the span and cost per m^2, the panel will resize to meet the required cost
+    realistic_validation: if True, will use the physical interpretation of the panel during evaluation
+    device: device on which to place tensors
+    """
+
+    def __init__(
+        self,
+        *,
+        n_panels: int,
+        smooth: Union[float, Tensor],
+        res: float,
+        eff: float,
+        init_xyz: Tuple[float, float, float],
+        init_xy_span: Tuple[float, float],
+        init_gap: float,
+        m2_cost: float = 1,
+        budget: Optional[Tensor] = None,
+        realistic_validation: bool = True,
+        device: torch.device = DEVICE,
+    ):
+        super().__init__(
+            res=res,
+            eff=eff,
+            init_xyz=init_xyz,
+            init_xy_span=init_xy_span,
+            m2_cost=m2_cost,
+            budget=budget,
+            realistic_validation=realistic_validation,
+            device=device,
+        )
+        self.n_panels = n_panels  # Number of sub-panels along one axis (total number of sub-panels would be n x n)
+        self.gap_size = nn.Parameter(torch.tensor(init_gap, device=self.device))
+        # Smooth will be massaged to Tensor, but MyPy doesn't spot this
+        self.smooth = smooth  # type: ignore
+
+    def sig_model(self, xy: Tensor) -> Tensor:
+        r"""
+        Models fractional resolution and efficiency for an n x n segmented
+        detector panel array.
+        This accounts for resolution drop-off at gaps between panels.
+
+        Arguments:
+            xy: (N, 2) tensor of positions.
+
+        Returns:
+            Multiplicative coefficients for the resolution or efficiency of
+            the panel array based on the xy position relative to the segmented
+            panel positions and their sizes.
+        """
+
+        # Compute resolution coefficient for each panel
+        delta = (xy[:, None, :] - self.panel_centers[None, :, :]) / (self.panel_size / 2)
+        panel_coef = torch.sigmoid((1 - (torch.sign(delta) * delta)) / self.smooth)
+        coef = panel_coef.sum(dim=1) / torch.sigmoid(1 / self.smooth)
+        coef = torch.clamp(coef, max=1.0)
+
+        return coef
+
+    def get_resolution(self, xy: Tensor, mask: Optional[Tensor] = None) -> Tensor:
+        r"""
+        Computes the xy resolutions of panel at the supplied list of xy points.
+        If running in evaluation mode with `realistic_validation`,
+        then these will be the full resolution of the panel for points inside
+        the panel (indicated by the mask), and zero outside.
+        Otherwise, the Sigmoid model will be used.
+
+        Arguments:
+            xy: (N,xy) tensor of positions
+            mask: optional pre-computed (N,) Boolean mask, where True
+                  indicates that the xy point is inside the panel.
+                  Only used in evaluation mode and if `realistic_validation`
+                  is True. If required, but not supplied, than will be computed
+                  automatically.
+
+        Returns:
+            res, a (N,xy) tensor of the resolution at the xy points
+        """
+
+        if not isinstance(self.resolution, Tensor):
+            raise ValueError(f"{self.resolution} is not a Tensor for some reason.")  # To appease MyPy
+        if self.training or not self.realistic_validation:
+            res = self.resolution * self.sig_model(xy)
+            res = torch.clamp_min(res, 1e-10)  # To avoid NaN gradients
+        else:
+            if mask is None:
+                mask = self.get_xy_mask(xy)
+            res = torch.zeros((len(xy), 2), device=self.device)  # Zero detection outside detector
+            res[mask] = self.resolution
+        return res
+
+    def get_efficiency(self, xy: Tensor, mask: Optional[Tensor] = None) -> Tensor:
+        r"""
+        Computes the efficiency of panel at the supplied list of xy points.
+        If running in evaluation mode with `realistic_validation`,
+        then these will be the full efficiency of the panel for points inside the panel (indicated by the mask), and zero outside.
+        Otherwise, the Sigmoid model will be used.
+
+        Arguments:
+            xy: (N,) or (N,xy) tensor of positions
+            mask: optional pre-computed (N,) Boolean mask, where True indicates that the xy point is inside the panel.
+                Only used in evaluation mode and if `realistic_validation` is True.
+                If required, but not supplied, than will be computed automatically.
+
+        Returns:
+            eff, a (N,)tensor of the efficiency at the xy points
+        """
+
+        if not isinstance(self.efficiency, Tensor):
+            raise ValueError(f"{self.efficiency} is not a Tensor for some reason.")  # To appease MyPy
+        if self.training or not self.realistic_validation:
+            eff = self.efficiency * self.sig_model(xy).prod(dim=-1)
+            eff = torch.clamp_min(eff, 1e-10)  # To avoid NaN gradients
+        else:
+            if mask is None:
+                mask = self.get_xy_mask(xy)
+            eff = torch.zeros(len(xy), device=self.device)  # Zero detection outside detector
+            eff[mask] = self.efficiency
+        return eff
+
+    @property
+    def smooth(self) -> Tensor:
+        return self._smooth
+
+    @smooth.setter
+    def smooth(self, smooth: Union[float, Tensor]) -> None:
+        if not smooth > 0:
+            raise ValueError("smooth argument must be positive and non-zero")
+        if not isinstance(smooth, Tensor):
+            smooth = torch.tensor([smooth], device=self.device)
+        if hasattr(self, "_smooth"):
+            self._smooth = smooth
+        else:
+            self.register_buffer("_smooth", smooth)
+
+    def clamp_params(self, xyz_low: Tuple[float, float, float], xyz_high: Tuple[float, float, float]) -> None:
+        r"""
+        Ensures that the panel is centred within the supplied xyz range,
+        and that the span of the panel is between xyz_high/20 and xyz_high*10.
+        A small random number < 1e-3 is added/subtracted to the min/max z position of the panel, to ensure it doesn't overlap with other panels.
+
+        Arguments:
+            xyz_low: minimum x,y,z values for the panel centre in metres
+            xyz_high: maximum x,y,z values for the panel centre in metres
+        """
+
+        with torch.no_grad():
+            eps = np.random.uniform(0, 1e-3)  # prevent hits at same z due to clamping
+            self.x.clamp_(min=xyz_low[0], max=xyz_high[0])
+            self.y.clamp_(min=xyz_low[1], max=xyz_high[1])
+            self.z.clamp_(min=xyz_low[2] + eps, max=xyz_high[2] - eps)
+            self.xy_span[0].clamp_(min=xyz_high[0] / 20, max=10 * xyz_high[0])
+            self.xy_span[1].clamp_(min=xyz_high[1] / 20, max=10 * xyz_high[1])
+            self.gap_size.clamp_(min=0.0)
+
+    def get_xy_mask(self, xy: Tensor) -> Tensor:
+        r"""
+        Computes which of the xy points lie inside the physical panels.
+
+        Arguments:
+            xy: xy2) tensor of points
+
+        Returns:
+            (N,) Boolean mask, where True indicates the point lies inside the panel
+        """
+
+        centers_x = self.panel_centers[:, 0]
+        centers_y = self.panel_centers[:, 1]
+
+        mask_x = torch.zeros(len(xy), dtype=torch.bool, device=xy.device)
+        for cx in centers_x:
+            mask_x |= (xy[:, 0] >= cx - self.panel_size[0] / 2) & (xy[:, 0] < cx + self.panel_size[0] / 2)
+
+        mask_y = torch.zeros(len(xy), dtype=torch.bool, device=xy.device)
+        for cy in centers_y:
+            mask_y |= (xy[:, 1] >= cy - self.panel_size[1] / 2) & (xy[:, 1] < cy + self.panel_size[1] / 2)
+
+        return mask_x & mask_y
+
+    def get_hits(self, mu: MuonBatch) -> Dict[str, Tensor]:
+        r"""
+        Overriden main interaction method of muons with detector panels, for compatibility with segmented panel mask.
+        Hits consist of:
+            reco_xy: (muons,xy) tensor of reconstructed xy positions of muons included simulated resolution
+            gen_xy: (muons,xy) tensor of generator-level (true) xy positions of muons
+            z: z position of the panel
+
+        If running in evaluation mode with `realistic_validation`,
+        then these will be the full resolution of the panel for points inside the panel (indicated by the mask), and zero outside.
+        Otherwise, the multi-sigmoid model of the sub-panels will be used.
+        """
+
+        true_mu_xy = mu.xy.data
+        mask = self.get_xy_mask(true_mu_xy)  # Muons in panels
+
+        xy0 = self.xy - (self.n_panels * self.panel_size + (self.n_panels - 1) * self.gap_size) / 2  # Low-left of panel
+        rel_xy = true_mu_xy - xy0
+        res = self.get_resolution(true_mu_xy, mask)
+        rel_xy = rel_xy + (torch.randn((len(mu), 2), device=self.device) / res)
+
+        if not self.training and self.realistic_validation:  # Prevent reco hit from exiting panel
+            if not self.training and self.realistic_validation:
+                centers_x = self.panel_centers[:, 0]
+                centers_y = self.panel_centers[:, 1]
+
+                # find nearest panel center for each muon
+                nearest_x = centers_x[torch.argmin(torch.abs(true_mu_xy[:, 0:1] - centers_x[None, :]), dim=1)]
+                nearest_y = centers_y[torch.argmin(torch.abs(true_mu_xy[:, 1:2] - centers_y[None, :]), dim=1)]
+
+                rel_xy[mask] = torch.stack(
+                    [
+                        torch.clamp(
+                            rel_xy[mask][:, 0],
+                            (nearest_x[mask] - self.panel_size[0] / 2 - xy0[0]).detach().cpu(),
+                            (nearest_x[mask] + self.panel_size[0] / 2 - xy0[0]).detach().cpu(),
+                        ),
+                        torch.clamp(
+                            rel_xy[mask][:, 1],
+                            (nearest_y[mask] - self.panel_size[1] / 2 - xy0[1]).detach().cpu(),
+                            (nearest_y[mask] + self.panel_size[1] / 2 - xy0[1]).detach().cpu(),
+                        ),
+                    ],
+                    dim=-1,
+                )
+
+        reco_xy = xy0 + rel_xy
+
+        reco_xyz = F.pad(reco_xy, (0, 1))
+        reco_xyz[:, 2] = self.z
+        gen_xyz = F.pad(true_mu_xy, (0, 1))
+        gen_xyz[:, 2] = self.z
+        hits = {
+            "reco_xyz": reco_xyz,
+            "gen_xyz": gen_xyz,
+            "unc_xyz": F.pad(1 / res, (0, 1)),  # Add zero for z unc
+            "eff": self.get_efficiency(true_mu_xy, mask)[:, None],
+        }
+        return hits
+
+    @property
+    def panel_size(self) -> Tensor:
+        r"""
+        Span of an individual segmented sub-panel.
+        """
+        return self.get_scaled_xy_span() / self.n_panels
+
+    @property
+    def panel_centers(self) -> Tensor:
+        r"""
+        Center positions of segmented sub-panels.
+        """
+        panel_spacing = self.panel_size + self.gap_size
+        indices = torch.arange(self.n_panels, device=self.device, dtype=torch.float32) - (self.n_panels - 1) / 2
+        centers_x = self.xy[0] + indices * panel_spacing[0]
+        centers_y = self.xy[1] + indices * panel_spacing[1]
+        return torch.stack((centers_x, centers_y), dim=1)  # (n_panels, 2)
