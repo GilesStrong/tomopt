@@ -18,7 +18,11 @@ if IN_NOTEBOOK:
 
 import torch
 
-from ...volume import PanelDetectorLayer, SigmoidDetectorPanel
+from ...volume import (
+    PanelDetectorLayer,
+    SegmentedSigmoidDetectorPanel,
+    SigmoidDetectorPanel,
+)
 from .callback import Callback
 from .eval_metric import EvalMetric
 
@@ -352,7 +356,7 @@ class PanelMetricLogger(MetricLogger):
     def _reset(self) -> None:
         det = self.wrapper.volume.get_detectors()[0]
         if isinstance(det, PanelDetectorLayer):
-            self.uses_sigmoid_panels = isinstance(det.panels[0], SigmoidDetectorPanel)
+            self.uses_sigmoid_panels = isinstance(det.panels[0], (SigmoidDetectorPanel, SegmentedSigmoidDetectorPanel))
         else:
             self.uses_sigmoid_panels = False
         super()._reset()
@@ -400,33 +404,54 @@ class PanelMetricLogger(MetricLogger):
                 axes[2].add_patch(patches.Rectangle((0, 0), lw[0], lw[1], linewidth=1, edgecolor="black", facecolor="none", hatch="x"))  # volume
 
                 for p in range(len(loc)):
-                    axes[0].add_line(
-                        mlines.Line2D((loc[p, 0] - (span[p, 0] / 2), loc[p, 0] + (span[p, 0] / 2)), (loc[p, 2], loc[p, 2]), linewidth=2, color=palette[p])
-                    )  # xz
-                    axes[1].add_line(
-                        mlines.Line2D((loc[p, 1] - (span[p, 1] / 2), loc[p, 1] + (span[p, 1] / 2)), (loc[p, 2], loc[p, 2]), linewidth=2, color=palette[p])
-                    )  # yz
-                    axes[2].add_patch(
-                        patches.Rectangle(
-                            (loc[p, 0] - (span[p, 0] / 2), loc[p, 1] - (span[p, 1] / 2)),
-                            span[p, 0],
-                            span[p, 1],
-                            linewidth=1,
-                            edgecolor=palette[p],
-                            facecolor="none",
-                        )
-                    )  # xy
+                    panel = det.panels[p]
+                    if isinstance(panel, SegmentedSigmoidDetectorPanel):
+                        ps = panel.panel_size.detach().cpu().numpy()
+                        for cx, cy in panel.panel_centers.detach().cpu().numpy():
+                            axes[0].add_line(mlines.Line2D((cx - ps[0] / 2, cx + ps[0] / 2), (loc[p, 2], loc[p, 2]), linewidth=2, color=palette[p]))  # xz
+                            axes[1].add_line(mlines.Line2D((cy - ps[1] / 2, cy + ps[1] / 2), (loc[p, 2], loc[p, 2]), linewidth=2, color=palette[p]))  # yz
+                        for cx in panel.panel_centers[:, 0].detach().cpu().numpy():
+                            for cy in panel.panel_centers[:, 1].detach().cpu().numpy():
+                                axes[2].add_patch(
+                                    patches.Rectangle(
+                                        (cx - ps[0] / 2, cy - ps[1] / 2),
+                                        ps[0],
+                                        ps[1],
+                                        linewidth=1,
+                                        edgecolor=palette[p],
+                                        facecolor="none",
+                                    )
+                                )  # xy
+                    else:
+                        axes[0].add_line(
+                            mlines.Line2D((loc[p, 0] - (span[p, 0] / 2), loc[p, 0] + (span[p, 0] / 2)), (loc[p, 2], loc[p, 2]), linewidth=2, color=palette[p])
+                        )  # xz
+                        axes[1].add_line(
+                            mlines.Line2D((loc[p, 1] - (span[p, 1] / 2), loc[p, 1] + (span[p, 1] / 2)), (loc[p, 2], loc[p, 2]), linewidth=2, color=palette[p])
+                        )  # yz
+                        axes[2].add_patch(
+                            patches.Rectangle(
+                                (loc[p, 0] - (span[p, 0] / 2), loc[p, 1] - (span[p, 1] / 2)),
+                                span[p, 0],
+                                span[p, 1],
+                                linewidth=1,
+                                edgecolor=palette[p],
+                                facecolor="none",
+                            )
+                        )  # xy
 
                 if self.uses_sigmoid_panels:
                     self.panel_smoothness.clear()
                     with torch.no_grad():
                         panel = det.panels[0]
-                        width = panel.get_scaled_xy_span()[0].cpu().item()
+                        if isinstance(panel, SegmentedSigmoidDetectorPanel):
+                            width = (panel.n_panels * panel.panel_size + (panel.n_panels - 1) * panel.gap_size)[0].cpu().item()
+                        else:
+                            width = panel.get_scaled_xy_span()[0].cpu().item()
                         centre = panel.xy[0].cpu().item()
                         x = torch.linspace(-width, width, 50)[:, None]
                         y = panel.sig_model(x + centre)[:, 0]
                         self.panel_smoothness.plot(2 * x.cpu().numpy() / width, y.cpu().numpy())
-
             self._set_axes_labels()
 
     def _build_grid_spec(self) -> GridSpec:
