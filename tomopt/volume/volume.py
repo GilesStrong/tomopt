@@ -12,7 +12,7 @@ from ..core import RadLengthFunc
 from ..muon import MuonBatch
 from .heatmap import DetectorHeatMap
 from .layer import AbsDetectorLayer, AbsLayer, PanelDetectorLayer, PassiveLayer
-from .panel import DetectorPanel
+from .panel import DetectorPanel, SegmentedSigmoidDetectorPanel
 
 r"""
 Provides implementation of wrapper classes for containing multiple passive layers and detector layers, which act as interfaces to them.
@@ -281,21 +281,34 @@ class Volume(nn.Module):
             # if not passive layer...
             if isinstance(layer, PanelDetectorLayer):
                 for i, p in layer.yield_zordered_panels():
+                    col = "red" if isinstance(p, DetectorPanel) else ("blue" if isinstance(p, PassiveLayer) else "black")
                     if isinstance(p, DetectorHeatMap):
                         raise TypeError("Drawing not supported yet for DetectorHeatMap panels")
-                    col = "red" if isinstance(p, DetectorPanel) else ("blue" if isinstance(p, PassiveLayer) else "black")
-                    if not isinstance(p.xy, Tensor):
-                        raise ValueError("Panel xy is not a tensor, for some reason")
-                    if not isinstance(p.z, Tensor):
-                        raise ValueError("Panel z is not a tensor, for some reason")
-                    rect = [[
-                        (p.xy.data[0].item() - p.get_scaled_xy_span().data[0] / 2.0, p.xy.data[1].item() - p.get_scaled_xy_span().data[1] / 2.0, p.z.data[0].item()),
-                        (p.xy.data[0].item() + p.get_scaled_xy_span().data[0] / 2.0, p.xy.data[1].item() - p.get_scaled_xy_span().data[1] / 2.0, p.z.data[0].item()),
-                        (p.xy.data[0].item() + p.get_scaled_xy_span().data[0] / 2.0, p.xy.data[1].item() + p.get_scaled_xy_span().data[1] / 2.0, p.z.data[0].item()),
-                        (p.xy.data[0].item() - p.get_scaled_xy_span().data[0] / 2.0, p.xy.data[1].item() + p.get_scaled_xy_span().data[1] / 2.0, p.z.data[0].item())
-                    ]]
+                    elif isinstance(p, SegmentedSigmoidDetectorPanel):
+                        centers_x = p.panel_centers[:, 0]
+                        centers_y = p.panel_centers[:, 1]
+                        for cx in centers_x:
+                            for cy in centers_y:
+                                rect = [[
+                                    (cx.item() - p.panel_size[0].item() / 2, cy.item() - p.panel_size[1].item() / 2, p.z.data[0].item()),
+                                    (cx.item() + p.panel_size[0].item() / 2, cy.item() - p.panel_size[1].item() / 2, p.z.data[0].item()),
+                                    (cx.item() + p.panel_size[0].item() / 2, cy.item() + p.panel_size[1].item() / 2, p.z.data[0].item()),
+                                    (cx.item() - p.panel_size[0].item() / 2, cy.item() + p.panel_size[1].item() / 2, p.z.data[0].item()),
+                                ]]
+                                activearrays.append([rect, col, p.z.data[0].item(), 0.2])
+                    else:
+                        if not isinstance(p.xy, Tensor):
+                            raise ValueError("Panel xy is not a tensor, for some reason")
+                        if not isinstance(p.z, Tensor):
+                            raise ValueError("Panel z is not a tensor, for some reason")
+                        rect = [[
+                            (p.xy.data[0].item() - p.get_scaled_xy_span().data[0] / 2.0, p.xy.data[1].item() - p.get_scaled_xy_span().data[1] / 2.0, p.z.data[0].item()),
+                            (p.xy.data[0].item() + p.get_scaled_xy_span().data[0] / 2.0, p.xy.data[1].item() - p.get_scaled_xy_span().data[1] / 2.0, p.z.data[0].item()),
+                            (p.xy.data[0].item() + p.get_scaled_xy_span().data[0] / 2.0, p.xy.data[1].item() + p.get_scaled_xy_span().data[1] / 2.0, p.z.data[0].item()),
+                            (p.xy.data[0].item() - p.get_scaled_xy_span().data[0] / 2.0, p.xy.data[1].item() + p.get_scaled_xy_span().data[1] / 2.0, p.z.data[0].item())
+                        ]]
 
-                    activearrays.append([rect, col, p.z.data[0].item(), 0.2])
+                        activearrays.append([rect, col, p.z.data[0].item(), 0.2])
             else:
                 raise TypeError("Volume.draw does not yet support layers of type", type(layer))
             # fmt: on
