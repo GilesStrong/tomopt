@@ -57,7 +57,7 @@ class SigmoidPanelSmoothnessSchedule(PostWarmupCallback):
         for det in self.wrapper.volume.get_detectors():
             if isinstance(det, PanelDetectorLayer):
                 for p in det.panels:
-                    if isinstance(p, SigmoidDetectorPanel):
+                    if isinstance(p, (SigmoidDetectorPanel)):
                         p.smooth = smooth
 
     def on_epoch_begin(self) -> None:

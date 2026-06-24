@@ -449,7 +449,7 @@ class SigmoidDetectorPanel(DetectorPanel):
             self.register_buffer("_smooth", smooth)
 
 
-class SegmentedSigmoidDetectorPanel(DetectorPanel):
+class SegmentedSigmoidDetectorPanel(SigmoidDetectorPanel):
     r"""
     A modified implementation of the :class:`~tomopt.volume.panel.SigmoidPanelDetector` class.
     Provides an infinitely thin, rectangular panel in the xy plane, centred at a learnable xyz position (metres, in absolute position in the volume frame),
@@ -490,6 +490,7 @@ class SegmentedSigmoidDetectorPanel(DetectorPanel):
         device: torch.device = DEVICE,
     ):
         super().__init__(
+            smooth=smooth,
             res=res,
             eff=eff,
             init_xyz=init_xyz,
@@ -501,8 +502,6 @@ class SegmentedSigmoidDetectorPanel(DetectorPanel):
         )
         self.n_panels = n_panels  # Number of sub-panels along one axis (total number of sub-panels would be n x n)
         self.gap_size = nn.Parameter(torch.tensor(init_gap, device=self.device))
-        # Smooth will be massaged to Tensor, but MyPy doesn't spot this
-        self.smooth = smooth  # type: ignore
 
     def sig_model(self, xy: Tensor) -> Tensor:
         r"""
@@ -526,82 +525,6 @@ class SegmentedSigmoidDetectorPanel(DetectorPanel):
         coef = torch.clamp(coef, max=1.0)
 
         return coef
-
-    def get_resolution(self, xy: Tensor, mask: Optional[Tensor] = None) -> Tensor:
-        r"""
-        Computes the xy resolutions of panel at the supplied list of xy points.
-        If running in evaluation mode with `realistic_validation`,
-        then these will be the full resolution of the panel for points inside
-        the panel (indicated by the mask), and zero outside.
-        Otherwise, the Sigmoid model will be used.
-
-        Arguments:
-            xy: (N,xy) tensor of positions
-            mask: optional pre-computed (N,) Boolean mask, where True
-                  indicates that the xy point is inside the panel.
-                  Only used in evaluation mode and if `realistic_validation`
-                  is True. If required, but not supplied, than will be computed
-                  automatically.
-
-        Returns:
-            res, a (N,xy) tensor of the resolution at the xy points
-        """
-
-        if not isinstance(self.resolution, Tensor):
-            raise ValueError(f"{self.resolution} is not a Tensor for some reason.")  # To appease MyPy
-        if self.training or not self.realistic_validation:
-            res = self.resolution * self.sig_model(xy)
-            res = torch.clamp_min(res, 1e-10)  # To avoid NaN gradients
-        else:
-            if mask is None:
-                mask = self.get_xy_mask(xy)
-            res = torch.zeros((len(xy), 2), device=self.device)  # Zero detection outside detector
-            res[mask] = self.resolution
-        return res
-
-    def get_efficiency(self, xy: Tensor, mask: Optional[Tensor] = None) -> Tensor:
-        r"""
-        Computes the efficiency of panel at the supplied list of xy points.
-        If running in evaluation mode with `realistic_validation`,
-        then these will be the full efficiency of the panel for points inside the panel (indicated by the mask), and zero outside.
-        Otherwise, the Sigmoid model will be used.
-
-        Arguments:
-            xy: (N,) or (N,xy) tensor of positions
-            mask: optional pre-computed (N,) Boolean mask, where True indicates that the xy point is inside the panel.
-                Only used in evaluation mode and if `realistic_validation` is True.
-                If required, but not supplied, than will be computed automatically.
-
-        Returns:
-            eff, a (N,)tensor of the efficiency at the xy points
-        """
-
-        if not isinstance(self.efficiency, Tensor):
-            raise ValueError(f"{self.efficiency} is not a Tensor for some reason.")  # To appease MyPy
-        if self.training or not self.realistic_validation:
-            eff = self.efficiency * self.sig_model(xy).prod(dim=-1)
-            eff = torch.clamp_min(eff, 1e-10)  # To avoid NaN gradients
-        else:
-            if mask is None:
-                mask = self.get_xy_mask(xy)
-            eff = torch.zeros(len(xy), device=self.device)  # Zero detection outside detector
-            eff[mask] = self.efficiency
-        return eff
-
-    @property
-    def smooth(self) -> Tensor:
-        return self._smooth
-
-    @smooth.setter
-    def smooth(self, smooth: Union[float, Tensor]) -> None:
-        if not smooth > 0:
-            raise ValueError("smooth argument must be positive and non-zero")
-        if not isinstance(smooth, Tensor):
-            smooth = torch.tensor([smooth], device=self.device)
-        if hasattr(self, "_smooth"):
-            self._smooth = smooth
-        else:
-            self.register_buffer("_smooth", smooth)
 
     def clamp_params(self, xyz_low: Tuple[float, float, float], xyz_high: Tuple[float, float, float]) -> None:
         r"""

@@ -18,11 +18,7 @@ if IN_NOTEBOOK:
 
 import torch
 
-from ...volume import (
-    PanelDetectorLayer,
-    SegmentedSigmoidDetectorPanel,
-    SigmoidDetectorPanel,
-)
+from ...volume import PanelDetectorLayer, SigmoidDetectorPanel
 from .callback import Callback
 from .eval_metric import EvalMetric
 
@@ -356,7 +352,7 @@ class PanelMetricLogger(MetricLogger):
     def _reset(self) -> None:
         det = self.wrapper.volume.get_detectors()[0]
         if isinstance(det, PanelDetectorLayer):
-            self.uses_sigmoid_panels = isinstance(det.panels[0], (SigmoidDetectorPanel, SegmentedSigmoidDetectorPanel))
+            self.uses_sigmoid_panels = isinstance(det.panels[0], (SigmoidDetectorPanel))
         else:
             self.uses_sigmoid_panels = False
         super()._reset()
@@ -405,7 +401,7 @@ class PanelMetricLogger(MetricLogger):
 
                 for p in range(len(loc)):
                     panel = det.panels[p]
-                    if isinstance(panel, SegmentedSigmoidDetectorPanel):
+                    if det.type_label == "segmented":
                         ps = panel.panel_size.detach().cpu().numpy()
                         for cx, cy in panel.panel_centers.detach().cpu().numpy():
                             axes[0].add_line(mlines.Line2D((cx - ps[0] / 2, cx + ps[0] / 2), (loc[p, 2], loc[p, 2]), linewidth=2, color=palette[p]))  # xz
@@ -444,7 +440,7 @@ class PanelMetricLogger(MetricLogger):
                     self.panel_smoothness.clear()
                     with torch.no_grad():
                         panel = det.panels[0]
-                        if isinstance(panel, SegmentedSigmoidDetectorPanel):
+                        if det.type_label == "segmented":
                             width = (panel.n_panels * panel.panel_size + (panel.n_panels - 1) * panel.gap_size)[0].cpu().item()
                         else:
                             width = panel.get_scaled_xy_span()[0].cpu().item()

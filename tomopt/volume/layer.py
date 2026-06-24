@@ -7,7 +7,11 @@ import torch
 from torch import Tensor, nn
 
 from tomopt.volume.heatmap import DetectorHeatMap
-from tomopt.volume.panel import DetectorPanel, SigmoidDetectorPanel
+from tomopt.volume.panel import (
+    DetectorPanel,
+    SegmentedSigmoidDetectorPanel,
+    SigmoidDetectorPanel,
+)
 
 from ..core import DEVICE, SCATTER_COEF_A, SCATTER_COEF_B, RadLengthFunc
 from ..muon import MuonBatch
@@ -500,6 +504,10 @@ class PanelDetectorLayer(AbsDetectorLayer):
         self.panels = panels
         if isinstance(panels[0], DetectorHeatMap):
             self.type_label = "heatmap"
+            self._n_costs = len(self.panels)
+
+        elif isinstance(panels[0], SegmentedSigmoidDetectorPanel):
+            self.type_label = "segmented"
             self._n_costs = len(self.panels)
 
         elif isinstance(panels[0], DetectorPanel):
