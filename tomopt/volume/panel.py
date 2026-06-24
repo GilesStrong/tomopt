@@ -522,7 +522,6 @@ class SegmentedSigmoidDetectorPanel(SigmoidDetectorPanel):
         delta = (xy[:, None, :] - self.panel_centers[None, :, :]) / (self.panel_size / 2)
         panel_coef = torch.sigmoid((1 - (torch.sign(delta) * delta)) / self.smooth)
         coef = panel_coef.sum(dim=1) / torch.sigmoid(1 / self.smooth)
-        coef = torch.clamp(coef, max=1.0)
 
         return coef
 
