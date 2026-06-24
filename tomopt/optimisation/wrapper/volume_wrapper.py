@@ -27,7 +27,7 @@ from ..callbacks import (
 )
 from ..data import PassiveYielder
 
-__all__ = ["FitParams", "AbsVolumeWrapper", "PanelVolumeWrapper", "HeatMapVolumeWrapper", "ArbVolumeWrapper"]
+__all__ = ["FitParams", "AbsVolumeWrapper", "PanelVolumeWrapper", "HeatMapVolumeWrapper", "ArbVolumeWrapper", "SegmentedPanelVolumeWrapper"]
 
 r"""
 Provides wrapper classes for optimising detectors and other quality-of-life methods
@@ -1251,3 +1251,97 @@ class ArbVolumeWrapper(AbsVolumeWrapper):
 
     def _build_opt(self, **kwargs: PartialOpt) -> None:
         pass
+
+
+class SegmentedPanelVolumeWrapper(PanelVolumeWrapper):
+    r"""
+    Volume wrapper for volumes with :class:`~tomopt.volume.panel.SegmentedSigmoidDetectorPanel`-based detectors.
+    Extends :class:`~tomopt.optimisation.wrapper.volume_wrapper.PanelVolumeWrapper` with an additional optimiser for the gap size.
+
+    Arguments:
+        volume: the volume containing the detectors to be optimised
+        xy_pos_opt: uninitialised optimiser to be used for adjusting the xy position of panels
+        z_pos_opt: uninitialised optimiser to be used for adjusting the z position of panels
+        xy_span_opt: uninitialised optimiser to be used for adjusting the xy size of panels
+        gap_opt: uninitialised optimiser to be used for adjusting the gap size between sub-panels
+        budget_opt: optional uninitialised optimiser to be used for adjusting the fractional assignment of budget to the panels
+        loss_func: optional loss function (required if planning to optimise the detectors)
+        partial_scatter_inferrer: uninitialised class to be used for inferring muon scatter variables and trajectories
+        partial_volume_inferrer: uninitialised class to be used for inferring volume targets
+        mu_generator: Optional generator class for muons.
+    """
+
+    def __init__(
+        self,
+        volume: Volume,
+        *,
+        xy_pos_opt: PartialOpt,
+        z_pos_opt: PartialOpt,
+        xy_span_opt: PartialOpt,
+        gap_opt: PartialOpt,
+        budget_opt: Optional[PartialOpt] = None,
+        loss_func: Optional[AbsDetectorLoss] = None,
+        partial_scatter_inferrer: Type[ScatterBatch] = ScatterBatch,
+        partial_volume_inferrer: Type[AbsVolumeInferrer] = PanelX0Inferrer,
+        mu_generator: Optional[AbsMuonGenerator] = None,
+    ):
+        AbsVolumeWrapper.__init__(
+            self,
+            volume=volume,
+            partial_opts={
+                "xy_pos_opt": xy_pos_opt,
+                "z_pos_opt": z_pos_opt,
+                "xy_span_opt": xy_span_opt,
+                "gap_opt": gap_opt,
+                "budget_opt": budget_opt,
+            },
+            loss_func=loss_func,
+            mu_generator=mu_generator,
+            partial_scatter_inferrer=partial_scatter_inferrer,
+            partial_volume_inferrer=partial_volume_inferrer,
+        )
+
+    def _build_opt(self, **kwargs: PartialOpt) -> None:
+        all_dets = self.volume.get_detectors()
+        dets: List[PanelDetectorLayer] = [d for d in all_dets if isinstance(d, PanelDetectorLayer)]
+        self.opts = {
+            "xy_pos_opt": kwargs["xy_pos_opt"]((p.xy for l in dets for p in l.panels)),
+            "z_pos_opt": kwargs["z_pos_opt"]((p.z for l in dets for p in l.panels)),
+            "xy_span_opt": kwargs["xy_span_opt"]((p.xy_span for l in dets for p in l.panels)),
+            "gap_opt": kwargs["gap_opt"](p.gap_size for l in dets for p in l.panels),
+        }
+        if kwargs["budget_opt"] is not None:
+            self.opts["budget_opt"] = kwargs["budget_opt"]((p for p in [self.volume.budget_weights]))
+
+    @classmethod
+    def from_save(
+        cls,
+        name: str,
+        *,
+        volume: Volume,
+        xy_pos_opt: PartialOpt,
+        z_pos_opt: PartialOpt,
+        xy_span_opt: PartialOpt,
+        gap_opt: Optional[PartialOpt] = None,
+        budget_opt: Optional[PartialOpt] = None,
+        loss_func: Optional[AbsDetectorLoss],
+        partial_scatter_inferrer: Type[ScatterBatch] = ScatterBatch,
+        partial_volume_inferrer: Type[AbsVolumeInferrer] = PanelX0Inferrer,
+        mu_generator: Optional[AbsMuonGenerator] = None,
+    ) -> AbsVolumeWrapper:
+        if gap_opt is None:
+            raise ValueError("gap_opt must be provided to load a SegmentedPanelVolumeWrapper")
+        vw = cls(
+            volume=volume,
+            xy_pos_opt=xy_pos_opt,
+            z_pos_opt=z_pos_opt,
+            xy_span_opt=xy_span_opt,
+            gap_opt=gap_opt,
+            budget_opt=budget_opt,
+            loss_func=loss_func,
+            partial_scatter_inferrer=partial_scatter_inferrer,
+            partial_volume_inferrer=partial_volume_inferrer,
+            mu_generator=mu_generator,
+        )
+        vw.load(name)
+        return vw
