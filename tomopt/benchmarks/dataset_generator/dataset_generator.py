@@ -24,7 +24,7 @@ from .volume import get_layers
 
 sys.path.append("/home/ucl/cp3/zdaher/")
 
-OUTPUT_DIR = "datasets/"
+OUTPUT_DIR = "/home/ucl/cp3/zdaher/tomopt/tomopt/benchmarks/dataset_generator/dataset"
 
 os.makedirs(
     OUTPUT_DIR,
@@ -33,7 +33,7 @@ os.makedirs(
 
 OUTPUT_FILE = os.path.join(
     OUTPUT_DIR,
-    "dataset_test.h5",
+    "dataset_UPbFe_res1mm_sep40cm_gap0.h5",
 )
 
 # ============================================================
@@ -72,14 +72,14 @@ detector_type = "segmented"
 N_PANELS = 3
 
 # separation between consecutive panels ina detector layer in meters
-PANEL_Z_SPACING = 0.1
+PANEL_Z_SPACING = 0.4
 
 # initial gap between segments of a segmented detector panel in meters
 # wil not be used if type of detector panel is "panel" (i.e. not segmented)
-INIT_GAP = 0.1
+INIT_GAP = 0.
 
-# resolution of the detector panels in meters
-INIT_RES = 1e-3
+# resolution of the detector panels in meters^-1
+INIT_RES = 1e3
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
